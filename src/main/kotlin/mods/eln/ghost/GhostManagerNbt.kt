@@ -13,5 +13,5 @@ class GhostManagerNbt(par1Str: String?) : WorldSavedData(par1Str) {
         Eln.ghostManager.loadFromNBT(nbt)
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound) {}
+    override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound = nbt
 }

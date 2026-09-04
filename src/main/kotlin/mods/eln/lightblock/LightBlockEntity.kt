@@ -7,6 +7,7 @@ import mods.eln.misc.Utils
 import net.minecraft.init.Blocks
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.tileentity.TileEntity
+import net.minecraft.util.ITickable
 import net.minecraft.world.EnumSkyBlock
 import net.minecraft.world.World
 import mods.eln.misc.getBlock
@@ -18,7 +19,7 @@ import mods.eln.misc.xCoord
 import mods.eln.misc.yCoord
 import mods.eln.misc.zCoord
 
-class LightBlockEntity : TileEntity() {
+class LightBlockEntity : TileEntity(), ITickable {
 
     companion object {
         @JvmField
@@ -71,7 +72,7 @@ class LightBlockEntity : TileEntity() {
 
     }
 
-    override fun updateEntity() {
+    override fun update() {
         if (world.isRemote) return
 
         if (lightList.isEmpty()) {
@@ -90,9 +91,11 @@ class LightBlockEntity : TileEntity() {
             if (l.timeout <= 0) iterator.remove()
         }
 
-        if (light != world.getBlockMetadata(xCoord, yCoord, zCoord)) {
-            world.setBlockMetadataWithNotify(xCoord, yCoord, zCoord, light, 2)
-            world.updateLightByType(EnumSkyBlock.Block, xCoord, yCoord, zCoord)
+        val state = world.getBlockState(pos)
+        if (state.block === Eln.lightBlock && light != state.getValue(LightBlock.LIGHT)) {
+            // The light level is a blockstate property on 1.12, not a metadata nibble.
+            world.setBlockState(pos, state.withProperty(LightBlock.LIGHT, light), 2)
+            world.checkLightFor(EnumSkyBlock.BLOCK, pos)
         }
     }
 

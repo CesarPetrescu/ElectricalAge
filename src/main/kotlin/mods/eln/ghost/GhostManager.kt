@@ -101,7 +101,9 @@ class GhostManager(par1Str: String?) : WorldSavedData(par1Str) {
     override fun readFromNBT(nbt: NBTTagCompound) {
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound) {
+    override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
+
+        return nbt
     }
 
     fun loadFromNBT(nbt: NBTTagCompound?) {

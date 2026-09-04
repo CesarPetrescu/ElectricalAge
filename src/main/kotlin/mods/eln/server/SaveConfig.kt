@@ -9,8 +9,9 @@ class SaveConfig(par1Str: String) : WorldSavedData(par1Str) {
         Eln.wind.readFromNBT(nbt, "wind")
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound) {
+    override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         Eln.wind.writeToNBT(nbt, "wind")
+        return nbt
     }
 
     override fun isDirty(): Boolean {

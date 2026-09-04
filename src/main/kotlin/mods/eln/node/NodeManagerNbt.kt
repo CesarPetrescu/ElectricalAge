@@ -12,7 +12,8 @@ class NodeManagerNbt(par1Str: String?) : WorldSavedData(par1Str) {
         NodeManager.instance!!.loadFromNbt(nbt)
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound) {
+    override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         //NodeManager.instance.saveToNbt(nbt, Integer.MIN_VALUE);
+        return nbt
     }
 }

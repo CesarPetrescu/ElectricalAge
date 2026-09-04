@@ -46,7 +46,7 @@ class NodeManager(par1Str: String?) : WorldSavedData(par1Str) {
 
     override fun readFromNBT(nbt: NBTTagCompound) {}
 
-    override fun writeToNBT(nbt: NBTTagCompound) {}
+    override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound = nbt
 
     fun getNodeFromCoordonate(nodeCoordinate: Coordinate?): NodeBase? {
         return nodeArray[nodeCoordinate]

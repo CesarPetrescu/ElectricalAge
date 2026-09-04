@@ -11,9 +11,10 @@ class ElnWorldStorage(str: String?) : WorldSavedData(str) {
         ServerEventListener.readFromEaWorldNBT(nbt, dim)
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound) {
+    override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         nbt.setInteger("dim", dim)
         ServerEventListener.writeToEaWorldNBT(nbt, dim)
+        return nbt
     }
 
     override fun isDirty(): Boolean {
