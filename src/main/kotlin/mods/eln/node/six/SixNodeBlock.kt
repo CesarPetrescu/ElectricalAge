@@ -16,7 +16,6 @@ import mods.eln.node.NodeBlock
 import net.minecraft.block.Block
 import net.minecraft.block.material.Material
 import net.minecraft.client.Minecraft
-import net.minecraft.client.renderer.texture.IIconRegister
 import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
@@ -25,7 +24,6 @@ import net.minecraft.init.Blocks
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.IIcon
 import net.minecraft.util.math.RayTraceResult
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.IBlockAccess
@@ -76,10 +74,6 @@ class SixNodeBlock  // public static ArrayList<Integer> repertoriedItemStackId =
         return Math.min(direct, 9 - direct)
     }
 
-    override fun registerBlockIcons(r: IIconRegister) {
-        super.registerBlockIcons(r)
-        blockIcon = r.registerIcon("eln:air")
-    }
 
     override fun getCollisionBoundingBoxFromPool(par1World: World, par2: Int, par3: Int, par4: Int): AxisAlignedBB? {
         return if (nodeHasCache(par1World, par2, par3, par4) || hasVolume(par1World, par2, par3, par4)) super.getCollisionBoundingBoxFromPool(par1World, par2, par3, par4) else null
@@ -149,21 +143,6 @@ class SixNodeBlock  // public static ArrayList<Integer> repertoriedItemStackId =
         return 0
     }
 
-    @SideOnly(Side.CLIENT)
-    override fun getIcon(w: IBlockAccess, x: Int, y: Int, z: Int, side: Int): IIcon {
-        val e = w.getTileEntity(x, y, z) ?: return blockIcon
-        val sne = e as SixNodeEntity
-        val b = sne.sixNodeCacheBlock
-        return if (b === Blocks.AIR) blockIcon else try {
-            b.getIcon(side, sne.sixNodeCacheBlockMeta.toInt())
-        } catch (e2: Exception) {
-            blockIcon
-        }
-        // return b.getIcon(w, x, y, z, side);
-
-        // return Blocks.SAND.getIcon(p_149673_1_, p_149673_2_, p_149673_3_, p_149673_4_, p_149673_5_);
-        // return Blocks.STONE.getIcon(w, x, y, z, side);
-    }
 
     override fun isReplaceable(world: IBlockAccess, x: Int, y: Int, z: Int): Boolean {
         return false

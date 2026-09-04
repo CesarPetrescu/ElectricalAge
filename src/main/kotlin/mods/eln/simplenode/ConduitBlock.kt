@@ -7,14 +7,11 @@ import mods.eln.node.simple.SimpleNodeBlock
 import mods.eln.node.simple.SimpleNodeEntity
 import mods.eln.sim.ElectricalLoad
 import net.minecraft.block.material.Material
-import net.minecraft.client.renderer.texture.IIconRegister
 import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.IIcon
 import net.minecraft.world.IBlockAccess
 import net.minecraft.world.World
 
 class ConduitBlock(): SimpleNodeBlock(Material.rock) {
-    var icon: IIcon? = null
 
     override fun createNewTileEntity(worldIn: World?, meta: Int): TileEntity {
         return ConduitEntity()
@@ -24,9 +21,6 @@ class ConduitBlock(): SimpleNodeBlock(Material.rock) {
         return ConduitNode()
     }
 
-    override fun registerBlockIcons(reg: IIconRegister?) {
-        icon = reg!!.registerIcon("eln:conduit")
-    }
 
     override fun isBlockSolid(worldIn: IBlockAccess?, x: Int, y: Int, z: Int, side: Int): Boolean {
         return true

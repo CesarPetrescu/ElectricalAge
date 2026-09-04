@@ -1,21 +1,18 @@
 package mods.eln.generic;
 
 import net.minecraftforge.fml.common.registry.GameRegistry;
-import net.minecraftforge.fml.common.registry.LanguageRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import mods.eln.Eln;
 import mods.eln.misc.RealisticEnum;
 import mods.eln.misc.UtilsClient;
 import net.minecraft.block.Block;
-import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.IIcon;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
@@ -45,7 +42,6 @@ public class GenericItemUsingDamage<Descriptor extends GenericItemUsingDamageDes
     public void addWithoutRegistry(int damage, Descriptor descriptor) {
         subItemList.put(damage, descriptor);
         ItemStack stack = new ItemStack(this, 1, damage);
-        LanguageRegistry.addName(stack, descriptor.name);
         descriptor.setParent(this, damage);
         applyDefaultTab(damage, descriptor);
     }
@@ -54,7 +50,6 @@ public class GenericItemUsingDamage<Descriptor extends GenericItemUsingDamageDes
     public void addElement(int damage, Descriptor descriptor) {
         subItemList.put(damage, descriptor);
         ItemStack stack = new ItemStack(this, 1, damage);
-        LanguageRegistry.addName(stack, descriptor.name);
         orderList.add(damage);
         descriptor.setParent(this, damage);
         applyDefaultTab(damage, descriptor);
@@ -129,21 +124,7 @@ public class GenericItemUsingDamage<Descriptor extends GenericItemUsingDamageDes
 	}
 	*/
 
-    public IIcon getIconFromDamage(int damage) {
-        GenericItemUsingDamageDescriptor desc = getDescriptor(damage);
-        if (desc != null) {
-            return getDescriptor(damage).getIcon();
-        }
-        return null;
-    }
 
-    @Override
-    @SideOnly(value = Side.CLIENT)
-    public void registerIcons(IIconRegister iconRegister) {
-        for (GenericItemUsingDamageDescriptor descriptor : subItemList.values()) {
-            descriptor.updateIcons(iconRegister);
-        }
-    }
 
     @Override
     @SideOnly(Side.CLIENT)

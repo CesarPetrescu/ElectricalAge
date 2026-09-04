@@ -8,7 +8,6 @@ import net.minecraft.block.material.Material
 import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
-import net.minecraft.util.IIcon
 import net.minecraft.world.World
 
 class OreBlock : Block(Material.rock) {
@@ -33,11 +32,6 @@ class OreBlock : Block(Material.rock) {
         Eln.oreItem.getSubItems(i, tab, l as MutableList<ItemStack?>?)
     }
 
-    @SideOnly(Side.CLIENT)
-    override fun getIcon(par1: Int, par2: Int): IIcon? {
-        val desc = Eln.oreItem.getDescriptor(par2) ?: return null
-        return desc.getBlockIconId(par1, par2)
-    }
 
     fun getBlockDropped(
         @Suppress("UNUSED_PARAMETER") w: World?,

@@ -7,7 +7,6 @@ import mods.eln.wiki.Data
 import net.minecraft.init.Blocks
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
-import net.minecraft.util.IIcon
 import net.minecraft.world.World
 import net.minecraft.world.WorldType
 import net.minecraft.world.chunk.IChunkProvider
@@ -19,9 +18,6 @@ class OreDescriptor(
     var spawnRate: Int, var spawnSizeMin: Int, var spawnSizeMax: Int, var spawnHeightMin: Int, var spawnHeightMax: Int
 ) : GenericItemBlockUsingDamageDescriptor(name), IWorldGenerator {
 
-    fun getBlockIconId(@Suppress("UNUSED_PARAMETER") side: Int, @Suppress("UNUSED_PARAMETER") damage: Int): IIcon {
-        return icon
-    }
 
     override fun setParent(item: Item, damage: Int) {
         super.setParent(item, damage)

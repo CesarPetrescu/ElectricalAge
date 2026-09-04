@@ -8,14 +8,12 @@ import mods.eln.misc.RealisticEnum;
 import mods.eln.misc.Utils;
 import mods.eln.misc.UtilsClient;
 import net.minecraft.block.Block;
-import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.IIcon;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
@@ -117,12 +115,6 @@ public class GenericItemBlockUsingDamage<Descriptor extends GenericItemBlockUsin
         }
     }
 
-    @Override
-    public IIcon getIconFromDamage(int damage) {
-        Descriptor desc = getDescriptor(damage);
-        if (desc == null) return null;
-        return desc.getIcon();
-    }
 
     @Override
     public int getItemStackLimit(ItemStack stack) {
@@ -131,13 +123,6 @@ public class GenericItemBlockUsingDamage<Descriptor extends GenericItemBlockUsin
         return desc.getItemStackLimit(stack);
     }
 
-    @Override
-    @SideOnly(value = Side.CLIENT)
-    public void registerIcons(IIconRegister iconRegister) {
-        for (GenericItemBlockUsingDamageDescriptor descriptor : subItemList.values()) {
-            descriptor.updateIcons(iconRegister);
-        }
-    }
 
     @SideOnly(Side.CLIENT)
     @Override

@@ -16,19 +16,16 @@ import mods.eln.sim.nbt.NbtElectricalGateInputOutput
 import mods.eln.sim.nbt.NbtElectricalGateOutputProcess
 import net.minecraft.block.material.Material
 import net.minecraft.client.gui.GuiScreen
-import net.minecraft.client.renderer.texture.IIconRegister
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.entity.player.EntityPlayerMP
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.IIcon
 import net.minecraft.world.World
 import java.io.DataInputStream
 import java.io.DataOutputStream
 
 
 class DeviceProbeBlock: SimpleNodeBlock(Material.ice) {
-    var icon: IIcon? = null
 
     override fun createNewTileEntity(world: World?, metadata: Int): TileEntity {
         return DeviceProbeEntity()
@@ -38,9 +35,6 @@ class DeviceProbeBlock: SimpleNodeBlock(Material.ice) {
         return DeviceProbeNode()
     }
 
-    override fun registerBlockIcons(register: IIconRegister?) {
-        icon = register!!.registerIcon("eln:deviceprobe")
-    }
 }
 
 class DeviceProbeNode: SimpleNode() {

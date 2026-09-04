@@ -7,12 +7,9 @@ import mods.eln.i18n.I18N.TR_NAME
 import mods.eln.i18n.I18N.Type
 import net.minecraft.block.Block
 import net.minecraft.block.material.Material
-import net.minecraft.client.renderer.texture.IIconRegister
-import net.minecraft.util.IIcon
 import net.minecraft.item.ItemBlock
 
 class ArcClayBlock : Block(Material.rock) {
-    private var icon: IIcon? = null
 
     init {
         setTranslationKey(TR_NAME(Type.TILE, "arc_clay_block"))
@@ -20,15 +17,7 @@ class ArcClayBlock : Block(Material.rock) {
         setCreativeTab(Eln.creativeTabOresMaterials)
     }
 
-    @SideOnly(Side.CLIENT)
-    override fun registerBlockIcons(iconRegister: IIconRegister) {
-        icon = iconRegister.registerIcon("eln:$name")
-    }
 
-    @SideOnly(Side.CLIENT)
-    override fun getIcon(side: Int, damage: Int): IIcon {
-        return icon!!
-    }
 
     companion object {
         private const val name = "arc_clay_block"
@@ -36,7 +25,6 @@ class ArcClayBlock : Block(Material.rock) {
 }
 
 class ArcMetalBlock : Block(Material.rock) {
-    private var icon: IIcon? = null
 
     init {
         setTranslationKey(TR_NAME(Type.TILE, "arc_metal_block"))
@@ -44,15 +32,7 @@ class ArcMetalBlock : Block(Material.rock) {
         setCreativeTab(Eln.creativeTabOresMaterials)
     }
 
-    @SideOnly(Side.CLIENT)
-    override fun registerBlockIcons(iconRegister: IIconRegister) {
-        icon = iconRegister.registerIcon("eln:$name")
-    }
 
-    @SideOnly(Side.CLIENT)
-    override fun getIcon(side: Int, damage: Int): IIcon {
-        return icon!!
-    }
 
     companion object {
         private const val name = "arc_metal_block"

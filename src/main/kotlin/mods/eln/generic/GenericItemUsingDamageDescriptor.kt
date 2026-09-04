@@ -6,7 +6,6 @@ import mods.eln.misc.RealisticEnum
 import mods.eln.misc.UtilsClient
 import mods.eln.misc.VoltageLevelColor
 import net.minecraft.block.Block
-import net.minecraft.client.renderer.texture.IIconRegister
 import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityLivingBase
@@ -14,7 +13,6 @@ import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.IIcon
 import net.minecraft.util.ResourceLocation
 import net.minecraft.world.World
 import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
@@ -30,7 +28,6 @@ open class GenericItemUsingDamageDescriptor {
     }
 
     var IconName: String? = null
-    open var icon: IIcon? = null
     @JvmField
     var name: String
     @JvmField
@@ -57,11 +54,6 @@ open class GenericItemUsingDamageDescriptor {
 
     fun getSubItems(list: MutableList<ItemStack>) = list.add(newItemStack(1))
 
-
-    @SideOnly(value = Side.CLIENT)
-    fun updateIcons(iconRegister: IIconRegister) {
-        icon = iconRegister.registerIcon(IconName)
-    }
 
     open fun getName(stack: ItemStack): String? {
         return name
@@ -112,11 +104,11 @@ open class GenericItemUsingDamageDescriptor {
     }
 
     open fun renderItem(type: ItemRenderType?, item: ItemStack?, vararg data: Any?) {
-        if (icon == null) return
+        // 1.12.2 has no IIcon/texture atlas for items; the sprite is addressed by path.
+        // IconName is already "eln:<name>", the same string the old atlas was keyed by.
+        val iconName = IconName ?: return
         voltageLevelColor.drawIconBackground(type!!)
-        // remove "eln:" to add the full path replace("eln:", "textures/blocks/") + ".png";
-        val icon = icon!!.iconName.substring(4)
-        UtilsClient.drawIcon(type, ResourceLocation("eln", "textures/items/$icon.png"))
+        UtilsClient.drawIcon(type, ResourceLocation("eln", "textures/items/${iconName.removePrefix("eln:")}.png"))
     }
 
     open fun onUpdate(stack: ItemStack, world: World, entity: Entity, par4: Int, par5: Boolean) {}
