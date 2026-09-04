@@ -90,12 +90,17 @@ It moves in steps as base classes land and their subclasses inherit new signatur
      651  second mechanical pass (BlockPos-folded types)
      590  ghost and light blocks on blockstates
      526  rotation helpers, /eln console
+     394  electrical tools, replicator, node publishes, scanner
+     272  fuel generator, Forge Energy converter, looped sounds, Falstad/thermal/climate
+      96  Waila, descriptors, railroad, recipes, fluids, ores, advancements, I18N
+       0  Kotlin compiles (tail of single-site renames)
 
-Kotlin files fully clean: 314 of 425.
+Kotlin files fully clean: 425 of 425.
 
-Note that Java has not been compiled yet - in a mixed module Kotlin compiles
-first, so the 446 Java files carry an unmeasured error surface behind this
-number.
+Java is measured with `./gradlew compileJava --continue` and counting `error:`
+lines (`-Xmaxerrs 10000` is set so javac reports all of them):
+
+     199  baseline, first javac run against the compiled Kotlin
 
 ## Tooling
 
@@ -118,4 +123,6 @@ number.
 - Do not touch `sim/`, `solver/`, `sim/mna/` semantics. They are MC-independent and already tested;
   any behaviour change there is a regression, not a port.
 - Do not "improve" code while porting. Port, compile, move on. Cleanups go in separate commits after the phase.
+  The exception is an API boundary that the new API makes stricter (a capability looked up on the
+  wrong face, a fluid compared by a removed integer id): fix it, say so in the commit message.
 - A test you had to edit is a behaviour change you must be able to explain.
