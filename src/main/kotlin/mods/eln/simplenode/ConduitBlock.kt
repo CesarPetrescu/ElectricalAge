@@ -8,6 +8,9 @@ import mods.eln.node.simple.SimpleNodeEntity
 import mods.eln.sim.ElectricalLoad
 import net.minecraft.block.material.Material
 import net.minecraft.tileentity.TileEntity
+import net.minecraft.block.state.IBlockState
+import net.minecraft.util.EnumFacing
+import net.minecraft.util.math.BlockPos
 import net.minecraft.world.IBlockAccess
 import net.minecraft.world.World
 
@@ -22,7 +25,7 @@ class ConduitBlock(): SimpleNodeBlock(Material.ROCK) {
     }
 
 
-    override fun isBlockSolid(worldIn: IBlockAccess?, x: Int, y: Int, z: Int, side: Int): Boolean {
+    override fun isSideSolid(state: IBlockState, world: IBlockAccess, pos: BlockPos, side: EnumFacing): Boolean {
         return true
     }
 }

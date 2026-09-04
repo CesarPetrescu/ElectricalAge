@@ -48,11 +48,9 @@ open class SixNodeDescriptor : GenericItemBlockUsingDamageDescriptor, IItemRende
     }
 
     override fun renderItem(type: ItemRenderType, item: ItemStack, vararg data: Any) {
-        if (icon == null) return
+        // 1.12.2 has no IIcon; the block sprite is addressed by its path under textures/blocks.
+        val icon = iconName ?: return
         voltageLevelColor.drawIconBackground(type)
-
-        // remove "eln:" to add the full path replace("eln:", "textures/blocks/") + ".png";
-        val icon = icon.iconName.substring(4)
         drawIcon(type, ResourceLocation("eln", "textures/blocks/$icon.png"))
     }
 

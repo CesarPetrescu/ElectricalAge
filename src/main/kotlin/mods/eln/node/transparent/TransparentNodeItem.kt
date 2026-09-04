@@ -15,17 +15,24 @@ import net.minecraft.world.World
 import mods.eln.client.itemrender.IItemRenderer
 import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
 import mods.eln.client.itemrender.IItemRenderer.ItemRendererHelper
+import net.minecraft.block.state.IBlockState
+import net.minecraft.util.EnumFacing
+import net.minecraft.util.math.BlockPos
 import org.lwjgl.opengl.GL11
 import mods.eln.misc.setBlock
 
 class TransparentNodeItem(b: Block?) : GenericItemBlockUsingDamage<TransparentNodeDescriptor?>(b), IItemRenderer {
-    override fun placeBlockAt(stack: ItemStack, player: EntityPlayer, world: World, x: Int, y: Int, z: Int, side: Int, hitX: Float, hitY: Float, hitZ: Float, metadata: Int): Boolean {
-        var x = x
-        var y = y
-        var z = z
+    override fun placeBlockAt(
+        stack: ItemStack, player: EntityPlayer, world: World, pos: BlockPos,
+        side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float, newState: IBlockState
+    ): Boolean {
+        var x = pos.x
+        var y = pos.y
+        var z = pos.z
+        val metadata = this.block.getMetaFromState(newState)
         if (world.isRemote) return false
         val descriptor = getDescriptor(stack)
-        val direction = fromIntMinecraftSide(side)!!.inverse
+        val direction = fromIntMinecraftSide(side.index)!!.inverse
         val front = descriptor!!.getFrontFromPlace(direction, player)
         val v = intArrayOf(descriptor.spawnDeltaX, descriptor.spawnDeltaY, descriptor.spawnDeltaZ)
         front!!.rotateFromXN(v)
@@ -43,7 +50,7 @@ class TransparentNodeItem(b: Block?) : GenericItemBlockUsingDamage<TransparentNo
         val node = TransparentNode()
         node.onBlockPlacedBy(coord, front, player, stack)
         world.setBlock(x, y, z, Block.getBlockFromItem(this), node.blockMetadata, 0x03) //caca1.5.1
-        (Block.getBlockFromItem(this) as NodeBlock).onBlockPlacedBy(world, x, y, z, direction, player, metadata)
+        (Block.getBlockFromItem(this) as NodeBlock).onBlockPlacedBy(world, BlockPos(x, y, z), direction, player, metadata)
         node.checkCanStay(true)
         return true
     }

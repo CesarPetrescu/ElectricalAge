@@ -192,7 +192,7 @@ abstract class TransparentNodeElementRender(var tileEntity: TransparentNodeEntit
         )
         for (box in collisionBoxes) {
             if (box != null) {
-                merged = merged.func_111270_a(box)
+                merged = merged.union(box)
             }
         }
 
@@ -210,7 +210,7 @@ abstract class TransparentNodeElementRender(var tileEntity: TransparentNodeEntit
                     (y + 1).toDouble(),
                     (z + 1).toDouble()
                 )
-                merged = merged.func_111270_a(blockBox)
+                merged = merged.union(blockBox)
             }
         }
 

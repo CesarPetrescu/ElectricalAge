@@ -112,11 +112,11 @@ class TurbineBladeDescriptor(
 
     fun setCondition(stack: ItemStack, condition: Double) {
         if (stack.tagCompound == null) stack.tagCompound = NBTTagCompound()
-        stack.tagCompound.setDouble("condition", condition.coerceIn(0.0, 1.0))
+        stack.tagCompound!!.setDouble("condition", condition.coerceIn(0.0, 1.0))
     }
 
     private fun getConditionLabel(stack: ItemStack): String {
-        if (!stack.hasTagCompound() || !stack.tagCompound.hasKey("condition")) return tr("New")
+        if (!stack.hasTagCompound() || !stack.tagCompound!!.hasKey("condition")) return tr("New")
         val c = getCondition(stack)
         return when {
             c >= 1.0  -> tr("New")

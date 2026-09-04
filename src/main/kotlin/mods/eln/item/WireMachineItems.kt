@@ -55,7 +55,7 @@ class WoundWireBundleDescriptor(name: String) : GenericItemUsingDamageDescriptor
 
     fun setLengthMeters(stack: ItemStack, meters: Double) {
         if (stack.tagCompound == null) stack.tagCompound = NBTTagCompound()
-        stack.tagCompound.setDouble(NBT_LENGTH, meters.coerceAtLeast(0.0))
+        stack.tagCompound!!.setDouble(NBT_LENGTH, meters.coerceAtLeast(0.0))
     }
 
     override fun addInformation(itemStack: ItemStack?, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {

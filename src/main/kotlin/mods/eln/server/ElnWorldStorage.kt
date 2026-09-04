@@ -28,9 +28,9 @@ class ElnWorldStorage(str: String?) : WorldSavedData(str) {
             // Retrieves the MyWorldData instance for the given world, creating it if necessary
             val storage = world.perWorldStorage
             val dim = world.provider.dimension
-            var result = storage.loadData(ElnWorldStorage::class.java, key + dim) as ElnWorldStorage?
+            var result = storage.getOrLoadData(ElnWorldStorage::class.java, key + dim) as ElnWorldStorage?
             if (result == null) {
-                result = storage.loadData(ElnWorldStorage::class.java, key + dim + "back") as ElnWorldStorage?
+                result = storage.getOrLoadData(ElnWorldStorage::class.java, key + dim + "back") as ElnWorldStorage?
             }
             if (result == null) {
                 result = ElnWorldStorage(key + dim)

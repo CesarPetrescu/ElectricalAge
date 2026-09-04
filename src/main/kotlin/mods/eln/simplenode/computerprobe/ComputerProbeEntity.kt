@@ -12,9 +12,10 @@ import li.cil.oc.api.network.Visibility
 import mods.eln.Other
 import mods.eln.node.simple.SimpleNodeEntity
 import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.util.ITickable
 
 @Optional.Interface(iface = "li.cil.oc.api.network.Environment", modid = Other.modIdOc)
-class ComputerProbeEntity : SimpleNodeEntity(ComputerProbeNode.getNodeUuidStatic()), Environment {
+class ComputerProbeEntity : SimpleNodeEntity(ComputerProbeNode.getNodeUuidStatic()), ITickable, Environment {
     private var ocNode: Node? = null
     private var addedToNetwork = false
 
@@ -30,8 +31,8 @@ class ComputerProbeEntity : SimpleNodeEntity(ComputerProbeNode.getNodeUuidStatic
         return ensureOpenComputersNode()?.address()
     }
 
-    override fun updateEntity() {
-        super.updateEntity()
+    // 1.12.2: only ITickable tile entities tick; there is no TileEntity.updateEntity() to chain to.
+    override fun update() {
         if (world.isRemote || !Other.ocLoaded) return
         val node = ensureOpenComputersNode() ?: return
         if (!addedToNetwork || node.network() == null) {
@@ -78,13 +79,14 @@ class ComputerProbeEntity : SimpleNodeEntity(ComputerProbeNode.getNodeUuidStatic
         }
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound) {
+    override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(nbt)
         if (Other.ocLoaded) {
             val nodeNbt = NBTTagCompound()
             ocNode?.save(nodeNbt)
             nbt.setTag("oc:node", nodeNbt)
         }
+        return nbt
     }
 
     private fun callProbe(action: (ComputerProbeNode) -> Array<Any?>?): Array<Any?>? {

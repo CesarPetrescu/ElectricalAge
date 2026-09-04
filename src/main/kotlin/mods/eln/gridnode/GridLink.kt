@@ -136,7 +136,7 @@ class GridLink : INBTTReady {
         `as` = Direction.readFromNBT(nbt, str + "as")!!
         bs = Direction.readFromNBT(nbt, str + "bs")!!
         rs = nbt.getDouble(str + "rs")
-        cable = ItemStack.loadItemStackFromNBT(nbt)
+        cable = ItemStack(nbt)
     }
 
     override fun writeToNBT(nbt: NBTTagCompound, str: String) {

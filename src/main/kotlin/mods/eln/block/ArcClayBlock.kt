@@ -13,30 +13,19 @@ class ArcClayBlock : Block(Material.ROCK) {
 
     init {
         setTranslationKey(TR_NAME(Type.TILE, "arc_clay_block"))
-        setBlockTextureName("eln:$name")
+        // 1.12.2: the texture comes from assets/eln/blockstates/<registry name>.json, not the block.
         setCreativeTab(Eln.creativeTabOresMaterials)
     }
 
-
-
-    companion object {
-        private const val name = "arc_clay_block"
-    }
 }
 
 class ArcMetalBlock : Block(Material.ROCK) {
 
     init {
         setTranslationKey(TR_NAME(Type.TILE, "arc_metal_block"))
-        setBlockTextureName("eln:$name")
         setCreativeTab(Eln.creativeTabOresMaterials)
     }
 
-
-
-    companion object {
-        private const val name = "arc_metal_block"
-    }
 }
 
 class ArcMetalItemBlock(block: Block?) : ItemBlock(block)

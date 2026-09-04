@@ -79,7 +79,7 @@ class LampSocketRender(tileEntity: SixNodeEntity, side: Direction, sixNodeDescri
     private var weatherAngleZ = 0.0
 
     private var entityTimeout = 0.0
-    private var entityList: MutableList<Any?> = arrayListOf()
+    private var entityList: List<Entity> = arrayListOf()
 
     override fun publishUnserialize(stream: DataInputStream) {
         super.publishUnserialize(stream)
@@ -150,7 +150,7 @@ class LampSocketRender(tileEntity: SixNodeEntity, side: Direction, sixNodeDescri
                 perturbVz += (e.motionX * eFactor * deltaT)
             }
 
-            if (tileEntity.getWorld().getSavedLightValue(EnumSkyBlock.Sky, tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord) > 3) {
+            if (tileEntity.getWorld().getLightFor(EnumSkyBlock.SKY, tileEntity.pos) > 3) {
                 val weather = (UtilsClient.getWeather(tileEntity.getWorld()) * 0.9) + 0.1
 
                 // TODO: Reduce swinging of lamps to some degree?

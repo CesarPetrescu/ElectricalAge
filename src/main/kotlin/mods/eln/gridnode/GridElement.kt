@@ -173,7 +173,7 @@ abstract class GridElement(transparentNode: TransparentNode, descriptor: Transpa
         var i: Int? = 0
         while (true) {
             val linkTag = gridLinks.getCompoundTag(i!!.toString())
-            if (linkTag.hasNoTags())
+            if (linkTag.isEmpty())
                 break
             gridLinksBooting.add(GridLink(linkTag, ""))
             i++

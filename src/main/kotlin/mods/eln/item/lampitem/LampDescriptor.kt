@@ -30,13 +30,13 @@ class LampDescriptor(name: String, iconName: String, val lampData: SpecificLampD
     fun getLifeInTag(stack: ItemStack): Double {
         if (!stack.hasTagCompound()) stack.tagCompound = getDefaultNBT()
 
-        return if (stack.tagCompound.hasKey("life")) stack.tagCompound.getDouble("life")
+        return if (stack.tagCompound!!.hasKey("life")) stack.tagCompound!!.getDouble("life")
         else 24.0 // default 24 hours
     }
 
     fun setLifeInTag(stack: ItemStack, life: Double) {
         if (!stack.hasTagCompound()) stack.tagCompound = getDefaultNBT()
-        stack.tagCompound.setDouble("life", life)
+        stack.tagCompound!!.setDouble("life", life)
     }
 
     override fun getDefaultNBT(): NBTTagCompound {
@@ -109,7 +109,7 @@ class LampDescriptor(name: String, iconName: String, val lampData: SpecificLampD
     }
 
     private fun getLampCondition(itemStack: ItemStack): String {
-        return if (!itemStack.hasTagCompound() || !itemStack.tagCompound.hasKey("life")) {
+        return if (!itemStack.hasTagCompound() || !itemStack.tagCompound!!.hasKey("life")) {
             I18N.tr("New")
         } else {
             val lampLife = getLifeInTag(itemStack)

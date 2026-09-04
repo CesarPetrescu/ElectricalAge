@@ -2,7 +2,7 @@ package mods.eln.misc
 
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
-import net.minecraft.network.play.server.S2FPacketSetSlot
+import net.minecraft.network.play.server.SPacketSetSlot
 import net.minecraft.entity.player.EntityPlayerMP
 
 /**
@@ -27,8 +27,8 @@ fun EntityPlayer.removeMultipleItems(stack: ItemStack, count: Int) {
                 left -= invStack.splitStack(invStack.count.coerceAtMost(left)).count
                 assert(invStack.count >= 0)
                 // Black magic used to synchronize immediately with the client.
-                val slot = openContainer.getSlotFromInventory(inventory, i)
-                playerNetServerHandler.sendPacket(S2FPacketSetSlot(openContainer.windowId, slot.slotNumber, invStack))
+                val slot = openContainer.getSlotFromInventory(inventory, i) ?: return@forEach
+                connection.sendPacket(SPacketSetSlot(openContainer.windowId, slot.slotNumber, invStack))
                 if (left == 0) return
             }
         }

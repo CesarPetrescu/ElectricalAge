@@ -665,7 +665,7 @@ class SummingUnitElement(node: SixNode, side: Direction, sixNodeDescriptor: SixN
             if(compound.hasKey("gains")) {
                 val list = compound.getTagList("gains", 6)
                 for(idx in 0 until Math.min(list.tagCount(), 3)) {
-                    gains[idx] = list.func_150309_d(idx)
+                    gains[idx] = list.getDoubleAt(idx)
                 }
             }
         }

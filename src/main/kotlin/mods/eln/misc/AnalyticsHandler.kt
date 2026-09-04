@@ -69,7 +69,7 @@ object AnalyticsHandler {
                     Eln.config.getStringOrElse("analytics.endpointUrl", "http://eln.ja13.org/stat"),
                     version,
                     lang,
-                    Minecraft.getMinecraft().session.func_148256_e().id.toString(),
+                    Minecraft.getMinecraft().session.profile.id.toString(),
                     Minecraft.getMinecraft().session.playerID
                 )
             } else {

@@ -69,9 +69,7 @@ class PortableNaNDescriptor(name: String, renderIn: CableRenderDescriptor): Gene
     }
 
     override fun renderItem(type: IItemRenderer.ItemRenderType, item: ItemStack, vararg data: Any) {
-        if (icon == null)
-            return
-        val icon = icon.iconName.substring(4)
+        val icon = iconName ?: return
         UtilsClient.drawIcon(type, ResourceLocation("eln", "textures/blocks/$icon.png"))
     }
 }

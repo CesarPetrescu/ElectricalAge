@@ -54,7 +54,7 @@ class RecipesList {
             for (recipesList in listOfList) {
                 list.addAll(recipesList.getRecipeFromOutput(output))
             }
-            val furnaceRecipes = FurnaceRecipes.smelting()
+            val furnaceRecipes = FurnaceRecipes.instance()
             run {
                 val it: Iterator<*> = furnaceRecipes.smeltingList.entries.iterator()
                 while (it.hasNext()) {
@@ -85,10 +85,10 @@ class RecipesList {
                 val r = recipesList.getRecipe(input)
                 if (r != null) list.add(r)
             }
-            val furnaceRecipes = FurnaceRecipes.smelting()
+            val furnaceRecipes = FurnaceRecipes.instance()
             val smeltResult = furnaceRecipes.getSmeltingResult(input)
             var smeltRecipe: Recipe
-            if (smeltResult != null) {
+            if (!smeltResult.isEmpty) {
                 try {
                     val input1 = input.copy()
                     input1.count = 1

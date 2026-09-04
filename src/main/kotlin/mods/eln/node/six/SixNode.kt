@@ -449,7 +449,7 @@ class SixNode : Node() {
                 if (!isCreative((entityPlayer as EntityPlayerMP))) entityPlayer.inventory.decrStackSize(entityPlayer.inventory.currentItem, 1)
 
                 run {
-                    val chunk = coordinate.world().getChunkFromBlockCoords(coordinate.x, coordinate.z)
+                    val chunk = coordinate.world().getChunk(coordinate.x shr 4, coordinate.z shr 4)
                     generateHeightMap(chunk)
                     updateSkylight(chunk)
                     chunk.generateSkylightMap()

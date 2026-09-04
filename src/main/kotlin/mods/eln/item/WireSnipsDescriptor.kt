@@ -94,7 +94,7 @@ class WireSnipsContainer(private val player: EntityPlayer) : Container() {
         player.inventory.markDirty()
 
         if (!player.inventory.addItemStackToInventory(cutStack)) {
-            player.dropPlayerItemWithRandomChoice(cutStack, false)
+            player.dropItem(cutStack, false)
         }
         if (descriptor.getRemainingLengthMeters(stack) <= 0.0) {
             inputInventory.setInventorySlotContents(WIRE_SNIPS_INPUT_SLOT_INDEX, ItemStack.EMPTY)
@@ -142,7 +142,7 @@ class WireSnipsContainer(private val player: EntityPlayer) : Container() {
         val stack = inputInventory.getStackInSlot(WIRE_SNIPS_INPUT_SLOT_INDEX) ?: return
         inputInventory.setInventorySlotContents(WIRE_SNIPS_INPUT_SLOT_INDEX, ItemStack.EMPTY)
         if (!player.inventory.addItemStackToInventory(stack)) {
-            player.dropPlayerItemWithRandomChoice(stack, false)
+            player.dropItem(stack, false)
         }
     }
 

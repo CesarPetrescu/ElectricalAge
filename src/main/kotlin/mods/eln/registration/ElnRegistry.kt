@@ -5,9 +5,11 @@ import net.minecraft.block.Block
 import net.minecraft.item.Item
 import net.minecraft.item.ItemBlock
 import net.minecraft.item.ItemStack
+import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.ResourceLocation
 import net.minecraftforge.event.RegistryEvent
 import net.minecraftforge.fml.common.Mod
+import net.minecraftforge.fml.common.registry.GameRegistry
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import java.util.Locale
 
@@ -64,6 +66,15 @@ object ElnRegistry {
         itemBlock.registryName = block.registryName
         pendingItems.add(itemBlock)
         return block
+    }
+
+    /**
+     * Replaces TileEntity.addMapping: tile entity ids are ResourceLocations on 1.12 and the
+     * registry is the same one GameRegistry.registerTileEntity feeds. Safe to call in preInit.
+     */
+    @JvmStatic
+    fun registerTileEntity(tileEntityClass: Class<out TileEntity>, name: String) {
+        GameRegistry.registerTileEntity(tileEntityClass, registryName(name))
     }
 
     /** Registers an item that was constructed and named elsewhere (fluid buckets, ore items). */

@@ -3,8 +3,10 @@ package mods.eln.config
 import mods.eln.Eln
 import mods.eln.item.electricalitem.OreScannerConfigElement
 import mods.eln.misc.Utils
-import net.minecraftforge.fml.common.registry.GameRegistry
+import net.minecraftforge.fml.common.registry.ForgeRegistries
 import net.minecraft.block.Block
+import net.minecraft.init.Blocks
+import net.minecraft.util.ResourceLocation
 import net.minecraftforge.oredict.OreDictionary
 
 /**
@@ -82,8 +84,8 @@ object OreScannerConfigLoader {
         val name = parts[1]
         val meta = if (parts.size >= 3) parts[2].toIntOrNull() ?: 0 else 0
 
-        val block = GameRegistry.findBlock(modid, name)
-        if (block == null) {
+        val block = ForgeRegistries.BLOCKS.getValue(ResourceLocation(modid, name))
+        if (block == null || block === Blocks.AIR) {
             return
         }
 

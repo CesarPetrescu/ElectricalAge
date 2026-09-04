@@ -128,7 +128,7 @@ class ElectricalFuseHolderElement(sixNode: SixNode, side: Direction, descriptor:
 
         val fuseCompound = nbt.getTag("fuse") as? NBTTagCompound
         if (fuseCompound != null) {
-            val fuseStack = ItemStack.loadItemStackFromNBT(fuseCompound)
+            val fuseStack = ItemStack(fuseCompound)
             if (fuseStack != null) {
                 installedFuse = GenericItemUsingDamageDescriptor.getDescriptor(fuseStack) as? ElectricalFuseDescriptor
             }

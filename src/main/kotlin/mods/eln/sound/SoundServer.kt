@@ -17,7 +17,7 @@ object SoundServer {
             stream.writeByte(p.world!!.provider.dimension)
             p.writeTo(stream)
             val server = FMLCommonHandler.instance().minecraftServerInstance
-            for (obj in server.playerList.playerEntityList) {
+            for (obj in server.playerList.players) {
                 val player = obj as EntityPlayerMP
                 if (player.dimension == p.world!!.provider.dimension && player.getDistance(
                         p.x,

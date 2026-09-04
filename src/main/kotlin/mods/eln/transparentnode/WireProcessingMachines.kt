@@ -39,6 +39,7 @@ import net.minecraft.inventory.Container
 import net.minecraft.inventory.IInventory
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.util.EnumParticleTypes
 import net.minecraftforge.oredict.OreDictionary
 import org.lwjgl.opengl.GL11
 import java.io.DataInputStream
@@ -720,7 +721,7 @@ class WireMachineRender(entity: TransparentNodeEntity, descriptor: TransparentNo
         val dx = (world.rand.nextDouble() - 0.5) * 0.18
         val dz = (world.rand.nextDouble() - 0.5) * 0.18
         val dy = world.rand.nextDouble() * 0.05
-        world.spawnParticle("smoke", baseX + dx, baseY + dy, baseZ + dz, 0.0, 0.015, 0.0)
+        world.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, baseX + dx, baseY + dy, baseZ + dz, 0.0, 0.015, 0.0)
     }
 }
 

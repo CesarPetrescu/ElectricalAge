@@ -7,6 +7,9 @@ import mods.eln.misc.Utils.println
 import mods.eln.misc.Utils.traceRay
 import net.minecraft.client.Minecraft
 import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.util.ResourceLocation
+import net.minecraft.util.SoundCategory
+import net.minecraft.util.SoundEvent
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -46,7 +49,8 @@ object SoundClient {
                 player.posX + 2 * (p.x - player.posX) / distance,
                 player.posY + 2 * (p.y - player.posY) / distance,
                 player.posZ + 2 * (p.z - player.posZ) / distance,
-                p.track,
+                soundEvent(p.track!!),
+                SoundCategory.BLOCKS,
                 p.volume,
                 p.pitch,
                 false
@@ -62,7 +66,8 @@ object SoundClient {
                     player.posX + 2 * (p.x - player.posX) / distance,
                     player.posY + 2 * (p.y - player.posY) / distance,
                     player.posZ + 2 * (p.z - player.posZ) / distance,
-                    p.track + "_" + idx + "x",
+                    soundEvent(p.track + "_" + idx + "x"),
+                    SoundCategory.BLOCKS,
                     bandVolume,
                     p.pitch,
                     false
@@ -72,4 +77,12 @@ object SoundClient {
 
         ClientProxy.soundClientEventListener.currentUuid = null
     }
+
+    /**
+     * 1.12.2 plays SoundEvents, not sound names. This is a purely client-side play (the server
+     * already told us which track), so the client sound handler only needs the sounds.json key;
+     * a registered event is not required for this path.
+     */
+    private fun soundEvent(track: String): SoundEvent =
+        SoundEvent.REGISTRY.getObject(ResourceLocation(track)) ?: SoundEvent(ResourceLocation(track))
 }

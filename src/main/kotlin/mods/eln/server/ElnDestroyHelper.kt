@@ -10,6 +10,7 @@ import mods.eln.node.six.SixNode
 import mods.eln.node.transparent.TransparentNode
 import net.minecraft.entity.player.EntityPlayerMP
 import net.minecraft.inventory.IInventory
+import net.minecraft.item.ItemStack
 import net.minecraft.world.World
 import mods.eln.misc.getBlock
 import mods.eln.misc.setBlockToAir

@@ -339,7 +339,7 @@ class ComputerProbeNode : SimpleNode(), IPeripheral {
     }
 
     @Optional.Method(modid = Other.modIdCc)
-    override fun equals(other: IPeripheral): Boolean {
+    override fun equals(other: IPeripheral?): Boolean {
         return this === other
     }
 

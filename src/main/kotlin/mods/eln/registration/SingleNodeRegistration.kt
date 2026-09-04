@@ -33,7 +33,7 @@ object SingleNodeRegistration {
     private fun registerConduitSingles() {
         run {
             val entityName = I18N.TR_NAME(I18N.Type.TILE, "eln.Conduit")
-            TileEntity.addMapping(ConduitEntity::class.java, entityName)
+            ElnRegistry.registerTileEntity(ConduitEntity::class.java, entityName)
             registerUuid(getNodeUuidStatic(), ConduitNode::class.java)
 
 
@@ -47,7 +47,7 @@ object SingleNodeRegistration {
         if (Eln.config.getBooleanOrElse("integrations.energyExporter.enabled", true)) {
             val entityName = "eln.EnergyConverterElnToOtherEntity"
 
-            TileEntity.addMapping(EnergyConverterElnToOtherEntity::class.java, entityName)
+            ElnRegistry.registerTileEntity(EnergyConverterElnToOtherEntity::class.java, entityName)
             registerUuid(
                 nodeUuidStatic,
                 EnergyConverterElnToOtherNode::class.java
@@ -70,7 +70,7 @@ object SingleNodeRegistration {
         if (Eln.config.getBooleanOrElse("integrations.computerProbe.enabled", true)) {
             val entityName = I18N.TR_NAME(I18N.Type.TILE, "eln.ElnProbe")
 
-            TileEntity.addMapping(ComputerProbeEntity::class.java, entityName)
+            ElnRegistry.registerTileEntity(ComputerProbeEntity::class.java, entityName)
             registerUuid(ComputerProbeNode.getNodeUuidStatic(), ComputerProbeNode::class.java)
 
 
@@ -81,7 +81,7 @@ object SingleNodeRegistration {
         /*
         if (ComputerProbeEnable) {
             String name = TR_NAME(Type.TILE, "eln.ElnDeviceProbe");
-            TileEntity.addMapping(DeviceProbeEntity.class, name);
+            ElnRegistry.registerTileEntity(DeviceProbeEntity.class, name);
             NodeManager.registerUuid(DeviceProbeNode.Companion.getNodeUuidStatic(), DeviceProbeNode.class);
             DeviceProbeBlock deviceProbeBlock = new DeviceProbeBlock();
             deviceProbeBlock.setCreativeTab(creativeTab).setTranslationKey(name);

@@ -46,12 +46,12 @@ class ClutchPlateItem(
         if (!stack.hasTagCompound()) {
             stack.tagCompound = getDefaultNBT()
         }
-        stack.tagCompound.setDouble("wear", wear)
+        stack.tagCompound!!.setDouble("wear", wear)
     }
 
     fun getWear(stack: ItemStack): Double {
         if (!stack.hasTagCompound()) return 0.0
-        return stack.tagCompound.getDouble("wear")
+        return stack.tagCompound!!.getDouble("wear")
     }
 
     fun maxStaticEnergyF(@Suppress("UNUSED_PARAMETER") stack: ItemStack): IFunction =

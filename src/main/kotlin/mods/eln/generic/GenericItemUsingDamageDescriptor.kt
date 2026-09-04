@@ -119,7 +119,7 @@ open class GenericItemUsingDamageDescriptor {
         if (nbt == null) {
             stack.tagCompound = getDefaultNBT().also { nbt = it }
         }
-        return nbt
+        return nbt!!
     }
 
     /** 1.8's Item.getDestroySpeed: the block is identified by its state now, not the Block. */

@@ -31,7 +31,7 @@ class PacketHandler {
         val packet = event.packet
         val stream = DataInputStream(ByteArrayInputStream(packet.payload().array()))
         val manager = event.manager
-        val player: EntityPlayer = (event.handler as NetHandlerPlayServer).playerEntity // EntityPlayerMP
+        val player: EntityPlayer = (event.handler as NetHandlerPlayServer).player // EntityPlayerMP
         packetRx(stream, manager, player)
     }
 

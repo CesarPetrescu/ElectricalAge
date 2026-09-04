@@ -36,7 +36,7 @@ class ClientKeyHandler {
     @SubscribeEvent
     fun onKeyInput(@Suppress("UNUSED_PARAMETER") event: KeyInputEvent?) {
         keyboardKeys.forEach {
-            setState(it.name, it.binding?.isKeyPressed ?: return@forEach)
+            setState(it.name, it.binding?.isKeyDown ?: return@forEach)
         }
     }
 

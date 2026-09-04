@@ -180,9 +180,8 @@ abstract class GridRender(tileEntity: TransparentNodeEntity, descriptor: Transpa
             val delta = b.subtract(a)
             // This is just to copy.
             // We don't care what r is, so long as it's linearly independent of delta.
-            val r = delta.normalize()
-            r.rotateYaw(1f)
-            r.rotateAroundX(1f)
+            // Vec3d is immutable on 1.12.2: the rotations return new vectors.
+            val r = delta.normalize().rotateYaw(1f).rotatePitch(1f)
             // This gives us one vector which is perpendicular to delta.
             val x1 = multiply(delta.crossProduct(r).normalize(), cableWidth)
             // And this, another, perpendicular to delta and x1.

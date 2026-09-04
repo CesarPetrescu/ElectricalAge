@@ -45,6 +45,7 @@ import net.minecraft.inventory.IInventory
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.DamageSource
+import net.minecraft.util.EnumParticleTypes
 import net.minecraft.util.text.TextFormatting
 import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
 import org.lwjgl.opengl.GL11
@@ -224,7 +225,7 @@ class UtilityCableDescriptor(
         if (stack.tagCompound == null) {
             stack.tagCompound = getDefaultNBT()
         }
-        return stack.tagCompound
+        return stack.tagCompound!!
     }
 
     fun getRemainingLengthMeters(stack: ItemStack): Double {
@@ -299,7 +300,7 @@ class UtilityCableDescriptor(
         GL11.glDisable(GL11.GL_DEPTH_TEST)
         GL11.glPushMatrix()
         GL11.glScalef(scale, scale, 1f)
-        font.drawStringWithShadow(overlay, x, y, 0xFFFFFF)
+        font.drawStringWithShadow(overlay, x.toFloat(), y.toFloat(), 0xFFFFFF)
         GL11.glPopMatrix()
         GL11.glPopAttrib()
     }
@@ -1035,7 +1036,7 @@ class UtilityCableRender(
         val dx = (world.rand.nextDouble() - 0.5) * 0.22
         val dy = world.rand.nextDouble() * 0.08 + 0.02
         val dz = (world.rand.nextDouble() - 0.5) * 0.22
-        world.spawnParticle("smoke", baseX + dx, baseY + dy, baseZ + dz, 0.0, 0.02 + intensity * 0.03, 0.0)
+        world.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, baseX + dx, baseY + dy, baseZ + dz, 0.0, 0.02 + intensity * 0.03, 0.0)
     }
 
     private fun shouldDrawJunctionNode(): Boolean {

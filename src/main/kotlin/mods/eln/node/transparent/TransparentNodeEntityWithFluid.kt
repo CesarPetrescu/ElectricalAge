@@ -124,7 +124,7 @@ class TransparentNodeEntityWithFluid : TransparentNodeEntity(), ISidedFluidHandl
         }
 
         override fun getTankInfo(from: EnumFacing?): Array<FluidTankInfo> {
-            return arrayOfNulls(0)
+            return emptyArray()
         }
 
         companion object {

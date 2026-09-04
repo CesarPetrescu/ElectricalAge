@@ -369,7 +369,7 @@ class MqttEnergyMeterElement(sixNode: SixNode, side: Direction, descriptor: SixN
         if (!serverMatched) return
         val server = MqttManager.getServerByName(meterInfo.serverName) ?: return
         MqttMeterManager.ensureSubscription(meterInfo.meterId, coord, server, this::handleCommand)
-        val dimensionName = coord.world().provider.dimensionName
+        val dimensionName = coord.world().provider.dimensionType.getName()
         val timeSeconds = timeCounter / 72.0
         val snapshot = MqttMeterSnapshot(
             meterInfo,

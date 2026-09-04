@@ -1,6 +1,6 @@
 package mods.eln.misc
 
-import com.google.common.base.Objects
+import com.google.common.base.MoreObjects
 import net.minecraft.util.math.Vec3d
 import java.lang.Float.NEGATIVE_INFINITY
 import java.lang.Float.POSITIVE_INFINITY
@@ -29,7 +29,7 @@ class BoundingBox(xMin: Float, xMax: Float, yMin: Float, yMax: Float, zMin: Floa
     }
 
     override fun toString(): String {
-        return Objects.toStringHelper(this)
+        return MoreObjects.toStringHelper(this)
             .add("min", min)
             .add("max", max)
             .toString()

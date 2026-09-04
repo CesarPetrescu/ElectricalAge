@@ -18,7 +18,7 @@ abstract class Node : NodeBase() {
             if (light < 0) light = 0
             if (lastLight != light) {
                 lastLight = light
-                coordinate.world().updateLightByType(EnumSkyBlock.Block, coordinate.x, coordinate.y, coordinate.z)
+                coordinate.world().checkLightFor(EnumSkyBlock.BLOCK, coordinate.pos)
                 needPublish = true
             }
         }

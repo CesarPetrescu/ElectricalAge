@@ -80,8 +80,8 @@ class SixNodeEntity : NodeBlockEntity() {
 
         //	world.setLightValue(EnumSkyBlock.Sky, xCoord,yCoord,zCoord,15);
         if (sixNodeCacheBlock !== sixNodeCacheBlockOld) {
-            val chunk = world.getChunkFromBlockCoords(xCoord, zCoord)
-            chunk.generateHeightMap()
+            val chunk = world.getChunk(xCoord shr 4, zCoord shr 4)
+            // 1.12.2: generateHeightMap() is protected; generateSkylightMap() recomputes the height map too.
             updateSkylight(chunk)
             chunk.generateSkylightMap()
             updateAllLightTypes(world, xCoord, yCoord, zCoord)
@@ -168,7 +168,7 @@ class SixNodeEntity : NodeBlockEntity() {
     }
 
     fun hasVolume(@Suppress("UNUSED_PARAMETER") world: World?, @Suppress("UNUSED_PARAMETER") x: Int, @Suppress("UNUSED_PARAMETER") y: Int, @Suppress("UNUSED_PARAMETER") z: Int): Boolean {
-        return if (world.isRemote) {
+        return if (world!!.isRemote) {
             for (e in elementRenderList) {
                 if (e != null && e.sixNodeDescriptor.hasVolume()) return true
             }

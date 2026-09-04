@@ -31,7 +31,7 @@ class NodeServer {
                     node.publishToAllPlayer()
                 }
             }
-            for (obj in server.playerList.playerEntityList) {
+            for (obj in server.playerList.players) {
                 val player = obj as EntityPlayerMP?
                 var openContainerNode: NodeBase? = null
                 var container: INodeContainer? = null
