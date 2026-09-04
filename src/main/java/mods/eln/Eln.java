@@ -1,5 +1,7 @@
 package mods.eln;
 
+import mods.eln.registration.ElnRegistry;
+
 import net.minecraftforge.fml.common.*;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;
@@ -364,8 +366,8 @@ public class Eln {
 
         NetworkRegistry.INSTANCE.registerGuiHandler(this, new GuiHandler());
 
-        Item itemCreativeTab = new Item().setTranslationKey("eln:elncreativetab").setTextureName("eln:elncreativetab");
-        GameRegistry.registerItem(itemCreativeTab, "eln.itemCreativeTab");
+        Item itemCreativeTab = new Item().setTranslationKey("eln:elncreativetab");
+        ElnRegistry.registerItem(itemCreativeTab, "eln.itemCreativeTab");
 
         creativeTabPowerElectronics = new GenericCreativeTab("ElnPowerElectronics", Items.REDSTONE);
         creativeTabCables = new GenericCreativeTab("ElnCables", Items.STRING);
@@ -392,24 +394,24 @@ public class Eln {
                         "sharedItemStackOne");
 
         transparentNodeBlock = (TransparentNodeBlock) new TransparentNodeBlock(Material.iron,
-                TransparentNodeEntity.class).setCreativeTab(creativeTabOther).setBlockTextureName("iron_block");
+                TransparentNodeEntity.class).setCreativeTab(creativeTabOther);
         sixNodeBlock =
-                (SixNodeBlock) new SixNodeBlock(Material.plants, SixNodeEntity.class).setCreativeTab(creativeTabOther).setBlockTextureName("iron_block");
+                (SixNodeBlock) new SixNodeBlock(Material.plants, SixNodeEntity.class).setCreativeTab(creativeTabOther);
 
-        ghostBlock = (GhostBlock) new GhostBlock().setBlockTextureName("iron_block");
+        ghostBlock = (GhostBlock) new GhostBlock();
         lightBlock = new LightBlock();
 
         obj.loadAllElnModels();
 
-        GameRegistry.registerItem(sharedItem, "Eln.sharedItem");
-        GameRegistry.registerItem(sharedItemStackOne, "Eln.sharedItemStackOne");
-        GameRegistry.registerBlock(ghostBlock, "Eln.ghostBlock");
-        GameRegistry.registerBlock(lightBlock, "Eln.lightBlock");
-        GameRegistry.registerBlock(sixNodeBlock, SixNodeItem.class, "Eln.SixNode");
-        GameRegistry.registerBlock(transparentNodeBlock, TransparentNodeItem.class, "Eln.TransparentNode");
-        GameRegistry.registerBlock(oreBlock, OreItem.class, "Eln.Ore");
-        GameRegistry.registerBlock(arcClayBlock, ArcClayItemBlock.class, "Eln.arc_clay_block");
-        GameRegistry.registerBlock(arcMetalBlock, ArcMetalItemBlock.class, "Eln.arc_metal_block");
+        ElnRegistry.registerItem(sharedItem, "Eln.sharedItem");
+        ElnRegistry.registerItem(sharedItemStackOne, "Eln.sharedItemStackOne");
+        ElnRegistry.registerBlock(ghostBlock, "Eln.ghostBlock");
+        ElnRegistry.registerBlock(lightBlock, "Eln.lightBlock");
+        ElnRegistry.registerBlock(sixNodeBlock, "Eln.SixNode", SixNodeItem.class);
+        ElnRegistry.registerBlock(transparentNodeBlock, "Eln.TransparentNode", TransparentNodeItem.class);
+        ElnRegistry.registerBlock(oreBlock, "Eln.Ore", OreItem.class);
+        ElnRegistry.registerBlock(arcClayBlock, "Eln.arc_clay_block", ArcClayItemBlock.class);
+        ElnRegistry.registerBlock(arcMetalBlock, "Eln.arc_metal_block", ArcMetalItemBlock.class);
         TileEntity.addMapping(TransparentNodeEntity.class, "TransparentNodeEntity");
         TileEntity.addMapping(TransparentNodeEntityWithFluid.class, "TransparentNodeEntityWF");
         TileEntity.addMapping(SixNodeEntity.class, "SixNodeEntity");

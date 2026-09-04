@@ -1,5 +1,7 @@
 package mods.eln.generic;
 
+import mods.eln.registration.ElnRegistry;
+
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -54,7 +56,7 @@ public class GenericItemBlockUsingDamage<Descriptor extends GenericItemBlockUsin
         descriptors.add(descriptor);
         descriptor.setParent(this, damage);
         applyDefaultTab(damage, descriptor);
-        GameRegistry.registerCustomItemStack(descriptor.name, descriptor.newItemStack(1));
+        ElnRegistry.registerCustomItemStack(descriptor.name, descriptor.newItemStack(1));
     }
 
     public void addWithoutRegistry(int damage, Descriptor descriptor) {

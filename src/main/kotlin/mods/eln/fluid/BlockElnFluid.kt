@@ -1,5 +1,7 @@
 package mods.eln.fluid
 
+import mods.eln.registration.ElnRegistry
+
 import net.minecraftforge.fml.common.registry.GameRegistry
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
@@ -23,7 +25,7 @@ class BlockElnFluid(
 
     init {
         setTranslationKey(internalName)
-        GameRegistry.registerBlock(this, ItemBlock::class.java, internalName)
+        ElnRegistry.registerBlock(this, internalName, ItemBlock::class.java)
         if (density <= FluidRegistry.WATER.density) {
             displacements[Blocks.WATER] = false
             displacements[Blocks.FLOWING_WATER] = false

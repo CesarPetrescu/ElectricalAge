@@ -39,7 +39,7 @@ object SingleNodeRegistration {
 
             val conduitBlock = ConduitBlock()
             conduitBlock.setCreativeTab(null).setTranslationKey(entityName)
-            GameRegistry.registerBlock(conduitBlock, SimpleNodeItem::class.java, entityName)
+            ElnRegistry.registerBlock(conduitBlock, entityName, SimpleNodeItem::class.java)
         }
     }
 
@@ -61,7 +61,7 @@ object SingleNodeRegistration {
                 )
                 Eln.instance.elnToOtherBlockConverter = EnergyConverterElnToOtherBlock(desc)
                 Eln.instance.elnToOtherBlockConverter.setCreativeTab(Eln.creativeTabPowerElectronics).setTranslationKey(blockName)
-                GameRegistry.registerBlock(Eln.instance.elnToOtherBlockConverter, SimpleNodeItem::class.java, blockName)
+                ElnRegistry.registerBlock(Eln.instance.elnToOtherBlockConverter, blockName, SimpleNodeItem::class.java)
             }
         }
     }
@@ -76,7 +76,7 @@ object SingleNodeRegistration {
 
             Eln.instance.computerProbeBlock = ComputerProbeBlock()
             Eln.instance.computerProbeBlock.setCreativeTab(Eln.creativeTabSignalProcessing).setTranslationKey(entityName)
-            GameRegistry.registerBlock(Eln.instance.computerProbeBlock, SimpleNodeItem::class.java, entityName)
+            ElnRegistry.registerBlock(Eln.instance.computerProbeBlock, entityName, SimpleNodeItem::class.java)
         }
         /*
         if (ComputerProbeEnable) {
@@ -85,7 +85,7 @@ object SingleNodeRegistration {
             NodeManager.registerUuid(DeviceProbeNode.Companion.getNodeUuidStatic(), DeviceProbeNode.class);
             DeviceProbeBlock deviceProbeBlock = new DeviceProbeBlock();
             deviceProbeBlock.setCreativeTab(creativeTab).setTranslationKey(name);
-            GameRegistry.registerBlock(deviceProbeBlock, SimpleNodeItem.class, name);
+            ElnRegistry.registerBlock(deviceProbeBlock, name, SimpleNodeItem.class);
         }
         */
     }
