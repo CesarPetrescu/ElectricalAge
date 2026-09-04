@@ -14,7 +14,7 @@ Settled once. Do not relitigate per file.
 | --- | --- |
 | Mod id | `eln` (lowercase, enforced since 1.11). Registry names `eln:<snake_case>`. |
 | World compat | None. Fresh worlds only. Keep item `id`/`subId` values anyway so descriptor tables stay diffable against upstream. |
-| Runtime target | Vanilla Forge 1.12.2-14.23.5.2860, MCP `stable_39`, Java 8 bytecode. CleanroomMC compatibility follows from that, it is not a target. |
+| Runtime target | Vanilla Forge **1.12.2-14.23.5.2847** (RFG pins this per `mcVersion`; it is not overridable), MCP `stable_39`, Java 8 bytecode. CleanroomMC compatibility follows from that, it is not a target. |
 | Kotlin | Keep upstream's shaded **and relocated** stdlib (`mods.eln.shaded.kotlin`). Re-Wired embeds an unrelocated stdlib; that collides with Forgelin-based mods in the same pack. |
 | Packet protocol | Unchanged. The byte-level `DataOutputStream` format and `PacketHandler.packetRx` stay. Only the transport changes: one `GenericPacket`/`GenericPacketHandler` pair (from Re-Wired) that hops to the main thread in exactly one place. |
 | Rendering | Keep OBJ + display lists + TESR. 1.12.2 is still LWJGL2 fixed-function, so `Obj3D`'s `glNewList`/`glCallList` survive. Only *state* calls move to `GlStateManager`. |
@@ -34,6 +34,55 @@ Settled once. Do not relitigate per file.
 | `NOCRIB` | 153 | Upstream changed it, Re-Wired did not. Port by hand; sibling files in the same package usually have a crib. |
 | `VERBATIM` | 49 | Only Re-Wired changed it. Take its file as-is after checking the base matches. |
 | `ASIS` | 94 | Untouched by both. Should compile unmodified. |
+
+## Facts verified against this build, not from memory
+
+The decompiled sources under `build/rfg/minecraft-src/java` are the ground truth for
+this port. Four things there differ from what 1.12.2 documentation and the Re-Wired
+crib will tell you:
+
+- **The mappings use modern names.** `mcp_stable_39` for 1.12.2 maps
+  `Block.setTranslationKey`, `ResourceLocation.getPath`/`getNamespace`,
+  `Minecraft.profiler`, `World.spawnEntity`, `MathHelper.floor`. Re-Wired's code says
+  `setUnlocalizedName`, `getResourcePath`, `mcProfiler`. When replaying a crib diff,
+  translate those names; the SRG mapping underneath is identical either way.
+- **ResourceLocation lowercases the path, not just the namespace** (`ResourceLocation.java`
+  line 22). Every capitalised asset path is unreachable, which is why
+  `lowercase_assets.sh` exists.
+- **Gradle must run on JDK 25.** RetroFuturaGradle 2.x ships class-file version 69.
+  `tools/port/env.sh` points `JAVA_HOME` at a Temurin 25 install. The mod itself still
+  compiles to Java 8 bytecode.
+- **Kotlin 2.2 cannot run on a JDK 8 launcher**, so the project toolchain is JDK 17 with
+  `javac --release 8`, and RFG keeps Minecraft's own decompile/recompile on a real JDK 8
+  (its javac predates `--release`, so the flag is scoped to `compileJava`/`compileTestJava`).
+
+## Compatibility layers
+
+Two deliberate bridges, both documented at their definition:
+
+- `mods.eln.misc.McBridge` - `(x, y, z)` -> `BlockPos` adapters plus
+  `TileEntity.xCoord`. Roughly 1,600 call sites pass loose ints from `Coordinate`,
+  which stores ints because the simulation indexes by them. The `Vec3d.xCoord`
+  entries are pure renames and carry `@Deprecated(ReplaceWith(...))` so they can be
+  inlined mechanically once the port compiles.
+- `mods.eln.client.itemrender.IItemRenderer` - the interface Forge removed in 1.8,
+  kept so the ~250 descriptor `renderItem` bodies survive unchanged until phase 3
+  binds one `TileEntityItemStackRenderer` to all of them.
+
+Run `tools/port/add_bridge_imports.py` after adding a symbol to `McBridge`.
+
+## Progress metric
+
+`./gradlew compileKotlin --continue` and count `^e: ` lines. Kotlin reports every
+error in the module, so the count is a real progress signal, not a first-failure.
+It moves in steps as base classes land and their subclasses inherit new signatures.
+
+    4100  baseline, first compile against 1.12.2
+    2978  mechanical rename pass + asset lowercasing
+    1497  coordinate bridge, item-render shim, bridge imports
+    1244  ItemStack count API, I18N off LanguageRegistry
+    1153  IIcon removal
+    1058  NodeBlock, NodeBlockEntity, SixNodeBlock, TransparentNodeBlock
 
 ## Tooling
 
