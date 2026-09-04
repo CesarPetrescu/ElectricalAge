@@ -3,6 +3,7 @@ package mods.eln.misc
 import net.minecraftforge.fml.common.FMLCommonHandler
 import mods.eln.node.NodeBlockEntity
 import net.minecraft.block.Block
+import net.minecraft.block.state.IBlockState
 import net.minecraft.client.Minecraft
 import net.minecraft.entity.Entity
 import net.minecraft.nbt.NBTTagCompound
@@ -146,6 +147,10 @@ class Coordinate : INBTTReady {
         set(b) {
             world().setBlock(x, y, z, b)
         }
+
+    /** The full block state at this coordinate; 1.8+ answers shape questions (opacity, bounds) on the state, not the block. */
+    val blockState: IBlockState
+        get() = world().getBlockState(x, y, z)
 
     fun getAxisAlignedBB(ray: Int): AxisAlignedBB {
         return AxisAlignedBB((

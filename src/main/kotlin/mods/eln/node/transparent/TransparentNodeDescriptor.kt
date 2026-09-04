@@ -14,7 +14,6 @@ import mods.eln.node.transparent.TransparentNode.FrontType
 import net.minecraft.block.Block
 import net.minecraft.block.BlockHopper
 import net.minecraft.entity.EntityLivingBase
-import net.minecraft.init.Blocks
 import net.minecraft.item.ItemStack
 import net.minecraft.util.math.AxisAlignedBB
 import net.minecraft.util.ResourceLocation
@@ -47,11 +46,9 @@ open class TransparentNodeDescriptor @JvmOverloads constructor(
     }
 
     override fun renderItem(type: ItemRenderType, item: ItemStack, vararg data: Any) {
-        if (icon == null) return
+        // 1.12.2 has no IIcon; the block sprite is addressed by its path under textures/blocks.
+        val icon = iconName ?: return
         voltageLevelColor.drawIconBackground(type)
-
-        // remove "eln:" to add the full path replace("eln:", "textures/blocks/") + ".png";
-        val icon = icon.iconName.substring(4)
         drawIcon(type, ResourceLocation("eln", "textures/blocks/$icon.png"))
     }
 
@@ -84,43 +81,25 @@ open class TransparentNodeDescriptor @JvmOverloads constructor(
     }
 
     open fun checkCanPlace(coord: Coordinate?, front: Direction): String? {
-        var block: Block
+        // 1.8+: opacity is a property of the block state, not the block.
+        fun opaqueAt(direction: Direction): Boolean {
+            val temp = Coordinate(coord!!)
+            temp.move(direction)
+            return temp.blockState.isOpaqueCube
+        }
         if (mustHaveFloor()) {
             val temp = Coordinate(coord!!)
             temp.move(Direction.YN)
-            block = temp.block
-            if (!block.isOpaqueCube && block !is BlockHopper) return tr("You can't place this block at this side")
+            if (!temp.blockState.isOpaqueCube && temp.block !is BlockHopper) return tr("You can't place this block at this side")
         }
         if (mustHaveCeiling()) {
-            val temp = Coordinate(coord!!)
-            temp.move(Direction.YP)
-            block = temp.block
-            if (!block.isOpaqueCube) return tr("You can't place this block at this side")
+            if (!opaqueAt(Direction.YP)) return tr("You can't place this block at this side")
         }
         if (mustHaveWallFrontInverse()) {
-            val temp = Coordinate(coord!!)
-            temp.move(front.inverse)
-            block = temp.block
-            if (!block.isOpaqueCube) return tr("You can't place this block at this side")
+            if (!opaqueAt(front.inverse)) return tr("You can't place this block at this side")
         }
         if (mustHaveWall()) {
-            var wall = false
-            var temp = Coordinate(coord!!)
-            temp.move(Direction.XN)
-            block = temp.block
-            if (block.isOpaqueCube) wall = true
-            temp = Coordinate(coord)
-            temp.move(Direction.XP)
-            block = temp.block
-            if (block.isOpaqueCube) wall = true
-            temp = Coordinate(coord)
-            temp.move(Direction.ZN)
-            block = temp.block
-            if (block.isOpaqueCube) wall = true
-            temp = Coordinate(coord)
-            temp.move(Direction.ZP)
-            block = temp.block
-            if (block.isOpaqueCube) wall = true
+            val wall = opaqueAt(Direction.XN) || opaqueAt(Direction.XP) || opaqueAt(Direction.ZN) || opaqueAt(Direction.ZP)
             if (!wall) return tr("You can't place this block at this side")
         }
         val ghostGroup = getGhostGroupFront(front)
@@ -153,7 +132,8 @@ open class TransparentNodeDescriptor @JvmOverloads constructor(
         get() = 0
 
     open fun addCollisionBoxesToList(par5AxisAlignedBB: AxisAlignedBB, list: MutableList<AxisAlignedBB?>, world: World?, x: Int, y: Int, z: Int) {
-        val bb = Blocks.STONE.getCollisionBoundingBoxFromPool(world, x, y, z)
-        if (par5AxisAlignedBB.intersectsWith(bb)) list.add(bb)
+        // A full stone cube at (x, y, z); 1.12 block boxes are block-local, so offset explicitly.
+        val bb = Block.FULL_BLOCK_AABB.offset(x.toDouble(), y.toDouble(), z.toDouble())
+        if (par5AxisAlignedBB.intersects(bb)) list.add(bb)
     }
 }

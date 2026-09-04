@@ -51,6 +51,11 @@ public class GenericItemBlockUsingDamageDescriptor {
         }
     }
 
+    /** The sprite name under assets/eln/textures/blocks/ (no "eln:" prefix); 1.12.2 has no IIcon to hand out. */
+    public String getIconName() {
+        return iconName;
+    }
+
     public NBTTagCompound getDefaultNBT() {
         return null;
     }

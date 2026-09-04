@@ -8,7 +8,6 @@ import mods.eln.misc.Direction
 import mods.eln.misc.LRDU
 import mods.eln.misc.LRDUMask
 import mods.eln.misc.Obj3D
-import mods.eln.misc.Utils.getBlock
 import mods.eln.misc.Utils.plotPower
 import mods.eln.misc.Utils.plotVolt
 import mods.eln.node.NodeBase
@@ -22,7 +21,7 @@ import mods.eln.railroad.PoweredMinecartSimulationSingleton.poweredMinecartSimul
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
-import mods.eln.misc.getBlock
+import mods.eln.misc.getBlockState
 import mods.eln.misc.xCoord
 import mods.eln.misc.yCoord
 import mods.eln.misc.zCoord
@@ -171,7 +170,7 @@ class OverheadLinesRender(tileEntity: TransparentNodeEntity, transparentNodeDesc
 
     private fun hasBlockAnySideNotBottom(): Boolean {
         return boundedSides.any {
-            getBlock(tileEntity.world, it.x.toDouble(), it.y.toDouble(),it.z.toDouble()).isOpaqueCube
+            tileEntity.world.getBlockState(it.x, it.y, it.z).isOpaqueCube
         }
     }
 

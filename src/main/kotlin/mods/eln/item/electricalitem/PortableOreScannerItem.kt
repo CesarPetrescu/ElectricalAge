@@ -399,24 +399,19 @@ class PortableOreScannerItem(name: String?, private val obj: Obj3D,
                             val zBlock = posZint + zFloor.toInt()
                             blockKey = 0U
                             if (yBlock in 0..255) {
-                                val chunk = w.getChunkFromBlockCoords(xBlock, zBlock)
-                                if (chunk != null) {
-                                    val storage = chunk.blockStorageArray[yBlock shr 4]
-                                    if (storage != null) {
-                                        val xLocal = xBlock and 0xF
-                                        val yLocal = yBlock and 0xF
-                                        val zLocal = zBlock and 0xF
-                                        // Read block ID: LSB (8 bits) + optional MSB (4 bits)
-                                        // Must use Int arithmetic to avoid UByte truncation when combining MSB<<8
-                                        val blockLsb = storage.blockLSBArray[yLocal shl 8 or (zLocal shl 4) or xLocal].toInt() and 0xFF
-                                        val blockId = if (storage.blockMSBArray != null) {
-                                            blockLsb or (storage.blockMSBArray[xLocal, yLocal, zLocal] shl 8)
-                                        } else {
-                                            blockLsb
-                                        }
-                                        val rawMeta = storage.getExtBlockMetadata(xLocal, yLocal, zLocal)
-                                        blockKey = (blockId.toUInt() + (rawMeta.toUInt() shl 12)).toUShort()
-                                    }
+                                val chunk = w.getChunk(xBlock shr 4, zBlock shr 4)
+                                // 1.12.2 chunk sections hold palette-packed block states; the
+                                // 1.7.10 LSB/MSB/meta nibble arrays are gone. Same key layout:
+                                // 12 bits of block id, 4 bits of metadata.
+                                val storage = chunk.blockStorageArray[yBlock shr 4]
+                                if (storage != null) {
+                                    val xLocal = xBlock and 0xF
+                                    val yLocal = yBlock and 0xF
+                                    val zLocal = zBlock and 0xF
+                                    val state = storage.get(xLocal, yLocal, zLocal)
+                                    val blockId = Block.getIdFromBlock(state.block)
+                                    val rawMeta = state.block.getMetaFromState(state)
+                                    blockKey = (blockId.toUInt() + (rawMeta.toUInt() shl 12)).toUShort()
                                 }
                             }
                             if (blockKey >= 1024U * 64U) {
@@ -432,7 +427,8 @@ class PortableOreScannerItem(name: String?, private val obj: Obj3D,
 
                         val b = Block.getBlockById((blockKey and 0xFFFU).toInt())
                         if (b !== Blocks.AIR && b !== Eln.lightBlock) {
-                            stackRed += if (b.isOpaqueCube) 0.2f * dToStack else 0.1f * dToStack
+                            val opaque = b.getStateFromMeta((blockKey.toInt() shr 12) and 0xF).isOpaqueCube
+                            stackRed += if (opaque) 0.2f * dToStack else 0.1f * dToStack
                         } else stackBlue += 0.06f * dToStack
                         x += vx * dBest
                         y += vy * dBest
