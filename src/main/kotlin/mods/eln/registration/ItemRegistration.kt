@@ -737,7 +737,7 @@ object ItemRegistration {
     }
 
     private fun addToOre(name: String, ore: ItemStack) {
-        OreDictionary.registerOre(name, ore)
+        ElnRegistry.registerOre(name, ore)
         Eln.dictionnaryOreFromMod[name] = ore
     }
 
@@ -926,35 +926,35 @@ object ItemRegistration {
             name = I18N.TR_NAME(I18N.Type.NONE, "Silicon Wafer")
             Eln.siliconWafer = SiliconWafer(name)
             Eln.sharedItem.addElement(subId + (id shl 6), Eln.siliconWafer)
-            OreDictionary.registerOre(Eln.dictSiliconWafer, Eln.siliconWafer.newItemStack())
+            ElnRegistry.registerOre(Eln.dictSiliconWafer, Eln.siliconWafer.newItemStack())
         }
         run {
             subId = 1
             name = I18N.TR_NAME(I18N.Type.NONE, "Transistor")
             Eln.transistor = Transistor(name)
             Eln.sharedItem.addElement(subId + (id shl 6), Eln.transistor)
-            OreDictionary.registerOre(Eln.dictTransistor, Eln.transistor.newItemStack())
+            ElnRegistry.registerOre(Eln.dictTransistor, Eln.transistor.newItemStack())
         }
         run {
             subId = 2
             name = I18N.TR_NAME(I18N.Type.NONE, "NTC Thermistor")
             Eln.thermistor = Thermistor(name)
             Eln.sharedItem.addElement(subId + (id shl 6), Eln.thermistor)
-            OreDictionary.registerOre(Eln.dictThermistor, Eln.thermistor.newItemStack())
+            ElnRegistry.registerOre(Eln.dictThermistor, Eln.thermistor.newItemStack())
         }
         run {
             subId = 3
             name = I18N.TR_NAME(I18N.Type.NONE, "Nibble Memory Chip")
             Eln.nibbleMemory = NibbleMemory(name)
             Eln.sharedItem.addElement(subId + (id shl 6), Eln.nibbleMemory)
-            OreDictionary.registerOre(Eln.dictNibbleMemory, Eln.nibbleMemory.newItemStack())
+            ElnRegistry.registerOre(Eln.dictNibbleMemory, Eln.nibbleMemory.newItemStack())
         }
         run {
             subId = 4
             name = I18N.TR_NAME(I18N.Type.NONE, "Arithmetic Logic Unit")
             Eln.alu = ArithmeticLogicUnit(name)
             Eln.sharedItem.addElement(subId + (id shl 6), Eln.alu)
-            OreDictionary.registerOre(Eln.dictALU, Eln.alu.newItemStack())
+            ElnRegistry.registerOre(Eln.dictALU, Eln.alu.newItemStack())
         }
     }
 
@@ -1251,8 +1251,8 @@ object ItemRegistration {
             val descriptor = GenericItemUsingDamageDescriptor(name)
             Eln.sharedItem.addElement(completId, descriptor)
             Data.addResource(descriptor.newItemStack())
-            OreDictionary.registerOre("ingotAluminum", descriptor.newItemStack())
-            OreDictionary.registerOre("ingotAluminium", descriptor.newItemStack())
+            ElnRegistry.registerOre("ingotAluminum", descriptor.newItemStack())
+            ElnRegistry.registerOre("ingotAluminium", descriptor.newItemStack())
         }
         run {
             subId = 7
@@ -1261,7 +1261,7 @@ object ItemRegistration {
             val descriptor = GenericItemUsingDamageDescriptor(name)
             Eln.sharedItem.addElement(completId, descriptor)
             Data.addResource(descriptor.newItemStack())
-            OreDictionary.registerOre("ingotSteel", descriptor.newItemStack())
+            ElnRegistry.registerOre("ingotSteel", descriptor.newItemStack())
         }
         run {
             subId = 8
@@ -1470,7 +1470,7 @@ object ItemRegistration {
             ).inOresAndMaterialsTab()
             Eln.sharedItem.addElement(subId + (id shl 6), desc)
             Data.addResource(desc.newItemStack())
-            OreDictionary.registerOre(Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), desc.newItemStack())
+            ElnRegistry.registerOre(Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), desc.newItemStack())
         }
         run {
             subId = 1
@@ -1481,7 +1481,7 @@ object ItemRegistration {
             ).inOresAndMaterialsTab()
             Eln.sharedItem.addElement(subId + (id shl 6), desc)
             Data.addResource(desc.newItemStack())
-            OreDictionary.registerOre(Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced"), desc.newItemStack())
+            ElnRegistry.registerOre(Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced"), desc.newItemStack())
         }
         run {
             subId = 2

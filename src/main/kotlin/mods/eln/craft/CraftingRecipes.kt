@@ -2737,7 +2737,37 @@ object CraftingRecipes {
     }
 
     private fun addRecipe(output: ItemStack, vararg params: Any) {
-        registerRecipe(ShapedOreRecipe(recipeGroup, output, *params), output)
+        registerRecipe(ShapedOreRecipe(recipeGroup, output, *normalizeShaped(output, params)), output)
+    }
+
+    /**
+     * 1.12's CraftingHelper.parseShaped rejects two things 1.7.10 tolerated: key symbols the
+     * pattern never uses, and pattern symbols without a key (1.7.10 read those as empty slots).
+     * Both exist in the recipe list, so they are folded back to the 1.7.10 meaning here.
+     */
+    private fun normalizeShaped(output: ItemStack, params: Array<out Any>): Array<Any> {
+        var idx = 0
+        val rows = ArrayList<String>()
+        while (idx < params.size && params[idx] is String) {
+            rows.add(params[idx] as String)
+            idx++
+        }
+        val keys = LinkedHashMap<Char, Any>()
+        while (idx + 1 < params.size) {
+            keys[params[idx] as Char] = params[idx + 1]
+            idx += 2
+        }
+        val used = rows.joinToString("").toSet() - ' '
+        val undefined = used - keys.keys
+        val unused = keys.keys - used
+        if (undefined.isNotEmpty() || unused.isNotEmpty()) {
+            Eln.logger.warn("Recipe for {}: pattern symbols without key {} treated as empty, unused keys {} dropped",
+                output.displayName, undefined, unused)
+        }
+        val out = ArrayList<Any>()
+        rows.mapTo(out) { row -> row.map { if (it in undefined) ' ' else it }.joinToString("") }
+        keys.filterKeys { it in used }.forEach { (c, v) -> out.add(c); out.add(v) }
+        return out.toTypedArray()
     }
 
     private fun recipeTool() {

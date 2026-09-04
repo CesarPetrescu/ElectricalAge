@@ -430,10 +430,11 @@ public class Eln {
         NodeManager.registerUuid(sixNodeBlock.getNodeUuid(), SixNode.class);
         NodeManager.registerUuid(transparentNodeBlock.getNodeUuid(), TransparentNode.class);
 
-        sixNodeItem = (SixNodeItem) Item.getItemFromBlock(sixNodeBlock);
-        transparentNodeItem = (TransparentNodeItem) Item.getItemFromBlock(transparentNodeBlock);
+        // 1.12.2: the ItemBlocks are not in the registry until after preInit; take ours directly.
+        sixNodeItem = (SixNodeItem) ElnRegistry.itemBlockOf(sixNodeBlock);
+        transparentNodeItem = (TransparentNodeItem) ElnRegistry.itemBlockOf(transparentNodeBlock);
 
-        oreItem = (OreItem) Item.getItemFromBlock(oreBlock);
+        oreItem = (OreItem) ElnRegistry.itemBlockOf(oreBlock);
 
         SixNode.sixNodeCacheList.add(new SixNodeCacheStd());
 
@@ -446,8 +447,8 @@ public class Eln {
 
         updateCreativeTabIcons();
 
-        OreDictionary.registerOre("blockAluminum", arcClayBlock);
-        OreDictionary.registerOre("blockSteel", arcMetalBlock);
+        ElnRegistry.registerOre("blockAluminum", arcClayBlock);
+        ElnRegistry.registerOre("blockSteel", arcMetalBlock);
 
         AnalyticsHandler.INSTANCE.submitUpstreamAnalytics();
         AnalyticsHandler.INSTANCE.submitAgeSeriesAnalytics();

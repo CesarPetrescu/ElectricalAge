@@ -6,11 +6,15 @@ import net.minecraft.item.Item
 import net.minecraft.item.ItemBlock
 import net.minecraft.item.ItemStack
 import net.minecraft.tileentity.TileEntity
+import com.google.gson.JsonParser
 import net.minecraft.util.ResourceLocation
+import net.minecraft.util.SoundEvent
+import java.io.InputStreamReader
 import net.minecraftforge.event.RegistryEvent
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.registry.GameRegistry
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.oredict.OreDictionary
 import java.util.Locale
 
 /**
@@ -54,6 +58,8 @@ object ElnRegistry {
         return item
     }
 
+    private val itemBlocks = HashMap<Block, ItemBlock>()
+
     @JvmStatic
     @JvmOverloads
     fun registerBlock(block: Block, name: String, itemBlockClass: Class<out ItemBlock>? = null): Block {
@@ -65,8 +71,18 @@ object ElnRegistry {
         }
         itemBlock.registryName = block.registryName
         pendingItems.add(itemBlock)
+        itemBlocks[block] = itemBlock
         return block
     }
+
+    /**
+     * The ItemBlock created by [registerBlock]. 1.7.10's GameRegistry.registerBlock registered the
+     * item on the spot, so `Item.getItemFromBlock` worked inside preInit; on 1.12 the item only
+     * reaches the registry in RegistryEvent.Register<Item>, which fires after preInit.
+     */
+    @JvmStatic
+    fun itemBlockOf(block: Block): ItemBlock =
+        itemBlocks[block] ?: throw IllegalStateException("no ItemBlock registered for ${block.registryName}")
 
     /**
      * Replaces TileEntity.addMapping: tile entity ids are ResourceLocations on 1.12 and the
@@ -106,5 +122,52 @@ object ElnRegistry {
     @SubscribeEvent
     fun onRegisterItems(event: RegistryEvent.Register<Item>) {
         pendingItems.forEach(event.registry::register)
+        // Ore dictionary entries need registered items ("broken ore dictionary registration"
+        // otherwise); everything queued during preInit lands here, right after the items.
+        pendingOres.forEach { (name, stack) -> OreDictionary.registerOre(name, stack) }
+        pendingOres.clear()
+        pendingOreBlocks.forEach { (name, block) -> OreDictionary.registerOre(name, ItemStack(itemBlockOf(block))) }
+        pendingOreBlocks.clear()
     }
+
+    private val pendingOres = ArrayList<Pair<String, ItemStack>>()
+
+    /**
+     * Deferred OreDictionary.registerOre: 1.12 wants the item in the registry first. A null name
+     * is skipped: upstream registers a few items under dictionary names it never assigns
+     * (Eln.dictSiliconWafer and friends), which 1.7.10's HashMap silently accepted.
+     */
+    @JvmStatic
+    fun registerOre(name: String?, stack: ItemStack) {
+        if (name == null) {
+            Eln.logger.warn("Ore dictionary registration of {} skipped: no dictionary name", stack.displayName)
+            return
+        }
+        pendingOres.add(name to stack)
+    }
+
+    /**
+     * 1.9+: sounds are registry objects. Every key of assets/eln/sounds.json becomes an
+     * eln:<key> SoundEvent, so server-side World.playSound and the client sound commands both
+     * resolve to a registered event (an unregistered one is sent to clients as id -1 and NPEs).
+     */
+    @JvmStatic
+    @SubscribeEvent
+    fun onRegisterSounds(event: RegistryEvent.Register<SoundEvent>) {
+        val stream = ElnRegistry::class.java.getResourceAsStream("/assets/eln/sounds.json") ?: return
+        // entrySet, not keySet: Minecraft 1.12.2 ships Gson 2.8.0, which predates JsonObject.keySet.
+        val keys = stream.use { JsonParser().parse(InputStreamReader(it, Charsets.UTF_8)).asJsonObject.entrySet().map { e -> e.key } }
+        keys.forEach { key ->
+            val id = ResourceLocation(Eln.MODID, key)
+            event.registry.register(SoundEvent(id).setRegistryName(id))
+        }
+    }
+
+    /** Block form: the ItemStack is only built once the ItemBlock exists, i.e. at flush time. */
+    @JvmStatic
+    fun registerOre(name: String, block: Block) {
+        pendingOreBlocks.add(name to block)
+    }
+
+    private val pendingOreBlocks = ArrayList<Pair<String, Block>>()
 }

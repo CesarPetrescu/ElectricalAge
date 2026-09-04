@@ -25,9 +25,10 @@ java {
 
 tasks.withType<JavaCompile>().configureEach { options.encoding = "UTF-8" }
 
-// Only the mod's own sources: RFG compiles Minecraft on a real JDK 8 toolchain,
-// whose javac predates --release.
-listOf("compileJava", "compileTestJava").forEach { n ->
+// Only the mod's own sources (plus RFG's generated Tags/api source sets, which otherwise come
+// out as class-file 61 from the JDK 17 toolchain and cannot load on Java 8): RFG compiles
+// Minecraft itself on a real JDK 8 toolchain, whose javac predates --release.
+listOf("compileJava", "compileTestJava", "compileInjectedTagsJava", "compileInjectedInterfacesJava", "compileApiJava").forEach { n ->
     tasks.matching { it.name == n }.configureEach {
         (this as JavaCompile).options.release.set(8)
         // Report every error, not javac's default first 100: the port fixes them by histogram.
@@ -59,6 +60,7 @@ minecraft {
     username.set("Developer")
     injectedTags.put("VERSION", project.version)
     extraRunJvmArguments.add("-ea:${project.group}")
+    if (project.hasProperty("traceClasses")) extraRunJvmArguments.add("-verbose:class")
 }
 
 tasks.injectTags.configure {

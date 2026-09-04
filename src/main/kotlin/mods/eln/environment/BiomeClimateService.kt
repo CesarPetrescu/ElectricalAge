@@ -6,6 +6,8 @@ import mods.eln.Eln
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import net.minecraft.world.biome.Biome
+import net.minecraftforge.fml.relauncher.ReflectionHelper
+import java.lang.reflect.Field
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
 import java.util.Locale
@@ -93,7 +95,7 @@ object BiomeClimateService {
             }
         }
 
-        val biomeName = biome?.biomeName
+        val biomeName = biome?.let { biomeDisplayName(it) }
         val resolved = if (!biomeName.isNullOrBlank()) {
             findProfileForBiomeName(biomeName) ?: run {
                 synchronized(this) {
@@ -145,7 +147,7 @@ object BiomeClimateService {
             Biome.REGISTRY
                 .filterNotNull()
                 .forEach { biome ->
-                    val name = biome.biomeName ?: return@forEach
+                    val name = biomeDisplayName(biome) ?: return@forEach
                     if (findProfileForBiomeName(name) == null) {
                         missingProfileBiomeKeys.add(normalizeKey(name))
                         missingEntries.add(Biome.getIdForBiome(biome) to name)
@@ -429,6 +431,30 @@ object BiomeClimateService {
             "snow" -> "snow"
             else -> "none"
         }
+    }
+
+    /**
+     * Biome.getBiomeName() is @SideOnly(CLIENT) on 1.12 and stripped from the dedicated server, but
+     * the field behind it carries the same 1.7.10-style names the climate profiles are keyed by
+     * ("FrozenOcean", "Extreme Hills+"). Read the field directly on both sides; fall back to the
+     * registry path so a biome without a display name still gets a key.
+     */
+    private val biomeNameField: Field? by lazy {
+        try {
+            ReflectionHelper.findField(Biome::class.java, "biomeName", "field_76791_y")
+        } catch (_: Throwable) {
+            null
+        }
+    }
+
+    private fun biomeDisplayName(biome: Biome): String? {
+        val fromField = try {
+            biomeNameField?.get(biome) as? String
+        } catch (_: Throwable) {
+            null
+        }
+        if (!fromField.isNullOrBlank()) return fromField
+        return biome.registryName?.path
     }
 
     private fun normalizeKey(biomeName: String): String {
