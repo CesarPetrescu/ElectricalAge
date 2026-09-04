@@ -103,8 +103,7 @@ jobs:
           ready=0
 
           for _ in $(seq 1 240); do
-            if grep -Eqi 'Done \([^)]*\)!|Electrical Age server started' baseline-server.log 2>/dev/null || \
-               grep -ERqi --include='latest.log' 'Done \([^)]*\)!|Electrical Age server started' run 2>/dev/null; then
+            if grep -Eqi 'Done \([^)]*\)!|Electrical Age server started' baseline-server.log 2>/dev/null; then
               ready=1
               break
             fi
@@ -137,6 +136,7 @@ jobs:
           ALSOFT_DRIVERS: null
         run: |
           set -euo pipefail
+          rm -rf run/logs run/crash-reports
           : > baseline-client.log
 
           setsid xvfb-run -a -s '-screen 0 1280x720x24' ./gradlew runClient --no-daemon --stacktrace > baseline-client.log 2>&1 &
@@ -144,8 +144,8 @@ jobs:
           ready=0
 
           for _ in $(seq 1 300); do
-            if grep -Eqi 'Forge Mod Loader has successfully loaded|Sound engine started|OpenAL initialized|Created: [0-9]+x[0-9]+ textures-atlas|LWJGL Version' baseline-client.log 2>/dev/null || \
-               grep -ERqi --include='latest.log' 'Forge Mod Loader has successfully loaded|Sound engine started|OpenAL initialized|Created: [0-9]+x[0-9]+ textures-atlas|LWJGL Version' run 2>/dev/null; then
+            if grep -Eqi 'Forge Mod Loader has successfully loaded [0-9]+ mods' baseline-client.log 2>/dev/null && \
+               grep -Eqi 'Sound engine started|OpenAL initialized|Created: [0-9]+x[0-9]+ textures-atlas' baseline-client.log 2>/dev/null; then
               ready=1
               break
             fi
@@ -162,11 +162,11 @@ jobs:
           kill -KILL -- "-$pid" 2>/dev/null || true
           wait "$pid" 2>/dev/null || true
 
-          find run -type f -name 'latest.log' -print -exec tail -n 200 {} \; >> baseline-client.log 2>/dev/null || true
-          tail -n 250 baseline-client.log
+          find run -type f -name 'latest.log' -print -exec tail -n 250 {} \; >> baseline-client.log 2>/dev/null || true
+          tail -n 300 baseline-client.log
 
           if [[ "$ready" -ne 1 ]]; then
-            echo 'Client did not reach a recognizable initialized state.' >&2
+            echo 'Client did not finish Forge initialization and resource/audio startup.' >&2
             exit 1
           fi
 
