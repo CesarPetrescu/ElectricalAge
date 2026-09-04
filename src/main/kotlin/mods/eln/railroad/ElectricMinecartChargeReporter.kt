@@ -8,28 +8,28 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent
 
 class ElectricMinecartChargeReporter {
 
+    // 1.12.2 splits PlayerInteractEvent into per-action subclasses.
     @SubscribeEvent
-    fun onPlayerInteract(event: PlayerInteractEvent) {
+    fun onRightClickBlock(event: PlayerInteractEvent.RightClickBlock) = report(event)
+
+    @SubscribeEvent
+    fun onRightClickItem(event: PlayerInteractEvent.RightClickItem) = report(event)
+
+    private fun report(event: PlayerInteractEvent) {
         val player = event.entityPlayer ?: return
         val world = player.world
         if (world == null || world.isRemote) return
 
-        when (event.action) {
-            PlayerInteractEvent.Action.RIGHT_CLICK_AIR,
-            PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK -> {
-                val minecart = player.ridingEntity as? EntityElectricMinecart ?: return
-                val heldItem = player.heldItemMainhand ?: return
-                val multiMeter = Eln.multiMeterElement
-                val allMeter = Eln.allMeterElement
-                val holdingMeter = (multiMeter != null && multiMeter.checkSameItemStack(heldItem)) ||
-                        (allMeter != null && allMeter.checkSameItemStack(heldItem))
-                if (!holdingMeter) {
-                    return
-                }
-                val message = I18N.tr("Cart Energy: ") + Utils.plotEnergy(minecart.energyBufferJoules)
-                Utils.sendMessage(player, message)
-            }
-            else -> return
+        val minecart = player.ridingEntity as? EntityElectricMinecart ?: return
+        val heldItem = player.heldItemMainhand ?: return
+        val multiMeter = Eln.multiMeterElement
+        val allMeter = Eln.allMeterElement
+        val holdingMeter = (multiMeter != null && multiMeter.checkSameItemStack(heldItem)) ||
+                (allMeter != null && allMeter.checkSameItemStack(heldItem))
+        if (!holdingMeter) {
+            return
         }
+        val message = I18N.tr("Cart Energy: ") + Utils.plotEnergy(minecart.energyBufferJoules)
+        Utils.sendMessage(player, message)
     }
 }

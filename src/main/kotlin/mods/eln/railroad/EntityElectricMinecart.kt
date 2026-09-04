@@ -4,11 +4,13 @@ import mods.eln.Eln
 import mods.eln.misc.Coordinate
 import mods.eln.node.NodeManager
 import mods.eln.sim.mna.misc.MnaConst
-import net.minecraft.block.Block
+import net.minecraft.block.state.IBlockState
 import net.minecraft.entity.item.EntityMinecart
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.init.Blocks
 import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.util.EnumHand
+import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import kotlin.math.abs
 import kotlin.math.sign
@@ -64,16 +66,14 @@ class EntityElectricMinecart(world: World, x: Double, y: Double, z: Double): Ent
     var pushX: Double = 0.0
     var pushZ: Double = 0.0
 
-    override fun func_145821_a(
-        blockX: Int,
-        blockY: Int,
-        blockZ: Int,
-        speed: Double,
-        drag: Double,
-        block: Block?,
-        direction: Int
-    ) {
-        super.func_145821_a(blockX, blockY, blockZ, speed + 1, drag, block, direction)
+    /**
+     * 1.7.10 passed the speed cap into func_145821_a and this cart handed it "+1"; on 1.12.2 the cap is
+     * read through getMaxSpeed() inside moveAlongTrack, so the same bump lives there.
+     */
+    override fun getMaxSpeed(): Double = super.getMaxSpeed() + 1
+
+    override fun moveAlongTrack(pos: BlockPos, state: IBlockState) {
+        super.moveAlongTrack(pos, state)
         if (energyBufferJoules > 0) {
             val maxEnergy = 40.0
             var energyAvailable = maxEnergy
@@ -126,15 +126,16 @@ class EntityElectricMinecart(world: World, x: Double, y: Double, z: Double): Ent
         return null
     }
 
-    override fun interactFirst(player: EntityPlayer): Boolean {
+    override fun processInitialInteract(player: EntityPlayer, hand: EnumHand): Boolean {
+        if (super.processInitialInteract(player, hand)) return true
         if (player.isSneaking) return false
 
-        if (riddenByEntity != null && riddenByEntity != player) {
+        if (isBeingRidden && !isPassenger(player)) {
             return true
         }
 
         if (!world.isRemote) {
-            player.mountEntity(this)
+            player.startRiding(this)
         }
         return true
     }
@@ -155,15 +156,7 @@ class EntityElectricMinecart(world: World, x: Double, y: Double, z: Double): Ent
         }
     }
 
-    override fun getMinecartType(): Int {
-        return 0
-    }
+    override fun getType(): EntityMinecart.Type = EntityMinecart.Type.RIDEABLE
 
-    override fun func_145817_o(): Block? {
-        return Blocks.IRON_BLOCK
-    }
-
-    override fun func_145820_n(): Block? {
-        return Blocks.IRON_BLOCK
-    }
+    override fun getDefaultDisplayTile(): IBlockState = Blocks.IRON_BLOCK.defaultState
 }

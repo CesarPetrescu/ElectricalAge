@@ -5,7 +5,7 @@ import net.minecraft.block.BlockRailBase
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.world.World
-import mods.eln.misc.getBlock
+import mods.eln.misc.getBlockState
 
 class ElectricMinecartItem(name: String) : GenericItemUsingDamageDescriptor(name) {
     override fun onItemUse(
@@ -21,7 +21,7 @@ class ElectricMinecartItem(name: String) : GenericItemUsingDamageDescriptor(name
         vz: Float
     ): Boolean {
         if (world == null || stack == null) return false
-        return if (BlockRailBase.func_150051_a(world.getBlock(x, y, z))) {
+        return if (BlockRailBase.isRailBlock(world.getBlockState(x, y, z))) {
             if (!world.isRemote) {
                 val minecart = EntityElectricMinecart(
                     world,
@@ -30,7 +30,7 @@ class ElectricMinecartItem(name: String) : GenericItemUsingDamageDescriptor(name
                     (z.toFloat() + 0.5f).toDouble()
                 )
                 if (stack.hasDisplayName()) {
-                    minecart.setMinecartName(stack.displayName)
+                    minecart.customNameTag = stack.displayName
                 }
                 world.spawnEntity(minecart)
             }

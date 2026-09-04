@@ -1,7 +1,6 @@
 package mods.eln.craft
 
 import net.minecraftforge.fml.common.registry.EntityRegistry
-import net.minecraftforge.fml.common.registry.GameRegistry
 import mods.eln.Eln
 import mods.eln.entity.ReplicatorEntity
 import mods.eln.i18n.I18N
@@ -13,9 +12,10 @@ import mods.eln.railroad.EntityElectricMinecart
 import net.minecraft.init.Blocks
 import net.minecraft.init.Items
 import net.minecraft.item.ItemStack
-import net.minecraft.item.crafting.CraftingManager
 import net.minecraft.item.crafting.IRecipe
 import net.minecraft.launchwrapper.LogWrapper
+import net.minecraft.util.ResourceLocation
+import net.minecraftforge.fml.common.registry.ForgeRegistries
 import net.minecraftforge.oredict.OreDictionary
 import net.minecraftforge.oredict.ShapedOreRecipe
 import net.minecraftforge.oredict.ShapelessOreRecipe
@@ -174,14 +174,24 @@ object CraftingRecipes {
 
     private fun recipeExists(stack: ItemStack?): Boolean {
         if (stack == null) return false
-        val list = CraftingManager.getInstance().recipeList
-        for (o in list) {
-            if (o is IRecipe) {
-                if (o.recipeOutput == null) continue
-                if (areSame(stack, o.recipeOutput)) return true
-            }
+        for (o in ForgeRegistries.RECIPES) {
+            if (o.recipeOutput.isEmpty) continue
+            if (areSame(stack, o.recipeOutput)) return true
         }
         return false
+    }
+
+    /**
+     * 1.12.2: recipes live in a Forge registry and need a unique name. Every Eln recipe is registered
+     * through here, named after its output plus a running index (several recipes share an output).
+     */
+    private var recipeIndex = 0
+    private val recipeGroup = ResourceLocation(Eln.MODID, "recipes")
+
+    private fun registerRecipe(recipe: IRecipe, output: ItemStack) {
+        val base = output.item.registryName?.path ?: "recipe"
+        recipe.registryName = ResourceLocation(Eln.MODID, "${base}_${output.metadata}_${recipeIndex++}")
+        ForgeRegistries.RECIPES.register(recipe)
     }
 
     private fun craftBrush() {
@@ -1313,7 +1323,7 @@ object CraftingRecipes {
     }
 
     private fun addShapelessRecipe(output: ItemStack, vararg params: Any) {
-        GameRegistry.addRecipe(ShapelessOreRecipe(output, *params))
+        registerRecipe(ShapelessOreRecipe(recipeGroup, output, *params), output)
     }
 
     private fun recipeElectricalMotor() {
@@ -2726,7 +2736,7 @@ object CraftingRecipes {
     }
 
     private fun addRecipe(output: ItemStack, vararg params: Any) {
-        GameRegistry.addRecipe(ShapedOreRecipe(output, *params))
+        registerRecipe(ShapedOreRecipe(recipeGroup, output, *params), output)
     }
 
     private fun recipeTool() {
@@ -2756,16 +2766,11 @@ object CraftingRecipes {
         val redColor = (255 shl 16)
         val orangeColor = (255 shl 16) + (200 shl 8)
 
-        var replicatorRegistrationId = Eln.config.getIntOrElse("entities.replicator.entityId", -1)
-        if (replicatorRegistrationId == -1) {
-            replicatorRegistrationId = EntityRegistry.findGlobalUniqueEntityId()
-            Eln.config.setInt("entities.replicator.entityId", replicatorRegistrationId)
-            Eln.config.save()
-        }
-        println("Replicator registred at$replicatorRegistrationId")
-        EntityRegistry.registerGlobalEntityID(
-            ReplicatorEntity::class.java, I18N.TR_NAME(I18N.Type.ENTITY, "EAReplicator"),
-            replicatorRegistrationId, redColor, orangeColor
+        // 1.12.2: entity ids are per-mod, the global id space (and the config key that stored one) is gone.
+        EntityRegistry.registerModEntity(
+            ResourceLocation(Eln.MODID, "replicator"), ReplicatorEntity::class.java,
+            I18N.TR_NAME(I18N.Type.ENTITY, "EAReplicator"), ENTITY_ID_REPLICATOR, Eln.instance,
+            80, 3, true, redColor, orangeColor
         )
 
         ReplicatorEntity.dropList.add(Eln.findItemStack("Iron Dust", 1))
@@ -2777,14 +2782,16 @@ object CraftingRecipes {
     }
 
     private fun registerElectricMinecart() {
-        val electricMinecartId = EntityRegistry.findGlobalUniqueEntityId()
-        println("Electric Minecart registered at $electricMinecartId")
-        EntityRegistry.registerGlobalEntityID(
-            EntityElectricMinecart::class.java,
-            I18N.TR_NAME(I18N.Type.ENTITY, "ElectricMinecart"),
-            electricMinecartId
+        EntityRegistry.registerModEntity(
+            ResourceLocation(Eln.MODID, "electric_minecart"), EntityElectricMinecart::class.java,
+            I18N.TR_NAME(I18N.Type.ENTITY, "ElectricMinecart"), ENTITY_ID_ELECTRIC_MINECART, Eln.instance,
+            80, 3, true
         )
     }
+
+    private const val ENTITY_ID_REPLICATOR = 0
+    private const val ENTITY_ID_ELECTRIC_MINECART = 1
+
     private fun recipeChristmas(){
         addShapelessRecipe(Eln.findItemStack("Christmas Tree", 1), findItemStack("String Lights"), ItemStack(Blocks.SAPLING, 1, 1), findItemStack("String Lights"))
         addRecipe(
