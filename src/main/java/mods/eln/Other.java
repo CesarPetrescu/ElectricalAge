@@ -13,16 +13,17 @@ public class Other {
     public static double wattsToOC;
     public static double wattsToRf;
 
-    public static final String modIdIc2 = "IC2";
-    public static final String modIdOc = "OpenComputers";
-    public static final String modIdTe = "Eln";
-    public static final String modIdCc = "ComputerCraft";
+    // 1.12.2 mod ids are lower-case (ic2.api.info.Info.MOD_ID, li.cil.oc.api.API.ID_OWNER, CC-Tweaked's mcmod.info).
+    public static final String modIdIc2 = "ic2";
+    public static final String modIdOc = "opencomputers";
+    public static final String modIdCc = "computercraft";
 
     public static void check() {
         ic2Loaded = Loader.isModLoaded(modIdIc2);
         ocLoaded = Loader.isModLoaded(modIdOc);
         ccLoaded = Loader.isModLoaded(modIdCc);
-        teLoaded = Loader.isModLoaded(modIdTe);
+        // The RF bridge now speaks Forge Energy, which ships with Forge itself.
+        teLoaded = true;
     }
 
     public static double getWattsToEu() {

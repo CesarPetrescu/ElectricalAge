@@ -1,10 +1,10 @@
 package mods.eln.simplenode.energyconverter
 
-import cofh.api.energy.IEnergyHandler
 import net.minecraftforge.fml.common.Optional
 import net.minecraftforge.fml.common.Optional.InterfaceList
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
+import ic2.api.energy.tile.IEnergyAcceptor
 import ic2.api.energy.tile.IEnergySource
 import li.cil.oc.api.network.Environment
 import li.cil.oc.api.network.Message
@@ -15,13 +15,16 @@ import mods.eln.node.simple.SimpleNodeEntity
 import net.minecraft.client.gui.GuiScreen
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.EnumFacing
+import net.minecraft.util.ITickable
+import net.minecraftforge.common.capabilities.Capability
+import net.minecraftforge.energy.CapabilityEnergy
+import net.minecraftforge.energy.IEnergyStorage
 import java.io.DataInputStream
 import java.io.IOException
 
-@InterfaceList(Optional.Interface(iface = "ic2.api.energy.tile.IEnergySource", modid = Other.modIdIc2), Optional.Interface(iface = "cofh.api.energy.IEnergyHandler", modid = Other.modIdTe), Optional.Interface(iface = "li.cil.oc.api.network.Environment", modid = Other.modIdOc))
-class EnergyConverterElnToOtherEntity : SimpleNodeEntity("ElnToOther"), IEnergySource, Environment, IEnergyHandler {
+@InterfaceList(Optional.Interface(iface = "ic2.api.energy.tile.IEnergySource", modid = Other.modIdIc2), Optional.Interface(iface = "li.cil.oc.api.network.Environment", modid = Other.modIdOc))
+class EnergyConverterElnToOtherEntity : SimpleNodeEntity("ElnToOther"), ITickable, IEnergySource, Environment {
     @JvmField
     var selectedResistance = 0.0
     @JvmField
@@ -49,7 +52,7 @@ class EnergyConverterElnToOtherEntity : SimpleNodeEntity("ElnToOther"), IEnergyS
 
     // ********************IC2********************
     @Optional.Method(modid = Other.modIdIc2)
-    override fun emitsEnergyTo(receiver: TileEntity, direction: EnumFacing): Boolean {
+    override fun emitsEnergyTo(receiver: IEnergyAcceptor, direction: EnumFacing): Boolean {
         if (world.isRemote) return false
         node ?: return false
         return true
@@ -118,47 +121,49 @@ class EnergyConverterElnToOtherEntity : SimpleNodeEntity("ElnToOther"), IEnergyS
 	 * canConnect(EnumFacing side) { if(front == null) return false;
 	 * if(front.back() == Direction.from(side)) return true; return false; }
 	 */
-    // *************** RF **************
-    @Optional.Method(modid = Other.modIdTe)
-    override fun canConnectEnergy(from: EnumFacing): Boolean {
-        // Utils.println("*****canConnectEnergy*****");
-        if (world.isRemote) return false
+    // *************** Forge Energy (was cofh RF) **************
+    private val energyStorage = object : IEnergyStorage {
+        override fun receiveEnergy(maxReceive: Int, simulate: Boolean): Int = 0
+
+        override fun extractEnergy(maxExtract: Int, simulate: Boolean): Int {
+            if (world.isRemote) return 0
+            if (node == null) return 0
+            val node = node as EnergyConverterElnToOtherNode
+            val extract = Math.max(0, Math.min(maxExtract, node.availableEnergyInModUnits(Other.getWattsToRf()).toInt()))
+            if (!simulate) node.drawEnergy(extract.toDouble(), Other.getWattsToRf())
+            return extract
+        }
+
+        override fun getEnergyStored(): Int = 0
+
+        override fun getMaxEnergyStored(): Int = 0
+
+        override fun canExtract(): Boolean = true
+
+        override fun canReceive(): Boolean = false
+    }
+
+    private fun canConnectEnergy(): Boolean {
+        if (world?.isRemote != false) return false
         if (node == null) return false
         return true
     }
 
-    @Optional.Method(modid = Other.modIdTe)
-    override fun receiveEnergy(from: EnumFacing, maxReceive: Int, simulate: Boolean): Int {
-        // Utils.println("*****receiveEnergy*****");
-        return 0
+    override fun hasCapability(capability: Capability<*>, facing: EnumFacing?): Boolean {
+        if (capability === CapabilityEnergy.ENERGY) return canConnectEnergy()
+        return super.hasCapability(capability, facing)
     }
 
-    @Optional.Method(modid = Other.modIdTe)
-    override fun extractEnergy(from: EnumFacing, maxExtract: Int, simulate: Boolean): Int {
-        // Utils.println("*****extractEnergy*****");
-        if (world.isRemote) return 0
-        if (node == null) return 0
-        val node = node as EnergyConverterElnToOtherNode
-        val extract = Math.max(0, Math.min(maxExtract, node.availableEnergyInModUnits(Other.getWattsToRf()).toInt()))
-        if (!simulate) node.drawEnergy(extract.toDouble(), Other.getWattsToRf())
-        return extract
-    }
-
-    @Optional.Method(modid = Other.modIdTe)
-    override fun getEnergyStored(from: EnumFacing): Int {
-        // Utils.println("*****getEnergyStored*****");
-        return 0
-    }
-
-    @Optional.Method(modid = Other.modIdTe)
-    override fun getMaxEnergyStored(from: EnumFacing): Int {
-        // Utils.println("*****getMaxEnergyStored*****");
-        return 0
+    override fun <T> getCapability(capability: Capability<T>, facing: EnumFacing?): T? {
+        if (capability === CapabilityEnergy.ENERGY) {
+            return if (canConnectEnergy()) CapabilityEnergy.ENERGY.cast(energyStorage) else null
+        }
+        return super.getCapability(capability, facing)
     }
 
     // ***************** Bridges ****************
-    override fun updateEntity() {
-        super.updateEntity()
+    // 1.12.2: only ITickable tile entities tick; there is no TileEntity.updateEntity() to chain to.
+    override fun update() {
         if (Other.ic2Loaded) EnergyConverterElnToOtherFireWallIc2.updateEntity(this)
         if (Other.ocLoaded) getOc().updateEntity()
         if (Other.teLoaded) EnergyConverterElnToOtherFireWallRf.updateEntity(this)
@@ -185,9 +190,10 @@ class EnergyConverterElnToOtherEntity : SimpleNodeEntity("ElnToOther"), IEnergyS
         if (Other.ocLoaded) getOc().readFromNBT(nbt)
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound) {
+    override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(nbt)
         if (Other.ocLoaded) getOc().writeToNBT(nbt)
+        return nbt
     }
 
     init {

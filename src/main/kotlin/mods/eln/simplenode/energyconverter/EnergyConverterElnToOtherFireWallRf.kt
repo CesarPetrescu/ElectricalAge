@@ -1,9 +1,13 @@
 package mods.eln.simplenode.energyconverter
 
-import cofh.api.energy.IEnergyHandler
 import mods.eln.Other
 import mods.eln.misc.Direction
+import net.minecraftforge.energy.CapabilityEnergy
+import net.minecraftforge.energy.IEnergyStorage
 
+/**
+ * Pushes energy into neighbouring Forge Energy receivers (the 1.12.2 successor of the cofh RF API).
+ */
 object EnergyConverterElnToOtherFireWallRf {
 
     fun updateEntity(e: EnergyConverterElnToOtherEntity) {
@@ -11,15 +15,18 @@ object EnergyConverterElnToOtherFireWallRf {
         if (e.node == null) return
         val node = e.node as EnergyConverterElnToOtherNode
 
-        val energySinkList: List<Pair<IEnergyHandler, Direction>> = Direction.all
-            .mapNotNull { Pair(it.applyToTileEntity(e), it) }
-            .filter{ it.first is IEnergyHandler }
-            .map { Pair(it.first as IEnergyHandler, it.second) }
+        val energySinkList: List<IEnergyStorage> = Direction.all.mapNotNull { direction ->
+            val neighbour = direction.applyToTileEntity(e) ?: return@mapNotNull null
+            // Ask the neighbour for the face that touches us.
+            val side = direction.inverse.toFacing()
+            if (!neighbour.hasCapability(CapabilityEnergy.ENERGY, side)) return@mapNotNull null
+            neighbour.getCapability(CapabilityEnergy.ENERGY, side)?.takeIf { it.canReceive() }
+        }
         if (energySinkList.isEmpty()) return
         val rfUsed = energySinkList.map {
             val rfAvailable = (node.availableEnergyInModUnits(Other.getWattsToRf()) / energySinkList.size)
             // receiveEnergy takes RF in, gives out RF
-            val rfUsed = it.first.receiveEnergy(it.second.toForge(), rfAvailable.toInt(), false).toDouble()
+            val rfUsed = it.receiveEnergy(rfAvailable.toInt(), false).toDouble()
             rfUsed
         }.sum()
         node.drawEnergy(rfUsed, Other.getWattsToRf())

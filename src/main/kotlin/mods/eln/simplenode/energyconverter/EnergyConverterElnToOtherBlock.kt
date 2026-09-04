@@ -11,7 +11,7 @@ import net.minecraft.tileentity.TileEntity
 import net.minecraft.world.IBlockAccess
 import net.minecraft.world.World
 
-class EnergyConverterElnToOtherBlock(private val descriptor: EnergyConverterElnToOtherDescriptor) : SimpleNodeBlock(Material.packedIce) {
+class EnergyConverterElnToOtherBlock(private val descriptor: EnergyConverterElnToOtherDescriptor) : SimpleNodeBlock(Material.PACKED_ICE) {
 
     override fun createNewTileEntity(var1: World, var2: Int): TileEntity {
         return EnergyConverterElnToOtherEntity()
