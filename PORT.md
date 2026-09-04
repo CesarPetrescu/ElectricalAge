@@ -83,6 +83,19 @@ It moves in steps as base classes land and their subclasses inherit new signatur
     1244  ItemStack count API, I18N off LanguageRegistry
     1153  IIcon removal
     1058  NodeBlock, NodeBlockEntity, SixNodeBlock, TransparentNodeBlock
+     924  inventories, fluids, node items, simple nodes
+     873  Utils and UtilsClient
+     802  floodlight beam math (immutable Vec3d)
+     737  registration on RegistryEvent
+     651  second mechanical pass (BlockPos-folded types)
+     590  ghost and light blocks on blockstates
+     526  rotation helpers, /eln console
+
+Kotlin files fully clean: 314 of 425.
+
+Note that Java has not been compiled yet - in a mixed module Kotlin compiles
+first, so the 446 Java files carry an unmeasured error surface behind this
+number.
 
 ## Tooling
 
