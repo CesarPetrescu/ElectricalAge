@@ -71,7 +71,7 @@ jobs:
           java -version 2>&1 | tee baseline-java.log
           git rev-parse HEAD | tee baseline-commit.log
           sha256sum gradle/wrapper/gradle-wrapper.jar | tee baseline-wrapper.log
-          xrandr --version 2>&1 | tee baseline-xrandr-version.log
+          xrandr --version 2>&1 | tee baseline-xrandr-version.log || true
 
       - name: Set up decompiled workspace
         working-directory: rewired
