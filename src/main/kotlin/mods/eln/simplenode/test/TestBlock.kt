@@ -6,7 +6,7 @@ import net.minecraft.block.material.Material
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.world.World
 
-class TestBlock : SimpleNodeBlock(Material.packedIce) {
+class TestBlock : SimpleNodeBlock(Material.PACKED_ICE) {
     override fun createNewTileEntity(world: World?, meta: Int): TileEntity {
         return TestEntity()
     }

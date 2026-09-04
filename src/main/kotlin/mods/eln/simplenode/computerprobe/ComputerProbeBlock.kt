@@ -8,7 +8,7 @@ import net.minecraft.block.material.Material
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.world.World
 
-class ComputerProbeBlock : SimpleNodeBlock(Material.packedIce) {
+class ComputerProbeBlock : SimpleNodeBlock(Material.PACKED_ICE) {
 
     override fun createNewTileEntity(world: World?, meta: Int): TileEntity {
         return ComputerProbeEntity()

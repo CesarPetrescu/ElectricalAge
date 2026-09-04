@@ -393,10 +393,10 @@ public class Eln {
                 (SharedItem) new SharedItem().setCreativeTab(creativeTabOther).setMaxStackSize(1).setTranslationKey(
                         "sharedItemStackOne");
 
-        transparentNodeBlock = (TransparentNodeBlock) new TransparentNodeBlock(Material.iron,
+        transparentNodeBlock = (TransparentNodeBlock) new TransparentNodeBlock(Material.IRON,
                 TransparentNodeEntity.class).setCreativeTab(creativeTabOther);
         sixNodeBlock =
-                (SixNodeBlock) new SixNodeBlock(Material.plants, SixNodeEntity.class).setCreativeTab(creativeTabOther);
+                (SixNodeBlock) new SixNodeBlock(Material.PLANTS, SixNodeEntity.class).setCreativeTab(creativeTabOther);
 
         ghostBlock = (GhostBlock) new GhostBlock();
         lightBlock = new LightBlock();

@@ -25,7 +25,7 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 
 
-class DeviceProbeBlock: SimpleNodeBlock(Material.ice) {
+class DeviceProbeBlock: SimpleNodeBlock(Material.ICE) {
 
     override fun createNewTileEntity(world: World?, metadata: Int): TileEntity {
         return DeviceProbeEntity()

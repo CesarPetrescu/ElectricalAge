@@ -107,6 +107,8 @@ for my $file (@ARGV) {
 
     # Blocks.foo_bar / Items.foo_bar became SCREAMING_SNAKE constants in 1.11.
     $src =~ s/\b(Blocks|Items)\.([a-z][a-z0-9_]*)\b/"$1." . uc($2)/ge;
+    # Material.packedIce / Material.iron became Material.PACKED_ICE / Material.IRON in 1.9.
+    $src =~ s/\bMaterial\.([a-z][a-zA-Z0-9]*)\b(?!\s*\()/"Material." . uc($1 =~ s|([a-z])([A-Z])|$1_$2|gr)/ge;
 
     # net.minecraft.util.math.Vec3d.createVectorHelper style leftovers
     $src =~ s/\bVec3dd\b/Vec3d/g;

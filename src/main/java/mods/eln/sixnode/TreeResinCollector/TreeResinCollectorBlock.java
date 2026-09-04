@@ -12,7 +12,7 @@ import net.minecraft.world.World;
 public class TreeResinCollectorBlock extends BlockContainer {
 
     public TreeResinCollectorBlock(int id) {
-        super(Material.wood);
+        super(Material.WOOD);
         setTranslationKey("TreeResinCollector");
     }
 

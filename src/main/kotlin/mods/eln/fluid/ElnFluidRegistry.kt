@@ -15,6 +15,6 @@ enum class ElnFluidRegistry(
     val isBucketable: Boolean
 ) {
     //name(Material,Color,Density,Viscosity, luminosity, isGaseous, isBucktable),
-    hot_water(Material.water,4644607, 1000, 1000, 0, 333, false, true),
-    cold_water(Material.water,4644607, 1000, 1000, 0, 288, false, true)
+    hot_water(Material.WATER,4644607, 1000, 1000, 0, 333, false, true),
+    cold_water(Material.WATER,4644607, 1000, 1000, 0, 288, false, true)
 }
