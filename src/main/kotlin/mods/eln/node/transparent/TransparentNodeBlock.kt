@@ -5,6 +5,7 @@ import mods.eln.node.NodeBase
 import mods.eln.node.NodeBlock
 import mods.eln.node.NodeBlockEntity
 import net.minecraft.block.material.Material
+import net.minecraft.block.state.IBlockState
 import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.EntityPlayer
@@ -12,7 +13,11 @@ import net.minecraft.entity.player.EntityPlayerMP
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.tileentity.TileEntity
+import net.minecraft.util.EnumBlockRenderType
+import net.minecraft.util.EnumFacing
+import net.minecraft.util.NonNullList
 import net.minecraft.util.math.AxisAlignedBB
+import net.minecraft.util.math.BlockPos
 import net.minecraft.world.IBlockAccess
 import net.minecraft.world.World
 import java.lang.RuntimeException
@@ -23,27 +28,25 @@ import mods.eln.misc.getTileEntity
 
 class TransparentNodeBlock(material: Material?, tileEntityClass: Class<*>?) : NodeBlock(material, tileEntityClass!!, 0) {
 
-    override fun getSubBlocks(par1: Item, tab: CreativeTabs?, subItems: List<*>?) {
-        // Block#getSubBlocks exposes a raw list to Kotlin, but the item path consumes ItemStack entries.
-        @Suppress("UNCHECKED_CAST")
-        Eln.transparentNodeItem.getSubItems(par1, tab, subItems as MutableList<ItemStack?>?)
+    override fun getSubBlocks(tab: CreativeTabs, subItems: NonNullList<ItemStack>) {
+        Eln.transparentNodeItem.getSubItems(tab, subItems)
     }
 
-    override fun isOpaqueCube(): Boolean {
+    override fun isOpaqueCube(state: IBlockState): Boolean {
         return false
     }
 
-    override fun renderAsNormalBlock(): Boolean {
+    override fun isFullCube(state: IBlockState): Boolean {
         return false
     }
 
-    override fun getRenderType(): Int {
-        return -1
+    override fun getRenderType(state: IBlockState): EnumBlockRenderType {
+        return EnumBlockRenderType.INVISIBLE
     }
 
-    override fun removedByPlayer(world: World, entityPlayer: EntityPlayer, x: Int, y: Int, z: Int, willHarvest: Boolean): Boolean {
+    override fun removedByPlayer(state: IBlockState, world: World, pos: BlockPos, entityPlayer: EntityPlayer, willHarvest: Boolean): Boolean {
         if (!world.isRemote) {
-            val entity = world.getTileEntity(x, y, z) as? NodeBlockEntity
+            val entity = world.getTileEntity(pos) as? NodeBlockEntity
             if (entity != null) {
                 val nodeBase: NodeBase? = entity.node
                 if (nodeBase is TransparentNode) {
@@ -51,20 +54,20 @@ class TransparentNodeBlock(material: Material?, tileEntityClass: Class<*>?) : No
                 }
             }
         }
-        @Suppress("DEPRECATION")
-        return super.removedByPlayer(world, entityPlayer, x, y, z)
+        return super.removedByPlayer(state, world, pos, entityPlayer, willHarvest)
     }
 
-    override fun getDamageValue(world: World, x: Int, y: Int, z: Int): Int {
-        val tile = world.getTileEntity(x, y, z)
-        return if (tile != null && tile is TransparentNodeEntity) (world.getTileEntity(x, y, z) as TransparentNodeEntity).getDamageValue(world, x, y, z) else 0
+    /** See the note on SixNodeBlock.getDamageValue: no longer an override on 1.12.2. */
+    fun getDamageValue(world: World, pos: BlockPos): Int {
+        val tile = world.getTileEntity(pos)
+        return if (tile is TransparentNodeEntity) tile.getDamageValue(world, pos.x, pos.y, pos.z) else 0
     }
 
-    override fun getLightOpacity(world: IBlockAccess, x: Int, y: Int, z: Int): Int {
-        return world.getBlockMetadata(x, y, z) and 3 shl 6
+    override fun getLightOpacity(state: IBlockState, world: IBlockAccess, pos: BlockPos): Int {
+        return getMetaFromState(state) and 3 shl 6
     }
 
-    override fun getItemDropped(meta: Int, random: Random, fortune: Int): Item? {
+    override fun getItemDropped(state: IBlockState, random: Random, fortune: Int): Item? {
         return null
     }
 
@@ -72,21 +75,25 @@ class TransparentNodeBlock(material: Material?, tileEntityClass: Class<*>?) : No
         return 0
     }
 
-    override fun canPlaceBlockOnSide(par1World: World, par2: Int, par3: Int, par4: Int, par5: Int): Boolean {
+    override fun canPlaceBlockOnSide(world: World, pos: BlockPos, side: EnumFacing): Boolean {
         return true
     }
 
-    override fun addCollisionBoxesToList(world: World, x: Int, y: Int, z: Int, par5AxisAlignedBB: AxisAlignedBB, list: List<*>?, entity: Entity?) {
-        val tileEntity = world.getTileEntity(x, y, z)
-        if (tileEntity == null || tileEntity !is TransparentNodeEntity) {
-            super.addCollisionBoxesToList(world, x, y, z, par5AxisAlignedBB, list, entity)
+    override fun addCollisionBoxToList(
+        state: IBlockState, world: World, pos: BlockPos, entityBox: AxisAlignedBB,
+        collidingBoxes: MutableList<AxisAlignedBB>, entity: Entity?, isActualState: Boolean
+    ) {
+        val tileEntity = world.getTileEntity(pos)
+        if (tileEntity !is TransparentNodeEntity) {
+            super.addCollisionBoxToList(state, world, pos, entityBox, collidingBoxes, entity, isActualState)
         } else {
-            // Forge passes a raw collision list here; the tile entity only appends AxisAlignedBB instances.
-            @Suppress("UNCHECKED_CAST") tileEntity.addCollisionBoxesToList(par5AxisAlignedBB, list as MutableList<AxisAlignedBB?>, null)
+            @Suppress("UNCHECKED_CAST")
+            tileEntity.addCollisionBoxesToList(entityBox, collidingBoxes as MutableList<AxisAlignedBB?>, null)
         }
     }
 
-    override fun createTileEntity(var1: World, meta: Int): TileEntity {
+    override fun createTileEntity(world: World, state: IBlockState): TileEntity {
+        val meta = getMetaFromState(state)
         try {
             for (tag in EntityMetaTag.values()) {
                 if (tag.meta == meta) {
