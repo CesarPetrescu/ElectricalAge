@@ -76,7 +76,7 @@ fun IBlockAccess.getTileEntity(x: Int, y: Int, z: Int): TileEntity? =
     getTileEntity(BlockPos(x, y, z))
 
 fun World.getIndirectPowerLevelTo(x: Int, y: Int, z: Int, side: Int): Int =
-    getRedstonePower(BlockPos(x, y, z), EnumFacing.getFront(side))
+    getRedstonePower(BlockPos(x, y, z), EnumFacing.byIndex(side))
 
 /** 1.7.10's `World.markBlockForUpdate`: re-send the block to watching clients. */
 fun World.markBlockForUpdate(pos: BlockPos) {
@@ -85,3 +85,9 @@ fun World.markBlockForUpdate(pos: BlockPos) {
 }
 
 fun World.markBlockForUpdate(x: Int, y: Int, z: Int) = markBlockForUpdate(BlockPos(x, y, z))
+
+// ------------------------------------------------------------- block queries
+
+/** 1.7.10's `Block.isReplaceable(world, x, y, z)`. */
+fun Block.isReplaceable(world: IBlockAccess, x: Int, y: Int, z: Int): Boolean =
+    isReplaceable(world, BlockPos(x, y, z))

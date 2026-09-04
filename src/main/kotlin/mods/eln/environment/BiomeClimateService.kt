@@ -3,6 +3,7 @@ package mods.eln.environment
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import mods.eln.Eln
+import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import net.minecraft.world.biome.Biome
 import java.io.InputStreamReader
@@ -39,7 +40,7 @@ object BiomeClimateService {
         ensureLoaded()
 
         val weather = getWeatherSnapshot(world)
-        val biome = world.getBiome(x, z)
+        val biome = world.getBiome(BlockPos(x, y, z))
         val profile = resolveProfileForBiome(biome)
 
         val dayBlend = dayBlendForWorldTicks(world.worldTime)
@@ -88,7 +89,7 @@ object BiomeClimateService {
     private fun resolveProfileForBiome(biome: Biome?): BiomeClimateProfile {
         if (biome != null) {
             synchronized(this) {
-                profilesByBiomeId[biome.biomeID]?.let { return it }
+                profilesByBiomeId[Biome.getIdForBiome(biome)]?.let { return it }
             }
         }
 
@@ -106,7 +107,7 @@ object BiomeClimateService {
 
         if (biome != null) {
             synchronized(this) {
-                profilesByBiomeId[biome.biomeID] = resolved
+                profilesByBiomeId[Biome.getIdForBiome(biome)] = resolved
             }
         }
         return resolved
@@ -141,13 +142,13 @@ object BiomeClimateService {
             }
 
             val missingEntries = ArrayList<Pair<Int, String>>()
-            Biome.getBiomeGenArray()
+            Biome.REGISTRY
                 .filterNotNull()
                 .forEach { biome ->
                     val name = biome.biomeName ?: return@forEach
                     if (findProfileForBiomeName(name) == null) {
                         missingProfileBiomeKeys.add(normalizeKey(name))
-                        missingEntries.add(biome.biomeID to name)
+                        missingEntries.add(Biome.getIdForBiome(biome) to name)
                     }
                 }
 
@@ -232,7 +233,7 @@ object BiomeClimateService {
 
     private fun Biome.safeTemperature(x: Int, y: Int, z: Int): Float {
         return try {
-            getFloatTemperature(x, y, z)
+            getTemperature(BlockPos(x, y, z))
         } catch (_: Exception) {
             0.8f
         }
@@ -336,7 +337,7 @@ object BiomeClimateService {
     }
 
     private fun getWeatherSnapshot(world: World): WeatherSnapshot {
-        val dimension = world.provider.dimensionId
+        val dimension = world.provider.dimension
         val tick = world.totalWorldTime
 
         synchronized(this) {

@@ -37,6 +37,10 @@ import net.minecraft.init.Items
 import net.minecraft.inventory.IInventory
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.util.EnumActionResult
+import net.minecraft.util.EnumFacing
+import net.minecraft.util.EnumHand
+import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import mods.eln.i18n.I18N.tr
 import java.util.concurrent.Executors
@@ -44,7 +48,9 @@ import kotlin.math.abs
 import kotlin.math.floor
 import mods.eln.misc.getBlock
 import mods.eln.misc.getBlockMetadata
+import mods.eln.misc.getBlockState
 import mods.eln.misc.getTileEntity
+import mods.eln.misc.isReplaceable
 
 object FalstadImporter {
     private const val DEFAULT_FALSTAD_CURRENT_SOURCE_AMPS = 0.01
@@ -71,14 +77,14 @@ object FalstadImporter {
 
     fun importFromClipboardAsync(player: EntityPlayerMP, netlist: String) {
         val playerName = player.name
-        val dimension = player.world.provider.dimensionId
+        val dimension = player.world.provider.dimension
         planningExecutor.execute {
             val parseResult = try {
                 FalstadDeviceParser.parse(netlist)
             } catch (_: Exception) {
                 Eln.delayedTask.add(object : mods.eln.server.DelayedTaskManager.ITask {
                     override fun run() {
-                        val livePlayer = player.mcServer.playerList.func_152612_a(playerName)
+                        val livePlayer = player.server.playerList.getPlayerByUsername(playerName)
                         if (livePlayer != null) {
                             sendMessage(livePlayer, tr("Falstad import: clipboard is not valid Falstad data."))
                         }
@@ -89,8 +95,8 @@ object FalstadImporter {
             val plan = FalstadLayoutPlanner.plan(parseResult)
             Eln.delayedTask.add(object : mods.eln.server.DelayedTaskManager.ITask {
                 override fun run() {
-                    val livePlayer = player.mcServer.playerList.func_152612_a(playerName)
-                    if (livePlayer == null || livePlayer.world.provider.dimensionId != dimension) {
+                    val livePlayer = player.server.playerList.getPlayerByUsername(playerName)
+                    if (livePlayer == null || livePlayer.world.provider.dimension != dimension) {
                         return
                     }
                     importPlanned(livePlayer, plan)
@@ -502,7 +508,8 @@ object FalstadImporter {
         val y = area.groundY
         val z = area.originZ + point.y
         val stack = descriptor.newItemStack(1)
-        val placed = Eln.sixNodeItem.onItemUse(stack, player, world, x, y, z, 1, 0.5f, 1.0f, 0.5f)
+        val placed = Eln.sixNodeItem.onItemUse(stack, player, world, BlockPos(x, y, z), EnumHand.MAIN_HAND,
+            EnumFacing.UP, 0.5f, 1.0f, 0.5f) == EnumActionResult.SUCCESS
         if (!placed) {
             val failureSummary = logPlacementFailure(world, player, x, y, z, descriptor, front, stack)
             return PlacementResult(false, failureSummary)
@@ -542,8 +549,8 @@ object FalstadImporter {
         val targetBlock = world.getBlock(x, targetY, z)
         val targetMeta = world.getBlockMetadata(x, targetY, z)
         val targetTile = world.getTileEntity(x, targetY, z)?.javaClass?.simpleName ?: "none"
-        val canEdit = player.canPlayerEdit(x, y, z, 1, stack)
-        val canPlaceOnSide = Eln.sixNodeItem.func_150936_a(world, x, y, z, 1, player, stack)
+        val canEdit = player.canPlayerEdit(BlockPos(x, y, z), EnumFacing.UP, stack)
+        val canPlaceOnSide = Eln.sixNodeItem.canPlaceBlockOnSide(world, BlockPos(x, y, z), EnumFacing.UP, player, stack)
         val supportReplaceable = supportBlock.isReplaceable(world, x, y, z)
         val targetReplaceable = targetBlock.isReplaceable(world, x, targetY, z)
         val sixNodeDescriptor = Eln.sixNodeItem.getDescriptor(stack) as? SixNodeDescriptor
@@ -559,7 +566,7 @@ object FalstadImporter {
             descriptor.name,
             front,
             resolvedFront,
-            world.provider.dimensionId,
+            world.provider.dimension,
             player.posX,
             player.posY,
             player.posZ,
@@ -571,7 +578,7 @@ object FalstadImporter {
             z,
             Block.REGISTRY.getNameForObject(supportBlock),
             supportMeta,
-            supportBlock.material.isSolid,
+            world.getBlockState(x, y, z).material.isSolid,
             supportReplaceable,
             resolvedX,
             targetY,
@@ -980,7 +987,7 @@ object FalstadImporter {
     }
 
     private fun isSolidSupport(world: World, x: Int, y: Int, z: Int, block: Block): Boolean {
-        return block !== Blocks.AIR && block.material.isSolid && !block.isReplaceable(world, x, y, z)
+        return block !== Blocks.AIR && world.getBlockState(x, y, z).material.isSolid && !block.isReplaceable(world, x, y, z)
     }
 
     private fun isReplaceableAbove(world: World, x: Int, y: Int, z: Int): Boolean {

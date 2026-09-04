@@ -48,8 +48,16 @@ class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b
     override fun onItemUse(
         player: EntityPlayer, world: World, posIn: BlockPos, hand: EnumHand,
         facing: EnumFacing, hitX: Float, hitY: Float, hitZ: Float
+    ): EnumActionResult = onItemUse(player.getHeldItem(hand), player, world, posIn, hand, facing, hitX, hitY, hitZ)
+
+    /**
+     * 1.7.10 passed the stack in; 1.12.2 reads it from the hand. Programmatic placement (the Falstad
+     * importer) still needs to place a stack that is not in anyone's hand, so the body takes it explicitly.
+     */
+    fun onItemUse(
+        stack: ItemStack, player: EntityPlayer, world: World, posIn: BlockPos, hand: EnumHand,
+        facing: EnumFacing, hitX: Float, hitY: Float, hitZ: Float
     ): EnumActionResult {
-        val stack = player.getHeldItem(hand)
         var pos = posIn
         var side = facing
         val state = world.getBlockState(pos)
