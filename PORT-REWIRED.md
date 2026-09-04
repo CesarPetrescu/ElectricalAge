@@ -73,8 +73,10 @@ climate, utility cables, MQTT, railroad).
     server-side triggers.
 13. **Sounds.** `SoundClient` builds unregistered `SoundEvent`s — fine for its client-side play path
     (same here), but Re-Wired has no `RegistryEvent.Register<SoundEvent>` at all, so any server-side
-    `world.playSound` with an Eln sound sends registry id -1 and NPEs the client. Registering the
-    `sounds.json` keys is a phase-2 item on this branch.
+    `world.playSound` with an Eln sound sends registry id -1 and NPEs the client. This branch
+    registers every `sounds.json` key. It also qualifies the sound names in `sounds.json` with the
+    `eln:` domain — unqualified, 1.12 resolves them to `minecraft:sounds/<name>.ogg` and no Eln
+    sound ever loads; Re-Wired ships them unqualified.
 14. **`LoopedSound`** re-implements `createAccessor`/`getSound` by copying `PositionedSound`. Here it
     extends `PositionedSound` and only keeps the live-coordinate and tickable parts.
 15. **Kotlin stdlib embedded flat and unrelocated** (`embed("kotlin-stdlib")`). Two mods doing this
@@ -82,7 +84,12 @@ climate, utility cables, MQTT, railroad).
     `mods.eln.shaded.kotlin`.
 16. **Rendering.** No `TileEntityItemStackRenderer` binding (3D items render as missing model), and
     six-node camouflage is disabled. On this branch these are phase 3; the `IItemRenderer` shim keeps
-    the ~250 `renderItem` bodies intact so one TEISR can drive them.
+    the ~250 `renderItem` bodies intact so one TEISR can drive them. Re-Wired also ships no
+    blockstate or model assets, so its client logs a model error for every registered block and
+    item; this branch has none.
+17. **Tooltips crash the 1.12 client.** Descriptors that read `Minecraft.getMinecraft().player` in
+    `addInformation`, or declare the player parameter non-null in Kotlin, NPE while 1.12.2 indexes
+    the creative search tree at startup — before a player exists. Re-Wired keeps both patterns.
 
 ## Not flaws, but different choices
 
@@ -93,8 +100,13 @@ climate, utility cables, MQTT, railroad).
 
 ## Numbers
 
-    Kotlin  4100 → 0 errors, 425/425 files (43 commits on top of 6a8cd0df)
-    Java    199 errors at first javac (446 files), next
+    Kotlin  4100 → 0 errors, 425/425 files
+    Java    199 → 0 errors, 446 files
+    Tests   305 / 305, unmodified
+    Server  boots to "Done"
+    Client  reaches the main menu, zero model/blockstate/sound errors
+
+48 commits on top of 6a8cd0df.
 
 Everything above that says "here" is in the commit messages of `port/1.12.2`; grep them for
 "Re-Wired".
