@@ -1,0 +1,72 @@
+diff --git a/src/main/java/mods/eln/CommonProxy.java b/src/main/java/mods/eln/CommonProxy.java
+index b5561f7..b7e656b 100644
+--- a/src/main/java/mods/eln/CommonProxy.java
++++ b/src/main/java/mods/eln/CommonProxy.java
+@@ -22,4 +22,12 @@ public class CommonProxy {
+     public void init(FMLInitializationEvent event) {
+         // Nothing needed in common init
+     }
++
++    /**
++     * Clears state that only exists on a physical client.
++     * The server proxy intentionally does nothing.
++     */
++    public void clearClientState() {
++        // Nothing to clear on a dedicated server.
++    }
+ }
+diff --git a/src/main/java/mods/eln/Eln.kt b/src/main/java/mods/eln/Eln.kt
+index 3c92b46..426b8f7 100644
+--- a/src/main/java/mods/eln/Eln.kt
++++ b/src/main/java/mods/eln/Eln.kt
+@@ -12,7 +12,6 @@ import mods.eln.misc.FunctionTable
+ import mods.eln.misc.Obj3DFolder
+ import mods.eln.misc.Utils
+ import mods.eln.misc.WindProcess
+-import mods.eln.node.NodeBlockEntity
+ import mods.eln.node.NodeManager
+ import mods.eln.node.NodePublishProcess
+ import mods.eln.node.six.SixNode
+@@ -305,7 +304,7 @@ class Eln {
+     private fun clearSimulatorState() {
+         TutorialSignElement.resetBalise()
+         TeleporterElement.teleporterList.clear()
+-        NodeBlockEntity.clientList.clear()
++        proxy?.clearClientState()
+         WirelessSignalTxElement.channelMap.clear()
+         IWirelessSignalSpot.spots.clear()
+         LampSupplyElement.channelMap.clear()
+diff --git a/src/main/java/mods/eln/client/ClientProxy.java b/src/main/java/mods/eln/client/ClientProxy.java
+index 3c191ab..6572d5c 100644
+--- a/src/main/java/mods/eln/client/ClientProxy.java
++++ b/src/main/java/mods/eln/client/ClientProxy.java
+@@ -8,6 +8,7 @@ import mods.eln.generic.GenericItemUsingDamage;
+ import mods.eln.generic.GenericItemUsingDamageDescriptor;
+ import mods.eln.generic.GenericItemBlockUsingDamage;
+ import mods.eln.generic.GenericItemBlockUsingDamageDescriptor;
++import mods.eln.node.NodeBlockEntity;
+ import mods.eln.node.six.SixNodeEntity;
+ import mods.eln.node.six.SixNodeRender;
+ import mods.eln.node.transparent.TransparentNodeEntity;
+@@ -128,4 +129,9 @@ public class ClientProxy extends CommonProxy {
+         ClientRegistry.bindTileEntitySpecialRenderer(SixNodeEntity.class, new SixNodeRender());
+         ClientRegistry.bindTileEntitySpecialRenderer(TransparentNodeEntity.class, new TransparentNodeRender());
+     }
++
++    @Override
++    public void clearClientState() {
++        NodeBlockEntity.clientList.clear();
++    }
+ }
+diff --git a/src/main/java/mods/eln/node/NodeBlockEntity.java b/src/main/java/mods/eln/node/NodeBlockEntity.java
+index 1fc033c..9bf6b0a 100644
+--- a/src/main/java/mods/eln/node/NodeBlockEntity.java
++++ b/src/main/java/mods/eln/node/NodeBlockEntity.java
+@@ -247,6 +247,7 @@ public abstract class NodeBlockEntity extends TileEntity implements ITileEntityS
+     }
+ 
+ 
++    @SideOnly(Side.CLIENT)
+     public static NodeBlockEntity getEntity(BlockPos pos) {
+         TileEntity entity;
+         if ((entity = Minecraft.getMinecraft().world.getTileEntity(pos)) != null) {
