@@ -91,7 +91,7 @@ object ElnDestroyHelper {
     private fun clearInventoryWithoutDrops(inventory: IInventory?) {
         if (inventory == null) return
         for (slot in 0 until inventory.sizeInventory) {
-            inventory.setInventorySlotContents(slot, null)
+            inventory.setInventorySlotContents(slot, ItemStack.EMPTY)
         }
         inventory.markDirty()
     }

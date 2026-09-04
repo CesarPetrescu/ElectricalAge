@@ -19,7 +19,7 @@ public abstract class ItemMovingHelper {
         boolean dstChanged = false;
         if(Utils.isCreative((EntityPlayerMP) src.player)) {
             if(desired == 0) {
-                dst.setInventorySlotContents(dstSlot, null);
+                dst.setInventorySlotContents(dstSlot, ItemStack.EMPTY);
             } else {
                 dst.setInventorySlotContents(dstSlot, newStackOfSize(desired));
             }
@@ -40,7 +40,7 @@ public abstract class ItemMovingHelper {
                 if(!acceptsStack(invStack)) continue;
                 if (Utils.getItemObject(invStack) instanceof UtilityCableDescriptor) {
                     if (IUtilityCableInventory.trimCable(invStack, dst, dstSlot)) {
-                        if (invStack.getCount() == 0) src.setInventorySlotContents(idx, null);
+                        if (invStack.getCount() == 0) src.setInventorySlotContents(idx, ItemStack.EMPTY);
                         syncItemInSlot(src, idx);
                         diff -= Math.min(invStack.getCount(), diff);
                         Utils.println(String.format("IMH.m: moved %d into node", (desired - now) - diff));
@@ -70,7 +70,7 @@ public abstract class ItemMovingHelper {
             if(diff > 0) {
                 if (src.addItemStackToInventory(newStackOfSize(diff))) {
                     if(desired == 0) {
-                        dst.setInventorySlotContents(dstSlot, null);
+                        dst.setInventorySlotContents(dstSlot, ItemStack.EMPTY);
                     } else {
                         dst.setInventorySlotContents(dstSlot, newStackOfSize(desired));
                     }

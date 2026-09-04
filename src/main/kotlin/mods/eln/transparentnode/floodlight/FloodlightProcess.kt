@@ -73,7 +73,7 @@ class FloodlightProcess(val element: FloodlightElement) : IProcess {
 
                     if (lampLife <= 0.0) {
                         lampLightValues[idx] = BoilerplateLampData.MIN_LIGHT_VALUE
-                        element.inventory.setInventorySlotContents(idx, null)
+                        element.inventory.setInventorySlotContents(idx, ItemStack.EMPTY)
                         element.inventory.markDirty()
                     }
                 }
@@ -145,23 +145,37 @@ class FloodlightProcess(val element: FloodlightElement) : IProcess {
         }
 
         for (idx in rotationVectors.indices) {
-            val lightVector = element.node!!.coordinate.toVec3()
-            val lbCoordinate = Coordinate(lightVector, element.node!!.coordinate.dimension)
+            val origin = element.node!!.coordinate.toVec3()
+            val lbCoordinate = Coordinate(origin, element.node!!.coordinate.dimension)
+
+            // Vec3d is immutable on 1.12, and this walks a ray one step per block, so the
+            // position is carried in three doubles rather than reallocating a vector per step.
+            var lightX = origin.x
+            var lightY = origin.y
+            var lightZ = origin.z
+            val step = rotationVectors[idx].first
+            val lightPosition = DoubleArray(3)
+
+            fun placeAt(x: Double, y: Double, z: Double) {
+                lightPosition[0] = x
+                lightPosition[1] = y
+                lightPosition[2] = z
+                lbCoordinate.setPosition(lightPosition)
+            }
 
             // This forces the light cone to be "flat" on the end, instead of curved.
             val throwDistance = lightRange / cos(toRadians(rotationVectors[idx].second))
 
             for (jdx in 0 until throwDistance.toInt()) {
-                lightVector.xCoord += rotationVectors[idx].first.xCoord
-                lightVector.yCoord += rotationVectors[idx].first.yCoord
-                lightVector.zCoord += rotationVectors[idx].first.zCoord
-                lbCoordinate.setPosition(lightVector)
+                lightX += step.x
+                lightY += step.y
+                lightZ += step.z
+                placeAt(lightX, lightY, lightZ)
 
-                if (!lbCoordinate.blockExist || lbCoordinate.block.isOpaqueCube) {
-                    lightVector.xCoord -= rotationVectors[idx].first.xCoord
-                    lightVector.yCoord -= rotationVectors[idx].first.yCoord
-                    lightVector.zCoord -= rotationVectors[idx].first.zCoord
-                    lbCoordinate.setPosition(lightVector)
+                if (!lbCoordinate.blockExist || lbCoordinate.block.defaultState.isOpaqueCube) {
+                    // Back off one step so the light lands in the last open block, not inside
+                    // the wall the beam hit.
+                    placeAt(lightX - step.x, lightY - step.y, lightZ - step.z)
 
                     LightBlockEntity.addLight(lbCoordinate, lightValue, 5)
                     break
@@ -212,159 +226,157 @@ class FloodlightProcess(val element: FloodlightElement) : IProcess {
         val vertSin = sin(toRadians(vertAngle))
         val vertCos = cos(toRadians(vertAngle))
 
-        val v = Vec3d(0.0, 0.0, 0.0)
-
-        v.xCoord = vertCos * horzSin
-        v.yCoord = vertSin
-        v.zCoord = vertCos * horzCos
-
-        return v
+        return Vec3d(vertCos * horzSin, vertSin, vertCos * horzCos)
     }
 
     private fun createRotationVector(horzAngle: Double, vertAngle: Double, axis: HybridNodeDirection, facing: HybridNodeDirection): Vec3d {
         val oldV = getRawRotationVector(horzAngle, vertAngle)
-        val newV = Vec3d(0.0, 0.0, 0.0)
+        // Vec3d is immutable on 1.12: the rotated components are accumulated and the vector is
+        // built once, at the end.
+        var nx = 0.0
+        var ny = 0.0
+        var nz = 0.0
 
         when (axis) {
             XN -> {
-                newV.xCoord = -oldV.yCoord
+                nx = -oldV.y
 
                 when (facing) {
                     XN -> TODO("Unused - impossible facing direction. If you get this message there's a bug in the code.")
                     XP -> TODO("Unused - impossible facing direction. If you get this message there's a bug in the code.")
                     YN -> {
-                        newV.yCoord = -oldV.zCoord
-                        newV.zCoord = oldV.xCoord
+                        ny = -oldV.z
+                        nz = oldV.x
                     }
                     YP -> {
-                        newV.yCoord = oldV.zCoord
-                        newV.zCoord = -oldV.xCoord
+                        ny = oldV.z
+                        nz = -oldV.x
                     }
                     ZN -> {
-                        newV.yCoord = -oldV.xCoord
-                        newV.zCoord = -oldV.zCoord
+                        ny = -oldV.x
+                        nz = -oldV.z
                     }
                     ZP -> {
-                        newV.yCoord = oldV.xCoord
-                        newV.zCoord = oldV.zCoord
+                        ny = oldV.x
+                        nz = oldV.z
                     }
                 }
             }
             XP -> {
-                newV.xCoord = oldV.yCoord
+                nx = oldV.y
 
                 when (facing) {
                     XN -> TODO("Unused - impossible facing direction. If you get this message there's a bug in the code.")
                     XP -> TODO("Unused - impossible facing direction. If you get this message there's a bug in the code.")
                     YN -> {
-                        newV.yCoord = -oldV.zCoord
-                        newV.zCoord = -oldV.xCoord
+                        ny = -oldV.z
+                        nz = -oldV.x
                     }
                     YP -> {
-                        newV.yCoord = oldV.zCoord
-                        newV.zCoord = oldV.xCoord
+                        ny = oldV.z
+                        nz = oldV.x
                     }
                     ZN -> {
-                        newV.yCoord = oldV.xCoord
-                        newV.zCoord = -oldV.zCoord
+                        ny = oldV.x
+                        nz = -oldV.z
                     }
                     ZP -> {
-                        newV.yCoord = -oldV.xCoord
-                        newV.zCoord = oldV.zCoord
+                        ny = -oldV.x
+                        nz = oldV.z
                     }
                 }
             }
             YN -> {
-                newV.yCoord = -oldV.yCoord
+                ny = -oldV.y
 
                 when (facing) {
                     XN -> {
-                        newV.xCoord = -oldV.zCoord
-                        newV.zCoord = -oldV.xCoord
+                        nx = -oldV.z
+                        nz = -oldV.x
                     }
                     XP -> {
-                        newV.xCoord = oldV.zCoord
-                        newV.zCoord = oldV.xCoord
+                        nx = oldV.z
+                        nz = oldV.x
                     }
                     YN -> TODO("Unused - impossible facing direction. If you get this message there's a bug in the code.")
                     YP -> TODO("Unused - impossible facing direction. If you get this message there's a bug in the code.")
                     ZN -> {
-                        newV.xCoord = oldV.xCoord
-                        newV.zCoord = -oldV.zCoord
+                        nx = oldV.x
+                        nz = -oldV.z
                     }
                     ZP -> {
-                        newV.xCoord = -oldV.xCoord
-                        newV.zCoord = oldV.zCoord
+                        nx = -oldV.x
+                        nz = oldV.z
                     }
                 }
             }
             YP -> {
-                newV.yCoord = oldV.yCoord
+                ny = oldV.y
 
                 when (facing) {
                     XN -> {
-                        newV.xCoord = -oldV.zCoord
-                        newV.zCoord = oldV.xCoord
+                        nx = -oldV.z
+                        nz = oldV.x
                     }
                     XP -> {
-                        newV.xCoord = oldV.zCoord
-                        newV.zCoord = -oldV.xCoord
+                        nx = oldV.z
+                        nz = -oldV.x
                     }
                     YN -> TODO("Unused - impossible facing direction. If you get this message there's a bug in the code.")
                     YP -> TODO("Unused - impossible facing direction. If you get this message there's a bug in the code.")
                     ZN -> {
-                        newV.xCoord = -oldV.xCoord
-                        newV.zCoord = -oldV.zCoord
+                        nx = -oldV.x
+                        nz = -oldV.z
                     }
                     ZP -> {
-                        newV.xCoord = oldV.xCoord
-                        newV.zCoord = oldV.zCoord
+                        nx = oldV.x
+                        nz = oldV.z
                     }
                 }
             }
             ZN -> {
-                newV.zCoord = -oldV.yCoord
+                nz = -oldV.y
 
                 when (facing) {
                     XN -> {
-                        newV.xCoord = -oldV.zCoord
-                        newV.yCoord = oldV.xCoord
+                        nx = -oldV.z
+                        ny = oldV.x
                     }
                     XP -> {
-                        newV.xCoord = oldV.zCoord
-                        newV.yCoord = -oldV.xCoord
+                        nx = oldV.z
+                        ny = -oldV.x
                     }
                     YN -> {
-                        newV.xCoord = -oldV.xCoord
-                        newV.yCoord = -oldV.zCoord
+                        nx = -oldV.x
+                        ny = -oldV.z
                     }
                     YP -> {
-                        newV.xCoord = oldV.xCoord
-                        newV.yCoord = oldV.zCoord
+                        nx = oldV.x
+                        ny = oldV.z
                     }
                     ZN -> TODO("Unused - impossible facing direction. If you get this message there's a bug in the code.")
                     ZP -> TODO("Unused - impossible facing direction. If you get this message there's a bug in the code.")
                 }
             }
             ZP -> {
-                newV.zCoord = oldV.yCoord
+                nz = oldV.y
 
                 when (facing) {
                     XN -> {
-                        newV.xCoord = -oldV.zCoord
-                        newV.yCoord = -oldV.xCoord
+                        nx = -oldV.z
+                        ny = -oldV.x
                     }
                     XP -> {
-                        newV.xCoord = oldV.zCoord
-                        newV.yCoord = oldV.xCoord
+                        nx = oldV.z
+                        ny = oldV.x
                     }
                     YN -> {
-                        newV.xCoord = oldV.xCoord
-                        newV.yCoord = -oldV.zCoord
+                        nx = oldV.x
+                        ny = -oldV.z
                     }
                     YP -> {
-                        newV.xCoord = -oldV.xCoord
-                        newV.yCoord = oldV.zCoord
+                        nx = -oldV.x
+                        ny = oldV.z
                     }
                     ZN -> TODO("Unused - impossible facing direction. If you get this message there's a bug in the code.")
                     ZP -> TODO("Unused - impossible facing direction. If you get this message there's a bug in the code.")
@@ -372,7 +384,7 @@ class FloodlightProcess(val element: FloodlightElement) : IProcess {
             }
         }
 
-        return newV
+        return Vec3d(nx, ny, nz)
     }
 
 }

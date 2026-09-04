@@ -446,7 +446,7 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
         if (inputWire != null) {
             val remaining = inputWire.getRemainingLengthMeters(input) - targetLength
             if (remaining <= 0.0) {
-                inventory.setInventorySlotContents(0, null)
+                inventory.setInventorySlotContents(0, ItemStack.EMPTY)
             } else {
                 inputWire.setRemainingLengthMeters(input, remaining)
             }
@@ -455,7 +455,7 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
             if (bundle != null && bundle.checkSameItemStack(input)) {
                 val remaining = bundle.getLengthMeters(input) - targetLength
                 if (remaining <= 0.0) {
-                    inventory.setInventorySlotContents(0, null)
+                    inventory.setInventorySlotContents(0, ItemStack.EMPTY)
                 } else {
                     bundle.setLengthMeters(input, remaining)
                 }
@@ -488,7 +488,7 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
             val cable = stack.asUtilityCableDescriptor() ?: continue
             val remaining = cable.getRemainingLengthMeters(stack) - targetLength
             if (remaining <= 0.0) {
-                inventory.setInventorySlotContents(slot, null)
+                inventory.setInventorySlotContents(slot, ItemStack.EMPTY)
             } else {
                 cable.setRemainingLengthMeters(stack, remaining)
             }
@@ -516,7 +516,7 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
         if (loadedMaterial != null && loadedMaterial != material) return
         loadedMaterial = material
         loadedMassKg += input.count.toDouble()
-        inventory.setInventorySlotContents(0, null)
+        inventory.setInventorySlotContents(0, ItemStack.EMPTY)
         inventory.markDirty()
     }
 
@@ -528,7 +528,7 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
         val input = inventory.getStackInSlot(1) ?: return
         if (!input.matchesOre("itemRubber")) return
         insulationMetersBuffer += input.count * 32.0
-        inventory.setInventorySlotContents(1, null)
+        inventory.setInventorySlotContents(1, ItemStack.EMPTY)
         inventory.markDirty()
     }
 

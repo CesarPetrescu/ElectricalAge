@@ -96,7 +96,7 @@ class LampSocketProcess(var element: LampSocketElement) : IProcess {
 
                 if (lampLife <= 0.0) {
                     newLightValue = BoilerplateLampData.MIN_LIGHT_VALUE
-                    element.inventory.setInventorySlotContents(LampSocketContainer.LAMP_SLOT_ID, null)
+                    element.inventory.setInventorySlotContents(LampSocketContainer.LAMP_SLOT_ID, ItemStack.EMPTY)
                     element.inventory.markDirty()
                 }
             }

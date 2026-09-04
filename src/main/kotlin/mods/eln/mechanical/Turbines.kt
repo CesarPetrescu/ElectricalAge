@@ -242,7 +242,7 @@ class TurbineElement(node: TransparentNode, desc_: TransparentNodeDescriptor) :
                     val newCondition = blade.getCondition(bladeStack) - wearAccumulator
                     wearAccumulator = 0.0
                     if (newCondition <= 0.0) {
-                        inventory.setInventorySlotContents(BLADE_SLOT, null)
+                        inventory.setInventorySlotContents(BLADE_SLOT, ItemStack.EMPTY)
                         needPublish()
                     } else {
                         blade.setCondition(bladeStack, newCondition)
