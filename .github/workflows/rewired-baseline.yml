@@ -9,13 +9,22 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: rewired-baseline
+  cancel-in-progress: true
+
 jobs:
   baseline:
-    name: Build and smoke-test exact Re-Wired snapshot
+    name: Build and smoke-test Re-Wired snapshot
     runs-on: ubuntu-latest
     timeout-minutes: 55
 
     steps:
+      - name: Checkout baseline harness
+        uses: actions/checkout@v4
+        with:
+          path: harness
+
       - name: Checkout exact Re-Wired source
         uses: actions/checkout@v4
         with:
@@ -23,6 +32,16 @@ jobs:
           ref: 3a0088b384aa4111c3a7f984d4cbc5f4ff142ed9
           path: rewired
           fetch-depth: 1
+
+      - name: Apply dedicated-server side-safety patch
+        working-directory: rewired
+        shell: bash
+        run: |
+          set -euxo pipefail
+          git apply --check ../harness/porting/patches/0001-fix-dedicated-server-client-state.patch
+          git apply ../harness/porting/patches/0001-fix-dedicated-server-client-state.patch
+          git diff --check
+          git diff --stat | tee baseline-patches.log
 
       - name: Set up JDK 25
         uses: actions/setup-java@v4
@@ -61,6 +80,7 @@ jobs:
           ./gradlew setupDecompWorkspace --no-daemon --stacktrace 2>&1 | tee baseline-setup.log
 
       - name: Clean build
+        id: build
         working-directory: rewired
         shell: bash
         run: |
@@ -68,6 +88,7 @@ jobs:
           ./gradlew clean build --no-daemon --stacktrace 2>&1 | tee baseline-build.log
 
       - name: Dedicated-server startup smoke test
+        if: ${{ always() && steps.build.outcome == 'success' }}
         working-directory: rewired
         shell: bash
         run: |
@@ -109,6 +130,7 @@ jobs:
           fi
 
       - name: Client startup smoke test under Xvfb
+        if: ${{ always() && steps.build.outcome == 'success' }}
         working-directory: rewired
         shell: bash
         env:
@@ -155,17 +177,20 @@ jobs:
         run: |
           find build/libs -maxdepth 1 -type f -printf '%f %s bytes\n' 2>/dev/null | sort | tee baseline-artifacts.log || true
 
-      - name: Upload baseline logs
+      - name: Upload baseline logs and crash reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: rewired-baseline-logs
-          path: rewired/baseline-*.log
+          path: |
+            rewired/baseline-*.log
+            rewired/run/**/crash-reports/*.txt
+            rewired/run/crash-reports/*.txt
           if-no-files-found: warn
           retention-days: 14
 
       - name: Upload built jars
-        if: success()
+        if: ${{ always() && steps.build.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
           name: rewired-baseline-jars
