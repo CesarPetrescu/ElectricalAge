@@ -4,6 +4,7 @@ package mods.eln.node.six
 import mods.eln.Eln
 import mods.eln.generic.GenericItemBlockUsingDamage
 import mods.eln.misc.Coordinate
+import mods.eln.misc.Direction.Companion.fromFacing
 import mods.eln.misc.Direction.Companion.fromIntMinecraftSide
 import mods.eln.misc.LRDU
 import mods.eln.misc.Utils.sendMessage
@@ -14,6 +15,12 @@ import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.entity.player.EntityPlayerMP
 import net.minecraft.init.Blocks
 import net.minecraft.item.ItemStack
+import net.minecraft.block.state.IBlockState
+import net.minecraft.util.EnumActionResult
+import net.minecraft.util.EnumFacing
+import net.minecraft.util.EnumHand
+import net.minecraft.util.SoundCategory
+import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import mods.eln.client.itemrender.IItemRenderer
 import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
@@ -38,62 +45,71 @@ class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b
     /**
      * Callback for item usage. If the item does something special on right clicking, he will have one of those. Return True if something happen and false if it don't. This is for ITEMS, not BLOCKS
      */
-    override fun onItemUse(stack: ItemStack, player: EntityPlayer, world: World, x: Int, y: Int, z: Int, side: Int, hitX: Float, hitY: Float, hitZ: Float): Boolean {
-        var x = x
-        var y = y
-        var z = z
-        var side = side
-        val block = world.getBlock(x, y, z)
-        if (block === Blocks.SNOW_LAYER && world.getBlockMetadata(x, y, z) and 0x7 < 1) {
-            side = 1
-        } else if (block !== Blocks.VINE && block !== Blocks.TALLGRASS && block !== Blocks.DEADBUSH && !block.isReplaceable(world, x, y, z)) {
-            if (side == 0) y--
-            if (side == 1) y++
-            if (side == 2) z--
-            if (side == 3) z++
-            if (side == 4) x--
-            if (side == 5) x++
+    override fun onItemUse(
+        player: EntityPlayer, world: World, posIn: BlockPos, hand: EnumHand,
+        facing: EnumFacing, hitX: Float, hitY: Float, hitZ: Float
+    ): EnumActionResult {
+        val stack = player.getHeldItem(hand)
+        var pos = posIn
+        var side = facing
+        val state = world.getBlockState(pos)
+        val block = state.block
+        // A snow layer one deep is placed *into*, not on top of - the same special case vanilla
+        // ItemBlock makes, and the reason this override exists rather than calling super.
+        if (block === Blocks.SNOW_LAYER && block.getMetaFromState(state) and 0x7 < 1) {
+            side = EnumFacing.UP
+        } else if (block !== Blocks.VINE && block !== Blocks.TALLGRASS && block !== Blocks.DEADBUSH &&
+            !block.isReplaceable(world, pos)
+        ) {
+            pos = pos.offset(facing)
         }
-        if (stack.count == 0) return false
+        if (stack.isEmpty) return EnumActionResult.FAIL
         val descriptor = getDescriptor(stack)
         if (descriptor is UtilityCableDescriptor && !descriptor.hasLengthForPlacement(stack)) {
             sendMessage(player, "Not enough wire length remaining to place another segment")
-            return false
+            return EnumActionResult.FAIL
         }
-        if (!player.canPlayerEdit(x, y, z, side, stack)) return false
-        if (y == 255 && field_150939_a.material.isSolid) return false
-        val i1 = getMetadata(stack.itemDamage)
-        val metadata = field_150939_a.onBlockPlaced(world, x, y, z, side, hitX, hitY, hitZ, i1)
-        if (placeBlockAt(stack, player, world, x, y, z, side, hitX, hitY, hitZ, metadata)) {
-            world.playSoundEffect((x + 0.5f).toDouble(), (y + 0.5f).toDouble(), (z + 0.5f).toDouble(), field_150939_a.stepSound.func_150496_b(), (field_150939_a.stepSound.getVolume() + 1.0f) / 2.0f, field_150939_a.stepSound.pitch * 0.8f)
+        if (!player.canPlayerEdit(pos, side, stack)) return EnumActionResult.FAIL
+        if (pos.y == 255 && this.block.defaultState.material.isSolid) return EnumActionResult.FAIL
+        val meta = getMetadata(stack.metadata)
+        val newState = this.block.getStateForPlacement(world, pos, side, hitX, hitY, hitZ, meta, player, hand)
+        if (placeBlockAt(stack, player, world, pos, side, hitX, hitY, hitZ, newState)) {
+            val sound = this.block.getSoundType(newState, world, pos, player)
+            world.playSound(
+                null, pos, sound.placeSound, SoundCategory.BLOCKS,
+                (sound.volume + 1.0f) / 2.0f, sound.pitch * 0.8f
+            )
             if (descriptor is UtilityCableDescriptor) {
                 if (shouldConsumeUtilityCableLength(player)) {
                     descriptor.consumeLengthForPlacement(stack)
                     if (!descriptor.hasLengthForPlacement(stack)) {
-                        stack.count -= 1
+                        stack.shrink(1)
                     }
                 }
             } else {
-                stack.count -= 1
+                stack.shrink(1)
             }
         }
-        return true
+        return EnumActionResult.SUCCESS
     }
 
     /**
      * Returns true if the given ItemBlock can be placed on the given side of the given block position.
      */
-    // func_150936_a <= canPlaceItemBlockOnSide
-    override fun func_150936_a(par1World: World, x: Int, y: Int, z: Int, par5: Int, par6EntityPlayer: EntityPlayer, par7ItemStack: ItemStack): Boolean {
-        if (!isStackValidToPlace(par7ItemStack)) return false
-        val vect = intArrayOf(x, y, z)
-        fromIntMinecraftSide(par5)!!.applyTo(vect, 1)
-        val descriptor = getDescriptor(par7ItemStack)
-        if (!descriptor!!.canBePlacedOnSide(par6EntityPlayer, Coordinate(x, y, z, par1World), fromIntMinecraftSide(par5)!!.inverse)) {
+    override fun canPlaceBlockOnSide(
+        world: World, pos: BlockPos, side: EnumFacing, player: EntityPlayer, stack: ItemStack
+    ): Boolean {
+        if (!isStackValidToPlace(stack)) return false
+        val vect = intArrayOf(pos.x, pos.y, pos.z)
+        fromFacing(side).applyTo(vect, 1)
+        val descriptor = getDescriptor(stack) ?: return false
+        if (!descriptor.canBePlacedOnSide(player, Coordinate(pos.x, pos.y, pos.z, world), fromFacing(side).inverse)) {
             return false
         }
-        if (par1World.getBlock(vect[0], vect[1], vect[2]) === Eln.sixNodeBlock) return true
-        return super.func_150936_a(par1World, x, y, z, par5, par6EntityPlayer, par7ItemStack)
+        // Stacking another face onto an existing six-node is always allowed, whatever vanilla
+        // thinks about the block already being there.
+        if (world.getBlockState(BlockPos(vect[0], vect[1], vect[2])).block === Eln.sixNodeBlock) return true
+        return super.canPlaceBlockOnSide(world, pos, side, player, stack)
     }
 
     fun isStackValidToPlace(stack: ItemStack?): Boolean {
@@ -101,13 +117,18 @@ class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b
         return descriptor != null
     }
 
-    override fun placeBlockAt(stack: ItemStack, player: EntityPlayer, world: World, x: Int, y: Int, z: Int, side: Int, hitX: Float, hitY: Float, hitZ: Float, metadata: Int): Boolean {
+    override fun placeBlockAt(
+        stack: ItemStack, player: EntityPlayer, world: World, pos: BlockPos,
+        side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float, newState: IBlockState
+    ): Boolean {
         if (world.isRemote) return false
         if (!isStackValidToPlace(stack)) return false
-        val direction = fromIntMinecraftSide(side)!!.inverse
+        val x = pos.x; val y = pos.y; val z = pos.z
+        val metadata = this.block.getMetaFromState(newState)
+        val direction = fromFacing(side).inverse
         val blockOld = world.getBlock(x, y, z)
         val block = Block.getBlockFromItem(this) as SixNodeBlock
-        if (blockOld === Blocks.AIR || blockOld.isReplaceable(world, x, y, z)) {
+        if (blockOld === Blocks.AIR || blockOld.isReplaceable(world, pos)) {
             val coord = Coordinate(x, y, z, world)
             val descriptor = getDescriptor(stack)
             var error: String?
@@ -123,7 +144,7 @@ class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b
                 sixNode.createSubBlock(stack, direction, player)
                 world.setBlock(x, y, z, block, metadata, 0x03)
                 block.getIfOtherBlockIsSolid(world, x, y, z, direction)
-                block.onBlockPlacedBy(world, x, y, z, fromIntMinecraftSide(side)!!.inverse, player, metadata)
+                block.onBlockPlacedBy(world, pos, fromFacing(side).inverse, player, metadata)
                 return true
             }
         } else if (blockOld === block) {
@@ -134,7 +155,7 @@ class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b
             }
             if (!sixNode.getSideEnable(direction) && block.getIfOtherBlockIsSolid(world, x, y, z, direction)) {
                 sixNode.createSubBlock(stack, direction, player)
-                block.onBlockPlacedBy(world, x, y, z, fromIntMinecraftSide(side)!!.inverse, player, metadata)
+                block.onBlockPlacedBy(world, pos, fromFacing(side).inverse, player, metadata)
                 return true
             }
         } else {

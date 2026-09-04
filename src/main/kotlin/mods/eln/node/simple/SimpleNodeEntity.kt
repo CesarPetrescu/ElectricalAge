@@ -17,6 +17,8 @@ import net.minecraft.client.gui.GuiScreen
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.Container
 import net.minecraft.network.Packet
+import io.netty.buffer.Unpooled
+import net.minecraft.network.PacketBuffer
 import net.minecraft.network.play.server.SPacketCustomPayload
 import net.minecraft.tileentity.TileEntity
 import java.io.DataInputStream
@@ -118,13 +120,11 @@ abstract class SimpleNodeEntity(override val nodeUuid: String) : TileEntity(), I
     }
 
     override fun serverPacketUnserialize(stream: DataInputStream) {}
-    override fun getDescriptionPacket(): Packet? {
-        val node = node
-        if (node == null) {
-            println("ASSERT NULL NODE public Packet getDescriptionPacket() nodeblock entity")
-            return null
-        }
-        return SPacketCustomPayload(Eln.channelName, node.publishPacket!!.toByteArray())
+    /** See NodeBlockEntity.buildPublishPayload: the node payload is not an NBT sync. */
+    fun buildPublishPayload(): SPacketCustomPayload? {
+        val node = node ?: return null
+        val payload = node.publishPacket?.toByteArray() ?: return null
+        return SPacketCustomPayload(Eln.channelName, PacketBuffer(Unpooled.wrappedBuffer(payload)))
     }
 
     open lateinit var sender: NodeEntityClientSender

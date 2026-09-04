@@ -2,29 +2,37 @@ package mods.eln.node.simple
 
 import mods.eln.misc.Coordinate
 import net.minecraft.block.Block
+import net.minecraft.block.state.IBlockState
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemBlock
 import net.minecraft.item.ItemStack
+import net.minecraft.util.EnumFacing
+import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
-import mods.eln.misc.getBlock
-import mods.eln.misc.setBlock
 
 class SimpleNodeItem(b: Block) : ItemBlock(b) {
     var block: SimpleNodeBlock
-    override fun placeBlockAt(stack: ItemStack, player: EntityPlayer, world: World, x: Int, y: Int, z: Int, side: Int, hitX: Float, hitY: Float, hitZ: Float, metadata: Int): Boolean {
+
+    /**
+     * The node has to exist before the block is placed: SimpleNodeEntity looks its node up by
+     * coordinate as soon as it is created, and a placement that fails must not leave one behind.
+     */
+    override fun placeBlockAt(
+        stack: ItemStack, player: EntityPlayer, world: World, pos: BlockPos,
+        side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float, newState: IBlockState
+    ): Boolean {
         var node: SimpleNode? = null
         if (!world.isRemote) {
             node = block.newNode()
             node!!.descriptorKey = block.descriptorKey
-            node.onBlockPlacedBy(Coordinate(x, y, z, world), block.getFrontForPlacement(player), player, stack)
+            node.onBlockPlacedBy(Coordinate(pos.x, pos.y, pos.z, world), block.getFrontForPlacement(player), player, stack)
         }
-        if (!world.setBlock(x, y, z, field_150939_a, metadata, 3)) {
+        if (!world.setBlockState(pos, newState, 3)) {
             node?.onBreakBlock()
             return false
         }
-        if (world.getBlock(x, y, z) === field_150939_a) {
-            field_150939_a.onBlockPlacedBy(world, x, y, z, player, stack)
-            field_150939_a.onPostBlockPlaced(world, x, y, z, metadata)
+        if (world.getBlockState(pos).block === this.block) {
+            this.block.onBlockPlacedBy(world, pos, newState, player, stack)
         }
         return true
     }
