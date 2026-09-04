@@ -3,32 +3,39 @@ package mods.eln.misc
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.ISidedInventory
 import net.minecraft.item.ItemStack
+import net.minecraft.util.EnumFacing
+import net.minecraft.util.text.ITextComponent
+import net.minecraft.util.text.TextComponentString
 
 class FakeSideInventory : ISidedInventory {
     override fun getSizeInventory(): Int {
         return 0
     }
 
-    override fun getStackInSlot(var1: Int): ItemStack? {
-        return null
+    override fun isEmpty(): Boolean = true
+
+    override fun getStackInSlot(var1: Int): ItemStack {
+        return ItemStack.EMPTY
     }
 
-    override fun decrStackSize(var1: Int, var2: Int): ItemStack? {
-        return null
+    override fun decrStackSize(var1: Int, var2: Int): ItemStack {
+        return ItemStack.EMPTY
     }
 
-    override fun getStackInSlotOnClosing(var1: Int): ItemStack? {
-        return null
+    override fun removeStackFromSlot(var1: Int): ItemStack {
+        return ItemStack.EMPTY
     }
 
     override fun setInventorySlotContents(var1: Int, var2: ItemStack) {}
-    override fun getInventoryName(): String {
+    override fun getName(): String {
         return "FakeSideInventory"
     }
 
-    override fun hasCustomInventoryName(): Boolean {
+    override fun hasCustomName(): Boolean {
         return false
     }
+
+    override fun getDisplayName(): ITextComponent = TextComponentString(name)
 
     override fun getInventoryStackLimit(): Int {
         return 0
@@ -39,21 +46,26 @@ class FakeSideInventory : ISidedInventory {
         return false
     }
 
-    override fun openInventory() {}
-    override fun closeInventory() {}
+    override fun openInventory(player: EntityPlayer) {}
+    override fun closeInventory(player: EntityPlayer) {}
     override fun isItemValidForSlot(var1: Int, var2: ItemStack): Boolean {
         return false
     }
 
-    override fun getAccessibleSlotsFromSide(var1: Int): IntArray {
+    override fun getField(id: Int): Int = 0
+    override fun setField(id: Int, value: Int) {}
+    override fun getFieldCount(): Int = 0
+    override fun clear() {}
+
+    override fun getSlotsForFace(side: EnumFacing): IntArray {
         return intArrayOf()
     }
 
-    override fun canInsertItem(var1: Int, var2: ItemStack, var3: Int): Boolean {
+    override fun canInsertItem(index: Int, stack: ItemStack, direction: EnumFacing?): Boolean {
         return false
     }
 
-    override fun canExtractItem(var1: Int, var2: ItemStack, var3: Int): Boolean {
+    override fun canExtractItem(index: Int, stack: ItemStack, direction: EnumFacing): Boolean {
         return false
     }
 

@@ -105,8 +105,8 @@ class ThermalHeatExchangerElement(
         var joulesPerMb = 0.0
         if (thermalPairs.isNotEmpty() && tank.getFluidAmount(INPUT_SIDE) > 0 && inputFluid != null) {
 
-            thermalPairs.filter { it.input.id == inputFluid.id || (it.reversible && it.output.id == inputFluid.id) }.forEach {
-                if (it.input.id == inputFluid.id) {
+            thermalPairs.filter { it.input === inputFluid || (it.reversible && it.output === inputFluid) }.forEach {
+                if (it.input === inputFluid) {
                     // Normal Forwards conversion
                     inputMbPerTick = moveFluidProcess(it.output, it.maxMbInputPerTick, it.ratio, it.minTemp, it.maxTemp)
                     outputMbPerTick = (inputMbPerTick * it.ratio).toInt()

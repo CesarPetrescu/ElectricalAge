@@ -80,9 +80,10 @@ open class ElementSidedFluidHandler: ISidedFluidHandler, INBTTReady {
             tank.tank.fill(resource, doFill)
         } else {
             // We need to make sure the new fluid is meeting the whitelist
-            val resourceId = resource.fluidID
+            // (1.12.2: fluids are compared by registry instance, the integer id is gone)
+            val resourceFluid = resource.fluid
             tank.fluidWhitelist.forEach {
-                if (it.id == resourceId) {
+                if (it === resourceFluid) {
                     return tank.tank.fill(resource, doFill)
                 }
             }
@@ -94,10 +95,10 @@ open class ElementSidedFluidHandler: ISidedFluidHandler, INBTTReady {
         if (from == null || fluid == null) return false
         val tank = tanks[from]?: return false
         // Check if the fluid in there is the same fluid
-        if (tank.tank.fluidAmount > 0) return tank.tank.fluid.getFluid().id == fluid.id
+        if (tank.tank.fluidAmount > 0) return tank.tank.fluid?.fluid === fluid
         return if (tank.fluidWhitelist.size > 0) {
             // if the fluid whitelist has elements, check the list for a compatible fluid type
-            fluid.id in tank.fluidWhitelist.map { it.id }
+            tank.fluidWhitelist.any { it === fluid }
         } else {
             // there's no fluid in the tank, nor a whitelist. Accept anything.
             true
@@ -136,8 +137,8 @@ open class ElementSidedFluidHandler: ISidedFluidHandler, INBTTReady {
     override fun canDrain(from: EnumFacing?, fluid: Fluid?): Boolean {
         if (from == null || fluid == null) return false
         val tank = tanks[from]?: return false
-        val currentFluid = tank.tank.fluid?.getFluid() ?: return false
-        return currentFluid.id == fluid.id
+        val currentFluid = tank.tank.fluid?.fluid ?: return false
+        return currentFluid === fluid
     }
 
     override fun readFromNBT(nbt: NBTTagCompound, str: String) {
