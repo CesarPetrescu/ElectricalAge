@@ -153,12 +153,12 @@ class BatteryDescriptor(
 
     fun getChargeInTag(stack: ItemStack): Double {
         if (!stack.hasTagCompound()) stack.tagCompound = defaultNBT
-        return stack.tagCompound.getDouble("charge")
+        return stack.tagCompound!!.getDouble("charge")
     }
 
     fun getLifeInTag(stack: ItemStack): Double {
         if (!stack.hasTagCompound()) stack.tagCompound = defaultNBT
-        return stack.tagCompound.getDouble("life")
+        return stack.tagCompound!!.getDouble("life")
     }
 
     fun getEnergy(charge: Double, life: Double): Double {
@@ -193,7 +193,7 @@ class BatteryDescriptor(
 
     override fun onEntityItemUpdate(entityItem: EntityItem): Boolean {
         if (entityItem.isBurning) {
-            entityItem.world.createExplosion(entityItem, entityItem.x, entityItem.y, entityItem.z, 2f, true)
+            entityItem.world.createExplosion(entityItem, entityItem.posX, entityItem.posY, entityItem.posZ, 2f, true)
             entityItem.extinguish()
             entityItem.setDead()
         }
