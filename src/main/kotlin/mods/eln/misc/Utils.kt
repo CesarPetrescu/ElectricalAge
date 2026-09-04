@@ -12,6 +12,10 @@ import net.minecraft.nbt.NBTTagList
 import net.minecraft.entity.player.EntityPlayerMP
 import net.minecraft.network.play.server.SPacketCustomPayload
 import org.lwjgl.opengl.GL11
+import io.netty.buffer.Unpooled
+import net.minecraft.network.PacketBuffer
+import net.minecraft.util.NonNullList
+import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import net.minecraftforge.fml.common.FMLCommonHandler
 import net.minecraftforge.fml.relauncher.Side
@@ -35,6 +39,7 @@ import net.minecraft.init.Blocks
 import java.lang.SecurityException
 import java.lang.IllegalAccessException
 import java.lang.NoSuchFieldException
+import net.minecraft.item.crafting.Ingredient
 import net.minecraft.item.crafting.IRecipe
 import net.minecraft.item.crafting.ShapedRecipes
 import net.minecraftforge.oredict.ShapedOreRecipe
@@ -360,7 +365,7 @@ object Utils {
             val var4 = var2.getCompoundTagAt(var3) as NBTTagCompound
             val var5: Int = (var4.getByte("Slot") and (255).toByte()).toInt()
             if (var5 >= 0 && var5 < inventory.sizeInventory) {
-                inventory.setInventorySlotContents(var5, ItemStack.loadItemStackFromNBT(var4))
+                inventory.setInventorySlotContents(var5, ItemStack(var4))
             }
         }
     }
@@ -381,8 +386,8 @@ object Utils {
 
     @JvmStatic
     fun sendPacketToClient(bos: ByteArrayOutputStream, player: EntityPlayerMP) {
-        val packet = SPacketCustomPayload(Eln.channelName, bos.toByteArray())
-        player.playerNetServerHandler.sendPacket(packet)
+        val packet = SPacketCustomPayload(Eln.channelName, PacketBuffer(Unpooled.wrappedBuffer(bos.toByteArray())))
+        player.connection.sendPacket(packet)
     }
 
     @JvmStatic
@@ -452,7 +457,7 @@ object Utils {
 
     @JvmStatic
     fun getWorld(dim: Int): World {
-        return FMLCommonHandler.instance().minecraftServerInstance.worldServerForDimension(dim)
+        return FMLCommonHandler.instance().minecraftServerInstance.getWorld(dim)
     }
 
     @JvmStatic
@@ -466,11 +471,9 @@ object Utils {
             0.0.coerceAtLeast(Eln.wind.getWind(y))
         } else {
             val world = getWorld(worldId)
-            val factor = 1f + world.getRainStrength(0f) * 0.2f + world.getWeightedThunderStrength(0f) * 0.2f
+            val factor = 1f + world.getRainStrength(0f) * 0.2f + world.getThunderStrength(0f) * 0.2f
             0.0.coerceAtLeast(
-                Eln.wind.getWind(y) * factor + world.getRainStrength(0f) * 1f + world.getWeightedThunderStrength(
-                    0f
-                ) * 2f
+                Eln.wind.getWind(y) * factor + world.getRainStrength(0f) * 1f + world.getThunderStrength(0f) * 2f
             )
         }
     }
@@ -478,13 +481,13 @@ object Utils {
     @JvmStatic
     fun dropItem(itemStack: ItemStack?, x: Int, y: Int, z: Int, world: World) {
         if (itemStack == null) return
-        if (world.gameRules.getGameRuleBooleanValue("doTileDrops")) {
+        if (world.gameRules.getBoolean("doTileDrops")) {
             val var6 = 0.7f
             val var7 = (world.rand.nextFloat() * var6).toDouble() + (1.0f - var6).toDouble() * 0.5
             val var9 = (world.rand.nextFloat() * var6).toDouble() + (1.0f - var6).toDouble() * 0.5
             val var11 = (world.rand.nextFloat() * var6).toDouble() + (1.0f - var6).toDouble() * 0.5
             val var13 = EntityItem(world, x.toDouble() + var7, y.toDouble() + var9, z.toDouble() + var11, itemStack)
-            var13.delayBeforeCanPickup = 10
+            var13.setPickupDelay(10)
             world.spawnEntity(var13)
         }
     }
@@ -667,7 +670,7 @@ object Utils {
             null
         } else {
             ItemDamage = stream.readShort()
-            if (old == null || Item.getIdFromItem(old.entityItem.item) != itemId.toInt() || old.entityItem.itemDamage != ItemDamage.toInt()) EntityItem(tileEntity.world, tileEntity.xCoord + 0.5, tileEntity.yCoord + 0.5, tileEntity.zCoord + 1.2, newItemStack(itemId.toInt(), 1, ItemDamage.toInt())) else old
+            if (old == null || Item.getIdFromItem(old.item.item) != itemId.toInt() || old.item.itemDamage != ItemDamage.toInt()) EntityItem(tileEntity.world, tileEntity.xCoord + 0.5, tileEntity.yCoord + 0.5, tileEntity.zCoord + 1.2, newItemStack(itemId.toInt(), 1, ItemDamage.toInt())) else old
         }
     }
 
@@ -677,7 +680,7 @@ object Utils {
 
     @JvmStatic
     fun getLight(w: World, e: EnumSkyBlock?, x: Int, y: Int, z: Int): Int {
-        return w.getSavedLightValue(e, x, y, z)
+        return w.getLightFor(e ?: EnumSkyBlock.BLOCK, BlockPos(x, y, z))
     }
 
     @JvmStatic
@@ -712,7 +715,7 @@ object Utils {
     @JvmStatic
     fun getRedstoneLevelAround(coord: Coordinate, side: Direction): Int {
         var side = side
-        var level = coord.world().getStrongestIndirectPower(coord.x, coord.y, coord.z)
+        var level = coord.world().getStrongPower(BlockPos(coord.x, coord.y, coord.z))
         if (level >= 15) return 15
         side = side.inverse
         when (side) {
@@ -792,14 +795,10 @@ object Utils {
 	 */
     @JvmStatic
     fun getItemStack(name: String, list: MutableList<ItemStack>) {
-        val aitem: Iterator<*> = Item.itemRegistry.iterator()
-        val tempList: List<ItemStack?> = ArrayList(3000)
-        var item: Item?
-        while (aitem.hasNext()) {
-            item = aitem.next() as Item?
-            if (item != null && item.creativeTab != null) {
-                item.getSubItems(item, null as CreativeTabs?, tempList)
-            }
+        val tempList: NonNullList<ItemStack> = NonNullList.create()
+        for (item in Item.REGISTRY) {
+            val tab = item?.creativeTab ?: continue
+            item.getSubItems(tab, tempList)
         }
         val s = name.lowercase()
         for (itemstack in tempList) {
@@ -864,7 +863,7 @@ object Utils {
 	 */
     @JvmStatic
     fun isCreative(entityPlayer: EntityPlayerMP): Boolean {
-        return entityPlayer.theItemInWorldManager.isCreative
+        return entityPlayer.interactionManager.isCreative
         /*
 		 * Minecraft m = Minecraft.getMinecraft(); return m.getIntegratedServer().getGameType().isCreative();
 		 */
@@ -1015,110 +1014,55 @@ object Utils {
         return 0.0
     }
 
+    /**
+     * The 3x3 grid of a crafting recipe, for the in-game wiki.
+     *
+     * 1.12 replaced the per-slot ItemStack/oredict-list soup with [Ingredient]: every recipe
+     * type now answers [IRecipe.getIngredients] uniformly, and an ingredient reports the stacks
+     * it accepts. Only the shaped types carry a width, so the shapeless ones still fill the grid
+     * in reading order, which is what the wiki drew before.
+     */
     @JvmStatic
     fun getItemStackGrid(r: IRecipe?): Array<Array<ItemStack?>>? {
+        if (r == null) return null
         val stacks = Array(3) { arrayOfNulls<ItemStack>(3) }
-        try {
-            if (r is ShapedRecipes) {
-                val s = r
-                for (idx2 in 0..2) {
-                    for (idx in 0..2) {
-                        var rStack: ItemStack? = null
-                        if (idx < s.recipeWidth && idx2 < s.recipeHeight) {
-                            rStack = s.recipeItems[idx + idx2 * s.recipeWidth]
-                        }
-                        stacks[idx2][idx] = rStack
+        return try {
+            val ingredients = r.ingredients
+            val width = when (r) {
+                is ShapedRecipes -> r.recipeWidth
+                is ShapedOreRecipe -> readPrivateInt<Any>(r, "width")
+                else -> 0
+            }
+            if (width in 1..3) {
+                val height = (ingredients.size + width - 1) / width
+                for (row in 0 until minOf(height, 3)) {
+                    for (col in 0 until width) {
+                        val idx = col + row * width
+                        if (idx < ingredients.size) stacks[row][col] = firstStackOf(ingredients[idx])
                     }
                 }
-                return stacks
-            }
-            if (r is ShapedOreRecipe) {
-                val s = r
-                val width = readPrivateInt<Any>(s, "width")
-                val height = readPrivateInt<Any>(s, "height")
-                val inputs = s.input
-                for (idx2 in 0 until height) {
-                    for (idx in 0 until width) {
-                        val o = inputs[idx + idx2 * width]
-                        var stack: ItemStack? = null
-                        if (o is List<*>) {
-                            if (o.isNotEmpty()) stack = o[0] as ItemStack?
-                        }
-                        if (o is ItemStack) {
-                            stack = o
-                        }
-                        stacks[idx2][idx] = stack
-                    }
+            } else {
+                for ((idx, ingredient) in ingredients.withIndex()) {
+                    if (idx >= 9) break
+                    stacks[idx / 3][idx % 3] = firstStackOf(ingredient)
                 }
-                return stacks
             }
-            if (r is ShapelessRecipes) {
-                for ((idx, o) in r.recipeItems.withIndex()) {
-                    val stack = o as ItemStack?
-                    stacks[idx / 3][idx % 3] = stack
-                }
-                return stacks
-            }
-            if (r is ShapelessOreRecipe) {
-                for ((idx, o) in r.input.withIndex()) {
-                    var stack: ItemStack? = null
-                    if (o is List<*> && o.isNotEmpty()) {
-                        stack = o[0] as ItemStack?
-                    }
-                    if (o is ItemStack) {
-                        stack = o
-                    }
-                    stacks[idx / 3][idx % 3] = stack
-                }
-                return stacks
-            }
+            stacks
         } catch (e: Exception) {
-            // TODO: handle exception
+            null
         }
-        return null
     }
+
+    /** The stack the wiki shows for an ingredient: the first item it accepts, if any. */
+    private fun firstStackOf(ingredient: Ingredient?): ItemStack? =
+        ingredient?.matchingStacks?.firstOrNull { !it.isEmpty }
 
     @JvmStatic
     fun getRecipeInputs(r: IRecipe?): ArrayList<ItemStack?> {
         return try {
             val stacks = ArrayList<ItemStack?>()
-            if (r is ShapedRecipes) {
-                for (stack in r.recipeItems) {
-                    stacks.add(stack)
-                }
-            }
-            if (r is ShapelessRecipes) {
-                for (stack in r.recipeItems) {
-                    stacks.add(stack as ItemStack?)
-                }
-            }
-            if (r is ShapedOreRecipe) {
-                for (o in r.input) {
-                    if (o is List<*>) {
-                        for (item in o) {
-                            if (item is ItemStack) {
-                                stacks.add(item)
-                            }
-                        }
-                    }
-                    if (o is ItemStack) {
-                        stacks.add(o)
-                    }
-                }
-            }
-            if (r is ShapelessOreRecipe) {
-                for (o in r.input) {
-                    if (o is List<*>) {
-                        for (item in o) {
-                            if (item is ItemStack) {
-                                stacks.add(item)
-                            }
-                        }
-                    }
-                    if (o is ItemStack) {
-                        stacks.add(o)
-                    }
-                }
+            r?.ingredients?.forEach { ingredient ->
+                ingredient.matchingStacks.filterTo(stacks) { !it.isEmpty }
             }
             stacks
         } catch (e: Exception) {
@@ -1154,7 +1098,7 @@ object Utils {
 
     @JvmStatic
     fun getTags(nbt: NBTTagCompound): List<NBTTagCompound> {
-        val set: Array<Any> = nbt.func_150296_c().filterNotNull().toTypedArray()
+        val set: Array<Any> = nbt.keySet.filterNotNull().toTypedArray()
         val tags = ArrayList<NBTTagCompound>()
         for (idx in set.indices) {
             tags.add(nbt.getCompoundTag(set[idx] as String))
@@ -1194,12 +1138,12 @@ object Utils {
 
     @JvmStatic
     fun updateSkylight(chunk: Chunk) {
-        chunk.func_150804_b(false)
+        chunk.onTick(false)
     }
 
     @JvmStatic
     fun updateAllLightTypes(world: World, xCoord: Int, yCoord: Int, zCoord: Int) {
-        world.func_147451_t(xCoord, yCoord, zCoord)
+        world.checkLight(BlockPos(xCoord, yCoord, zCoord))
         world.markBlocksDirtyVertical(xCoord, zCoord, 0, 255)
     }
 
@@ -1216,13 +1160,13 @@ object Utils {
     @JvmStatic
     @JvmOverloads
     fun addSmelting(parentItem: Item?, parentItemDamage: Int, findItemStack: ItemStack?, f: Float = 0.3f) {
-        FurnaceRecipes.smelting().func_151394_a(newItemStack(parentItem, 1, parentItemDamage), findItemStack, f)
+        FurnaceRecipes.instance().addSmeltingRecipe(newItemStack(parentItem, 1, parentItemDamage), findItemStack, f)
     }
 
     @JvmStatic
     @JvmOverloads
     fun addSmelting(parentBlock: Block?, parentItemDamage: Int, findItemStack: ItemStack?, f: Float = 0.3f) {
-        FurnaceRecipes.smelting().func_151394_a(newItemStack(Item.getItemFromBlock(parentBlock), 1, parentItemDamage), findItemStack, f)
+        FurnaceRecipes.instance().addSmeltingRecipe(newItemStack(Item.getItemFromBlock(parentBlock), 1, parentItemDamage), findItemStack, f)
     }
 
     @JvmStatic
@@ -1323,7 +1267,7 @@ object Utils {
     class TraceRayWeightOpaque : TraceRayWeight {
         override fun getWeight(block: Block?): Float {
             if (block == null) return 0f
-            return if (block.isOpaqueCube) 1f else 0f
+            return if (block.defaultState.isOpaqueCube) 1f else 0f
         }
     }
 
