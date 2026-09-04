@@ -8,6 +8,7 @@ import net.minecraft.entity.Entity
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.math.AxisAlignedBB
+import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 import net.minecraftforge.client.MinecraftForgeClient
@@ -62,7 +63,7 @@ class Coordinate : INBTTReady {
     private var w: World? = null
     fun world(): World {
         return if (w == null) {
-            FMLCommonHandler.instance().minecraftServerInstance.worldServerForDimension(worldDimension())
+            FMLCommonHandler.instance().minecraftServerInstance.getWorld(worldDimension())
         } else w!!
     }
 
@@ -70,7 +71,7 @@ class Coordinate : INBTTReady {
         x = entity.xCoord
         y = entity.yCoord
         z = entity.zCoord
-        dimension = entity.world.provider.dimensionId
+        dimension = entity.world.provider.dimension
     }
 
     constructor(x: Int, y: Int, z: Int, dimention: Int) {
@@ -84,7 +85,7 @@ class Coordinate : INBTTReady {
         this.x = x
         this.y = y
         this.z = z
-        dimension = world.provider.dimensionId
+        dimension = world.provider.dimension
         if (world.isRemote) w = world
     }
 
@@ -92,7 +93,7 @@ class Coordinate : INBTTReady {
         x = entity.xCoord
         y = entity.yCoord
         z = entity.zCoord
-        dimension = entity.world.provider.dimensionId
+        dimension = entity.world.provider.dimension
         if (entity.world.isRemote) w = entity.world
     }
 
@@ -226,12 +227,21 @@ class Coordinate : INBTTReady {
 
     fun setWorld(world: World) {
         if (world.isRemote) w = world
-        dimension = world.provider.dimensionId
+        dimension = world.provider.dimension
     }
 
+    /**
+     * 1.8 replaced metadata with block states; "set the meta" means replacing the state with
+     * the same block's state for that meta. Flag 0 as before: no neighbour or client update.
+     */
     fun setMetadata(meta: Int) {
-        world().setBlockMetadataWithNotify(x, y, z, meta, 0)
+        val w = world()
+        w.setBlockState(pos, w.getBlockState(pos).block.getStateFromMeta(meta), 0)
     }
+
+    /** This coordinate as the BlockPos the 1.8+ world API takes. Allocates; hot loops keep the ints. */
+    val pos: BlockPos
+        get() = BlockPos(x, y, z)
 
     operator fun compareTo(o: Coordinate): Int {
         return when {

@@ -6,6 +6,7 @@ import mods.eln.misc.Utils.sendMessage
 import mods.eln.misc.Coordinate
 import net.minecraft.entity.player.EntityPlayerMP
 import mods.eln.misc.LRDUCubeMask
+import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import mods.eln.Eln
 import net.minecraft.entity.EntityLivingBase
@@ -65,7 +66,7 @@ abstract class NodeBase {
 
     open fun networkUnserialize(stream: DataInputStream, player: EntityPlayerMP?) {}
     fun notifyNeighbor() {
-        coordinate.world().notifyBlockChange(coordinate.x, coordinate.y, coordinate.z, coordinate.block)
+        coordinate.world().notifyNeighborsOfStateChange(coordinate.pos, coordinate.block, false)
     }
 
     //public abstract Block getBlock();
@@ -398,17 +399,31 @@ abstract class NodeBase {
         Utils.sendPacketToClient(bos!!, player!!)
     }
 
+    /**
+     * Sends to every player who has this node's chunk loaded client-side - the same set that
+     * holds its tile entity - optionally narrowed by [range]. The chunk-watch test is the
+     * point: a player at the edge of a large render distance must still get node updates, and
+     * a plain radius broadcast (what Re-Wired switched to) silently stops updating their lamps
+     * and meters past 64 blocks.
+     */
     @JvmOverloads
     fun sendPacketToAllClient(bos: ByteArrayOutputStream?, range: Double = 100000.0) {
-        val server = FMLCommonHandler.instance().minecraftServerInstance
-        for (obj in server.playerList.playerEntityList) {
-            val player = obj as EntityPlayerMP?
-            val worldServer = FMLCommonHandler.instance().getMinecraftServerInstance().worldServerForDimension(player!!.dimension) as WorldServer
-            val playerManager = worldServer.playerManager
+        val bytes = bos ?: return
+        forEachWatchingPlayer { player ->
+            if (coordinate.distanceTo(player) <= range) Utils.sendPacketToClient(bytes, player)
+        }
+    }
+
+    private inline fun forEachWatchingPlayer(action: (EntityPlayerMP) -> Unit) {
+        val server = FMLCommonHandler.instance().minecraftServerInstance ?: return
+        val worldServer = server.getWorld(coordinate.dimension) ?: return
+        val chunkMap = worldServer.playerChunkMap
+        val chunkX = coordinate.x shr 4
+        val chunkZ = coordinate.z shr 4
+        for (player in server.playerList.players) {
             if (player.dimension != coordinate.dimension) continue
-            if (!playerManager.isPlayerWatchingChunk(player, coordinate.x / 16, coordinate.z / 16)) continue
-            if (coordinate.distanceTo(player) > range) continue
-            Utils.sendPacketToClient(bos!!, player)
+            if (!chunkMap.isPlayerWatchingChunk(player, chunkX, chunkZ)) continue
+            action(player)
         }
     }
 
@@ -432,14 +447,9 @@ abstract class NodeBase {
         }
 
     fun publishToAllPlayer() {
-        val server = FMLCommonHandler.instance().minecraftServerInstance
-        for (obj in server.playerList.playerEntityList) {
-            val player = obj as EntityPlayerMP?
-            val worldServer = FMLCommonHandler.instance().getMinecraftServerInstance().worldServerForDimension(player!!.dimension) as WorldServer
-            val playerManager = worldServer.playerManager
-            if (player.dimension != coordinate.dimension) continue
-            if (!playerManager.isPlayerWatchingChunk(player, coordinate.x / 16, coordinate.z / 16)) continue
-            Utils.sendPacketToClient(publishPacket!!, player)
+        val packet = publishPacket
+        if (packet != null) {
+            forEachWatchingPlayer { player -> Utils.sendPacketToClient(packet, player) }
         }
         if (needNotify) {
             needNotify = false
@@ -454,13 +464,13 @@ abstract class NodeBase {
 
     fun dropItem(itemStack: ItemStack?) {
         if (itemStack == null) return
-        if (coordinate.world().gameRules.getGameRuleBooleanValue("doTileDrops")) {
+        if (coordinate.world().gameRules.getBoolean("doTileDrops")) {
             val var6 = 0.7f
             val var7 = (coordinate.world().rand.nextFloat() * var6).toDouble() + (1.0f - var6).toDouble() * 0.5
             val var9 = (coordinate.world().rand.nextFloat() * var6).toDouble() + (1.0f - var6).toDouble() * 0.5
             val var11 = (coordinate.world().rand.nextFloat() * var6).toDouble() + (1.0f - var6).toDouble() * 0.5
             val var13 = EntityItem(coordinate.world(), coordinate.x.toDouble() + var7, coordinate.y.toDouble() + var9, coordinate.z.toDouble() + var11, itemStack)
-            var13.delayBeforeCanPickup = 10
+            var13.setPickupDelay(10)
             coordinate.world().spawnEntity(var13)
         }
     }
@@ -506,7 +516,7 @@ abstract class NodeBase {
         var teststatic = 0
         @JvmStatic
         fun isBlockWrappable(block: Block, w: World?, x: Int, y: Int, z: Int): Boolean {
-            if (block.isReplaceable(w, x, y, z)) return true
+            if (w != null && block.isReplaceable(w, BlockPos(x, y, z))) return true
             if (block === Blocks.AIR) return true
             if (block === Eln.sixNodeBlock) return true
             if (block is GhostBlock) return true
