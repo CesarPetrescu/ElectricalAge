@@ -62,6 +62,7 @@ minecraft {
     extraRunJvmArguments.add("-ea:${project.group}")
     if (project.hasProperty("traceClasses")) extraRunJvmArguments.add("-verbose:class")
     if (project.hasProperty("dumpRegistry")) extraRunJvmArguments.add("-Deln.dumpRegistry=true")
+    if (project.hasProperty("smokeTest")) extraRunJvmArguments.add("-Deln.smokeTest=${project.property("smokeTest")}")
 }
 
 // The Gradle daemon is usually started without DISPLAY, and JavaExec inherits the daemon's

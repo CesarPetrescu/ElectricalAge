@@ -608,6 +608,7 @@ public class Eln {
         }
         OreScannerManager.regenOreScannerFactors();
         BiomeClimateService.auditMissingBiomeProfilesAtStartup();
+        mods.eln.devtest.SmokeTest.registerIfRequested();
     }
 
     public double LVP() {

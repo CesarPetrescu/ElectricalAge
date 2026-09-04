@@ -76,3 +76,28 @@ Two gotchas worth remembering, both silent:
 - Missing models are logged, not fatal. A missing *sound file* is only a warning too. A tooltip
   that dereferences `Minecraft.getMinecraft().player` **is** fatal: 1.12.2 indexes the creative
   search tree during startup, before any player exists.
+
+## In-world smoke test
+
+`/setblock` cannot place an Electrical Age block: the node behind the tile entity is created by the
+item's use path, and a tile entity without a node is removed on the next tick. `mods.eln.devtest.
+SmokeTest` drives the real path with a Forge `FakePlayer`, and runs only under `-Deln.smokeTest`.
+
+    rm -rf run/world
+    ./gradlew runServer -PsmokeTest=place      # build the circuit, tick it, read the meters
+    ./gradlew runServer -PsmokeTest=verify     # same world, after a real save + restart
+
+It builds `Electrical Source (50 V) — cable — cable — Creative Power Resistor (100 Ω) — Ground
+Cable` on a stone platform at (512, 64, 512) and asserts current is flowing. Expected output:
+
+    SMOKE source meter: U 50.0V  I 500mA  P 25.0W
+    SMOKE load   meter: U -50.0V  I 500mA  P 25.0W   100Ω
+    SMOKE PASS nodes present, energised=true current flowing=true
+
+Two things that look like failures but are not:
+
+- A two-terminal element with a floating far side reads `U 0V` — its meter shows the difference
+  across its own terminals. The circuit needs the Ground Cable or nothing flows.
+- The front of a two-terminal element comes from the placing player's look direction, and its
+  terminals sit on `front.left()`/`front.right()`. A `FakePlayer` looks at yaw 0, so the resistor
+  is placed at yaw 90 to turn its terminals along the run.
