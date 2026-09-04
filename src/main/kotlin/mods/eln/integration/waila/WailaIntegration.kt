@@ -4,7 +4,7 @@ import net.minecraftforge.fml.common.Optional
 import mcp.mobius.waila.api.IWailaRegistrar
 import mods.eln.simplenode.computerprobe.ComputerProbeBlock
 
-@Optional.Interface(iface = "mcp.mobius.waila.api.IWailaRegistrar", modid = "Waila")
+@Optional.Interface(iface = "mcp.mobius.waila.api.IWailaRegistrar", modid = "waila")
 object WailaIntegration {
 
     @JvmStatic

@@ -11,12 +11,13 @@ import net.minecraft.entity.player.EntityPlayerMP
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.tileentity.TileEntity
+import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 
-@Optional.Interface(iface = "mcp.mobius.waila.api.IWailaDataProvider", modid = "Waila")
+@Optional.Interface(iface = "mcp.mobius.waila.api.IWailaDataProvider", modid = "waila")
 class TransparentNodeWailaProvider : IWailaDataProvider {
     override fun getWailaBody(itemStack: ItemStack?, currenttip: MutableList<String>,
-                              accessor: IWailaDataAccessor, config: IWailaConfigHandler?): MutableList<String>? {
+                              accessor: IWailaDataAccessor, config: IWailaConfigHandler?): MutableList<String> {
         val coord = Coordinate(accessor.position.x, accessor.position.y, accessor.position.z,
             accessor.world)
         try {
@@ -35,19 +36,19 @@ class TransparentNodeWailaProvider : IWailaDataProvider {
         return currenttip
     }
 
-    override fun getWailaStack(accessor: IWailaDataAccessor?, config: IWailaConfigHandler?): ItemStack? {
-        return null
+    override fun getWailaStack(accessor: IWailaDataAccessor?, config: IWailaConfigHandler?): ItemStack {
+        return ItemStack.EMPTY
     }
 
-    override fun getWailaTail(itemStack: ItemStack?, currenttip: MutableList<String>?, accessor: IWailaDataAccessor?, config: IWailaConfigHandler?): MutableList<String>? {
+    override fun getWailaTail(itemStack: ItemStack?, currenttip: MutableList<String>, accessor: IWailaDataAccessor?, config: IWailaConfigHandler?): MutableList<String> {
         return currenttip
     }
 
-    override fun getNBTData(player: EntityPlayerMP?, te: TileEntity?, tag: NBTTagCompound?, world: World?, x: Int, y: Int, z: Int): NBTTagCompound? {
-        return null
+    override fun getNBTData(player: EntityPlayerMP?, te: TileEntity?, tag: NBTTagCompound, world: World?, pos: BlockPos?): NBTTagCompound {
+        return tag
     }
 
-    override fun getWailaHead(itemStack: ItemStack?, currenttip: MutableList<String>?, accessor: IWailaDataAccessor?, config: IWailaConfigHandler?): MutableList<String>? {
+    override fun getWailaHead(itemStack: ItemStack?, currenttip: MutableList<String>, accessor: IWailaDataAccessor?, config: IWailaConfigHandler?): MutableList<String> {
         return currenttip
     }
 

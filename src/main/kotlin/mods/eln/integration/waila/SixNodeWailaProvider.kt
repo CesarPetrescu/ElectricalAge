@@ -12,9 +12,10 @@ import net.minecraft.entity.player.EntityPlayerMP
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.tileentity.TileEntity
+import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 
-@Optional.Interface(iface = "mcp.mobius.waila.api.IWailaDataProvider", modid = "Waila")
+@Optional.Interface(iface = "mcp.mobius.waila.api.IWailaDataProvider", modid = "waila")
 class SixNodeWailaProvider : IWailaDataProvider {
     private fun getSixData(accessor: IWailaDataAccessor): SixNodeWailaData? {
         val coord = Coordinate(accessor.position.x, accessor.position.y, accessor.position.z,
@@ -38,14 +39,14 @@ class SixNodeWailaProvider : IWailaDataProvider {
         return currenttip
     }
 
-    override fun getWailaStack(accessor: IWailaDataAccessor, config: IWailaConfigHandler?): ItemStack?
-        = getSixData(accessor)?.itemStack
+    override fun getWailaStack(accessor: IWailaDataAccessor, config: IWailaConfigHandler?): ItemStack
+        = getSixData(accessor)?.itemStack ?: ItemStack.EMPTY
 
     override fun getWailaTail(itemStack: ItemStack?, currenttip: MutableList<String>, accessor: IWailaDataAccessor?,
                               config: IWailaConfigHandler?): MutableList<String> = currenttip
 
-    override fun getNBTData(player: EntityPlayerMP?, te: TileEntity?, tag: NBTTagCompound?, world: World?,
-                            x: Int, y: Int, z: Int): NBTTagCompound? = null
+    override fun getNBTData(player: EntityPlayerMP?, te: TileEntity?, tag: NBTTagCompound, world: World?,
+                            pos: BlockPos?): NBTTagCompound = tag
 
     override fun getWailaHead(itemStack: ItemStack?, currenttip: MutableList<String>, accessor: IWailaDataAccessor,
                               config: IWailaConfigHandler?): MutableList<String> = if (itemStack != null) {

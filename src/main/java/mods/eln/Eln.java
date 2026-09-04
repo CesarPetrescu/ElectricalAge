@@ -525,7 +525,7 @@ public class Eln {
         MinecraftForge.EVENT_BUS.register(new ElectricMinecartChargeReporter());
         MinecraftForge.EVENT_BUS.register(new ElnFMLEventsHandler());
         MinecraftForge.EVENT_BUS.register(this);
-        FMLInterModComms.sendMessage("Waila", "register", "mods.eln.integration.waila.WailaIntegration" +
+        FMLInterModComms.sendMessage("waila", "register", "mods.eln.integration.waila.WailaIntegration" +
                 ".callbackRegister");
         Utils.println("Electrical age init done");
     }
