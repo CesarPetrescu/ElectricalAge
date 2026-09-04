@@ -34,7 +34,9 @@ public class ClientProxy extends CommonProxy {
         MinecraftForgeClient.registerItemRenderer(Eln.sharedItem, Eln.sharedItem);
         MinecraftForgeClient.registerItemRenderer(Eln.sharedItemStackOne, Eln.sharedItemStackOne);
 
-        RenderingRegistry.registerEntityRenderingHandler(ReplicatorEntity.class, new ReplicatorRender(new ModelSilverfish(), (float) 0.3));
+        // 1.8+: renderers are created per RenderManager through a factory, not registered as instances.
+        RenderingRegistry.registerEntityRenderingHandler(ReplicatorEntity.class,
+                manager -> new ReplicatorRender(manager, new ModelSilverfish(), 0.3f));
 
         Eln.clientKeyHandler = new ClientKeyHandler();
         MinecraftForge.EVENT_BUS.register(Eln.clientKeyHandler);

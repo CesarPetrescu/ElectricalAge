@@ -75,7 +75,7 @@ class ReplicatorCableAI(private val entity: ReplicatorEntity) : EntityAIBase(), 
         return false
     }
 
-    override fun continueExecuting(): Boolean {
+    override fun shouldContinueExecuting(): Boolean {
         return cableCoordinate != null
     }
 
@@ -93,7 +93,7 @@ class ReplicatorCableAI(private val entity: ReplicatorEntity) : EntityAIBase(), 
         val coordinate = cableCoordinate ?: return
         val distance = coordinate.distanceTo(entity)
 
-        if (distance > 2 && (entity.navigator.path == null || entity.navigator.path.isFinished)) {
+        if (distance > 2 && (entity.navigator.path?.isFinished != false)) {
             entity.navigator.tryMoveToXYZ(coordinate.x.toDouble(), coordinate.y.toDouble(), coordinate.z.toDouble(), 1.0)
         }
 
@@ -101,7 +101,7 @@ class ReplicatorCableAI(private val entity: ReplicatorEntity) : EntityAIBase(), 
             val voltage = load.voltage
             val nextResistance = (voltage / Eln.LVU).pow(-0.3) * voltage * voltage / 50.0
             if (resistorLoad.resistance < 0.8 * nextResistance) {
-                entity.attackEntityFrom(DamageSource.magic, 5.0f)
+                entity.attackEntityFrom(DamageSource.MAGIC, 5.0f)
             } else {
                 entity.eatElectricity(resistorLoad.power * 0.05)
             }

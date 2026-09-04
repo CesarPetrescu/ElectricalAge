@@ -16,13 +16,17 @@ import net.minecraft.entity.ai.EntityAIWatchClosest
 import net.minecraft.entity.monster.EntityMob
 import net.minecraft.entity.passive.EntityVillager
 import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
+import net.minecraft.init.Items
+import net.minecraft.init.SoundEvents
+import net.minecraft.item.ItemMonsterPlacer
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.DamageSource
+import net.minecraft.util.SoundEvent
+import net.minecraft.util.math.BlockPos
+import net.minecraft.block.Block
 import net.minecraft.world.World
 import java.util.ArrayList
-import java.util.Map
 import java.util.Random
 
 class ReplicatorEntity(world: World) : EntityMob(world) {
@@ -35,15 +39,15 @@ class ReplicatorEntity(world: World) : EntityMob(world) {
     var hunger = (Math.random() - 0.5) * 0.3
 
     init {
-        func_110163_bv()
+        enablePersistence()
         setSize(0.3f, 0.7f)
 
         val replicatorAi = ReplicatorCableAI(this)
         var priority = 0
         tasks.addTask(priority++, EntityAISwimming(this))
-        tasks.addTask(priority++, EntityAIAttackMelee(this, EntityPlayer::class.java, 1.0, false))
-        tasks.addTask(priority++, EntityAIAttackMelee(this, EntityVillager::class.java, 1.0, true))
-        tasks.addTask(priority++, EntityAIAttackMelee(this, ReplicatorEntity::class.java, 1.0, true))
+        // 1.8 split target selection out of the melee task: one EntityAIAttackMelee attacks
+        // whatever the target tasks below have chosen, replacing the three per-class tasks.
+        tasks.addTask(priority++, EntityAIAttackMelee(this, 1.0, false))
         tasks.addTask(priority++, replicatorAi)
         tasks.addTask(priority++, EntityAIMoveTowardsRestriction(this, 1.0))
         tasks.addTask(priority++, EntityAIMoveThroughVillage(this, 1.0, false))
@@ -53,9 +57,10 @@ class ReplicatorEntity(world: World) : EntityMob(world) {
 
         priority = 1
         targetTasks.addTask(priority++, EntityAIHurtByTarget(this, true))
-        targetTasks.addTask(priority, EntityAINearestAttackableTarget(this, EntityPlayer::class.java, 0, true))
-        targetTasks.addTask(priority, EntityAINearestAttackableTarget(this, EntityVillager::class.java, 0, false))
-        targetTasks.addTask(priority++, ReplicatorHungryAttack(this, ReplicatorEntity::class.java, 0, false))
+        // checkSight values are 1.7.10's: players must be visible, villagers and other replicators need not be.
+        targetTasks.addTask(priority, EntityAINearestAttackableTarget(this, EntityPlayer::class.java, true))
+        targetTasks.addTask(priority, EntityAINearestAttackableTarget(this, EntityVillager::class.java, false))
+        targetTasks.addTask(priority++, ReplicatorHungryAttack(this, ReplicatorEntity::class.java, false))
     }
 
     override fun attackEntityAsMob(entity: Entity): Boolean {
@@ -66,12 +71,12 @@ class ReplicatorEntity(world: World) : EntityMob(world) {
         return super.attackEntityAsMob(entity)
     }
 
-    override fun updateAITick() {
-        super.updateAITick()
+    override fun updateAITasks() {
+        super.updateAITasks()
         hunger += 0.05 / hungerTime
 
         if (hunger > 1 && Math.random() < 0.05 / 5) {
-            attackEntityFrom(DamageSource.starve, 1.0f)
+            attackEntityFrom(DamageSource.STARVE, 1.0f)
         }
         if (hunger < 0.5 && Math.random() * 10 < 0.05) {
             heal(1.0f)
@@ -93,19 +98,23 @@ class ReplicatorEntity(world: World) : EntityMob(world) {
 
     override fun applyEntityAttributes() {
         super.applyEntityAttributes()
-        getEntityAttribute(SharedMonsterAttributes.followRange).baseValue = 8.0
-        getEntityAttribute(SharedMonsterAttributes.maxHealth).baseValue = 8.0
-        getEntityAttribute(SharedMonsterAttributes.movementSpeed).baseValue = 0.23000000417232513
-        getEntityAttribute(SharedMonsterAttributes.attackDamage).baseValue = 3.0
+        getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).baseValue = 8.0
+        getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).baseValue = 8.0
+        getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).baseValue = 0.23000000417232513
+        getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).baseValue = 3.0
     }
 
-    override fun isAIEnabled(): Boolean = true
+    // isAIEnabled() is gone: every EntityLiving runs its AI tasks on 1.8+.
 
-    override fun getLivingSound(): String = "mob.silverfish.say"
+    override fun getAmbientSound(): SoundEvent = SoundEvents.ENTITY_SILVERFISH_AMBIENT
 
-    override fun getHurtSound(): String = "mob.silverfish.hit"
+    override fun getHurtSound(source: DamageSource): SoundEvent = SoundEvents.ENTITY_SILVERFISH_HURT
 
-    override fun getDeathSound(): String = "mob.silverfish.kill"
+    override fun getDeathSound(): SoundEvent = SoundEvents.ENTITY_SILVERFISH_DEATH
+
+    override fun playStepSound(pos: BlockPos, block: Block) {
+        playSound(SoundEvents.ENTITY_SILVERFISH_STEP, 0.15f, 1.0f)
+    }
 
     override fun dropFewItems(wasRecentlyHit: Boolean, lootingLevel: Int) {
         if (dropList.isNotEmpty()) {
@@ -113,15 +122,13 @@ class ReplicatorEntity(world: World) : EntityMob(world) {
         }
 
         if (isSpawnedFromWeather && Math.random() < 0.33) {
-            for (entryObject in EntityList.IDtoClassMapping.entries) {
-                val entry = entryObject as Map.Entry<*, *>
-                if (entry.value == ReplicatorEntity::class.java) {
-                    entityDropItem(
-                        ItemStack(Item.REGISTRY.getObject("spawn_egg") as Item, 1, entry.key as Int),
-                        0.5f
-                    )
-                    break
-                }
+            // Spawn eggs stop being damage-keyed in 1.9: the entity id travels in the stack's
+            // EntityTag NBT, which ItemMonsterPlacer writes for us.
+            val entityId = EntityList.getKey(ReplicatorEntity::class.java)
+            if (entityId != null) {
+                val egg = ItemStack(Items.SPAWN_EGG)
+                ItemMonsterPlacer.applyEntityIdToItemStack(egg, entityId)
+                entityDropItem(egg, 0.5f)
             }
         }
     }

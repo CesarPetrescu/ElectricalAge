@@ -21,17 +21,18 @@ class ConfigurableAiWander(
     }
 
     override fun shouldExecute(): Boolean {
-        if (entity.age >= 100) return false
+        // EntityLiving.age (time since last player proximity) became getIdleTime() in 1.8.
+        if (entity.idleTime >= 100) return false
         if (entity.rng.nextInt(randLimit) != 0) return false
 
         val vec3 = RandomPositionGenerator.findRandomTarget(entity, 10, 7) ?: return false
-        xPosition = vec3.xCoord
-        yPosition = vec3.yCoord
-        zPosition = vec3.zCoord
+        xPosition = vec3.x
+        yPosition = vec3.y
+        zPosition = vec3.z
         return true
     }
 
-    override fun continueExecuting(): Boolean {
+    override fun shouldContinueExecuting(): Boolean {
         return !entity.navigator.noPath()
     }
 
