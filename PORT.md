@@ -109,6 +109,7 @@ Then the runtime gates, all reachable headlessly (`tools/port/headless.md`):
     test             305 / 305, unmodified
     runServer        boots to "Done"
     runClient        reaches the main menu, zero model/blockstate/sound errors
+    runServer -PsmokeTest=place|verify   in-world circuit, and again after a restart
 
 ## Tooling
 
@@ -121,8 +122,10 @@ Then the runtime gates, all reachable headlessly (`tools/port/headless.md`):
 
 0. **Build** - RFG on 1.12.2, relocated shading, tests, `Tags`. Exit: compiler reaches Minecraft API errors only. **Done.**
 1. **Compile** - the 632 MC-coupled files, bottom-up. Exit: `build -x test` green, then all upstream tests pass unmodified. **Done** (305 tests).
-2. **Boot** - registry events, model loader, blockstates, TESRs, sounds. Exit: 50 V cable + battery + lamp works on a *dedicated* server and survives a restart.
-   Server and client both start clean; the in-world circuit is what remains.
+2. **Boot** - registry events, model loader, blockstates, TESRs, sounds. Exit: a circuit works on a
+   *dedicated* server and survives a restart. **Done**: `runServer -PsmokeTest=place|verify` builds
+   source/cable/resistor/ground with a FakePlayer, gets 500 mA at 50 V across 100 Ω, and reads the
+   same after a restart.
 3. **Render** - `GlStateManager` sweep, TEISR for 3D items, six-node camouflage. Exit: screenshots match 1.7.10.
 4. **Gameplay** - 449 crafting recipes, fluid/item/energy capabilities, integrations, advancements. Exit: scripted survival run, ore to 800 V grid.
 5. **Release** - per-descriptor sweep, multiplayer soak, MNA parity, upstream catch-up.
