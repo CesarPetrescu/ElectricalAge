@@ -1,21 +1,18 @@
-
 pluginManagement {
     repositories {
         maven {
-            // RetroFuturaGradle
             name = "GTNH Maven"
             url = uri("https://nexus.gtnewhorizons.com/repository/public/")
-            mavenContent {
-                includeGroup("com.gtnewhorizons")
-                includeGroupByRegex("com\\.gtnewhorizons\\..+")
-            }
+            mavenContent { includeGroupByRegex("com\\.gtnewhorizons.*") }
         }
         gradlePluginPortal()
         mavenCentral()
-        mavenLocal()
     }
 }
 
 plugins {
-    id("com.gtnewhorizons.gtnhsettingsconvention") version("2.0.7")
+    // Lets Gradle fetch the JDK 8 / JDK 17 toolchains the build needs.
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
+
+rootProject.name = "ElectricalAge"
