@@ -47,7 +47,7 @@ object ElnDestroyHelper {
         maxZ: Int,
         player: EntityPlayerMP
     ): ElnDestroySummary {
-        val dim = world.provider.dimensionId
+        val dim = world.provider.dimension
         val targetNodes = nodeManager.nodeList.filter {
             val c = it.coordinate
             c.dimension == dim &&

@@ -125,7 +125,7 @@ public class TeleporterDescriptor extends TransparentNodeDescriptor {
         Coordinate[] temp = new Coordinate[powerCoordinate.length];
         for (int idx = 0; idx < temp.length; idx++) {
             temp[idx] = new Coordinate(powerCoordinate[idx]);
-            temp[idx].setDimension(w.provider.dimensionId);
+            temp[idx].setDimension(w.provider.dimension);
         }
         return temp;
     }

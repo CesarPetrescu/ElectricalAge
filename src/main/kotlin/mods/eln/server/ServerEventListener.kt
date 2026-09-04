@@ -65,9 +65,9 @@ class ServerEventListener {
     @SubscribeEvent
     fun onWorldLoad(e: WorldEvent.Load) {
         if (e.world.isRemote) return
-        loadedWorlds.add(e.world.provider.dimensionId)
+        loadedWorlds.add(e.world.provider.dimension)
         val fileNames = FileNames(e)
-        val dimension = e.world.provider.dimensionId
+        val dimension = e.world.provider.dimension
         try {
             readSave(fileNames.worldSave, dimension)
         } catch (ex: Exception) {
@@ -93,11 +93,11 @@ class ServerEventListener {
     @SubscribeEvent
     fun onWorldUnload(e: WorldEvent.Unload) {
         if (e.world.isRemote) return
-        loadedWorlds.remove(e.world.provider.dimensionId)
+        loadedWorlds.remove(e.world.provider.dimension)
         try {
-            NodeManager.instance!!.unload(e.world.provider.dimensionId)
-            Eln.ghostManager.unload(e.world.provider.dimensionId)
-            RoomThermalManager.unloadDimension(e.world.provider.dimensionId)
+            NodeManager.instance!!.unload(e.world.provider.dimension)
+            Eln.ghostManager.unload(e.world.provider.dimension)
+            RoomThermalManager.unloadDimension(e.world.provider.dimension)
         } catch (ex: Exception) {
             ex.printStackTrace()
         }
@@ -106,13 +106,13 @@ class ServerEventListener {
     @SubscribeEvent
     fun onWorldSave(e: WorldEvent.Save) {
         if (e.world.isRemote) return
-        if (!loadedWorlds.contains(e.world.provider.dimensionId)) {
+        if (!loadedWorlds.contains(e.world.provider.dimension)) {
             //System.out.println("I hate you minecraft");
             return
         }
         try {
             val nbt = NBTTagCompound()
-            writeToEaWorldNBT(nbt, e.world.provider.dimensionId)
+            writeToEaWorldNBT(nbt, e.world.provider.dimension)
             val fileNames = FileNames(e)
 
             // Write a new save to a temporary file.
@@ -142,7 +142,7 @@ class ServerEventListener {
         val tempSave: Path
         val backupSave: Path
         private fun getEaWorldSaveName(w: World): String {
-            return Utils.mapFolder + "data/electricalAgeWorld" + w.provider.dimensionId + ".dat"
+            return Utils.mapFolder + "data/electricalAgeWorld" + w.provider.dimension + ".dat"
         }
 
         init {

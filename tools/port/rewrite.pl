@@ -66,6 +66,11 @@ my @members = (
 
 # --- expression rewrites ----------------------------------------------------
 my @exprs = (
+    # WorldProvider.dimensionId became a private field with a getDimension() accessor (1.9).
+    # Only the qualified form is rewritten: bare "dimensionId" is also a common local name.
+    [qr/\bprovider\.dimensionId\b/                         => 'provider.dimension'],
+    [qr/\bprovider!!\.dimensionId\b/                       => 'provider!!.dimension'],
+    [qr/\bprovider\?\.dimensionId\b/                      => 'provider?.dimension'],
     [qr/\bMathHelper\.floor_(double|float)\s*\(/     => 'MathHelper.floor('],
     [qr/\bMathHelper\.ceiling_(double|float)_int\s*\(/ => 'MathHelper.ceil('],
     [qr/\bEnumFacing\.VALID_DIRECTIONS\b/           => 'EnumFacing.VALUES'],

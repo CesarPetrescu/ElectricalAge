@@ -12,6 +12,8 @@ import net.minecraft.world.World
 import net.minecraft.world.storage.WorldSavedData
 import java.util.*
 import mods.eln.misc.getBlock
+import mods.eln.misc.isBlockLoaded
+import mods.eln.misc.isReplaceable
 import mods.eln.misc.setBlock
 import mods.eln.misc.setBlockToAir
 
@@ -135,7 +137,7 @@ class GhostManager(par1Str: String?) : WorldSavedData(par1Str) {
     }
 
     fun canCreateGhostAt(world: World, x: Int, y: Int, z: Int): Boolean {
-        return if (!world.chunkProvider.chunkExists(x shr 4, z shr 4)) {
+        return if (!world.isBlockLoaded(x, y, z)) {
             false
         } else !(world.getBlock(x, y, z) !== Blocks.AIR && !world.getBlock(x, y, z).isReplaceable(world, x, y, z))
     }
@@ -144,7 +146,7 @@ class GhostManager(par1Str: String?) : WorldSavedData(par1Str) {
     fun createGhost(coordinate: Coordinate, observerCoordinate: Coordinate, UUID: Int, block: Block? = Eln.ghostBlock, meta: Int = GhostBlock.tCube) {
         var coordinate = coordinate
         coordinate.world().setBlockToAir(coordinate.x, coordinate.y, coordinate.z)
-        if (coordinate.world().setBlock(coordinate.x, coordinate.y, coordinate.z, block, meta, 3)) {
+        if (coordinate.world().setBlock(coordinate.x, coordinate.y, coordinate.z, block!!, meta, 3)) {
             coordinate = Coordinate(coordinate)
             val element = GhostElement(coordinate, observerCoordinate, UUID)
             ghostTable[element.elementCoordinate] = element

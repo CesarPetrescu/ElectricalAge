@@ -17,7 +17,7 @@ class NodeEntityClientSender(private val e: TileEntity, private val nodeUuid: St
             stream.writeInt(e.xCoord)
             stream.writeInt(e.yCoord)
             stream.writeInt(e.zCoord)
-            stream.writeByte(e.world.provider.dimensionId)
+            stream.writeByte(e.world.provider.dimension)
             stream.writeUTF(nodeUuid)
         } catch (e: IOException) {
             e.printStackTrace()

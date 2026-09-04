@@ -14,12 +14,12 @@ object SoundServer {
         val stream = DataOutputStream(bos)
         try {
             stream.writeByte(Eln.packetPlaySound.toInt())
-            stream.writeByte(p.world!!.provider.dimensionId)
+            stream.writeByte(p.world!!.provider.dimension)
             p.writeTo(stream)
             val server = FMLCommonHandler.instance().minecraftServerInstance
             for (obj in server.playerList.playerEntityList) {
                 val player = obj as EntityPlayerMP
-                if (player.dimension == p.world!!.provider.dimensionId && player.getDistance(
+                if (player.dimension == p.world!!.provider.dimension && player.getDistance(
                         p.x,
                         p.y,
                         p.z
