@@ -6,7 +6,7 @@ import mods.eln.misc.UtilsClient;
 import mods.eln.misc.VoltageLevelColor;
 import mods.eln.node.six.SixNodeDescriptor;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityClientPlayerMP;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import org.lwjgl.opengl.GL11;
@@ -103,7 +103,7 @@ public class ElectricalDigitalDisplayDescriptor extends SixNodeDescriptor {
         GL11.glColor3f(1.0f, 1.0f, 1.0f);
         UtilsClient.enableBlend();
         obj.bindTexture("Reflection.png");
-        EntityClientPlayerMP player = Minecraft.getMinecraft().player;
+        EntityPlayerSP player = Minecraft.getMinecraft().player;
         float normYaw = player.rotationYaw / 360.0f;
         float normPitch = player.rotationPitch / 180.0f;
         float offset = (((float) player.posX) + ((float) player.posZ)) / 64.0f;

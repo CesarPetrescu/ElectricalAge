@@ -39,7 +39,7 @@ public class ConnectionListener {
     @SubscribeEvent
     public void onDisconnectedFromServerEvent(ClientDisconnectionFromServerEvent event) {
         Utils.println("Disconnected from server " + FMLCommonHandler.instance().getEffectiveSide());
-        Minecraft.getMinecraft().func_152344_a(UtilsClient::glDeleteListsAllSafe);
+        Minecraft.getMinecraft().addScheduledTask(UtilsClient::glDeleteListsAllSafe);
     }
 
     @SubscribeEvent

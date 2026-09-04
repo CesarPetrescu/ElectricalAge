@@ -7,8 +7,7 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-
-import java.util.List;
+import net.minecraft.util.NonNullList;
 
 public class GenericCreativeTab extends CreativeTabs {
 
@@ -33,24 +32,16 @@ public class GenericCreativeTab extends CreativeTabs {
 
     @Override
     @SideOnly(Side.CLIENT)
-    public Item getTabIconItem() {
-        return iconStack != null ? iconStack.getItem() : Items.REDSTONE;
+    public ItemStack createIcon() {
+        return iconStack != null ? iconStack : new ItemStack(Items.REDSTONE);
     }
 
     @Override
     @SideOnly(Side.CLIENT)
-    public ItemStack getIconItemStack() {
-        return iconStack;
-    }
-
-    @Override
-    @SideOnly(Side.CLIENT)
-    // The superclass override is raw, so the local cast is required to forward a typed ItemStack list.
-    @SuppressWarnings("unchecked")
-    public void displayAllReleventItems(List list) {
-        super.displayAllReleventItems(list);
+    public void displayAllRelevantItems(NonNullList<ItemStack> list) {
+        super.displayAllRelevantItems(list);
         if (this != Eln.creativeTabOther) {
-            CreativeTabPopulator.addEntries(this, (List<ItemStack>) list);
+            CreativeTabPopulator.addEntries(this, list);
         }
     }
 }

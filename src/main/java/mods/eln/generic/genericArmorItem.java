@@ -1,6 +1,7 @@
 package mods.eln.generic;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
 
@@ -9,18 +10,19 @@ public class genericArmorItem extends ItemArmor {
     String t1, t2;
 
     public enum ArmourType {
-        Helmet(0),
-        Chestplate(1),
-        Leggings(2),
-        Boots(3);
+        // 1.9+: armor slots are EntityEquipmentSlot values, not the old 0..3 index.
+        Helmet(EntityEquipmentSlot.HEAD),
+        Chestplate(EntityEquipmentSlot.CHEST),
+        Leggings(EntityEquipmentSlot.LEGS),
+        Boots(EntityEquipmentSlot.FEET);
 
-        private int _Value;
+        private EntityEquipmentSlot _Value;
 
-        private ArmourType(int Value) {
+        private ArmourType(EntityEquipmentSlot Value) {
             this._Value = Value;
         }
 
-        public int getValue() {
+        public EntityEquipmentSlot getValue() {
             return _Value;
         }
     }
@@ -32,8 +34,8 @@ public class genericArmorItem extends ItemArmor {
     }
 
     @Override
-    public String getArmorTexture(ItemStack stack, Entity entity, int slot, String layer) {
-        if (this.armorType == 2) {
+    public String getArmorTexture(ItemStack stack, Entity entity, EntityEquipmentSlot slot, String layer) {
+        if (this.armorType == EntityEquipmentSlot.LEGS) {
             return t2;
         } else {
             return t1;

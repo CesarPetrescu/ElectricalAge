@@ -25,6 +25,8 @@ my @imports = (
     ['net\.minecraft\.network\.play\.server\.S35PacketUpdateTileEntity'
                                                         => 'net.minecraft.network.play.server.SPacketUpdateTileEntity'],
     ['net\.minecraftforge\.common\.util\.ForgeDirection' => 'net.minecraft.util.EnumFacing'],
+    ['net\.minecraft\.network\.play\.server\.S2FPacketSetSlot' => 'net.minecraft.network.play.server.SPacketSetSlot'],
+    ['net\.minecraft\.client\.entity\.EntityClientPlayerMP' => 'net.minecraft.client.entity.EntityPlayerSP'],
     ['cpw\.mods\.fml\.'                                 => 'net.minecraftforge.fml.'],
 );
 
@@ -40,6 +42,8 @@ my @idents = (
     ['ChunkCoordIntPair'        => 'ChunkPos'],
     ['BiomeGenBase'             => 'Biome'],
     ['S35PacketUpdateTileEntity' => 'SPacketUpdateTileEntity'],
+    ['S2FPacketSetSlot'          => 'SPacketSetSlot'],
+    ['EntityClientPlayerMP'      => 'EntityPlayerSP'],
 );
 
 # --- member renames (fields and methods; may be dot-qualified) --------------
@@ -63,6 +67,14 @@ my @members = (
     ['unlocalizedName'          => 'translationKey'],
     ['func_150939_a'            => 'block'],
     ['hasNoTags'                => 'isEmpty'],
+    ['xDisplayPosition'         => 'xPos'],
+    ['yDisplayPosition'         => 'yPos'],
+    ['playerNetServerHandler'   => 'connection'],
+    ['getConfigurationManager'  => 'getPlayerList'],
+    ['getEntityItem'            => 'getItem'],
+    ['intersectsWith'           => 'intersects'],
+    ['func_152344_a'            => 'addScheduledTask'],
+    ['wrapAngleTo180_float'     => 'wrapDegrees'],
 );
 
 # --- expression rewrites ----------------------------------------------------
@@ -84,6 +96,11 @@ my @exprs = (
     [qr/\bTessellator\.instance\b/                   => 'Tessellator.getInstance()'],
     [qr/\bMinecraftServer\.getServer\s*\(\s*\)/      => 'FMLCommonHandler.instance().getMinecraftServerInstance()'],
     [qr/\bFMLCommonHandler\.instance\(\)\.bus\(\)/   => 'MinecraftForge.EVENT_BUS'],
+    [qr/\bCreativeTabs\.tabAllSearch\b/               => 'CreativeTabs.SEARCH'],
+    [qr/\bFurnaceRecipes\.smelting\(\)/              => 'FurnaceRecipes.instance()'],
+    [qr/\bEnumSkyBlock\.Sky\b/                        => 'EnumSkyBlock.SKY'],
+    [qr/\bEnumSkyBlock\.Block\b/                      => 'EnumSkyBlock.BLOCK'],
+    [qr/\bRenderManager\.instance\b/                  => 'Minecraft.getMinecraft().getRenderManager()'],
 );
 
 # The compatibility bridges deliberately name the old API in their documentation,
@@ -121,6 +138,27 @@ for my $file (@ARGV) {
 
     # net.minecraft.util.math.Vec3d.createVectorHelper style leftovers
     $src =~ s/\bVec3dd\b/Vec3d/g;
+
+    # Java cannot call the Kotlin (x, y, z) extension adapters as members; route the
+    # 1.7.10-shaped world calls through their static form on mods.eln.misc.McBridge.
+    if ($file =~ /\.java$/) {
+        # Kotlin-style constructor calls left by the createVectorHelper/getBoundingBox rules.
+        $src =~ s/(?<!new )(?<![\w.])(Vec3d|AxisAlignedBB)\(/new $1(/g;
+        $src =~ s/\.playerEntityList\b/.getPlayers()/g;
+        # Java has no property syntax: WorldProvider.dimension is private, TileEntity has no xCoord,
+        # and Vec3d's fields are x/y/z.
+        $src =~ s/\.provider\.dimension\b(?!\()/.provider.getDimension()/g;
+        $src =~ s/getTileEntity\(\)\.([xyz])Coord\b/"getTileEntity().getPos().get" . uc($1) . "()"/ge;
+        $src =~ s/\b(\w+)\.([xyz])Coord\b/$1.$2/g;
+        my $recv = qr/((?:\w+(?:\(\))?\.)*\w+(?:\(\))?)/;
+        my $hit = 0;
+        for my $m (qw(getBlock getBlockMetadata getBlockState getTileEntity setBlockToAir isAirBlock setBlock isBlockLoaded)) {
+            $hit += ($src =~ s/(?<![\w.])(?!McBridge\.)$recv\.$m\(\s*(?![)\s])/McBridge.$m($1, /g);
+        }
+        if ($hit && $src !~ /^import mods\.eln\.misc\.McBridge;/m) {
+            $src =~ s/^(package [^;]+;\n)/$1\nimport mods.eln.misc.McBridge;/m;
+        }
+    }
 
     if ($src ne $orig) {
         open my $out, '>', $file or die "$file: $!";

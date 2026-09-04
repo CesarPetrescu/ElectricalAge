@@ -10,6 +10,7 @@ import mods.eln.node.six.SixNodeElementInventory;
 import mods.eln.node.six.SixNodeElementRender;
 import mods.eln.node.six.SixNodeEntity;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.item.EntityItem;
@@ -76,7 +77,7 @@ public class BatteryChargerRender extends SixNodeElementRender {
         entityItem.motionZ = 0.0;
         //scale *= 10;
         Render var10;
-        var10 = RenderManager.instance.getEntityRenderObject(entityItem);
+        var10 = Minecraft.getMinecraft().getRenderManager().getEntityRenderObject(entityItem);
         GL11.glPushMatrix();
         GL11.glTranslatef((float) x, (float) y, (float) z);
         GL11.glRotatef(90, 0f, 1f, 0f);

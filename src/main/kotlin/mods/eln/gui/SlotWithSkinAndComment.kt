@@ -7,15 +7,15 @@ import net.minecraft.inventory.Slot
 open class SlotWithSkinAndComment(
     inventory: IInventory?,
     slotIndex: Int,
-    xDisplayPosition: Int,
-    yDisplayPosition: Int,
+    xPos: Int,
+    yPos: Int,
     var skin: SlotSkin,
     var comment: Array<String>
 ) : Slot(
     inventory,
     slotIndex,
-    xDisplayPosition,
-    yDisplayPosition
+    xPos,
+    yPos
 ), ISlotSkin, ISlotWithComment {
     override fun getSlotSkin(): SlotSkin {
         return skin

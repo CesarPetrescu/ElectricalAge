@@ -78,7 +78,7 @@ class SixNodeEntity : NodeBlockEntity() {
             e.printStackTrace()
         }
 
-        //	world.setLightValue(EnumSkyBlock.Sky, xCoord,yCoord,zCoord,15);
+        //	world.setLightValue(EnumSkyBlock.SKY, xCoord,yCoord,zCoord,15);
         if (sixNodeCacheBlock !== sixNodeCacheBlockOld) {
             val chunk = world.getChunk(xCoord shr 4, zCoord shr 4)
             // 1.12.2: generateHeightMap() is protected; generateSkylightMap() recomputes the height map too.

@@ -10,6 +10,7 @@ import mods.eln.misc.Utils;
 import mods.eln.sim.process.destruct.WorldExplosion;
 import mods.eln.sound.SoundCommand;
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -200,10 +201,10 @@ public class TurretSlowProcess extends StateMachine {
                         if (filterClass == null || !filterClass.isAssignableFrom(entity.getClass())) return null;
                     }
 
-                    List<Block> blockList = Utils.traceRay(coord.world(), coord.x + 0.5, coord.y + 0.5, coord.z + 0.5,
+                    List<IBlockState> blockList = Utils.traceRay(coord.world(), coord.x + 0.5, coord.y + 0.5, coord.z + 0.5,
                         entity.posX, entity.posY + entity.getEyeHeight(), entity.posZ);
                     boolean visible = true;
-                    for (Block b : blockList)
+                    for (IBlockState b : blockList)
                         if (b.isOpaqueCube()) {
                             visible = false;
                             break;
@@ -300,9 +301,9 @@ public class TurretSlowProcess extends StateMachine {
                 Math.abs(target.posZ - coord.z) > element.getDescriptor().getProperties().aimDistance)
                 return new SeekingState();
 
-            List<Block> blockList = Utils.traceRay(coord.world(), coord.x + 0.5, coord.y + 0.5, coord.z + 0.5,
+            List<IBlockState> blockList = Utils.traceRay(coord.world(), coord.x + 0.5, coord.y + 0.5, coord.z + 0.5,
                 target.posX, target.posY + target.getEyeHeight(), target.posZ);
-            for (Block b : blockList)
+            for (IBlockState b : blockList)
                 if (b.isOpaqueCube())
                     return new SeekingState();
 

@@ -5,6 +5,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import mods.eln.Eln;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.NonNullList;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -34,12 +35,12 @@ public final class CreativeTabPopulator {
     }
 
     @SideOnly(Side.CLIENT)
-    public static void addEntries(CreativeTabs tab, List<ItemStack> list) {
+    public static void addEntries(CreativeTabs tab, NonNullList<ItemStack> list) {
         for (GenericItemBlockUsingDamage<?> item : BLOCK_ITEMS) {
-            item.getSubItems(item, tab, list);
+            item.getSubItems(tab, list);
         }
         for (GenericItemUsingDamage<?> item : GENERIC_ITEMS) {
-            item.getSubItems(item, tab, list);
+            item.getSubItems(tab, list);
         }
         if (tab == Eln.creativeTabPowerElectronics) {
             moveRegulatorChipsAfterDcDcConverters(list);

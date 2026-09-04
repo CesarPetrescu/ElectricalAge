@@ -1,5 +1,6 @@
 package mods.eln.transparentnode.windturbine;
 
+import mods.eln.misc.McBridge;
 import mods.eln.misc.Coordinate;
 import mods.eln.misc.INBTTReady;
 import mods.eln.misc.Utils;
@@ -131,11 +132,11 @@ class WindTurbineSlowProcess implements IProcess, INBTTReady {
                 for (int x = x1; x <= x2; x++) {
                     for (int y = y1; y <= y2; y++) {
                         for (int z = z1; z <= z2; z++) {
-                            if (!world.isBlockLoaded(x, y, z)) {
+                            if (!McBridge.isBlockLoaded(world, x, y, z)) {
                                 notInCache = true;
                                 break;
                             }
-                            if (world.getBlock(x, y, z) != Blocks.AIR) {
+                            if (McBridge.getBlock(world, x, y, z) != Blocks.AIR) {
                                 blockBusyCount++;
                             }
                         }

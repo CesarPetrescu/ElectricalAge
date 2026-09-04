@@ -149,8 +149,8 @@ public class SolarPanelDescriptor extends TransparentNodeDescriptor {
             super.addCollisionBoxesToList(par5AxisAlignedBB, list, world, x, y, z);
             return;
         }
-        AxisAlignedBB bb = Blocks.STONE.getCollisionBoundingBoxFromPool(world, x, y, z);
-        bb.maxY -= 0.5;
-        if (par5AxisAlignedBB.intersectsWith(bb)) list.add(bb);
+        // Half-height cube at (x, y, z); 1.12 boxes are block-local and immutable.
+        AxisAlignedBB bb = new AxisAlignedBB(x, y, z, x + 1, y + 0.5, z + 1);
+        if (par5AxisAlignedBB.intersects(bb)) list.add(bb);
     }
 }

@@ -8,6 +8,7 @@ import mods.eln.misc.RcInterpolator;
 import mods.eln.misc.Utils;
 import mods.eln.sim.IProcess;
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -75,10 +76,10 @@ public class ElectricalEntitySensorSlowProcess implements IProcess, INBTTReady {
                 Vec3d lastPos;
                 if ((lastPos = lastEPos.get(e)) != null) {
                     double weight = 0.4;
-                    List<Block> blockList = Utils.traceRay(world, coord.x + 0.5, coord.y + 0.5, coord.z + 0.5, e.posX, e.posY + e.getEyeHeight(), e.posZ);
+                    List<IBlockState> blockList = Utils.traceRay(world, coord.x + 0.5, coord.y + 0.5, coord.z + 0.5, e.posX, e.posY + e.getEyeHeight(), e.posZ);
                     boolean view = true;
 
-                    for (Block b : blockList) {
+                    for (IBlockState b : blockList) {
                         if (b.isOpaqueCube()) {
                             view = false;
                             break;
@@ -91,7 +92,7 @@ public class ElectricalEntitySensorSlowProcess implements IProcess, INBTTReady {
                         if (distance < rayMax) {
                             double sf = 1;
                             if (useSpeed) {
-                                sf = speedFactor * Utils.getLength(e.posX, e.posY, e.posZ, lastPos.xCoord, lastPos.yCoord, lastPos.zCoord);
+                                sf = speedFactor * Utils.getLength(e.posX, e.posY, e.posZ, lastPos.x, lastPos.y, lastPos.z);
 
                                 //Math.sqrt(e.motionX * e.motionX + e.motionY * e.motionY + e.motionZ * e.motionZ);
                                 //	Utils.println(sf);
@@ -101,7 +102,7 @@ public class ElectricalEntitySensorSlowProcess implements IProcess, INBTTReady {
                     }
                 }
                 output = Math.min(1, output);
-                lastEPos.put(e, Vec3d(e.posX, e.posY, e.posZ));
+                lastEPos.put(e, new Vec3d(e.posX, e.posY, e.posZ));
             }
             //Utils.println(output);
             rc1.setTarget((float) output);

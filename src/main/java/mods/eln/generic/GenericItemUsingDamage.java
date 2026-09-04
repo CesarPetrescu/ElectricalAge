@@ -16,6 +16,13 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -72,12 +79,18 @@ public class GenericItemUsingDamage<Descriptor extends GenericItemUsingDamageDes
         return getDescriptor(itemStack.getItemDamage());
     }
 
+    // 1.12.2 boundary: the descriptors keep their 1.7.10-shaped hooks (stack first, int coordinates);
+    // this class adapts the vanilla signatures once instead of touching ~100 descriptor overrides.
     @Override
-    public ItemStack onItemRightClick(ItemStack s, World w, EntityPlayer p) {
+    public ActionResult<ItemStack> onItemRightClick(World w, EntityPlayer p, EnumHand hand) {
+        ItemStack s = p.getHeldItem(hand);
         Descriptor desc = getDescriptor(s);
         if (desc == null)
-            return s;
-        return desc.onItemRightClick(s, w, p);
+            return new ActionResult<>(EnumActionResult.PASS, s);
+        ItemStack result = desc.onItemRightClick(s, w, p);
+        // 1.7.10 swung the arm only when the stack changed; keep that.
+        boolean changed = result != s || result.getCount() != s.getCount();
+        return new ActionResult<>(changed ? EnumActionResult.SUCCESS : EnumActionResult.PASS, result);
     }
 
 	/*//caca1.5.1
@@ -131,38 +144,29 @@ public class GenericItemUsingDamage<Descriptor extends GenericItemUsingDamageDes
 
 
     @Override
-    @SideOnly(Side.CLIENT)
-    // Forge keeps this override raw, so we cast once to a typed item list locally.
-    @SuppressWarnings("unchecked")
-    public void getSubItems(Item itemID, CreativeTabs tabs, List list) {
-        List<ItemStack> typedList = (List<ItemStack>) list;
+    public void getSubItems(CreativeTabs tabs, NonNullList<ItemStack> list) {
         // You can also take a more direct approach and do each one individual but I prefer the lazy / right way
         for (int id : orderList) {
             Descriptor descriptor = subItemList.get(id);
             if (descriptor == null || descriptor.isHidden()) continue;
             CreativeTabs descriptorTab = descriptor.getCreativeTab();
             if (descriptorTab == null) descriptorTab = Eln.creativeTabOther;
-            if (tabs == null || tabs == descriptorTab || tabs == CreativeTabs.tabAllSearch) {
-                descriptor.getSubItems(typedList);
+            if (tabs == null || tabs == descriptorTab || tabs == CreativeTabs.SEARCH) {
+                descriptor.getSubItems(list);
             }
         }
     }
 
-    // Forge's tooltip callback also uses a raw List, but this path only appends strings.
-    @SuppressWarnings("unchecked")
-    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List list, boolean par4) {
-		/*Descriptor desc = getDescriptor(itemStack);
-		if (desc == null)
-			return;
-		desc.addInformation(itemStack, entityPlayer, list, par4);
-		*/
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void addInformation(ItemStack itemStack, World world, List<String> list, ITooltipFlag flag) {
         Descriptor desc = getDescriptor(itemStack);
         if (desc == null) return;
         List<String> listFromDescriptor = new ArrayList<String>();
         List<String> realismData = new ArrayList<String>();
-        desc.addInformation(itemStack, entityPlayer, listFromDescriptor, par4);
+        desc.addInformation(itemStack, Minecraft.getMinecraft().player, listFromDescriptor, flag.isAdvanced());
         RealisticEnum realism = desc.addRealismContext(realismData);
-        UtilsClient.showItemTooltip(listFromDescriptor, realismData, realism, (List<String>) list);
+        UtilsClient.showItemTooltip(listFromDescriptor, realismData, realism, list);
     }
 
     /**
@@ -170,11 +174,13 @@ public class GenericItemUsingDamage<Descriptor extends GenericItemUsingDamageDes
      * True if something happen and false if it don't. This is for ITEMS, not BLOCKS
      */
     @Override
-    public boolean onItemUse(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side, float vx, float vy, float vz) {
+    public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing side, float vx, float vy, float vz) {
+        ItemStack stack = player.getHeldItem(hand);
         GenericItemUsingDamageDescriptor d = getDescriptor(stack);
         if (d == null)
-            return false;
-        return d.onItemUse(stack, player, world, x, y, z, side, vx, vy, vz);
+            return EnumActionResult.PASS;
+        return d.onItemUse(stack, player, world, pos.getX(), pos.getY(), pos.getZ(), side.getIndex(), vx, vy, vz)
+            ? EnumActionResult.SUCCESS : EnumActionResult.PASS;
     }
 
     public boolean onEntitySwing(EntityLivingBase entityLiving, ItemStack stack) {
@@ -184,11 +190,12 @@ public class GenericItemUsingDamage<Descriptor extends GenericItemUsingDamageDes
         return d.onEntitySwing(entityLiving, stack);
     }
 
-    public boolean onBlockStartBreak(ItemStack itemstack, int X, int Y, int Z, EntityPlayer player) {
+    @Override
+    public boolean onBlockStartBreak(ItemStack itemstack, BlockPos pos, EntityPlayer player) {
         GenericItemUsingDamageDescriptor d = getDescriptor(itemstack);
         if (d == null)
-            return super.onBlockStartBreak(itemstack, X, Y, Z, player);
-        return d.onBlockStartBreak(itemstack, X, Y, Z, player);
+            return super.onBlockStartBreak(itemstack, pos, player);
+        return d.onBlockStartBreak(itemstack, pos.getX(), pos.getY(), pos.getZ(), player);
     }
 
     public void onUpdate(ItemStack stack, World world, Entity entity, int par4, boolean par5) {

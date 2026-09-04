@@ -53,6 +53,7 @@ import java.io.FileInputStream
 import mods.eln.misc.Obj3D.Obj3DPart
 import mods.eln.sim.mna.SubSystem
 import net.minecraft.block.Block
+import net.minecraft.block.state.IBlockState
 import net.minecraft.entity.Entity
 import net.minecraft.item.Item
 import net.minecraft.world.chunk.Chunk
@@ -879,13 +880,14 @@ object Utils {
         if (e is EntityPlayerMP) e.setPositionAndUpdate(x, y, z) else e.setPosition(x, y, z)
     }
 
+    /** 1.12.2: returns block states, since opacity (what every caller asks) is a state property now. */
     @JvmStatic
     fun traceRay(world: World, x: Double, y: Double,
-                 z: Double, tx: Double, ty: Double, tz: Double): ArrayList<Block> {
+                 z: Double, tx: Double, ty: Double, tz: Double): ArrayList<IBlockState> {
         var x = x
         var y = y
         var z = z
-        val blockList = ArrayList<Block>()
+        val blockList = ArrayList<IBlockState>()
         var dx: Double = tx - x
         var dy: Double = ty - y
         var dz: Double = tz - z
@@ -897,8 +899,7 @@ object Utils {
         var d = 0.0
         while (d < norm) {
             if (isBlockLoaded(world, x, y, z)) {
-                val b = getBlock(world, x, y, z)
-                blockList.add(b)
+                blockList.add(getBlockState(world, x, y, z))
             }
             x += dx
             y += dy
@@ -966,6 +967,10 @@ object Utils {
 
     fun getBlock(world: World, x: Double, y: Double, z: Double): Block {
         return world.getBlock(MathHelper.floor(x), MathHelper.floor(y), MathHelper.floor(z))
+    }
+
+    fun getBlockState(world: World, x: Double, y: Double, z: Double): IBlockState {
+        return world.getBlockState(MathHelper.floor(x), MathHelper.floor(y), MathHelper.floor(z))
     }
 
     @JvmStatic

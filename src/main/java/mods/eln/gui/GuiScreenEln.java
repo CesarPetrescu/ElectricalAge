@@ -4,6 +4,8 @@ import mods.eln.gui.GuiTextFieldEln.GuiTextFieldElnObserver;
 import mods.eln.gui.IGuiObject.IGuiObjectObserver;
 import net.minecraft.client.gui.GuiScreen;
 
+import java.io.IOException;
+
 public abstract class GuiScreenEln extends GuiScreen implements GuiTextFieldElnObserver, IGuiObjectObserver {
 
     protected GuiHelper helper;
@@ -53,20 +55,21 @@ public abstract class GuiScreenEln extends GuiScreen implements GuiTextFieldElnO
     }
 
     @Override
-    protected void keyTyped(char key, int code) {
+    protected void keyTyped(char key, int code) throws IOException {
         helper.keyTyped(key, code);
         super.keyTyped(key, code);
     }
 
-    protected void mouseClicked(int x, int y, int code) {
+    protected void mouseClicked(int x, int y, int code) throws IOException {
         helper.mouseClicked(x, y, code);
         super.mouseClicked(x, y, code);
     }
 
     @Override
-    protected void mouseMovedOrUp(int x, int y, int witch) {
+    protected void mouseReleased(int x, int y, int witch) {
+        // 1.8+: mouseMovedOrUp split into mouseReleased (this) and mouseClickMove.
         helper.mouseMovedOrUp(x, y, witch);
-        super.mouseMovedOrUp(x, y, witch);
+        super.mouseReleased(x, y, witch);
     }
 
     public boolean doesGuiPauseGame() {

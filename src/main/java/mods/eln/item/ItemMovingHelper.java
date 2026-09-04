@@ -9,7 +9,7 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.play.server.S2FPacketSetSlot;
+import net.minecraft.network.play.server.SPacketSetSlot;
 
 public abstract class ItemMovingHelper {
     public abstract boolean acceptsStack(ItemStack stack);
@@ -95,8 +95,8 @@ public abstract class ItemMovingHelper {
         EntityPlayerMP playerMP = (EntityPlayerMP) inv.player;
         Container container =  playerMP.openContainer;
 
-        playerMP.playerNetServerHandler.sendPacket(
-            new S2FPacketSetSlot(
+        playerMP.connection.sendPacket(
+            new SPacketSetSlot(
                 container.windowId,
                 container.getSlotFromInventory(inv, slot).slotNumber,
                 inv.getStackInSlot(slot)
@@ -112,8 +112,8 @@ public abstract class ItemMovingHelper {
 
         for(int idx = 0; idx < inv.getSizeInventory(); idx++) {
             Container container = playerMP.openContainer;
-            playerMP.playerNetServerHandler.sendPacket(
-                new S2FPacketSetSlot(
+            playerMP.connection.sendPacket(
+                new SPacketSetSlot(
                     container.windowId,
                     container.getSlotFromInventory(inv, idx).slotNumber,
                     inv.getStackInSlot(idx)

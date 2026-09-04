@@ -1,5 +1,6 @@
 package mods.eln.sixnode.electricalsource;
 
+import mods.eln.misc.McBridge;
 import mods.eln.Eln;
 import mods.eln.i18n.I18N;
 import mods.eln.item.IConfigurable;
@@ -337,11 +338,11 @@ public class ElectricalSourceElement extends SixNodeElement implements IConfigur
         Direction worldDirection = side.applyLRDU(lrdu);
         Coordinate neighborCoordinate = base.moved(worldDirection);
         if (!neighborCoordinate.getBlockExist()) return null;
-        if (!(neighborCoordinate.world().getTileEntity(neighborCoordinate.x, neighborCoordinate.y, neighborCoordinate.z) instanceof NodeBlockEntity)) {
+        if (!(McBridge.getTileEntity(neighborCoordinate.world(), neighborCoordinate.x, neighborCoordinate.y, neighborCoordinate.z) instanceof NodeBlockEntity)) {
             return null;
         }
 
-        Node node = ((NodeBlockEntity) neighborCoordinate.world().getTileEntity(neighborCoordinate.x, neighborCoordinate.y, neighborCoordinate.z)).getNode();
+        Node node = ((NodeBlockEntity) McBridge.getTileEntity(neighborCoordinate.world(), neighborCoordinate.x, neighborCoordinate.y, neighborCoordinate.z)).getNode();
         if (!(node instanceof SixNode)) return null;
 
         return ((SixNode) node).getElement(worldDirection.getInverse());

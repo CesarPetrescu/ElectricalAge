@@ -7,7 +7,7 @@ import mods.eln.misc.RecipesList;
 import mods.eln.misc.Utils;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.CraftingManager;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraft.item.crafting.IRecipe;
 
 import java.util.ArrayList;
@@ -58,8 +58,7 @@ public class ItemDefault extends Default {
             List<IRecipe> recipeOutList = new ArrayList<IRecipe>();
             List<IRecipe> recipeInList = new ArrayList<IRecipe>();
             if (stack != null) {
-                List list = CraftingManager.getInstance().getRecipeList();
-                for (Object o : list) {
+                for (Object o : ForgeRegistries.RECIPES) {
                     try {
                         if (o instanceof IRecipe) {
                             IRecipe r = (IRecipe) o;

@@ -1,5 +1,6 @@
 package mods.eln.sixnode.electricalfiredetector;
 
+import mods.eln.misc.McBridge;
 import mods.eln.generic.GenericItemUsingDamageDescriptor;
 import mods.eln.item.electricalitem.BatteryItem;
 import mods.eln.misc.Coordinate;
@@ -8,6 +9,7 @@ import mods.eln.misc.Utils;
 import mods.eln.sim.IProcess;
 import mods.eln.sixnode.electricalwatch.ElectricalWatchContainer;
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.block.BlockFire;
 import net.minecraft.item.ItemStack;
 
@@ -97,16 +99,16 @@ public class ElectricalFireDetectorSlowProcess implements IProcess {
             for (int dx = -maxRangeHalf; dx <= maxRangeHalf; ++dx)
                 for (int dy = -maxRangeHalf; dy <= maxRangeHalf; ++dy)
                     for (int dz = -maxRangeHalf; dz <= maxRangeHalf; ++dz) {
-                        Block block = detectionBBCenter.world().getBlock(detectionBBCenter.x + dx, detectionBBCenter.y + dy,
+                        Block block = McBridge.getBlock(detectionBBCenter.world(), detectionBBCenter.x + dx, detectionBBCenter.y + dy,
                             detectionBBCenter.z + dz);
                         if (block.getClass() == BlockFire.class) {
                             fireDetected = true;
 
                             Coordinate coord = element.getCoordinate();
-                            List<Block> blockList = Utils.traceRay(coord.world(), coord.x + 0.5, coord.y + 0.5, coord.z + 0.5,
+                            List<IBlockState> blockList = Utils.traceRay(coord.world(), coord.x + 0.5, coord.y + 0.5, coord.z + 0.5,
                                 detectionBBCenter.x + dx + 0.5, detectionBBCenter.y + dy + 0.5, detectionBBCenter.z + dz + 0.5);
 
-                            for (Block b : blockList)
+                            for (IBlockState b : blockList)
                                 if (b.isOpaqueCube()) {
                                     fireDetected = false;
                                     break;

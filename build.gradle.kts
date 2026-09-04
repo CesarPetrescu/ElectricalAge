@@ -30,6 +30,9 @@ tasks.withType<JavaCompile>().configureEach { options.encoding = "UTF-8" }
 listOf("compileJava", "compileTestJava").forEach { n ->
     tasks.matching { it.name == n }.configureEach {
         (this as JavaCompile).options.release.set(8)
+        // Report every error, not javac's default first 100: the port fixes them by histogram.
+        options.compilerArgs.add("-Xmaxerrs")
+        options.compilerArgs.add("10000")
     }
 }
 

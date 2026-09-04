@@ -1,5 +1,6 @@
 package mods.eln.item;
 
+import mods.eln.misc.McBridge;
 import mods.eln.Eln;
 import mods.eln.generic.GenericItemBlockUsingDamageDescriptor;
 import mods.eln.generic.GenericItemUsingDamageDescriptor;
@@ -31,7 +32,7 @@ public class ConfigCopyToolDescriptor extends GenericItemUsingDamageDescriptor {
     public boolean onItemUse(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side, float vx, float vy, float vz) {
         if(world.isRemote) return false;
 
-        Block block = world.getBlock(x, y, z);
+        Block block = McBridge.getBlock(world, x, y, z);
 
         if(block instanceof NodeBlock) {
             NodeBase node = NodeManager.instance.getNodeFromCoordonate(new Coordinate(x, y, z, world));

@@ -14,7 +14,6 @@ import mods.eln.node.transparent.TransparentNodeRender;
 import mods.eln.sixnode.tutorialsign.TutorialSignOverlay;
 import mods.eln.sound.SoundClientEventListener;
 import net.minecraft.client.model.ModelSilverfish;
-import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.common.MinecraftForge;
 import paulscode.sound.SoundSystemConfig;
 
@@ -29,10 +28,10 @@ public class ClientProxy extends CommonProxy {
         ClientRegistry.bindTileEntitySpecialRenderer(SixNodeEntity.class, new SixNodeRender());
         ClientRegistry.bindTileEntitySpecialRenderer(TransparentNodeEntity.class, new TransparentNodeRender());
 
-        MinecraftForgeClient.registerItemRenderer(Eln.transparentNodeItem, Eln.transparentNodeItem);
-        MinecraftForgeClient.registerItemRenderer(Eln.sixNodeItem, Eln.sixNodeItem);
-        MinecraftForgeClient.registerItemRenderer(Eln.sharedItem, Eln.sharedItem);
-        MinecraftForgeClient.registerItemRenderer(Eln.sharedItemStackOne, Eln.sharedItemStackOne);
+        // TODO(phase 3): IItemRenderer is gone since 1.8. The four descriptor-driven items
+        // (transparentNodeItem, sixNodeItem, sharedItem, sharedItemStackOne) get one
+        // TileEntityItemStackRenderer that dispatches to their mods.eln.client.itemrender.IItemRenderer
+        // bodies, bound through Item.setTileEntityItemStackRenderer + a builtin/generated model.
 
         // 1.8+: renderers are created per RenderManager through a factory, not registered as instances.
         RenderingRegistry.registerEntityRenderingHandler(ReplicatorEntity.class,

@@ -11,6 +11,7 @@ import net.minecraft.util.ResourceLocation;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public abstract class GuiContainerEln extends GuiContainer implements IGuiObjectObserver, GuiTextFieldElnObserver {
@@ -44,14 +45,14 @@ public abstract class GuiContainerEln extends GuiContainer implements IGuiObject
     void apply(GuiHelperContainer helper) {
         for (int idx = inventorySlots.inventorySlots.size() - 36; idx < inventorySlots.inventorySlots.size(); idx++) {
             Slot s = (Slot) inventorySlots.inventorySlots.get(idx);
-            s.xDisplayPosition = (idx - (inventorySlots.inventorySlots.size() - 36)) % 9 * 18;
-            s.yDisplayPosition = (idx - (inventorySlots.inventorySlots.size() - 36)) / 9 * 18;
+            s.xPos = (idx - (inventorySlots.inventorySlots.size() - 36)) % 9 * 18;
+            s.yPos = (idx - (inventorySlots.inventorySlots.size() - 36)) / 9 * 18;
             if (idx >= inventorySlots.inventorySlots.size() - 9) {
-                s.yDisplayPosition = 58;
-                s.xDisplayPosition = (idx - (inventorySlots.inventorySlots.size() - 9)) * 18;
+                s.yPos = 58;
+                s.xPos = (idx - (inventorySlots.inventorySlots.size() - 9)) * 18;
             }
-            s.xDisplayPosition += helper.xInv;
-            s.yDisplayPosition += helper.yInv;
+            s.xPos += helper.xInv;
+            s.yPos += helper.yInv;
         }
     }
 
@@ -102,22 +103,23 @@ public abstract class GuiContainerEln extends GuiContainer implements IGuiObject
     }
 
     @Override
-    protected void keyTyped(char key, int code) {
+    protected void keyTyped(char key, int code) throws IOException {
         helper.keyTyped(key, code);
         if (code == Keyboard.KEY_ESCAPE) {
             super.keyTyped(key, code);
         }
     }
 
-    protected void mouseClicked(int x, int y, int code) {
+    protected void mouseClicked(int x, int y, int code) throws IOException {
         helper.mouseClicked(x, y, code);
         super.mouseClicked(x, y, code);
     }
 
     @Override
-    protected void mouseMovedOrUp(int x, int y, int witch) {
+    protected void mouseReleased(int x, int y, int witch) {
+        // 1.8+: mouseMovedOrUp split into mouseReleased (this) and mouseClickMove.
         helper.mouseMovedOrUp(x, y, witch);
-        super.mouseMovedOrUp(x, y, witch);
+        super.mouseReleased(x, y, witch);
     }
 
     public boolean doesGuiPauseGame() {
@@ -156,10 +158,10 @@ public abstract class GuiContainerEln extends GuiContainer implements IGuiObject
 
             switch (skin) {
                 case medium:
-                    drawTexturedModalRectEln(slot.xDisplayPosition - 1, slot.yDisplayPosition - 1, 55, 16, 73 - 55, 34 - 16);
+                    drawTexturedModalRectEln(slot.xPos - 1, slot.yPos - 1, 55, 16, 73 - 55, 34 - 16);
                     break;
                 case big:
-                    drawTexturedModalRectEln(slot.xDisplayPosition - 5, slot.yDisplayPosition - 5, 111, 30, 137 - 111, 56 - 30);
+                    drawTexturedModalRectEln(slot.xPos - 5, slot.yPos - 5, 111, 30, 137 - 111, 56 - 30);
                     break;
             }
         }
@@ -176,8 +178,8 @@ public abstract class GuiContainerEln extends GuiContainer implements IGuiObject
         for (Object o : inventorySlots.inventorySlots) {
             Slot slot = (Slot) o;
             if (slot.getHasStack() == false
-                && mx - guiLeft >= slot.xDisplayPosition && my - guiTop >= slot.yDisplayPosition
-                && mx - guiLeft < slot.xDisplayPosition + 17 && my - guiTop < slot.yDisplayPosition + 17) {
+                && mx - guiLeft >= slot.xPos && my - guiTop >= slot.yPos
+                && mx - guiLeft < slot.xPos + 17 && my - guiTop < slot.yPos + 17) {
                 list.clear();
 
                 SlotSkin comment = SlotSkin.none;
@@ -190,8 +192,8 @@ public abstract class GuiContainerEln extends GuiContainer implements IGuiObject
                         if (size > strWidth) strWidth = size;
                     }
 
-                    x = slot.xDisplayPosition;
-                    y = slot.yDisplayPosition;
+                    x = slot.xPos;
+                    y = slot.yPos;
 
                     int xOffset = 0;
                     if (guiLeft + x + strWidth + 30 > this.width) {

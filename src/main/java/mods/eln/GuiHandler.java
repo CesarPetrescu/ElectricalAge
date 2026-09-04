@@ -1,5 +1,6 @@
 package mods.eln;
 
+import mods.eln.misc.McBridge;
 import net.minecraftforge.fml.common.network.IGuiHandler;
 import mods.eln.item.WireSnipsContainer;
 import mods.eln.item.WireSnipsGui;
@@ -19,7 +20,7 @@ import java.io.IOException;
 public class GuiHandler implements IGuiHandler {
 
     INodeEntity getNodeEntity(World world, int x, int y, int z) {
-        TileEntity e = world.getTileEntity(x, y, z);
+        TileEntity e = McBridge.getTileEntity(world, x, y, z);
         if (e == null || false == e instanceof INodeEntity) return null;
         return (INodeEntity) e;
     }

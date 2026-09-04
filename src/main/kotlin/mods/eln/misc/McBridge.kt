@@ -60,6 +60,7 @@ fun IBlockAccess.getBlockMetadata(x: Int, y: Int, z: Int): Int =
 fun IBlockAccess.getBlockState(x: Int, y: Int, z: Int): IBlockState =
     getBlockState(BlockPos(x, y, z))
 
+@JvmOverloads
 fun World.setBlock(x: Int, y: Int, z: Int, block: Block, meta: Int = 0, flags: Int = 3): Boolean =
     setBlockState(BlockPos(x, y, z), block.getStateFromMeta(meta), flags)
 

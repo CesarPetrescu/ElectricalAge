@@ -4,6 +4,7 @@ import mods.eln.gui.GuiHelper;
 import mods.eln.gui.IGuiObject;
 import mods.eln.misc.UtilsClient;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.item.ItemStack;
@@ -101,7 +102,7 @@ public class GuiItemStack extends Gui implements IGuiObject {
             int px, py;
             px = posX;
             py = posY;
-            List list = stack.getTooltip(Minecraft.getMinecraft().player, false);
+            List list = stack.getTooltip(Minecraft.getMinecraft().player, ITooltipFlag.TooltipFlags.NORMAL);
             helper.drawHoveringText(list, x, y, Minecraft.getMinecraft().fontRenderer);
         }
     }

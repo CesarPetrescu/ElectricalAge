@@ -7,14 +7,14 @@ import net.minecraft.inventory.Slot
 open class SlotWithSkin(
     inventory: IInventory?,
     slotIndex: Int,
-    xDisplayPosition: Int,
-    yDisplayPosition: Int,
+    xPos: Int,
+    yPos: Int,
     var skin: SlotSkin
 ): Slot(
     inventory,
     slotIndex,
-    xDisplayPosition,
-    yDisplayPosition
+    xPos,
+    yPos
 ), ISlotSkin {
     override fun getSlotSkin(): SlotSkin {
         return skin

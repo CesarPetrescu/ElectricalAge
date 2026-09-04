@@ -28,12 +28,12 @@ public class ElectricalLightSensorSlowProcess implements IProcess {
 
             if (!element.sixNode.coordinate.getBlockExist()) return;
             Coordinate coord = element.sixNode.coordinate;
-            //int light = coord.world().getSavedLightValue(EnumSkyBlock.Sky, coord.x, coord.y, coord.z) - coord.world().skylightSubtracted;
+            //int light = coord.world().getSavedLightValue(EnumSkyBlock.SKY, coord.x, coord.y, coord.z) - coord.world().skylightSubtracted;
             //	Utils.println("Light : " + light);
             World world = coord.world();
             //if(element.descriptor.dayLightOnly) {
-            if (!world.provider.hasNoSky) {
-                int i1 = world.getSavedLightValue(EnumSkyBlock.Sky, coord.x, coord.y, coord.z) - world.skylightSubtracted;
+            if (world.provider.hasSkyLight()) {
+                int i1 = world.getLightFor(EnumSkyBlock.SKY, coord.getPos()) - world.getSkylightSubtracted();
                 i1 = Math.max(0, i1);
                 float f = world.getCelestialAngleRadians(1.0F);
 
@@ -59,7 +59,7 @@ public class ElectricalLightSensorSlowProcess implements IProcess {
             if (!element.descriptor.dayLightOnly) {
                 // light = Math.max(light, (int)(world.getBlockLightValue(coord.x, coord.y, coord.z)));
                 //light = 0;
-                light = Math.max(light, Utils.getLight(world, EnumSkyBlock.Block, coord.x, coord.y, coord.z));
+                light = Math.max(light, Utils.getLight(world, EnumSkyBlock.BLOCK, coord.x, coord.y, coord.z));
             }
             element.outputGateProcess.setOutputNormalized(light / 15.0);
         }

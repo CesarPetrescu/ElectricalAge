@@ -96,7 +96,6 @@ import net.minecraft.launchwrapper.Launch;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.WorldServer;
-import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
@@ -121,13 +120,15 @@ import static mods.eln.i18n.I18N.tr;
         modid = Eln.MODID,
         name = Eln.NAME,
         version = Tags.VERSION,
-        dependencies = "required-after:CoFHCore")
+        acceptedMinecraftVersions = "[1.12.2]")
 public class Eln {
-    @Instance("Eln")
+    @Instance(Eln.MODID)
     public static Eln instance;
     @SidedProxy(clientSide = "mods.eln.client.ClientProxy", serverSide = "mods.eln.CommonProxy")
     public static CommonProxy proxy;
-    public final static String MODID = "Eln";
+    // Lower-case since 1.11: FMLModContainer rejects anything else. Registry names, packets and
+    // the lang/model asset paths all derive from it.
+    public final static String MODID = "eln";
 
     static {
         // Must run before any mod's preInit: Eln's fluids use Forge's universal bucket (1.12.2).
@@ -302,7 +303,7 @@ public class Eln {
     }
 
     public static ItemStack findItemStack(String name, int stackSize) {
-        ItemStack stack = GameRegistry.findItemStack("Eln", name, stackSize);
+        ItemStack stack = ElnRegistry.findItemStack(name, stackSize);
         if (stack == null) {
             stack = dictionnaryOreFromMod.get(name);
             stack = Utils.newItemStack(Item.getIdFromItem(stack.getItem()), stackSize, stack.getItemDamage());
@@ -461,28 +462,20 @@ public class Eln {
         final String appenderName = "ELN_FILE";
         if (configuration.getAppenders().containsKey(appenderName)) return;
 
-        PatternLayout layout = PatternLayout.createLayout(
-            "[%d{HH:mm:ss}] [%t/%level] [%logger]: %msg%n",
-            configuration,
-            null,
-            null,
-            null
-        );
+        // log4j 2.8 (1.12.2's runtime) dropped the 2.0-beta static factories; the builders exist
+        // in every version from 2.7 on, including the 2.17 RFG puts on the dev classpath.
+        PatternLayout layout = PatternLayout.newBuilder()
+            .withPattern("[%d{HH:mm:ss}] [%t/%level] [%logger]: %msg%n")
+            .withConfiguration(configuration)
+            .build();
 
-        FileAppender appender = FileAppender.createAppender(
-            new File(logDir, "eln.log").getAbsolutePath(),
-            "true",
-            "false",
-            appenderName,
-            "true",
-            "false",
-            "false",
-            layout,
-            null,
-            "false",
-            null,
-            configuration
-        );
+        FileAppender appender = FileAppender.newBuilder()
+            .withFileName(new File(logDir, "eln.log").getAbsolutePath())
+            .withAppend(true)
+            .withName(appenderName)
+            .withLayout(layout)
+            .withConfiguration(configuration)
+            .build();
         if (appender == null) return;
 
         appender.start();
@@ -584,21 +577,21 @@ public class Eln {
     public void onServerStarting(FMLServerStartingEvent ev) {
         {
             MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
-            WorldServer worldServer = server.worldServers[0];
-            ghostManagerNbt = (GhostManagerNbt) worldServer.mapStorage.loadData(GhostManagerNbt.class, "GhostManager");
+            WorldServer worldServer = server.getWorld(0);
+            ghostManagerNbt = (GhostManagerNbt) worldServer.getMapStorage().getOrLoadData(GhostManagerNbt.class, "GhostManager");
             if (ghostManagerNbt == null) {
                 ghostManagerNbt = new GhostManagerNbt("GhostManager");
-                worldServer.mapStorage.setData("GhostManager", ghostManagerNbt);
+                worldServer.getMapStorage().setData("GhostManager", ghostManagerNbt);
             }
-            saveConfig = (SaveConfig) worldServer.mapStorage.loadData(SaveConfig.class, "SaveConfig");
+            saveConfig = (SaveConfig) worldServer.getMapStorage().getOrLoadData(SaveConfig.class, "SaveConfig");
             if (saveConfig == null) {
                 saveConfig = new SaveConfig("SaveConfig");
-                worldServer.mapStorage.setData("SaveConfig", saveConfig);
+                worldServer.getMapStorage().setData("SaveConfig", saveConfig);
             }
-            nodeManagerNbt = (NodeManagerNbt) worldServer.mapStorage.loadData(NodeManagerNbt.class, "NodeManager");
+            nodeManagerNbt = (NodeManagerNbt) worldServer.getMapStorage().getOrLoadData(NodeManagerNbt.class, "NodeManager");
             if (nodeManagerNbt == null) {
                 nodeManagerNbt = new NodeManagerNbt("NodeManager");
-                worldServer.mapStorage.setData("NodeManager", nodeManagerNbt);
+                worldServer.getMapStorage().setData("NodeManager", nodeManagerNbt);
             }
             nodeServer.init();
         }
@@ -652,18 +645,6 @@ public class Eln {
 
     private static int meta(int group, int subId) {
         return subId + (group << 6);
-    }
-
-    @SubscribeEvent
-    @SideOnly(Side.CLIENT)
-    public void textureHook(TextureStitchEvent.Post event) {
-        if (event.map.getTextureType() == 0) {
-            for (ElnFluidRegistry name : fluids.keySet()) {
-                Block block = fluidBlocks.get(name);
-                Fluid fluid = fluids.get(name);
-                fluid.setIcons(block.getBlockTextureFromSide(1), block.getBlockTextureFromSide(2));
-            }
-        }
     }
 
     public boolean isDevelopmentRun() {

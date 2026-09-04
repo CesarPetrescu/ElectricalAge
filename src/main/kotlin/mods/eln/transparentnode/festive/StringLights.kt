@@ -43,7 +43,7 @@ class StringLightsDescriptor(val name: String, val obj: Obj3D): TransparentNodeD
     override fun addCollisionBoxesToList(par5AxisAlignedBB: AxisAlignedBB, list: MutableList<AxisAlignedBB>, world: World?, x: Int, y: Int, z: Int) {
         val bb = Blocks.STONE.getCollisionBoundingBoxFromPool(world, x, y, z)
         bb.maxZ -= 0.5
-        if (par5AxisAlignedBB.intersectsWith(bb)) list.add(bb)
+        if (par5AxisAlignedBB.intersects(bb)) list.add(bb)
     }
      */
 }

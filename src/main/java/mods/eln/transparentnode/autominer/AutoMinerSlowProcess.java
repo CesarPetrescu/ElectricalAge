@@ -1,5 +1,6 @@
 package mods.eln.transparentnode.autominer;
 
+import mods.eln.misc.McBridge;
 import mods.eln.Eln;
 import mods.eln.generic.GenericItemUsingDamageDescriptor;
 import mods.eln.item.ElectricalDrillDescriptor;
@@ -19,6 +20,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.NonNullList;
 
 import java.util.ArrayList;
 
@@ -98,21 +100,24 @@ public class AutoMinerSlowProcess implements IProcess, INBTTReady {
                     case ore:
                         drillCount++;
 
-                        Block block = jobCoord.world().getBlock(jobCoord.x, jobCoord.y, jobCoord.z);
-                        int meta = jobCoord.world().getBlockMetadata(jobCoord.x, jobCoord.y, jobCoord.z);
+                        Block block = McBridge.getBlock(jobCoord.world(), jobCoord.x, jobCoord.y, jobCoord.z);
+                        int meta = McBridge.getBlockMetadata(jobCoord.world(), jobCoord.x, jobCoord.y, jobCoord.z);
                         if (silkTouch) {
                             itemsToDrop.add(new ItemStack(block, 1, meta));
                         } else {
-                            itemsToDrop.addAll(block.getDrops(jobCoord.world(), jobCoord.x, jobCoord.y, jobCoord.z, meta, 0));
+                            NonNullList<ItemStack> drops = NonNullList.create();
+                            block.getDrops(drops, jobCoord.world(), jobCoord.getPos(),
+                                McBridge.getBlockState(jobCoord.world(), jobCoord.x, jobCoord.y, jobCoord.z), 0);
+                            itemsToDrop.addAll(drops);
                         }
 
                         // Use cobblestone instead of air, everywhere except the mining shaft.
                         // This is so mobs won't spawn excessively.
                         int xDist = jobCoord.x - miner.node.coordinate.x, zDist = jobCoord.z - miner.node.coordinate.z;
                         if (xDist * xDist + zDist * zDist > 25) {
-                            jobCoord.world().setBlock(jobCoord.x, jobCoord.y, jobCoord.z, Blocks.COBBLESTONE);
+                            McBridge.setBlock(jobCoord.world(), jobCoord.x, jobCoord.y, jobCoord.z, Blocks.COBBLESTONE);
                         } else {
-                            jobCoord.world().setBlockToAir(jobCoord.x, jobCoord.y, jobCoord.z);
+                            McBridge.setBlockToAir(jobCoord.world(), jobCoord.x, jobCoord.y, jobCoord.z);
                         }
 
                         energyCounter -= energyTarget;
@@ -214,9 +219,9 @@ public class AutoMinerSlowProcess implements IProcess, INBTTReady {
         outputLocation.applyTransformation(miner.front, miner.coordinate());
         if (outputLocation.getTileEntity() instanceof IInventory) {
             inventoryEntity = (IInventory) outputLocation.getTileEntity();
-            Block inventoryBlock = miner.world().getBlock(outputLocation.x, outputLocation.y, outputLocation.z);
+            Block inventoryBlock = McBridge.getBlock(miner.world(), outputLocation.x, outputLocation.y, outputLocation.z);
             if(inventoryBlock instanceof BlockChest) {
-                IInventory possibleDoubleInventoryEntity = ((BlockChest)inventoryBlock).func_149951_m(miner.world(),outputLocation.x, outputLocation.y, outputLocation.z);
+                IInventory possibleDoubleInventoryEntity = ((BlockChest)inventoryBlock).getLockableContainer(miner.world(), outputLocation.getPos());
                 if (possibleDoubleInventoryEntity != null) {
                     inventoryEntity = possibleDoubleInventoryEntity;
                 }
@@ -291,7 +296,7 @@ public class AutoMinerSlowProcess implements IProcess, INBTTReady {
                         double dy = 0;
                         double dz = jobCoord.z - miner.node.coordinate.z;
                         double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-                        Block block = jobCoord.world().getBlock(jobCoord.x, jobCoord.y, jobCoord.z);
+                        Block block = McBridge.getBlock(jobCoord.world(), jobCoord.x, jobCoord.y, jobCoord.z);
                         if (checkIsOre(jobCoord) || (distance > 0.1 && distance < miningRay && isMinable(block))) {
                             jobFind = true;
                             setJob(jobType.ore);
@@ -311,7 +316,7 @@ public class AutoMinerSlowProcess implements IProcess, INBTTReady {
                     jobCoord.y--;
                     jobCoord.z = miner.node.coordinate.z;
 
-                    Block block = jobCoord.world().getBlock(jobCoord.x, jobCoord.y, jobCoord.z);
+                    Block block = McBridge.getBlock(jobCoord.world(), jobCoord.x, jobCoord.y, jobCoord.z);
                     if (block != Blocks.AIR
                         && block != Blocks.FLOWING_WATER && block != Blocks.WATER
                         && block != Blocks.FLOWING_LAVA && block != Blocks.LAVA) {
@@ -358,11 +363,11 @@ public class AutoMinerSlowProcess implements IProcess, INBTTReady {
     }
 
     private boolean checkIsOre(Coordinate coordinate) {
-        Block block = coordinate.world().getBlock(coordinate.x, coordinate.y, coordinate.z);
+        Block block = McBridge.getBlock(coordinate.world(), coordinate.x, coordinate.y, coordinate.z);
         if (block instanceof BlockOre) return true;
         if (block instanceof OreBlock) return true;
         if (block instanceof BlockRedstoneOre) return true;
-        return OreColorMapping.getMap()[Block.getIdFromBlock(block) + (coordinate.world().getBlockMetadata(coordinate.x, coordinate.y, coordinate.z) << 12)] != 0;
+        return OreColorMapping.getMap()[Block.getIdFromBlock(block) + (McBridge.getBlockMetadata(coordinate.world(), coordinate.x, coordinate.y, coordinate.z) << 12)] != 0;
     }
 
     public void onBreakElement() {

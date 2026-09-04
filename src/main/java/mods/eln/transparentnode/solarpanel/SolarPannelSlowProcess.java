@@ -5,6 +5,7 @@ import mods.eln.misc.Utils;
 import mods.eln.sim.IProcess;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraft.util.math.BlockPos;
 
 public class SolarPannelSlowProcess implements IProcess {
     SolarPanelElement solarPannel;
@@ -46,7 +47,7 @@ public class SolarPannelSlowProcess implements IProcess {
 
         Coordinate coordinate = solarPannel.node.coordinate;
         Vec3d v = Utils.getVec05(coordinate);
-        double x = v.xCoord + solarPannel.descriptor.solarOffsetX, y = v.yCoord + solarPannel.descriptor.solarOffsetY, z = v.zCoord + solarPannel.descriptor.solarOffsetZ;
+        double x = v.x + solarPannel.descriptor.solarOffsetX, y = v.y + solarPannel.descriptor.solarOffsetY, z = v.z + solarPannel.descriptor.solarOffsetZ;
 
 
         double lightAlpha = solarPannel.panelAlpha - solarAlpha;
@@ -73,8 +74,8 @@ public class SolarPannelSlowProcess implements IProcess {
         }
         int count = 0;
         ///world.getChunkProvider().chunkExists(var1, var2)
-        while (world.getChunkProvider().chunkExists(((int) x) >> 4, ((int) z) >> 4)) {
-            double opacity = world.getBlockLightOpacity((int) x, (int) y, (int) z);
+        while (world.isBlockLoaded(new BlockPos((int) x, (int) y, (int) z))) {
+            double opacity = world.getBlockLightOpacity(new BlockPos((int) x, (int) y, (int) z));
             light *= (255 - opacity) / 255;
             if (light == 0.0) {
                 break;

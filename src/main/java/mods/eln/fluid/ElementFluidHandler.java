@@ -48,9 +48,10 @@ public class ElementFluidHandler implements ISidedFluidHandler, INBTTReady {
             setHeatEnergyPerMilliBucket(resource.getFluid());
             return tank.fill(resource, doFill);
         } else {
-            int resourceId = resource.getFluidID();
+            // 1.12.2: fluids have no integer id; FluidRegistry hands out singletons, so compare instances.
+            Fluid resourceFluid = resource.getFluid();
             for (int i = 0; i < whitelist.length; i++) {
-                if (whitelist[i].getID() == resourceId) {
+                if (whitelist[i] == resourceFluid) {
                     setHeatEnergyPerMilliBucket(resource.getFluid());
                     return tank.fill(resource, doFill);
                 }
@@ -74,12 +75,11 @@ public class ElementFluidHandler implements ISidedFluidHandler, INBTTReady {
 
     @Override
     public boolean canFill(EnumFacing from, Fluid fluid) {
-        int fluidId = fluid.getID();
         if (tank.getFluidAmount() > 0) {
-            return tank.getFluid().getFluidID() == fluidId;
+            return tank.getFluid().getFluid() == fluid;
         } else {
             for (int i = 0; i < whitelist.length; i++) {
-                if (whitelist[i].getID() == fluidId) {
+                if (whitelist[i] == fluid) {
                     return true;
                 }
             }

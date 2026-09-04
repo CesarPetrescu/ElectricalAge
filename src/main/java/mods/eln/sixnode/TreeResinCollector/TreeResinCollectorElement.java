@@ -1,5 +1,6 @@
 package mods.eln.sixnode.TreeResinCollector;
 
+import mods.eln.misc.McBridge;
 import mods.eln.Eln;
 import mods.eln.misc.Coordinate;
 import mods.eln.misc.Direction;
@@ -74,15 +75,15 @@ public class TreeResinCollectorElement extends SixNodeElement {
         int leafCount = 0;
         int yStart, yEnd;
 
-        while (TreeResinCollectorDescriptor.isWood(world.getBlock(posWood[0], posWood[1] - 1, posWood[2]))) {
+        while (TreeResinCollectorDescriptor.isWood(McBridge.getBlock(world, posWood[0], posWood[1] - 1, posWood[2]))) {
             posWood[1]--;
         }
         yStart = posWood[1];
 
         posWood[1] = coord.y;
         // timeCounter-= timeTarget;
-        while (TreeResinCollectorDescriptor.isWood(world.getBlock(posWood[0], posWood[1] + 1, posWood[2]))) {
-            if (TreeResinCollectorDescriptor.isLeaf(world.getBlock(posCollector[0], posWood[1] + 1, posCollector[2])))
+        while (TreeResinCollectorDescriptor.isWood(McBridge.getBlock(world, posWood[0], posWood[1] + 1, posWood[2]))) {
+            if (TreeResinCollectorDescriptor.isLeaf(McBridge.getBlock(world, posCollector[0], posWood[1] + 1, posCollector[2])))
                 leafCount++;
             posWood[1]++;
         }

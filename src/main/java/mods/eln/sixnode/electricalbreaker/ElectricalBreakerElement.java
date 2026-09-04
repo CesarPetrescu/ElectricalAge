@@ -1,5 +1,6 @@
 package mods.eln.sixnode.electricalbreaker;
 
+import mods.eln.misc.McBridge;
 import mods.eln.Eln;
 import mods.eln.i18n.I18N;
 import mods.eln.misc.Direction;
@@ -277,7 +278,7 @@ public class ElectricalBreakerElement extends SixNodeElement {
 
         Direction worldDirection = side.applyLRDU(lrdu);
         Coordinate neighborCoordinate = base.moved(worldDirection);
-        TileEntity tileEntity = neighborCoordinate.world().getTileEntity(neighborCoordinate.x, neighborCoordinate.y, neighborCoordinate.z);
+        TileEntity tileEntity = McBridge.getTileEntity(neighborCoordinate.world(), neighborCoordinate.x, neighborCoordinate.y, neighborCoordinate.z);
         if (!(tileEntity instanceof NodeBlockEntity)) return null;
 
         Node node = ((NodeBlockEntity) tileEntity).getNode();

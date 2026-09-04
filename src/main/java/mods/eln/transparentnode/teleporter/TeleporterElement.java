@@ -1,5 +1,6 @@
 package mods.eln.transparentnode.teleporter;
 
+import mods.eln.misc.McBridge;
 import mods.eln.i18n.I18N;
 import mods.eln.lightblock.LightBlockEntity;
 import mods.eln.misc.Coordinate;
@@ -440,7 +441,7 @@ public class TeleporterElement extends TransparentNodeElement implements ITelepo
                                 x = (int) (e.posX + (Math.random() * 2 - 1) * failDistance);
                                 z = (int) (e.posZ + (Math.random() * 2 - 1) * failDistance);
                                 y = 20;
-                                while (e.world.getBlock(x, y, z) != Blocks.AIR && e.world.getBlock(x, y + 1, z) != Blocks.AIR) {
+                                while (McBridge.getBlock(e.world, x, y, z) != Blocks.AIR && McBridge.getBlock(e.world, x, y + 1, z) != Blocks.AIR) {
                                     y++;
                                 }
                                 Utils.serverTeleport(e, x + 0.5, y, z + 0.5);
