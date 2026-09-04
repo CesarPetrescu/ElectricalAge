@@ -113,24 +113,15 @@ enum class LRDU(var dir: Int) {
         }
     }
 
-    fun rotateOnXnLeft(v: Vec3d) {
-        val y = v.yCoord
-        val z = v.zCoord
-        when (this) {
-            Left -> {
-            }
-            Up -> {
-                v.yCoord = -z
-                v.zCoord = y
-            }
-            Right -> {
-                v.yCoord = -y
-                v.zCoord = -z
-            }
-            Down -> {
-                v.yCoord = z
-                v.zCoord = -y
-            }
+    /** Returns a new vector: Vec3d became immutable in 1.9. */
+    fun rotateOnXnLeft(v: Vec3d): Vec3d {
+        val y = v.y
+        val z = v.z
+        return when (this) {
+            Left -> v
+            Up -> Vec3d(v.x, -z, y)
+            Right -> Vec3d(v.x, -y, -z)
+            Down -> Vec3d(v.x, z, -y)
         }
     }
 

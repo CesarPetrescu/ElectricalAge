@@ -1,5 +1,7 @@
 package mods.eln.sixnode.lampsocket
 
+import net.minecraft.util.math.BlockPos
+
 import mods.eln.item.lampitem.BoilerplateLampData
 import mods.eln.item.lampitem.LampDescriptor
 import mods.eln.lightblock.LightBlockEntity
@@ -133,23 +135,25 @@ class LampSocketProcess(var element: LampSocketElement) : IProcess {
         val randTarget = growRate * deltaT * (actualLight.toDouble() / nominalLight.toDouble())
 
         if (randTarget > Math.random()) {
-            val rotationVector = Vec3d(1.0, 0.0, 0.0)
-            rotationVector.rotateAroundZ((element.projectionRotationAngle * (Math.PI / 180.0)).toFloat())
-            rotationVector.rotateYaw(((Math.random() - 0.5) * Math.PI / 2.0).toFloat())
-            rotationVector.rotateAroundZ(((Math.random() - 0.5) * Math.PI / 2.0).toFloat())
-            element.front.rotateOnXnLeft(rotationVector)
-            element.side.rotateFromXN(rotationVector)
+            var rotationVector = Vec3d(1.0, 0.0, 0.0)
+            rotationVector = rotationVector.rotatePitch((element.projectionRotationAngle * (Math.PI / 180.0)).toFloat())
+            rotationVector = rotationVector.rotateYaw(((Math.random() - 0.5) * Math.PI / 2.0).toFloat())
+            rotationVector = rotationVector.rotatePitch(((Math.random() - 0.5) * Math.PI / 2.0).toFloat())
+            rotationVector = element.front.rotateOnXnLeft(rotationVector)
+            rotationVector = element.side.rotateFromXN(rotationVector)
 
             val lbCoordinate = raytrace(rotationVector, actualLight)
-            lbCoordinate.block.updateTick(lbCoordinate.world(), lbCoordinate.x, lbCoordinate.y, lbCoordinate.z, lbCoordinate.world().rand)
+            val lbPos = BlockPos(lbCoordinate.x, lbCoordinate.y, lbCoordinate.z)
+            val lbWorld = lbCoordinate.world()
+            lbCoordinate.block.updateTick(lbWorld, lbPos, lbWorld.getBlockState(lbPos), lbWorld.rand)
         }
     }
 
     private fun placeSpot(lightValue: Int) {
-        val rotationVector = Vec3d(1.0, 0.0, 0.0)
-        rotationVector.rotateAroundZ((element.projectionRotationAngle * (Math.PI / 180.0)).toFloat())
-        element.front.rotateOnXnLeft(rotationVector)
-        element.side.rotateFromXN(rotationVector)
+        var rotationVector = Vec3d(1.0, 0.0, 0.0)
+        rotationVector = rotationVector.rotatePitch((element.projectionRotationAngle * (Math.PI / 180.0)).toFloat())
+        rotationVector = element.front.rotateOnXnLeft(rotationVector)
+        rotationVector = element.side.rotateFromXN(rotationVector)
 
         val lbCoordinate = raytrace(rotationVector, 0)
 
@@ -162,20 +166,30 @@ class LampSocketProcess(var element: LampSocketElement) : IProcess {
     }
 
     private fun raytrace(rotationVector: Vec3d, vectorLengthModifier: Int): Coordinate {
-        val lightVector = element.sixNode!!.coordinate.toVec3()
-        val lbCoordinate = Coordinate(lightVector, element.sixNode!!.coordinate.dimension)
+        val origin = element.sixNode!!.coordinate.toVec3()
+        val lbCoordinate = Coordinate(origin, element.sixNode!!.coordinate.dimension)
+
+        // Vec3d is immutable on 1.12, and this steps a ray one block at a time, so the position
+        // is carried in three doubles rather than reallocating a vector per step.
+        var lightX = origin.x
+        var lightY = origin.y
+        var lightZ = origin.z
+        val position = DoubleArray(3)
+
+        fun placeAt(x: Double, y: Double, z: Double) {
+            position[0] = x; position[1] = y; position[2] = z
+            lbCoordinate.setPosition(position)
+        }
 
         for (idx in 0 until element.descriptor.range + vectorLengthModifier) {
-            lightVector.xCoord += rotationVector.xCoord
-            lightVector.yCoord += rotationVector.yCoord
-            lightVector.zCoord += rotationVector.zCoord
-            lbCoordinate.setPosition(lightVector)
+            lightX += rotationVector.x
+            lightY += rotationVector.y
+            lightZ += rotationVector.z
+            placeAt(lightX, lightY, lightZ)
 
-            if (!lbCoordinate.blockExist || lbCoordinate.block.isOpaqueCube) {
-                lightVector.xCoord -= rotationVector.xCoord
-                lightVector.yCoord -= rotationVector.yCoord
-                lightVector.zCoord -= rotationVector.zCoord
-                lbCoordinate.setPosition(lightVector)
+            if (!lbCoordinate.blockExist || lbCoordinate.block.defaultState.isOpaqueCube) {
+                // Step back so the light lands in the last open block, not inside the wall.
+                placeAt(lightX - rotationVector.x, lightY - rotationVector.y, lightZ - rotationVector.z)
                 break
             }
         }

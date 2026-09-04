@@ -331,7 +331,7 @@ enum class Direction(var int: Int) {
             ZN -> z--
             ZP -> z++
         }
-        return coordinate.world().getTileEntity(x, y, z)
+        return coordinate.world().getTileEntity(x, y, z)!!
     }
 
     fun writeToNBT(nbt: NBTTagCompound, name: String?) {
@@ -402,35 +402,22 @@ enum class Direction(var int: Int) {
         }
     }
 
-    fun rotateFromXN(p: Vec3d) {
-        val x = p.xCoord
-        val y = p.yCoord
-        val z = p.zCoord
-        when (this) {
-            XN -> {
-            }
-            XP -> {
-                p.xCoord = -x
-                p.zCoord = -z
-            }
-            YN -> {
-                p.xCoord = y
-                p.yCoord = x
-                p.zCoord = -z
-            }
-            YP -> {
-                p.xCoord = y
-                p.yCoord = -x
-                p.zCoord = z
-            }
-            ZN -> {
-                p.xCoord = -z
-                p.zCoord = x
-            }
-            ZP -> {
-                p.xCoord = z
-                p.zCoord = -x
-            }
+    /**
+     * Rotates [p] out of the XN frame into this direction's.
+     *
+     * Returns a new vector rather than mutating in place: Vec3d became immutable in 1.9.
+     */
+    fun rotateFromXN(p: Vec3d): Vec3d {
+        val x = p.x
+        val y = p.y
+        val z = p.z
+        return when (this) {
+            XN -> p
+            XP -> Vec3d(-x, y, -z)
+            YN -> Vec3d(y, x, -z)
+            YP -> Vec3d(y, -x, z)
+            ZN -> Vec3d(-z, y, x)
+            ZP -> Vec3d(z, y, -x)
         }
     }
 
