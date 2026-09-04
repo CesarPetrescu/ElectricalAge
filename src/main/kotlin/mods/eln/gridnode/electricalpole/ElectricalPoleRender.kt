@@ -10,7 +10,7 @@ import mods.eln.node.transparent.TransparentNodeDescriptor
 import mods.eln.node.transparent.TransparentNodeEntity
 import mods.eln.sound.LoopedSound
 import net.minecraft.client.audio.ISound
-import net.minecraft.util.Vec3
+import net.minecraft.util.math.Vec3d
 import org.lwjgl.opengl.GL11
 
 import java.io.DataInputStream
@@ -28,7 +28,7 @@ class ElectricalPoleRender(entity: TransparentNodeEntity, descriptor: Transparen
         this.descriptor = descriptor as ElectricalPoleDescriptor
 
         if (this.descriptor.includeTransformer) {
-            addLoopedSound(object : LoopedSound("eln:Transformer", coordinate(), ISound.AttenuationType.LINEAR) {
+            addLoopedSound(object : LoopedSound("eln:transformer", coordinate(), ISound.AttenuationType.LINEAR) {
                 override fun getVolume(): Float {
                     if (load.position > this@ElectricalPoleRender.descriptor.minimalLoadToHum)
                         return 0.05f * (load.position - this@ElectricalPoleRender.descriptor.minimalLoadToHum) / (1 - this@ElectricalPoleRender.descriptor.minimalLoadToHum)

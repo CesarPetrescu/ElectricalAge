@@ -4,7 +4,7 @@ import mods.eln.Eln
 import mods.eln.falstad.FalstadImporter
 import mods.eln.generic.GenericItemUsingDamageDescriptor
 import mods.eln.i18n.I18N.tr
-import mods.eln.misc.Utils.addChatMessage
+import mods.eln.misc.Utils.sendMessage
 import mods.eln.misc.UtilsClient
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiButton
@@ -45,21 +45,21 @@ class FalstadImportGui : GuiScreen() {
         when (button.id) {
             0 -> {
                 val clipboard = getClipboardString().orEmpty().trim()
-                val player = Minecraft.getMinecraft().thePlayer
+                val player = Minecraft.getMinecraft().player
                 if (clipboard.isEmpty()) {
-                    if (player != null) addChatMessage(player, tr("Falstad import: clipboard is empty."))
+                    if (player != null) sendMessage(player, tr("Falstad import: clipboard is empty."))
                     return
                 }
 
                 if (!looksLikeFalstadData(clipboard)) {
-                    if (player != null) addChatMessage(player, tr("Falstad import: clipboard is not valid Falstad data."))
+                    if (player != null) sendMessage(player, tr("Falstad import: clipboard is not valid Falstad data."))
                     return
                 }
 
                 val bytes = clipboard.toByteArray(StandardCharsets.UTF_8)
                 if (bytes.size > MAX_FALSTAD_IMPORT_BYTES) {
                     if (player != null) {
-                        addChatMessage(
+                        sendMessage(
                             player,
                             tr(
                                 "Falstad import: netlist is too large to send (%1$ bytes, limit %2$).",
@@ -84,8 +84,8 @@ class FalstadImportGui : GuiScreen() {
 
     override fun drawScreen(mouseX: Int, mouseY: Int, partialTicks: Float) {
         drawDefaultBackground()
-        drawCenteredString(fontRendererObj, tr("Falstad Import Tool"), width / 2, height / 2 - 42, 0xFFFFFF)
-        drawCenteredString(fontRendererObj, tr("Reads Falstad text from the system clipboard."), width / 2, height / 2 - 28, 0xA0A0A0)
+        drawCenteredString(fontRenderer, tr("Falstad Import Tool"), width / 2, height / 2 - 42, 0xFFFFFF)
+        drawCenteredString(fontRenderer, tr("Reads Falstad text from the system clipboard."), width / 2, height / 2 - 28, 0xA0A0A0)
         super.drawScreen(mouseX, mouseY, partialTicks)
     }
 

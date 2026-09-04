@@ -1,6 +1,6 @@
 package mods.eln.registration
 
-import cpw.mods.fml.common.registry.GameRegistry
+import net.minecraftforge.fml.common.registry.GameRegistry
 import mods.eln.Eln
 import mods.eln.i18n.I18N
 import mods.eln.node.NodeManager.Companion.registerUuid

@@ -269,7 +269,7 @@ object RoomThermalManager {
         val thermalNodeCoordsByDimension = collectThermalNodeCoordinatesByDimension()
 
         for (player in players) {
-            val world = player.worldObj ?: continue
+            val world = player.world ?: continue
             if (world.isRemote) continue
             if (dimensionFilter != null && !dimensionFilter.contains(world.provider.dimensionId)) continue
 
@@ -310,7 +310,7 @@ object RoomThermalManager {
     }
 
     private fun findPlayerAirSeed(player: EntityPlayerMP): CellPos? {
-        val world = player.worldObj ?: return null
+        val world = player.world ?: return null
         val baseX = floor(player.posX).toInt()
         val baseY = floor(player.posY).toInt()
         val baseZ = floor(player.posZ).toInt()
@@ -489,7 +489,7 @@ object RoomThermalManager {
         if (tickCounter - room.lastDoorScanTick < ROOM_DOOR_SCAN_INTERVAL_TICKS) return
         room.lastDoorScanTick = tickCounter
 
-        val server = MinecraftServer.getServer() ?: return
+        val server = FMLCommonHandler.instance().getMinecraftServerInstance() ?: return
         val world = server.worldServerForDimension(room.dimension) ?: return
         if (world.isRemote) return
 

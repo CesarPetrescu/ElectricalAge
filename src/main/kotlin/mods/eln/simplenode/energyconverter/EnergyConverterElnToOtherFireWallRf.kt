@@ -7,7 +7,7 @@ import mods.eln.misc.Direction
 object EnergyConverterElnToOtherFireWallRf {
 
     fun updateEntity(e: EnergyConverterElnToOtherEntity) {
-        if (e.worldObj.isRemote) return
+        if (e.world.isRemote) return
         if (e.node == null) return
         val node = e.node as EnergyConverterElnToOtherNode
 

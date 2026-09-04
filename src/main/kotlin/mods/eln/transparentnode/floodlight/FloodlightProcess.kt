@@ -9,7 +9,7 @@ import mods.eln.misc.HybridNodeDirection.*
 import mods.eln.misc.Utils.getItemObject
 import mods.eln.sim.IProcess
 import net.minecraft.item.ItemStack
-import net.minecraft.util.Vec3
+import net.minecraft.util.math.Vec3d
 import kotlin.math.*
 
 class FloodlightProcess(val element: FloodlightElement) : IProcess {
@@ -101,7 +101,7 @@ class FloodlightProcess(val element: FloodlightElement) : IProcess {
      * The logic and math are very complex, and it is easy to break everything if you don't know what you are doing!
      */
     private fun placeSpots(lightValue: Int, lightRange: Int) {
-        val rotationVectors = mutableListOf<Pair<Vec3, Double>>()
+        val rotationVectors = mutableListOf<Pair<Vec3d, Double>>()
         val fractionTable = mutableListOf<Double>()
 
         val rotationAxis = element.rotationAxis
@@ -202,14 +202,14 @@ class FloodlightProcess(val element: FloodlightElement) : IProcess {
         return Pair(toDegrees(hAdj), toDegrees(kAdj))
     }
 
-    private fun getRawRotationVector(horzAngle: Double, vertAngle: Double): Vec3 {
+    private fun getRawRotationVector(horzAngle: Double, vertAngle: Double): Vec3d {
         val horzSin = sin(toRadians(horzAngle))
         val horzCos = cos(toRadians(horzAngle))
 
         val vertSin = sin(toRadians(vertAngle))
         val vertCos = cos(toRadians(vertAngle))
 
-        val v = Vec3.createVectorHelper(0.0, 0.0, 0.0)
+        val v = Vec3d(0.0, 0.0, 0.0)
 
         v.xCoord = vertCos * horzSin
         v.yCoord = vertSin
@@ -218,9 +218,9 @@ class FloodlightProcess(val element: FloodlightElement) : IProcess {
         return v
     }
 
-    private fun createRotationVector(horzAngle: Double, vertAngle: Double, axis: HybridNodeDirection, facing: HybridNodeDirection): Vec3 {
+    private fun createRotationVector(horzAngle: Double, vertAngle: Double, axis: HybridNodeDirection, facing: HybridNodeDirection): Vec3d {
         val oldV = getRawRotationVector(horzAngle, vertAngle)
-        val newV = Vec3.createVectorHelper(0.0, 0.0, 0.0)
+        val newV = Vec3d(0.0, 0.0, 0.0)
 
         when (axis) {
             XN -> {

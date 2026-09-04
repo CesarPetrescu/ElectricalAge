@@ -2,7 +2,7 @@
 package mods.eln.node
 
 import mods.eln.misc.Utils.println
-import mods.eln.misc.Utils.addChatMessage
+import mods.eln.misc.Utils.sendMessage
 import mods.eln.misc.Coordinate
 import net.minecraft.entity.player.EntityPlayerMP
 import mods.eln.misc.LRDUCubeMask
@@ -23,7 +23,7 @@ import mods.eln.misc.INBTTReady
 import java.io.IOException
 import kotlin.jvm.JvmOverloads
 import net.minecraft.server.MinecraftServer
-import cpw.mods.fml.common.FMLCommonHandler
+import net.minecraftforge.fml.common.FMLCommonHandler
 import mods.eln.ServerKeyHandler
 import net.minecraft.world.WorldServer
 import net.minecraft.entity.item.EntityItem
@@ -147,7 +147,7 @@ abstract class NodeBase {
     }
 
     open fun onBlockActivated(entityPlayer: EntityPlayer, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
-        if (!entityPlayer.worldObj.isRemote && entityPlayer.currentEquippedItem != null) {
+        if (!entityPlayer.world.isRemote && entityPlayer.currentEquippedItem != null) {
             val equipped = entityPlayer.currentEquippedItem
             if (Eln.multiMeterElement.checkSameItemStack(equipped)) {
                 val str = multiMeterString(side)
@@ -186,7 +186,7 @@ abstract class NodeBase {
                     entityPlayer.posX,
                     entityPlayer.posY,
                     entityPlayer.posZ,
-                    entityPlayer.worldObj
+                    entityPlayer.world
                 ).play()
                 println(String.format("NB.oBA: act %s data %s", act, equipped.tagCompound.toString()))
                 return true
@@ -203,7 +203,7 @@ abstract class NodeBase {
         text.split('\n')
             .map { it.trimEnd('\r') }
             .filter { it.isNotEmpty() }
-            .forEach { addChatMessage(entityPlayer, it) }
+            .forEach { sendMessage(entityPlayer, it) }
     }
 
     fun reconnect() {
@@ -401,7 +401,7 @@ abstract class NodeBase {
         val server = FMLCommonHandler.instance().minecraftServerInstance
         for (obj in server.configurationManager.playerEntityList) {
             val player = obj as EntityPlayerMP?
-            val worldServer = MinecraftServer.getServer().worldServerForDimension(player!!.dimension) as WorldServer
+            val worldServer = FMLCommonHandler.instance().getMinecraftServerInstance().worldServerForDimension(player!!.dimension) as WorldServer
             val playerManager = worldServer.playerManager
             if (player.dimension != coordinate.dimension) continue
             if (!playerManager.isPlayerWatchingChunk(player, coordinate.x / 16, coordinate.z / 16)) continue
@@ -433,7 +433,7 @@ abstract class NodeBase {
         val server = FMLCommonHandler.instance().minecraftServerInstance
         for (obj in server.configurationManager.playerEntityList) {
             val player = obj as EntityPlayerMP?
-            val worldServer = MinecraftServer.getServer().worldServerForDimension(player!!.dimension) as WorldServer
+            val worldServer = FMLCommonHandler.instance().getMinecraftServerInstance().worldServerForDimension(player!!.dimension) as WorldServer
             val playerManager = worldServer.playerManager
             if (player.dimension != coordinate.dimension) continue
             if (!playerManager.isPlayerWatchingChunk(player, coordinate.x / 16, coordinate.z / 16)) continue
@@ -505,13 +505,13 @@ abstract class NodeBase {
         @JvmStatic
         fun isBlockWrappable(block: Block, w: World?, x: Int, y: Int, z: Int): Boolean {
             if (block.isReplaceable(w, x, y, z)) return true
-            if (block === Blocks.air) return true
+            if (block === Blocks.AIR) return true
             if (block === Eln.sixNodeBlock) return true
             if (block is GhostBlock) return true
-            if (block === Blocks.torch) return true
-            if (block === Blocks.redstone_torch) return true
-            if (block === Blocks.unlit_redstone_torch) return true
-            return block === Blocks.redstone_wire
+            if (block === Blocks.TORCH) return true
+            if (block === Blocks.REDSTONE_TORCH) return true
+            if (block === Blocks.UNLIT_REDSTONE_TORCH) return true
+            return block === Blocks.REDSTONE_WIRE
         }
 
         var beepUploaded = SoundCommand("eln:beep_accept_2").smallRange()

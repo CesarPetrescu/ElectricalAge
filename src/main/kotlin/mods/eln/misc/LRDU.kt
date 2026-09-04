@@ -1,7 +1,7 @@
 package mods.eln.misc
 
 import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.Vec3
+import net.minecraft.util.math.Vec3d
 import org.lwjgl.opengl.GL11
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -113,7 +113,7 @@ enum class LRDU(var dir: Int) {
         }
     }
 
-    fun rotateOnXnLeft(v: Vec3) {
+    fun rotateOnXnLeft(v: Vec3d) {
         val y = v.yCoord
         val z = v.zCoord
         when (this) {

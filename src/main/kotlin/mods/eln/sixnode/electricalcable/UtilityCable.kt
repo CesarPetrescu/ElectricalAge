@@ -13,7 +13,7 @@ import mods.eln.misc.Direction
 import mods.eln.misc.LRDU
 import mods.eln.misc.LRDUMask
 import mods.eln.misc.Utils
-import mods.eln.misc.Utils.addChatMessage
+import mods.eln.misc.Utils.sendMessage
 import mods.eln.misc.Utils.isPlayerUsingWrench
 import mods.eln.misc.Utils.plotAmpere
 import mods.eln.misc.Utils.plotVolt
@@ -45,7 +45,7 @@ import net.minecraft.inventory.IInventory
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.DamageSource
-import net.minecraft.util.EnumChatFormatting
+import net.minecraft.util.text.TextFormatting
 import net.minecraftforge.client.IItemRenderer.ItemRenderType
 import org.lwjgl.opengl.GL11
 import java.io.DataInputStream
@@ -556,10 +556,10 @@ class UtilityCableElement(
         if (isPlayerUsingWrench(entityPlayer)) {
             if (!descriptor.actsAsSingleConductor && descriptor.supportsPaletteSelection) {
                 paletteIndex = (paletteIndex + 1) % descriptor.colorPalettes.size
-                addChatMessage(entityPlayer, tr("Conductor colors: %1$", activePalette().displayName))
+                sendMessage(entityPlayer, tr("Conductor colors: %1$", activePalette().displayName))
             } else {
                 colorCare = colorCare xor 1
-                addChatMessage(entityPlayer, tr("Wire color care %1$", colorCare))
+                sendMessage(entityPlayer, tr("Wire color care %1$", colorCare))
             }
             reconnect()
             return true
@@ -709,25 +709,25 @@ class UtilityCableElement(
         }
     }
 
-    private fun dyeToChat(color: Int): EnumChatFormatting {
-        if (isGroundColor(color)) return EnumChatFormatting.DARK_GREEN
+    private fun dyeToChat(color: Int): TextFormatting {
+        if (isGroundColor(color)) return TextFormatting.DARK_GREEN
         return when (color and 0xF) {
-            0 -> EnumChatFormatting.BLACK
-            1 -> EnumChatFormatting.RED
-            2 -> EnumChatFormatting.DARK_GREEN
-            3 -> EnumChatFormatting.GOLD
-            4 -> EnumChatFormatting.BLUE
-            5 -> EnumChatFormatting.DARK_PURPLE
-            6 -> EnumChatFormatting.AQUA
-            7 -> EnumChatFormatting.GRAY
-            8 -> EnumChatFormatting.DARK_GRAY
-            9 -> EnumChatFormatting.LIGHT_PURPLE
-            10 -> EnumChatFormatting.GREEN
-            11 -> EnumChatFormatting.YELLOW
-            12 -> EnumChatFormatting.BLUE
-            13 -> EnumChatFormatting.DARK_PURPLE
-            14 -> EnumChatFormatting.GOLD
-            else -> EnumChatFormatting.WHITE
+            0 -> TextFormatting.BLACK
+            1 -> TextFormatting.RED
+            2 -> TextFormatting.DARK_GREEN
+            3 -> TextFormatting.GOLD
+            4 -> TextFormatting.BLUE
+            5 -> TextFormatting.DARK_PURPLE
+            6 -> TextFormatting.AQUA
+            7 -> TextFormatting.GRAY
+            8 -> TextFormatting.DARK_GRAY
+            9 -> TextFormatting.LIGHT_PURPLE
+            10 -> TextFormatting.GREEN
+            11 -> TextFormatting.YELLOW
+            12 -> TextFormatting.BLUE
+            13 -> TextFormatting.DARK_PURPLE
+            14 -> TextFormatting.GOLD
+            else -> TextFormatting.WHITE
         }
     }
 
@@ -1018,7 +1018,7 @@ class UtilityCableRender(
         if (temperatureCelsius.toDouble() < startSmokingAt || temperatureCelsius.toDouble() >= descriptor.meltTemperatureCelsius) {
             return
         }
-        val world = tileEntity.worldObj ?: return
+        val world = tileEntity.world ?: return
         if (!world.isRemote) {
             return
         }

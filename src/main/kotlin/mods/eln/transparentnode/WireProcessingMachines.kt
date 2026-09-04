@@ -708,7 +708,7 @@ class WireMachineRender(entity: TransparentNodeEntity, descriptor: TransparentNo
 
     private fun emitInsulatorSmoke() {
         if (!running) return
-        val world = tileEntity.worldObj ?: return
+        val world = tileEntity.world ?: return
         if (!world.isRemote) return
         if (world.rand.nextFloat() > 0.08f) return
         val baseX = tileEntity.xCoord + 0.5

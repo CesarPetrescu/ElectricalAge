@@ -4,9 +4,9 @@ import mods.eln.misc.UtilsClient
 import mods.eln.node.transparent.TransparentNodeDescriptor
 import mods.eln.node.transparent.TransparentNodeElementRender
 import mods.eln.node.transparent.TransparentNodeEntity
-import net.minecraft.util.AxisAlignedBB
+import net.minecraft.util.math.AxisAlignedBB
 import net.minecraft.util.ResourceLocation
-import net.minecraft.util.Vec3
+import net.minecraft.util.math.Vec3d
 
 import java.io.DataInputStream
 import java.io.IOException
@@ -42,8 +42,8 @@ abstract class GridRender(tileEntity: TransparentNodeEntity, descriptor: Transpa
     }
 
     @Throws(IOException::class)
-    private fun readVec(stream: DataInputStream): Vec3 {
-        return Vec3.createVectorHelper(stream.readFloat().toDouble(), stream.readFloat().toDouble(), stream.readFloat().toDouble())
+    private fun readVec(stream: DataInputStream): Vec3d {
+        return Vec3d(stream.readFloat().toDouble(), stream.readFloat().toDouble(), stream.readFloat().toDouble())
     }
 
     override fun networkUnserialize(stream: DataInputStream) {
@@ -90,7 +90,7 @@ abstract class GridRender(tileEntity: TransparentNodeEntity, descriptor: Transpa
         val cx = tileEntity.xCoord + 0.5
         val cy = tileEntity.yCoord + 0.5
         val cz = tileEntity.zCoord + 0.5
-        return AxisAlignedBB.getBoundingBox(
+        return AxisAlignedBB(
             cx - extent, cy - extent, cz - extent,
             cx + extent, cy + extent, cz + extent
         )
@@ -101,10 +101,10 @@ abstract class GridRender(tileEntity: TransparentNodeEntity, descriptor: Transpa
     // Probably need make physical "cable" blocks, to make minecraft cooperate.
     // The individual blocks should do the rendering.
     // ...later. Much later.
-    internal constructor(start: Vec3, end: Vec3) {
+    internal constructor(start: Vec3d, end: Vec3d) {
         internal val list: Int = glGenLists(1)
 
-        internal val origin = Vec3.createVectorHelper(0.0, 0.0, 0.0)
+        internal val origin = Vec3d(0.0, 0.0, 0.0)
         internal val box = intArrayOf(3, 7, 5, 3, 5, 1, 4, 8, 6, 4, 6, 2, 1, 6, 5, 1, 2, 6, 3, 8, 7, 3, 4, 8)
         // Maps box coordinates (above) to texture coordinates.
         internal val boxTex = intArrayOf(0, 0, // 1
@@ -144,12 +144,12 @@ abstract class GridRender(tileEntity: TransparentNodeEntity, descriptor: Transpa
             glEndList()
         }
 
-        private fun drawBox(from: Array<Vec3>, to: Array<Vec3>) {
+        private fun drawBox(from: Array<Vec3d>, to: Array<Vec3d>) {
             val v = arrayOf(from[0], from[1], from[2], from[3], to[0], to[1], to[2], to[3])
 
             // Figure out the lighting.
-            //            Vec3 middle = Vec3.createVectorHelper(0, 0, 0);
-            //            for (Vec3 x : v) {
+            //            Vec3d middle = Vec3d(0, 0, 0);
+            //            for (Vec3d x : v) {
             //                middle = middle.addVector(x.xCoord, x.yCoord, x.zCoord);
             //            }
             //            middle = multiply(middle, v.length).addVector(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord);
@@ -166,11 +166,11 @@ abstract class GridRender(tileEntity: TransparentNodeEntity, descriptor: Transpa
             }
         }
 
-        private fun translate(start: Array<Vec3>, delta: Vec3): Array<Vec3> {
+        private fun translate(start: Array<Vec3d>, delta: Vec3d): Array<Vec3d> {
             return start.mapIndexed { _, vec3 -> vec3.addVector(delta.xCoord, delta.yCoord, delta.zCoord) }.toTypedArray()
         }
 
-        private fun spread(a: Vec3, b: Vec3): Array<Vec3> {
+        private fun spread(a: Vec3d, b: Vec3d): Array<Vec3d> {
             // We want to draw a box-shaped cable following the catenary.
             // To start with, compute a vector perpendicular to the first
             // catenary segment, then rotate it around the catenary to form four points.
@@ -190,12 +190,12 @@ abstract class GridRender(tileEntity: TransparentNodeEntity, descriptor: Transpa
             return translate(arrayOf(x1, y1, y2, x2), a)
         }
 
-        private fun negate(v: Vec3): Vec3 {
+        private fun negate(v: Vec3d): Vec3d {
             return v.subtract(origin)
         }
 
-        internal fun multiply(a: Vec3, b: Double): Vec3 {
-            return Vec3.createVectorHelper(
+        internal fun multiply(a: Vec3d, b: Double): Vec3d {
+            return Vec3d(
                     a.xCoord * b,
                     a.yCoord * b,
                     a.zCoord * b
@@ -203,7 +203,7 @@ abstract class GridRender(tileEntity: TransparentNodeEntity, descriptor: Transpa
         }
 
         // This function borrowed from Immersive Engineering. Check them out!
-        private fun getConnectionCatenary(start: Vec3, end: Vec3): Array<Vec3> {
+        private fun getConnectionCatenary(start: Vec3d, end: Vec3d): Array<Vec3d> {
             // TODO: Thermal heating.
             val slack = 1.005
             val vertices = 16
@@ -230,7 +230,7 @@ abstract class GridRender(tileEntity: TransparentNodeEntity, descriptor: Transpa
                 val x1 = 0 + dx * n1
                 val z1 = 0 + dz * n1
                 val y1 = a * Math.cosh((Math.sqrt(x1 * x1 + z1 * z1) - p) / a) + q
-                Vec3.createVectorHelper(start.xCoord + x1, start.yCoord + y1, start.zCoord + z1)
+                Vec3d(start.xCoord + x1, start.yCoord + y1, start.zCoord + z1)
             }.toTypedArray()
         }
 

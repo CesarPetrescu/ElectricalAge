@@ -1,6 +1,6 @@
 package mods.eln.node.transparent
 
-import net.minecraftforge.common.util.ForgeDirection
+import net.minecraft.util.EnumFacing
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.FluidTankInfo
@@ -12,7 +12,7 @@ import net.minecraftforge.fluids.IFluidHandler
 class TransparentNodeEntityWithFluid : TransparentNodeEntity(), IFluidHandler {
     private val fluidHandler: IFluidHandler
         get() {
-            if (!worldObj.isRemote) {
+            if (!world.isRemote) {
                 val node = node
                 if (node != null && node is TransparentNode) {
                     val i = node.fluidHandler
@@ -32,7 +32,7 @@ class TransparentNodeEntityWithFluid : TransparentNodeEntity(), IFluidHandler {
      * @param doFill   If false, fill will only be simulated.
      * @return Amount of resource that was (or would have been, if simulated) filled.
      */
-    override fun fill(from: ForgeDirection, resource: FluidStack, doFill: Boolean): Int {
+    override fun fill(from: EnumFacing, resource: FluidStack, doFill: Boolean): Int {
         return fluidHandler.fill(from, resource, doFill)
     }
 
@@ -45,7 +45,7 @@ class TransparentNodeEntityWithFluid : TransparentNodeEntity(), IFluidHandler {
      * @return FluidStack representing the Fluid and amount that was (or would have been, if
      * simulated) drained.
      */
-    override fun drain(from: ForgeDirection, resource: FluidStack, doDrain: Boolean): FluidStack? {
+    override fun drain(from: EnumFacing, resource: FluidStack, doDrain: Boolean): FluidStack? {
         return fluidHandler.drain(from, resource, doDrain)
     }
 
@@ -61,7 +61,7 @@ class TransparentNodeEntityWithFluid : TransparentNodeEntity(), IFluidHandler {
      * @return FluidStack representing the Fluid and amount that was (or would have been, if
      * simulated) drained.
      */
-    override fun drain(from: ForgeDirection, maxDrain: Int, doDrain: Boolean): FluidStack? {
+    override fun drain(from: EnumFacing, maxDrain: Int, doDrain: Boolean): FluidStack? {
         return fluidHandler.drain(from, maxDrain, doDrain)
     }
 
@@ -74,7 +74,7 @@ class TransparentNodeEntityWithFluid : TransparentNodeEntity(), IFluidHandler {
      * @param from
      * @param fluid
      */
-    override fun canFill(from: ForgeDirection, fluid: Fluid): Boolean {
+    override fun canFill(from: EnumFacing, fluid: Fluid): Boolean {
         return false
     }
 
@@ -87,7 +87,7 @@ class TransparentNodeEntityWithFluid : TransparentNodeEntity(), IFluidHandler {
      * @param from
      * @param fluid
      */
-    override fun canDrain(from: ForgeDirection, fluid: Fluid): Boolean {
+    override fun canDrain(from: EnumFacing, fluid: Fluid): Boolean {
         return fluidHandler.canDrain(from, fluid)
     }
 
@@ -98,32 +98,32 @@ class TransparentNodeEntityWithFluid : TransparentNodeEntity(), IFluidHandler {
      * @param from Orientation determining which tanks should be queried.
      * @return Info for the relevant internal tanks.
      */
-    override fun getTankInfo(from: ForgeDirection): Array<FluidTankInfo> {
+    override fun getTankInfo(from: EnumFacing): Array<FluidTankInfo> {
         return fluidHandler.getTankInfo(from)
     }
 
     private class FakeFluidHandler : IFluidHandler {
-        override fun fill(from: ForgeDirection, resource: FluidStack?, doFill: Boolean): Int {
+        override fun fill(from: EnumFacing, resource: FluidStack?, doFill: Boolean): Int {
             return 0
         }
 
-        override fun drain(from: ForgeDirection, resource: FluidStack?, doDrain: Boolean): FluidStack? {
+        override fun drain(from: EnumFacing, resource: FluidStack?, doDrain: Boolean): FluidStack? {
             return null
         }
 
-        override fun drain(from: ForgeDirection, maxDrain: Int, doDrain: Boolean): FluidStack? {
+        override fun drain(from: EnumFacing, maxDrain: Int, doDrain: Boolean): FluidStack? {
             return null
         }
 
-        override fun canFill(from: ForgeDirection, fluid: Fluid): Boolean {
+        override fun canFill(from: EnumFacing, fluid: Fluid): Boolean {
             return false
         }
 
-        override fun canDrain(from: ForgeDirection, fluid: Fluid): Boolean {
+        override fun canDrain(from: EnumFacing, fluid: Fluid): Boolean {
             return false
         }
 
-        override fun getTankInfo(from: ForgeDirection): Array<FluidTankInfo?> {
+        override fun getTankInfo(from: EnumFacing): Array<FluidTankInfo?> {
             return arrayOfNulls(0)
         }
 

@@ -4,7 +4,7 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import mods.eln.Eln
 import net.minecraft.world.World
-import net.minecraft.world.biome.BiomeGenBase
+import net.minecraft.world.biome.Biome
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
 import java.util.Locale
@@ -39,7 +39,7 @@ object BiomeClimateService {
         ensureLoaded()
 
         val weather = getWeatherSnapshot(world)
-        val biome = world.getBiomeGenForCoords(x, z)
+        val biome = world.getBiome(x, z)
         val profile = resolveProfileForBiome(biome)
 
         val dayBlend = dayBlendForWorldTicks(world.worldTime)
@@ -73,7 +73,7 @@ object BiomeClimateService {
     }
 
     private fun resolvePrecipitationType(
-        biome: BiomeGenBase?,
+        biome: Biome?,
         x: Int,
         y: Int,
         z: Int,
@@ -85,7 +85,7 @@ object BiomeClimateService {
         return "rain"
     }
 
-    private fun resolveProfileForBiome(biome: BiomeGenBase?): BiomeClimateProfile {
+    private fun resolveProfileForBiome(biome: Biome?): BiomeClimateProfile {
         if (biome != null) {
             synchronized(this) {
                 profilesByBiomeId[biome.biomeID]?.let { return it }
@@ -141,7 +141,7 @@ object BiomeClimateService {
             }
 
             val missingEntries = ArrayList<Pair<Int, String>>()
-            BiomeGenBase.getBiomeGenArray()
+            Biome.getBiomeGenArray()
                 .filterNotNull()
                 .forEach { biome ->
                     val name = biome.biomeName ?: return@forEach
@@ -220,7 +220,7 @@ object BiomeClimateService {
         return out
     }
 
-    private fun isSnowBiome(biome: BiomeGenBase?, x: Int, y: Int, z: Int): Boolean {
+    private fun isSnowBiome(biome: Biome?, x: Int, y: Int, z: Int): Boolean {
         if (biome == null) {
             return false
         }
@@ -230,7 +230,7 @@ object BiomeClimateService {
         return biome.safeTemperature(x, y, z) <= 0.15f
     }
 
-    private fun BiomeGenBase.safeTemperature(x: Int, y: Int, z: Int): Float {
+    private fun Biome.safeTemperature(x: Int, y: Int, z: Int): Float {
         return try {
             getFloatTemperature(x, y, z)
         } catch (_: Exception) {

@@ -18,7 +18,7 @@ import net.minecraft.init.Blocks
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.MathHelper
+import net.minecraft.util.math.MathHelper
 import net.minecraft.world.World
 import net.minecraftforge.client.IItemRenderer.ItemRenderType
 import net.minecraftforge.client.IItemRenderer.ItemRendererHelper
@@ -171,7 +171,7 @@ class PortableOreScannerItem(name: String?, private val obj: Obj3D,
     }
 
     override fun onBlockStartBreak(itemstack: ItemStack?, x: Int, y: Int, z: Int, player: EntityPlayer?): Boolean {
-        if (!player!!.worldObj.isRemote) {
+        if (!player!!.world.isRemote) {
             setDamage(itemstack, (getDamage(itemstack) + 1).toByte())
             //Utils.println("Break");
         }
@@ -224,7 +224,7 @@ class PortableOreScannerItem(name: String?, private val obj: Obj3D,
             var oRender = Eln.clientLiveDataManager.getData(item, 1)
             if (oRender == null) oRender = Eln.clientLiveDataManager.newData(item, RenderStorage(viewRange, viewYAlpha, resWidth, resHeight), 1)
             val render = oRender as RenderStorage
-            render.generate(e!!.worldObj, e.posX, Utils.getHeadPosY(e), e.posZ, e.rotationYaw * Math.PI.toFloat() / 180.0f, e.rotationPitch * Math.PI.toFloat() / 180.0f)
+            render.generate(e!!.world, e.posX, Utils.getHeadPosY(e), e.posZ, e.rotationYaw * Math.PI.toFloat() / 180.0f, e.rotationPitch * Math.PI.toFloat() / 180.0f)
             val scale = 1f / resWidth * 0.50f
             GL11.glTranslatef(0.90668f, 0.163f, -0.25078f)
             GL11.glRotatef(270f, 1f, 0f, 0f)
@@ -431,7 +431,7 @@ class PortableOreScannerItem(name: String?, private val obj: Obj3D,
                         stackGreen += blockKeyFactor[blockKey.toInt()] * dToStack
 
                         val b = Block.getBlockById((blockKey and 0xFFFU).toInt())
-                        if (b !== Blocks.air && b !== Eln.lightBlock) {
+                        if (b !== Blocks.AIR && b !== Eln.lightBlock) {
                             stackRed += if (b.isOpaqueCube) 0.2f * dToStack else 0.1f * dToStack
                         } else stackBlue += 0.06f * dToStack
                         x += vx * dBest

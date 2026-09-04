@@ -4,8 +4,8 @@ package mods.eln.misc
 import mods.eln.misc.Utils.isTheClass
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.Vec3
-import net.minecraftforge.common.util.ForgeDirection
+import net.minecraft.util.math.Vec3d
+import net.minecraft.util.EnumFacing
 import org.lwjgl.opengl.GL11
 
 /**
@@ -91,8 +91,8 @@ enum class Direction(var int: Int) {
         if (tileEntity == null) return null
         val coords = intArrayOf(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord)
         coords[int / 2] += sign
-        return if (tileEntity.worldObj != null && tileEntity.worldObj.blockExists(coords[0], coords[1], coords[2])) {
-            tileEntity.worldObj.getTileEntity(coords[0], coords[1], coords[2])
+        return if (tileEntity.world != null && tileEntity.world.blockExists(coords[0], coords[1], coords[2])) {
+            tileEntity.world.getTileEntity(coords[0], coords[1], coords[2])
         } else {
             null
         }
@@ -392,7 +392,7 @@ enum class Direction(var int: Int) {
         }
     }
 
-    fun rotateFromXN(p: Vec3) {
+    fun rotateFromXN(p: Vec3d) {
         val x = p.xCoord
         val y = p.yCoord
         val z = p.zCoord
@@ -467,14 +467,14 @@ enum class Direction(var int: Int) {
         }
     }
 
-    fun toForge(): ForgeDirection {
+    fun toForge(): EnumFacing {
         return when (this) {
-            YN -> ForgeDirection.DOWN
-            XP -> ForgeDirection.EAST
-            ZN -> ForgeDirection.NORTH
-            ZP -> ForgeDirection.SOUTH
-            YP -> ForgeDirection.UP
-            XN -> ForgeDirection.WEST
+            YN -> EnumFacing.DOWN
+            XP -> EnumFacing.EAST
+            ZN -> EnumFacing.NORTH
+            ZP -> EnumFacing.SOUTH
+            YP -> EnumFacing.UP
+            XN -> EnumFacing.WEST
         }
     }
 
@@ -545,14 +545,14 @@ enum class Direction(var int: Int) {
             return fromInt(nbt.getByte(name).toInt())
         }
 
-        fun from(direction: ForgeDirection?): Direction {
+        fun from(direction: EnumFacing?): Direction {
             return when (direction) {
-                ForgeDirection.DOWN -> YN
-                ForgeDirection.EAST -> XP
-                ForgeDirection.NORTH -> ZN
-                ForgeDirection.SOUTH -> ZP
-                ForgeDirection.UP -> YP
-                ForgeDirection.WEST -> XN
+                EnumFacing.DOWN -> YN
+                EnumFacing.EAST -> XP
+                EnumFacing.NORTH -> ZN
+                EnumFacing.SOUTH -> ZP
+                EnumFacing.UP -> YP
+                EnumFacing.WEST -> XN
                 else -> YN
             }
         }

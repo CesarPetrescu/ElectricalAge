@@ -10,6 +10,7 @@ import java.security.CodeSource;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarEntry;
@@ -96,10 +97,13 @@ public class Obj3DFolder {
         if (obj.loadFile(modelPath)) {
             String tag = modelPath.replaceAll(".obj", "").replaceAll(".OBJ", "");
             tag = tag.substring(tag.lastIndexOf('/') + 1, tag.length());
-            if (nameToObjHash.containsKey(tag)) {
+            if (nameToObjHash.containsKey(tag.toLowerCase(Locale.ROOT))) {
                 Utils.println("Double load of model " + tag);
             }
-            nameToObjHash.put(tag, obj);    // name of the file, without extension
+            // Keyed lowercase: Minecraft 1.11+ lowercases every ResourceLocation path, so
+            // the .obj files on disk are lowercase while getObj() callers still pass the
+            // original mixed-case model names (e.g. "BatteryBig").
+            nameToObjHash.put(tag.toLowerCase(Locale.ROOT), obj);
             Utils.println(String.format(" - model '%s' loaded", modelPath));
         } else {
             Utils.println(String.format(" - unable to load model '%s'", modelPath));
@@ -107,7 +111,7 @@ public class Obj3DFolder {
     }
 
     public Obj3D getObj(String obj3DName) {
-        Obj3D obj = nameToObjHash.get(obj3DName);
+        Obj3D obj = nameToObjHash.get(obj3DName == null ? null : obj3DName.toLowerCase(Locale.ROOT));
         if (obj == null) {
             if (missingObjNamesWarned.add(obj3DName)) {
                 Utils.println(String.format("Missing model '%s', using fallback empty model", obj3DName));

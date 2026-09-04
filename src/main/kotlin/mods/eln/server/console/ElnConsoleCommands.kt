@@ -359,7 +359,7 @@ class ElnZoneDumpCommand : IConsoleCommand {
         val minZ = bounds.minZ
         val maxZ = bounds.maxZ
 
-        val world = ics.worldObj
+        val world = ics.world
         val dim = world.provider.dimensionId
         val rangeDescription = "($minX,$minY,$minZ) -> ($maxX,$maxY,$maxZ) in dim $dim"
 
@@ -602,7 +602,7 @@ class ElnZoneCleanCommand : IConsoleCommand {
         val minZ = bounds.minZ
         val maxZ = bounds.maxZ
 
-        val world = ics.worldObj
+        val world = ics.world
         val dim = world.provider.dimensionId
         val nodeManager = NodeManager.instance
         val nodes = nodeManager?.nodeList ?: emptyList()
@@ -692,7 +692,7 @@ class ElnZoneRemoveCommand : IConsoleCommand {
         val minZ = bounds.minZ
         val maxZ = bounds.maxZ
 
-        val world = ics.worldObj
+        val world = ics.world
         val dim = world.provider.dimensionId
         val nodeManager = NodeManager.instance
         if (nodeManager == null) {
@@ -790,7 +790,7 @@ class ElnZoneDestroyCommand : IConsoleCommand {
             return
         }
         val bounds = parseZoneBounds(ics, args, name) ?: return
-        val world = ics.worldObj
+        val world = ics.world
         val nodeManager = NodeManager.instance
         if (nodeManager == null) {
             cprint(ics, "${FC.BRIGHT_RED}Node manager unavailable, cannot run zonedestroy.", indent = 1)
@@ -844,7 +844,7 @@ class ElnStopShaftCommand : IConsoleCommand {
             return
         }
 
-        val world = ics.worldObj
+        val world = ics.world
         val dim = world.provider.dimensionId
         var bestDistanceSq = Double.MAX_VALUE
         var bestShaftElement: ShaftElement? = null
@@ -924,7 +924,7 @@ class ElnResetAmbientTempsCommand : IConsoleCommand {
         }
 
         val rangeSq = range.toDouble() * range.toDouble()
-        val dim = ics.worldObj.provider.dimensionId
+        val dim = ics.world.provider.dimensionId
         var devicesTouched = 0
         var thermalLoadsReset = 0
         var minAmbientC = Double.POSITIVE_INFINITY

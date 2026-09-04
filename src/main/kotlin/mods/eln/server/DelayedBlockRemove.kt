@@ -9,7 +9,7 @@ import java.util.*
 class DelayedBlockRemove private constructor(var c: Coordinate) : ITask {
     override fun run() {
         BLOCKS.remove(c)
-        c.block = Blocks.air
+        c.block = Blocks.AIR
     }
 
     companion object {

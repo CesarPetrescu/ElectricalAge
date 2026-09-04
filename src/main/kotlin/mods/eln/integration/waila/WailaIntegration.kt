@@ -1,6 +1,6 @@
 package mods.eln.integration.waila
 
-import cpw.mods.fml.common.Optional
+import net.minecraftforge.fml.common.Optional
 import mcp.mobius.waila.api.IWailaRegistrar
 import mods.eln.simplenode.computerprobe.ComputerProbeBlock
 

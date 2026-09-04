@@ -5,7 +5,7 @@ import net.minecraft.command.ICommand
 import net.minecraft.command.ICommandSender
 import net.minecraft.event.ClickEvent
 import net.minecraft.server.MinecraftServer
-import net.minecraft.util.ChatComponentText
+import net.minecraft.util.text.TextComponentString
 
 val ElnConsoleCommandList = mutableListOf<IConsoleCommand>()
 
@@ -46,14 +46,14 @@ class ElnConsoleCommands: ICommand {
     companion object {
         fun cprint(ics: ICommandSender, text: String, indent: Int = 0) {
             printIndented(text, indent).forEach {
-                ics.addChatMessage(ChatComponentText(it))
+                ics.sendMessage(TextComponentString(it))
             }
         }
 
         fun cprint(ics: ICommandSender, text: String, url: String) {
-            val msg = ChatComponentText(FC.BRIGHT_GREY + text)
+            val msg = TextComponentString(FC.BRIGHT_GREY + text)
             msg.chatStyle.chatClickEvent = ClickEvent(ClickEvent.Action.OPEN_URL, url)
-            ics.addChatMessage(msg)
+            ics.sendMessage(msg)
         }
 
         fun printIndented(text: String, indent: Int): List<String> {
@@ -151,8 +151,8 @@ class ElnConsoleCommands: ICommand {
         val console = player == null
         if (!console) {
             creative = player.capabilities.isCreativeMode
-            singlePlayer = MinecraftServer.getServer().isSinglePlayer
-            isOperator = MinecraftServer.getServer().configurationManager.func_152603_m().func_152700_a(player.displayName) != null
+            singlePlayer = FMLCommonHandler.instance().getMinecraftServerInstance().isSinglePlayer
+            isOperator = FMLCommonHandler.instance().getMinecraftServerInstance().configurationManager.func_152603_m().func_152700_a(player.displayName) != null
         }
         val playerPerms = mutableListOf<UserPermission>()
         if (creative)

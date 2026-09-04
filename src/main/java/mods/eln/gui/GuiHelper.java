@@ -303,7 +303,7 @@ public class GuiHelper {
         GL11.glDisable(GL11.GL_ALPHA_TEST);
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         GL11.glShadeModel(GL11.GL_SMOOTH);
-        //  Tessellator tessellator = Tessellator.instance;
+        //  Tessellator tessellator = Tessellator.getInstance();
         tessellator.startDrawingQuads();
         tessellator.setColorRGBA_F(f1, f2, f3, f);
         tessellator.addVertex((double) par3, (double) par2, 0);

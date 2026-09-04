@@ -6,7 +6,7 @@ import mods.eln.i18n.I18N.tr
 import mods.eln.misc.Coordinate
 import mods.eln.misc.Direction
 import mods.eln.misc.LRDU
-import mods.eln.misc.Utils.addChatMessage
+import mods.eln.misc.Utils.sendMessage
 import mods.eln.misc.Utils.entityLivingHorizontalViewDirection
 import mods.eln.misc.UtilsClient.drawIcon
 import mods.eln.misc.VoltageLevelColor
@@ -69,7 +69,7 @@ open class SixNodeDescriptor : GenericItemBlockUsingDamageDescriptor, IItemRende
             for (d in placeDirection!!) {
                 if (d === side) return true
             }
-            addChatMessage(player!!, tr("You can't place this block at this side"))
+            sendMessage(player!!, tr("You can't place this block at this side"))
             return false
         }
         return true

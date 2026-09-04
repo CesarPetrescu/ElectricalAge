@@ -19,7 +19,7 @@ class EnergyConverterElnToOtherFireWallOc(var e: EnergyConverterElnToOtherEntity
         // neighboring tile entities, which isn't possible in validate().
         // We could alternatively check node != null && node.network() == null,
         // but this has somewhat better performance, and makes it clearer.
-        if (e.worldObj.isRemote) return
+        if (e.world.isRemote) return
         if (!addedToNetwork) {
             addedToNetwork = true
             Network.joinOrCreateNetwork(e)
@@ -41,14 +41,14 @@ class EnergyConverterElnToOtherFireWallOc(var e: EnergyConverterElnToOtherEntity
     fun onChunkUnload() {
         // Make sure to remove the node from its network when its environment,
         // meaning this tile entity, gets unloaded.
-        if (e.worldObj.isRemote) return
+        if (e.world.isRemote) return
         if (node != null) node!!.remove()
     }
 
     fun invalidate() {
         // Make sure to remove the node from its network when its environment,
         // meaning this tile entity, gets unloaded.
-        if (e.worldObj.isRemote) return
+        if (e.world.isRemote) return
         if (node != null) node!!.remove()
     }
 

@@ -1,6 +1,6 @@
 package mods.eln.simplenode.energyconverter
 
-import cpw.mods.fml.common.FMLCommonHandler
+import net.minecraftforge.fml.common.FMLCommonHandler
 import ic2.api.energy.event.EnergyTileLoadEvent
 import ic2.api.energy.event.EnergyTileUnloadEvent
 import ic2.api.info.Info

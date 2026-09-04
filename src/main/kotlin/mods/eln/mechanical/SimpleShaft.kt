@@ -108,7 +108,7 @@ open class ShaftRender(entity: TransparentNodeEntity, desc: TransparentNodeDescr
 
     private open inner class ShaftSoundLooper(sound: String, coord: Coordinate) : LoopedSound(sound, coord) {
         override fun getPitch(): Float {
-            if (this.sample == "eln:FuelGenerator") {
+            if (this.sample == "eln:fuelgenerator") {
                 return (rads / 250.0).toFloat()
             }
             if (this.sample == "eln:generator") {
@@ -120,7 +120,7 @@ open class ShaftRender(entity: TransparentNodeEntity, desc: TransparentNodeDescr
             return Math.max(0.05, rads / absoluteMaximumShaftSpeed).toFloat()
         }
         override fun getVolume(): Float {
-            if (this.sample == "eln:FuelGenerator") {
+            if (this.sample == "eln:fuelgenerator") {
                 if (volumeSetting.position < 0.001) {
                     return 0.0f
                 }

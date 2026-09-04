@@ -1,9 +1,9 @@
 package mods.eln.server
 
-import cpw.mods.fml.common.FMLCommonHandler
-import cpw.mods.fml.common.eventhandler.SubscribeEvent
-import cpw.mods.fml.common.gameevent.TickEvent
-import cpw.mods.fml.common.gameevent.TickEvent.ServerTickEvent
+import net.minecraftforge.fml.common.FMLCommonHandler
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.fml.common.gameevent.TickEvent
+import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent
 import mods.eln.Eln
 import mods.eln.environment.RoomThermalManager
 import mods.eln.item.electricalitem.TreeCapitation.process
@@ -54,7 +54,7 @@ class ServerEventListener {
     fun getLightningClosestTo(c: Coordinate): Double {
         var best = 10000000.0
         for (l in lightningList) {
-            if (c.world() !== l.worldObj) continue
+            if (c.world() !== l.world) continue
             val d = l.getDistance(c.x.toDouble(), c.y.toDouble(), c.z.toDouble())
             if (d < best) best = d
         }
@@ -204,6 +204,6 @@ class ServerEventListener {
 
     init {
         MinecraftForge.EVENT_BUS.register(this)
-        FMLCommonHandler.instance().bus().register(this)
+        MinecraftForge.EVENT_BUS.register(this)
     }
 }

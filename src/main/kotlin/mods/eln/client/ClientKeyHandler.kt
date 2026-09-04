@@ -1,8 +1,8 @@
 package mods.eln.client
 
-import cpw.mods.fml.client.registry.ClientRegistry
-import cpw.mods.fml.common.eventhandler.SubscribeEvent
-import cpw.mods.fml.common.gameevent.InputEvent.KeyInputEvent
+import net.minecraftforge.fml.client.registry.ClientRegistry
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent
 import mods.eln.Eln
 import mods.eln.ServerKeyHandler
 import mods.eln.i18n.I18N.tr
@@ -11,7 +11,7 @@ import mods.eln.misc.UtilsClient.clientOpenGui
 import mods.eln.misc.UtilsClient.sendPacketToServer
 import mods.eln.wiki.Root
 import net.minecraft.client.settings.KeyBinding
-import net.minecraft.util.StatCollector
+import net.minecraft.util.text.translation.I18n
 import org.lwjgl.input.Keyboard
 import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
@@ -28,7 +28,7 @@ class ClientKeyHandler {
 
     init {
         keyboardKeys.forEach {
-            it.binding = KeyBinding(it.name, it.defaultKeybind, StatCollector.translateToLocal("ElectricalAge"))
+            it.binding = KeyBinding(it.name, it.defaultKeybind, I18n.translateToLocal("ElectricalAge"))
             ClientRegistry.registerKeyBinding(it.binding)
         }
     }

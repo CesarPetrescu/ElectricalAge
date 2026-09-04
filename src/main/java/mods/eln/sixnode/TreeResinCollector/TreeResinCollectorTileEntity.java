@@ -18,9 +18,9 @@ public class TreeResinCollectorTileEntity extends TileEntity {
     float timeCounter = 0;
 
     boolean onBlockActivated() {
-        if (worldObj.isRemote) return true;
+        if (world.isRemote) return true;
         while (occupancy >= 1f) {
-            Utils.dropItem(Eln.treeResin.newItemStack(1), xCoord, yCoord, zCoord, worldObj);
+            Utils.dropItem(Eln.treeResin.newItemStack(1), xCoord, yCoord, zCoord, world);
             occupancy -= 1f;
         }
         return true;
@@ -33,7 +33,7 @@ public class TreeResinCollectorTileEntity extends TileEntity {
 
     @Override
     public void updateEntity() {
-        if (worldObj.isRemote) return;
+        if (world.isRemote) return;
         timeCounter += 1f / 20f;
         if (timeCounter > timeTarget) {
             int[] posWood = new int[3];
@@ -49,14 +49,14 @@ public class TreeResinCollectorTileEntity extends TileEntity {
 
             int yStart, yEnd;
 
-            while (worldObj.getBlock(posWood[0], posWood[1] - 1, posWood[2]) == Blocks.log) {
+            while (world.getBlock(posWood[0], posWood[1] - 1, posWood[2]) == Blocks.LOG) {
                 posWood[1]--;
             }
             yStart = posWood[1];
 
             posWood[1] = yCoord;
             timeCounter -= timeTarget;
-            while (worldObj.getBlock(posWood[0], posWood[1] + 1, posWood[2]) == Blocks.log) {
+            while (world.getBlock(posWood[0], posWood[1] + 1, posWood[2]) == Blocks.LOG) {
                 posWood[1]++;
             }
             yEnd = posWood[1];
@@ -64,7 +64,7 @@ public class TreeResinCollectorTileEntity extends TileEntity {
             int collectiorCount = 0;
             posCollector[1] = yStart;
             for (posCollector[1] = yStart; posCollector[1] <= yEnd; posCollector[1]++) {
-                //////	if (worldObj.getBlockId(posCollector[0], posCollector[1] + 1, posCollector[2]) == Eln.treeResinCollectorBlock.blockID)
+                //////	if (world.getBlockId(posCollector[0], posCollector[1] + 1, posCollector[2]) == Eln.treeResinCollectorBlock.blockID)
                 {
                     //////		collectiorCount++;
                 }

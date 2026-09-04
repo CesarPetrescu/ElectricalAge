@@ -168,7 +168,7 @@ class FuelGeneratorElement(transparentNode: TransparentNode, descriptor_: Transp
     }
 
     override fun onBlockActivated(player: EntityPlayer, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
-        if (player.worldObj?.isRemote == false) {
+        if (player.world?.isRemote == false) {
             val bucket = player.currentEquippedItem
             if (FluidContainerRegistry.isBucket(bucket) && FluidContainerRegistry.isFilledContainer(bucket)) {
                 val deltaLevel = 1.0 / FuelGeneratorDescriptor.TankCapacityInBuckets;
@@ -236,7 +236,7 @@ class FuelGeneratorRender(tileEntity: TransparentNodeEntity, descriptor: Transpa
     private val eConn = LRDUMask()
     private var on = false
     private var voltageRatio = SlewLimiter(1f)
-    private val sound = object : LoopedSound("eln:FuelGenerator", coordinate(), ISound.AttenuationType.LINEAR) {
+    private val sound = object : LoopedSound("eln:fuelgenerator", coordinate(), ISound.AttenuationType.LINEAR) {
         override fun getVolume() = if (on) 0.2f else 0f
         override fun getPitch() = 0.75f + 1f * voltageRatio.position
     }

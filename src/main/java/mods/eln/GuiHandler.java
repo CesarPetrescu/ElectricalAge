@@ -1,6 +1,6 @@
 package mods.eln;
 
-import cpw.mods.fml.common.network.IGuiHandler;
+import net.minecraftforge.fml.common.network.IGuiHandler;
 import mods.eln.item.WireSnipsContainer;
 import mods.eln.item.WireSnipsGui;
 import mods.eln.misc.Direction;

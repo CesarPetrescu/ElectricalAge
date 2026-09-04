@@ -49,7 +49,7 @@ class ElectricalPickaxe(name: String, strengthOn: Float, strengthOff: Float,
     private fun setConservative(p: EntityPlayer?, s: ItemStack, state: Boolean) {
         getNbt(s).setBoolean("conservative", state)
         if (p != null) {
-            Utils.addChatMessage(p, "Set land conservation to $state")
+            Utils.sendMessage(p, "Set land conservation to $state")
         }
     }
 

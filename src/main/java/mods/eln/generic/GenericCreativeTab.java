@@ -1,7 +1,7 @@
 package mods.eln.generic;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import mods.eln.Eln;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
@@ -34,7 +34,7 @@ public class GenericCreativeTab extends CreativeTabs {
     @Override
     @SideOnly(Side.CLIENT)
     public Item getTabIconItem() {
-        return iconStack != null ? iconStack.getItem() : Items.redstone;
+        return iconStack != null ? iconStack.getItem() : Items.REDSTONE;
     }
 
     @Override

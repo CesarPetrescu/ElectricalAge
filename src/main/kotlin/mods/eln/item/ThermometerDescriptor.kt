@@ -63,7 +63,7 @@ class ThermometerDescriptor(name: String) : GenericItemUsingDamageDescriptor(nam
                 append(String.format("%.0f%%", climateAtClick.relativeHumidityPercent))
             }
         }
-        Utils.addChatMessage(player, message)
+        Utils.sendMessage(player, message)
         return false
     }
 }

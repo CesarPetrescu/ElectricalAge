@@ -14,7 +14,7 @@ import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.entity.player.EntityPlayerMP
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.Vec3
+import net.minecraft.util.math.Vec3d
 import org.apache.commons.lang3.tuple.Pair
 
 import java.io.DataOutputStream
@@ -60,16 +60,16 @@ abstract class GridElement(transparentNode: TransparentNode, descriptor: Transpa
         }
         // Check if it's the *correct* cable descriptor.
         if (!desc.acceptsGridCable(cable)) {
-            Utils.addChatMessage(entityPlayer, tr("Wrong cable for this pole"))
+            Utils.sendMessage(entityPlayer, tr("Wrong cable for this pole"))
             return true
         }
         if(other == this) {
-            Utils.addChatMessage(entityPlayer, tr("Cancelled connection"))
+            Utils.sendMessage(entityPlayer, tr("Cancelled connection"))
             pending.remove(uuid)
             return true
         }
         if (other == null) {
-            Utils.addChatMessage(entityPlayer, tr("Setting starting point"))
+            Utils.sendMessage(entityPlayer, tr("Setting starting point"))
             pending.put(uuid, Pair.of(this.coordinate(), side))
         } else {
             val distance = other.coordinate().trueDistanceTo(this.coordinate())
@@ -80,13 +80,13 @@ abstract class GridElement(transparentNode: TransparentNode, descriptor: Transpa
             val availableLength = if (cable is UtilityCableDescriptor && consumeLength) cable.getRemainingLengthMeters(stack).toInt() else stackSize
 
             if (availableLength < cableLength && !Utils.isCreative(entityPlayer as EntityPlayerMP)) {
-                Utils.addChatMessage(entityPlayer, tr("You need %1$ m of cable", cableLength))
+                Utils.sendMessage(entityPlayer, tr("You need %1$ m of cable", cableLength))
             } else if (distance > range) {
-                Utils.addChatMessage(entityPlayer, tr("Cannot connect, range %1$ and limit %2$ blocks", Math.ceil(distance).toInt(), range))
+                Utils.sendMessage(entityPlayer, tr("Cannot connect, range %1$ and limit %2$ blocks", Math.ceil(distance).toInt(), range))
             } else if (!this.canConnect(other)) {
-                Utils.addChatMessage(entityPlayer, tr("Cannot connect these two objects"))
+                Utils.sendMessage(entityPlayer, tr("Cannot connect these two objects"))
             } else if (!this.validLOS(other)) {
-                Utils.addChatMessage(entityPlayer, tr("Cannot connect, no line of sight"))
+                Utils.sendMessage(entityPlayer, tr("Cannot connect, no line of sight"))
             } else {
                 try {
                     val linkStack = if (cable is UtilityCableDescriptor) {
@@ -95,7 +95,7 @@ abstract class GridElement(transparentNode: TransparentNode, descriptor: Transpa
                         null
                     }
                     GridLink.addLink(this, other, side, p!!.right, cable, cableLength, linkStack)
-                    Utils.addChatMessage(entityPlayer, tr("Added connection"))
+                    Utils.sendMessage(entityPlayer, tr("Added connection"))
                     if (cable is UtilityCableDescriptor && consumeLength) {
                         cable.setRemainingLengthMeters(stack, cable.getRemainingLengthMeters(stack) - cableLength)
                         if (cable.getRemainingLengthMeters(stack) <= 0.0) {
@@ -106,7 +106,7 @@ abstract class GridElement(transparentNode: TransparentNode, descriptor: Transpa
                         if (!(Eln.config.getBooleanOrElse("gameplay.qol.creativeNoConsumeInsertedItems", false) && entityPlayer is EntityPlayerMP && Utils.isCreative(entityPlayer))) entityPlayer.removeMultipleItems(stack, cableLength)
                     }
                 } catch (e: UserError) {
-                    Utils.addChatMessage(entityPlayer, e.message)
+                    Utils.sendMessage(entityPlayer, e.message)
                 }
             }
             pending.remove(uuid)
@@ -245,8 +245,8 @@ abstract class GridElement(transparentNode: TransparentNode, descriptor: Transpa
             // Check for which ones it's this one.
             val ourLinks = gridLinkList.filter { it.a == coordinate()/* && link.connected*/ }
             // The renderer needs to know, for each catenary:
-            // - Vec3 of the starting point.
-            // - Vec3 of the end point.
+            // - Vec3d of the starting point.
+            // - Vec3d of the end point.
             // There's a finite number of starting points, and a potentially unlimited number of endpoints...
             // But until we get protocol buffers or something, simple remains good.
             // So we'll just send pairs, even if there's some duplication.
@@ -273,20 +273,20 @@ abstract class GridElement(transparentNode: TransparentNode, descriptor: Transpa
 
     }
 
-    protected open fun getCablePoint(side: Direction, i: Int): Vec3 {
+    protected open fun getCablePoint(side: Direction, i: Int): Vec3d {
         if (i >= 2) throw AssertionError("Invalid cable point index")
         val part = (if (i == 0) desc.plus else desc.gnd)[0]
         val bb = part.boundingBox()
         return bb.centre()
     }
 
-    protected open fun getRenderCablePoint(side: Direction, i: Int): Vec3 =
+    protected open fun getRenderCablePoint(side: Direction, i: Int): Vec3d =
         getCablePoint(side, i).addVector(
             desc.renderOffset.xCoord, desc.renderOffset.yCoord, desc.renderOffset.zCoord
         )
 
     @Throws(IOException::class)
-    private fun writeVec(stream: DataOutputStream, sp: Vec3) {
+    private fun writeVec(stream: DataOutputStream, sp: Vec3d) {
         stream.writeFloat(sp.xCoord.toFloat())
         stream.writeFloat(sp.yCoord.toFloat())
         stream.writeFloat(sp.zCoord.toFloat())

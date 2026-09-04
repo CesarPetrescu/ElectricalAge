@@ -2,7 +2,7 @@ package mods.eln.item
 
 import mods.eln.generic.GenericItemUsingDamageDescriptor
 import mods.eln.i18n.I18N.tr
-import mods.eln.misc.Utils.addChatMessage
+import mods.eln.misc.Utils.sendMessage
 import mods.eln.server.ElnDestroyHelper
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.entity.player.EntityPlayerMP
@@ -17,11 +17,11 @@ class NopeWandDescriptor(name: String) : GenericItemUsingDamageDescriptor(name, 
 
         val summary = ElnDestroyHelper.destroyAroundPlayer(w, p, NOPE_WAND_RADIUS)
         if (summary == null) {
-            addChatMessage(p, tr("The Nope Wand fizzles: node manager unavailable."))
+            sendMessage(p, tr("The Nope Wand fizzles: node manager unavailable."))
             return s
         }
 
-        addChatMessage(
+        sendMessage(
             p,
             tr(
                 "The Nope Wand removed %1$ ELN nodes and cleared %2$ ELN blocks in a %3$-block radius.",

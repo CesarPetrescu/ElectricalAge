@@ -108,7 +108,7 @@ object ElnDestroyHelper {
                     node.sideElementList.forEach { element ->
                         clearInventoryWithoutDrops(element?.inventory)
                     }
-                    node.sixNodeCacheBlock = net.minecraft.init.Blocks.air
+                    node.sixNodeCacheBlock = net.minecraft.init.Blocks.AIR
                     for (direction in Direction.values()) {
                         if (node.getSideEnable(direction)) {
                             node.deleteSubBlock(player, direction)

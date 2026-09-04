@@ -45,7 +45,7 @@ public class ElectricalAntennaTxSlowProcess implements IProcess {
                 Block block;
                 if (element.placeBoot || element.rxCoord == null || coord.world().blockExists(coord.x, coord.y, coord.z)) {
                     //	a++;
-                    if ((block = coord.getBlock()) != Blocks.air && block != Blocks.fire) {
+                    if ((block = coord.getBlock()) != Blocks.AIR && block != Blocks.FIRE) {
                         if (block == Eln.transparentNodeBlock
                             && (node = (TransparentNode) NodeManager.instance.getNodeFromCoordonate(coord)) != null
                             && (node.element instanceof ElectricalAntennaRxElement)) {
@@ -78,8 +78,8 @@ public class ElectricalAntennaTxSlowProcess implements IProcess {
                 coordCpy.move(element.front.getInverse());
                 if (element.powerResistor.getPower() > 50) {
                     if (coordCpy.world().blockExists(coordCpy.x, coordCpy.y, coordCpy.z)) {
-                        if (coordCpy.getBlock() == Blocks.air) {
-                            coordCpy.world().setBlock(coordCpy.x, coordCpy.y, coordCpy.z, Blocks.fire);
+                        if (coordCpy.getBlock() == Blocks.AIR) {
+                            coordCpy.world().setBlock(coordCpy.x, coordCpy.y, coordCpy.z, Blocks.FIRE);
                         }
                     }
                 }

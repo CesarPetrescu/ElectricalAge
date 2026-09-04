@@ -1,6 +1,6 @@
 package mods.eln.entity
 
-import cpw.mods.fml.common.FMLCommonHandler
+import net.minecraftforge.fml.common.FMLCommonHandler
 import mods.eln.Eln
 import mods.eln.misc.Utils
 import mods.eln.sim.IProcess
@@ -31,7 +31,7 @@ class ReplicatorPopProcess : IProcess {
         if (world.worldInfo.isThundering) {
             for (obj in world.playerEntities) {
                 val player = obj as EntityPlayerMP
-                if (Math.random() * world.playerEntities.size < time * popPerSecondPerPlayer && player.worldObj == world) {
+                if (Math.random() * world.playerEntities.size < time * popPerSecondPerPlayer && player.world == world) {
                     val x = (player.posX + Utils.rand(-100.0, 100.0)).toInt()
                     val z = (player.posZ + Utils.rand(-100.0, 100.0)).toInt()
                     var y = 2
@@ -39,7 +39,7 @@ class ReplicatorPopProcess : IProcess {
 
                     if (!world.blockExists(x, y, z)) break
 
-                    while (world.getBlock(x, y, z) != Blocks.air || Utils.getLight(world, EnumSkyBlock.Block, x, y, z) > 6) {
+                    while (world.getBlock(x, y, z) != Blocks.AIR || Utils.getLight(world, EnumSkyBlock.Block, x, y, z) > 6) {
                         y++
                     }
 

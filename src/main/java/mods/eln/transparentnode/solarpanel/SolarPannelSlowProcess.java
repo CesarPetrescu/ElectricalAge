@@ -3,7 +3,7 @@ package mods.eln.transparentnode.solarpanel;
 import mods.eln.misc.Coordinate;
 import mods.eln.misc.Utils;
 import mods.eln.sim.IProcess;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 public class SolarPannelSlowProcess implements IProcess {
@@ -45,7 +45,7 @@ public class SolarPannelSlowProcess implements IProcess {
 
 
         Coordinate coordinate = solarPannel.node.coordinate;
-        Vec3 v = Utils.getVec05(coordinate);
+        Vec3d v = Utils.getVec05(coordinate);
         double x = v.xCoord + solarPannel.descriptor.solarOffsetX, y = v.yCoord + solarPannel.descriptor.solarOffsetY, z = v.zCoord + solarPannel.descriptor.solarOffsetZ;
 
 

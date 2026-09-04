@@ -21,7 +21,7 @@ class LightBlockEntity : TileEntity() {
             val block = w.getBlock(x, y, z)
 
             if (block !== Eln.lightBlock) {
-                if (block !== Blocks.air) return
+                if (block !== Blocks.AIR) return
                 w.setBlock(x, y, z, Eln.lightBlock, light, 2)
             }
 
@@ -64,10 +64,10 @@ class LightBlockEntity : TileEntity() {
     }
 
     override fun updateEntity() {
-        if (worldObj.isRemote) return
+        if (world.isRemote) return
 
         if (lightList.isEmpty()) {
-            worldObj.setBlockToAir(xCoord, yCoord, zCoord)
+            world.setBlockToAir(xCoord, yCoord, zCoord)
             Utils.println("Destroy light at %d %d %d", xCoord, yCoord, zCoord)
             return
         }
@@ -82,9 +82,9 @@ class LightBlockEntity : TileEntity() {
             if (l.timeout <= 0) iterator.remove()
         }
 
-        if (light != worldObj.getBlockMetadata(xCoord, yCoord, zCoord)) {
-            worldObj.setBlockMetadataWithNotify(xCoord, yCoord, zCoord, light, 2)
-            worldObj.updateLightByType(EnumSkyBlock.Block, xCoord, yCoord, zCoord)
+        if (light != world.getBlockMetadata(xCoord, yCoord, zCoord)) {
+            world.setBlockMetadataWithNotify(xCoord, yCoord, zCoord, light, 2)
+            world.updateLightByType(EnumSkyBlock.Block, xCoord, yCoord, zCoord)
         }
     }
 

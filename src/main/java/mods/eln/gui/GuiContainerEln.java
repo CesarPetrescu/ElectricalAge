@@ -186,7 +186,7 @@ public abstract class GuiContainerEln extends GuiContainer implements IGuiObject
                     int x, y;
                     int strWidth = 0;
                     for (String str : list) {
-                        int size = fontRendererObj.getStringWidth(str);
+                        int size = fontRenderer.getStringWidth(str);
                         if (size > strWidth) strWidth = size;
                     }
 
@@ -198,7 +198,7 @@ public abstract class GuiContainerEln extends GuiContainer implements IGuiObject
                         xOffset -= strWidth + 20;
                     }
                     if (!list.isEmpty())
-                        drawHoveringText((java.util.List) list, mx - guiLeft + xOffset, my - guiTop, fontRendererObj);
+                        drawHoveringText((java.util.List) list, mx - guiLeft + xOffset, my - guiTop, fontRenderer);
                 }
             }
         }

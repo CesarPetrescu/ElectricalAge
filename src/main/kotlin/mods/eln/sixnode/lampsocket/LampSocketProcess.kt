@@ -8,7 +8,7 @@ import mods.eln.misc.Utils
 import mods.eln.sim.IProcess
 import mods.eln.sixnode.lampsupply.LampSupplyElement
 import net.minecraft.item.ItemStack
-import net.minecraft.util.Vec3
+import net.minecraft.util.math.Vec3d
 import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
 import java.io.IOException
@@ -130,7 +130,7 @@ class LampSocketProcess(var element: LampSocketElement) : IProcess {
         val randTarget = growRate * deltaT * (actualLight.toDouble() / nominalLight.toDouble())
 
         if (randTarget > Math.random()) {
-            val rotationVector = Vec3.createVectorHelper(1.0, 0.0, 0.0)
+            val rotationVector = Vec3d(1.0, 0.0, 0.0)
             rotationVector.rotateAroundZ((element.projectionRotationAngle * (Math.PI / 180.0)).toFloat())
             rotationVector.rotateAroundY(((Math.random() - 0.5) * Math.PI / 2.0).toFloat())
             rotationVector.rotateAroundZ(((Math.random() - 0.5) * Math.PI / 2.0).toFloat())
@@ -143,7 +143,7 @@ class LampSocketProcess(var element: LampSocketElement) : IProcess {
     }
 
     private fun placeSpot(lightValue: Int) {
-        val rotationVector = Vec3.createVectorHelper(1.0, 0.0, 0.0)
+        val rotationVector = Vec3d(1.0, 0.0, 0.0)
         rotationVector.rotateAroundZ((element.projectionRotationAngle * (Math.PI / 180.0)).toFloat())
         element.front.rotateOnXnLeft(rotationVector)
         element.side.rotateFromXN(rotationVector)
@@ -158,7 +158,7 @@ class LampSocketProcess(var element: LampSocketElement) : IProcess {
         LightBlockEntity.addLight(lbCoordinate, lightValue, lightTimeout)
     }
 
-    private fun raytrace(rotationVector: Vec3, vectorLengthModifier: Int): Coordinate {
+    private fun raytrace(rotationVector: Vec3d, vectorLengthModifier: Int): Coordinate {
         val lightVector = element.sixNode!!.coordinate.toVec3()
         val lbCoordinate = Coordinate(lightVector, element.sixNode!!.coordinate.dimension)
 

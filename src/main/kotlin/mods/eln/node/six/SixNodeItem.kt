@@ -6,7 +6,7 @@ import mods.eln.generic.GenericItemBlockUsingDamage
 import mods.eln.misc.Coordinate
 import mods.eln.misc.Direction.Companion.fromIntMinecraftSide
 import mods.eln.misc.LRDU
-import mods.eln.misc.Utils.addChatMessage
+import mods.eln.misc.Utils.sendMessage
 import mods.eln.sixnode.electricalcable.UtilityCableDescriptor
 import net.minecraft.block.Block
 import net.minecraft.client.Minecraft
@@ -39,9 +39,9 @@ class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b
         var z = z
         var side = side
         val block = world.getBlock(x, y, z)
-        if (block === Blocks.snow_layer && world.getBlockMetadata(x, y, z) and 0x7 < 1) {
+        if (block === Blocks.SNOW_LAYER && world.getBlockMetadata(x, y, z) and 0x7 < 1) {
             side = 1
-        } else if (block !== Blocks.vine && block !== Blocks.tallgrass && block !== Blocks.deadbush && !block.isReplaceable(world, x, y, z)) {
+        } else if (block !== Blocks.VINE && block !== Blocks.TALLGRASS && block !== Blocks.DEADBUSH && !block.isReplaceable(world, x, y, z)) {
             if (side == 0) y--
             if (side == 1) y++
             if (side == 2) z--
@@ -52,7 +52,7 @@ class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b
         if (stack.stackSize == 0) return false
         val descriptor = getDescriptor(stack)
         if (descriptor is UtilityCableDescriptor && !descriptor.hasLengthForPlacement(stack)) {
-            addChatMessage(player, "Not enough wire length remaining to place another segment")
+            sendMessage(player, "Not enough wire length remaining to place another segment")
             return false
         }
         if (!player.canPlayerEdit(x, y, z, side, stack)) return false
@@ -102,12 +102,12 @@ class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b
         val direction = fromIntMinecraftSide(side)!!.inverse
         val blockOld = world.getBlock(x, y, z)
         val block = Block.getBlockFromItem(this) as SixNodeBlock
-        if (blockOld === Blocks.air || blockOld.isReplaceable(world, x, y, z)) {
+        if (blockOld === Blocks.AIR || blockOld.isReplaceable(world, x, y, z)) {
             val coord = Coordinate(x, y, z, world)
             val descriptor = getDescriptor(stack)
             var error: String?
             if (descriptor!!.checkCanPlace(coord, direction, LRDU.Up).also { error = it } != null) {
-                addChatMessage(player, error)
+                sendMessage(player, error)
                 return false
             }
             if (block.getIfOtherBlockIsSolid(world, x, y, z, direction)) {

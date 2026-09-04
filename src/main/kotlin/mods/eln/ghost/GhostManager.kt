@@ -132,7 +132,7 @@ class GhostManager(par1Str: String?) : WorldSavedData(par1Str) {
     fun canCreateGhostAt(world: World, x: Int, y: Int, z: Int): Boolean {
         return if (!world.chunkProvider.chunkExists(x shr 4, z shr 4)) {
             false
-        } else !(world.getBlock(x, y, z) !== Blocks.air && !world.getBlock(x, y, z).isReplaceable(world, x, y, z))
+        } else !(world.getBlock(x, y, z) !== Blocks.AIR && !world.getBlock(x, y, z).isReplaceable(world, x, y, z))
     }
 
     @JvmOverloads

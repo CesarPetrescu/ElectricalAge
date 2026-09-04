@@ -1,9 +1,9 @@
 package mods.eln.client
 
-import cpw.mods.fml.common.FMLCommonHandler
-import cpw.mods.fml.common.eventhandler.SubscribeEvent
-import cpw.mods.fml.common.gameevent.TickEvent
-import cpw.mods.fml.common.gameevent.TickEvent.Phase
+import net.minecraftforge.fml.common.FMLCommonHandler
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.fml.common.gameevent.TickEvent
+import net.minecraftforge.fml.common.gameevent.TickEvent.Phase
 import java.util.*
 
 class UuidManager {
@@ -11,7 +11,7 @@ class UuidManager {
     internal val uuids = HashMap <IUuidEntity, ArrayList<Int>>()
 
     init {
-        FMLCommonHandler.instance().bus().register(this)
+        MinecraftForge.EVENT_BUS.register(this)
     }
 
     fun add(uuid: ArrayList<Int>, e: IUuidEntity) {

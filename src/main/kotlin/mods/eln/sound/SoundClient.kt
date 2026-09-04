@@ -14,7 +14,7 @@ object SoundClient {
     fun play(p: SoundCommand) {
         ClientProxy.soundClientEventListener.currentUuid = p.uuid
 
-        val player: EntityPlayer = Minecraft.getMinecraft().thePlayer
+        val player: EntityPlayer = Minecraft.getMinecraft().player
         if (p.world!!.provider.dimensionId != player.dimension) return
         val distance = sqrt((p.x - player.posX).pow(2.0) + (p.y - player.posY).pow(2.0) + (p.z - player.posZ).pow(2.0))
         if (distance >= p.rangeMax) return

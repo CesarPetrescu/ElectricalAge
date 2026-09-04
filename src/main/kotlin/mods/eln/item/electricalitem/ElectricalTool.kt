@@ -23,7 +23,7 @@ open class ElectricalTool(name: String, var strengthOn: Float, var strengthOff: 
     var range = 0
     var rIcon: ResourceLocation
     override fun onEntitySwing(entityLiving: EntityLivingBase?, stack: ItemStack?): Boolean {
-        if (entityLiving!!.worldObj.isRemote) return false
+        if (entityLiving!!.world.isRemote) return false
         Eln.itemEnergyInventoryProcess.addExclusion(this, 2.0)
         return super.onEntitySwing(entityLiving, stack)
     }
@@ -110,7 +110,7 @@ open class ElectricalTool(name: String, var strengthOn: Float, var strengthOff: 
     override fun electricalItemUpdate(stack: ItemStack, time: Double) {}
 
     companion object {
-        val blocksEffectiveAgainst = arrayOf(Blocks.grass, Blocks.dirt, Blocks.sand, Blocks.gravel, Blocks.snow, Blocks.snow, Blocks.clay, Blocks.farmland, Blocks.soul_sand, Blocks.mycelium)
+        val blocksEffectiveAgainst = arrayOf(Blocks.GRASS, Blocks.DIRT, Blocks.SAND, Blocks.GRAVEL, Blocks.SNOW, Blocks.SNOW, Blocks.CLAY, Blocks.FARMLAND, Blocks.SOUL_SAND, Blocks.MYCELIUM)
     }
 
     init {

@@ -6,7 +6,7 @@ import mods.eln.misc.preserveMatrix
 import mods.eln.node.transparent.TransparentNodeDescriptor
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor
 import net.minecraft.item.ItemStack
-import net.minecraft.util.Vec3
+import net.minecraft.util.math.Vec3d
 import net.minecraftforge.client.IItemRenderer
 
 import java.util.ArrayList
@@ -17,7 +17,7 @@ open class GridDescriptor(name: String, protected val obj: Obj3D, ElementClass: 
     val plus = ArrayList<Obj3D.Obj3DPart>()
     val gnd = ArrayList<Obj3D.Obj3DPart>()
 
-    var renderOffset: Vec3 = Vec3.createVectorHelper(0.0, 0.0, 0.0)
+    var renderOffset: Vec3d = Vec3d(0.0, 0.0, 0.0)
 
     protected var static_parts = ArrayList<Obj3D.Obj3DPart>()
     protected var rotating_parts = ArrayList<Obj3D.Obj3DPart>()

@@ -12,7 +12,7 @@ import mods.eln.sound.SoundCommand;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.DamageSource;
 
 import java.util.List;
@@ -63,7 +63,7 @@ public class TurretSlowProcess extends StateMachine {
         public void enter() {
             element.setEnabled(true);
             actualPower = element.getDescriptor().getProperties().basePower;
-            element.play(new SoundCommand("eln:TurretActivated").mulVolume(0.5));
+            element.play(new SoundCommand("eln:turretactivated").mulVolume(0.5));
             super.enter();
         }
 
@@ -83,7 +83,7 @@ public class TurretSlowProcess extends StateMachine {
         public void leave() {
             element.setEnabled(false);
             actualPower = 0;
-            element.play(new SoundCommand("eln:TurretDeactivated").mulVolume(0.5));
+            element.play(new SoundCommand("eln:turretdeactivated").mulVolume(0.5));
             super.leave();
         }
     }
@@ -211,9 +211,9 @@ public class TurretSlowProcess extends StateMachine {
 
                     if (visible) {
                         if(entity.getHealth()>0) {
-                            element.play(new SoundCommand("eln:TurretFire").mulVolume(0.4));
+                            element.play(new SoundCommand("eln:turretfire").mulVolume(0.4));
                         } else {
-                            element.play(new SoundCommand("eln:TurretKill").mulVolume(0.4));
+                            element.play(new SoundCommand("eln:turretkill").mulVolume(0.4));
                         }
                         return new AimingState(entity);
                     }
@@ -331,7 +331,7 @@ public class TurretSlowProcess extends StateMachine {
                 target.hurtResistantTime = 0;
                 target.attackEntityFrom(new DamageSource("Unknown"), 5);
                 element.shoot();
-                element.play(new SoundCommand("eln:LaserGun"));
+                element.play(new SoundCommand("eln:lasergun"));
             }
         }
 

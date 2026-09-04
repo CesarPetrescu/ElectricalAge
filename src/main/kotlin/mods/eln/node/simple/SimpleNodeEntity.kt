@@ -1,7 +1,7 @@
 package mods.eln.node.simple
 
-import cpw.mods.fml.relauncher.Side
-import cpw.mods.fml.relauncher.SideOnly
+import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.relauncher.SideOnly
 import mods.eln.Eln
 import mods.eln.misc.Coordinate
 import mods.eln.misc.Direction
@@ -25,15 +25,15 @@ import java.io.IOException
 abstract class SimpleNodeEntity(override val nodeUuid: String) : TileEntity(), INodeEntity {
     open var node: SimpleNode? = null
         get() {
-            if (worldObj.isRemote) {
+            if (world.isRemote) {
                 fatal()
                 return null
             }
-            if (worldObj == null) return null
+            if (world == null) return null
             if (field == null) {
-                field = NodeManager.instance!!.getNodeFromCoordonate(Coordinate(xCoord, yCoord, zCoord, worldObj)) as SimpleNode?
+                field = NodeManager.instance!!.getNodeFromCoordonate(Coordinate(xCoord, yCoord, zCoord, world)) as SimpleNode?
                 if (field == null) {
-                    add(Coordinate(xCoord, yCoord, zCoord, worldObj))
+                    add(Coordinate(xCoord, yCoord, zCoord, world))
                     return null
                 }
             }
@@ -47,15 +47,15 @@ abstract class SimpleNodeEntity(override val nodeUuid: String) : TileEntity(), I
 	}
 */
     fun onBlockAdded() {
-        /*if (!worldObj.isRemote){
+        /*if (!world.isRemote){
 			if (getNode() == null) {
-				worldObj.setBlockToAir(xCoord, yCoord, zCoord);
+				world.setBlockToAir(xCoord, yCoord, zCoord);
 			}
 		}*/
     }
 
     fun onBreakBlock() {
-        if (!worldObj.isRemote) {
+        if (!world.isRemote) {
             if (node == null) return
             node!!.onBreakBlock()
         }
@@ -63,7 +63,7 @@ abstract class SimpleNodeEntity(override val nodeUuid: String) : TileEntity(), I
 
     override fun onChunkUnload() {
         super.onChunkUnload()
-        if (worldObj.isRemote) {
+        if (world.isRemote) {
             destructor()
         }
     }
@@ -71,14 +71,14 @@ abstract class SimpleNodeEntity(override val nodeUuid: String) : TileEntity(), I
     // client only
     fun destructor() {}
     override fun invalidate() {
-        if (worldObj.isRemote) {
+        if (world.isRemote) {
             destructor()
         }
         super.invalidate()
     }
 
     fun onBlockActivated(entityPlayer: EntityPlayer?, side: Direction?, vx: Float, vy: Float, vz: Float): Boolean {
-        if (!worldObj.isRemote) {
+        if (!world.isRemote) {
             if (node == null) return false
             node!!.onBlockActivated(entityPlayer!!, side!!, vx, vy, vz)
             return true
@@ -87,7 +87,7 @@ abstract class SimpleNodeEntity(override val nodeUuid: String) : TileEntity(), I
     }
 
     fun onNeighborBlockChange() {
-        if (!worldObj.isRemote) {
+        if (!world.isRemote) {
             if (node == null) return
             node!!.onNeighborBlockChange()
         }
@@ -105,7 +105,7 @@ abstract class SimpleNodeEntity(override val nodeUuid: String) : TileEntity(), I
     override fun serverPublishUnserialize(stream: DataInputStream) {
         try {
             if (front !== fromInt(stream.readByte().toInt()).also { front = it }) {
-                worldObj.markBlockForUpdate(xCoord, yCoord, zCoord)
+                world.markBlockForUpdate(xCoord, yCoord, zCoord)
             }
         } catch (e: IOException) {
             e.printStackTrace()

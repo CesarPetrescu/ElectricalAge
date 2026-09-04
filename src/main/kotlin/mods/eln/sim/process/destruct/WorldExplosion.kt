@@ -59,7 +59,7 @@ class WorldExplosion : IDestructible {
             strength,
             true
         ) else coordinate.world().setBlock(
-            coordinate.x, coordinate.y, coordinate.z, Blocks.air
+            coordinate.x, coordinate.y, coordinate.z, Blocks.AIR
         )
     }
 

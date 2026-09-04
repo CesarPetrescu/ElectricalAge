@@ -1,10 +1,10 @@
 package mods.eln.simplenode.energyconverter
 
 import cofh.api.energy.IEnergyHandler
-import cpw.mods.fml.common.Optional
-import cpw.mods.fml.common.Optional.InterfaceList
-import cpw.mods.fml.relauncher.Side
-import cpw.mods.fml.relauncher.SideOnly
+import net.minecraftforge.fml.common.Optional
+import net.minecraftforge.fml.common.Optional.InterfaceList
+import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.relauncher.SideOnly
 import ic2.api.energy.tile.IEnergySource
 import li.cil.oc.api.network.Environment
 import li.cil.oc.api.network.Message
@@ -16,7 +16,7 @@ import net.minecraft.client.gui.GuiScreen
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.tileentity.TileEntity
-import net.minecraftforge.common.util.ForgeDirection
+import net.minecraft.util.EnumFacing
 import java.io.DataInputStream
 import java.io.IOException
 
@@ -49,15 +49,15 @@ class EnergyConverterElnToOtherEntity : SimpleNodeEntity("ElnToOther"), IEnergyS
 
     // ********************IC2********************
     @Optional.Method(modid = Other.modIdIc2)
-    override fun emitsEnergyTo(receiver: TileEntity, direction: ForgeDirection): Boolean {
-        if (worldObj.isRemote) return false
+    override fun emitsEnergyTo(receiver: TileEntity, direction: EnumFacing): Boolean {
+        if (world.isRemote) return false
         node ?: return false
         return true
     }
 
     @Optional.Method(modid = Other.modIdIc2)
     override fun getOfferedEnergy(): Double {
-        if (worldObj.isRemote) return 0.0
+        if (world.isRemote) return 0.0
         if (node == null) return 0.0
         val node = node as EnergyConverterElnToOtherNode
         return node.availableEnergyInModUnitsWithLimit(IC2Tiers.values().first { it.tier == node.ic2tier }.euPerTick.toDouble(), Other.getWattsToEu())
@@ -65,7 +65,7 @@ class EnergyConverterElnToOtherEntity : SimpleNodeEntity("ElnToOther"), IEnergyS
 
     @Optional.Method(modid = Other.modIdIc2)
     override fun drawEnergy(amount: Double) {
-        if (worldObj.isRemote) return
+        if (world.isRemote) return
         if (node == null) return
         val node = node as EnergyConverterElnToOtherNode
         node.drawEnergy(amount, Other.getWattsToEu())
@@ -105,7 +105,7 @@ class EnergyConverterElnToOtherEntity : SimpleNodeEntity("ElnToOther"), IEnergyS
      * @Override
 	 * 
 	 * @Optional.Method(modid = Other.modIdOc) public Node
-	 * sidedNode(ForgeDirection side) { if(worldObj.isRemote){ if(front.back()
+	 * sidedNode(EnumFacing side) { if(world.isRemote){ if(front.back()
 	 * == Direction.from(side)) return node(); return null; }else{
 	 * if(getNode().getFront().back() == Direction.from(side)) return node();
 	 * return null; } }
@@ -115,28 +115,28 @@ class EnergyConverterElnToOtherEntity : SimpleNodeEntity("ElnToOther"), IEnergyS
 	 * @SideOnly(Side.CLIENT)
 	 * 
 	 * @Optional.Method(modid = Other.modIdOc) public boolean
-	 * canConnect(ForgeDirection side) { if(front == null) return false;
+	 * canConnect(EnumFacing side) { if(front == null) return false;
 	 * if(front.back() == Direction.from(side)) return true; return false; }
 	 */
     // *************** RF **************
     @Optional.Method(modid = Other.modIdTe)
-    override fun canConnectEnergy(from: ForgeDirection): Boolean {
+    override fun canConnectEnergy(from: EnumFacing): Boolean {
         // Utils.println("*****canConnectEnergy*****");
-        if (worldObj.isRemote) return false
+        if (world.isRemote) return false
         if (node == null) return false
         return true
     }
 
     @Optional.Method(modid = Other.modIdTe)
-    override fun receiveEnergy(from: ForgeDirection, maxReceive: Int, simulate: Boolean): Int {
+    override fun receiveEnergy(from: EnumFacing, maxReceive: Int, simulate: Boolean): Int {
         // Utils.println("*****receiveEnergy*****");
         return 0
     }
 
     @Optional.Method(modid = Other.modIdTe)
-    override fun extractEnergy(from: ForgeDirection, maxExtract: Int, simulate: Boolean): Int {
+    override fun extractEnergy(from: EnumFacing, maxExtract: Int, simulate: Boolean): Int {
         // Utils.println("*****extractEnergy*****");
-        if (worldObj.isRemote) return 0
+        if (world.isRemote) return 0
         if (node == null) return 0
         val node = node as EnergyConverterElnToOtherNode
         val extract = Math.max(0, Math.min(maxExtract, node.availableEnergyInModUnits(Other.getWattsToRf()).toInt()))
@@ -145,13 +145,13 @@ class EnergyConverterElnToOtherEntity : SimpleNodeEntity("ElnToOther"), IEnergyS
     }
 
     @Optional.Method(modid = Other.modIdTe)
-    override fun getEnergyStored(from: ForgeDirection): Int {
+    override fun getEnergyStored(from: EnumFacing): Int {
         // Utils.println("*****getEnergyStored*****");
         return 0
     }
 
     @Optional.Method(modid = Other.modIdTe)
-    override fun getMaxEnergyStored(from: ForgeDirection): Int {
+    override fun getMaxEnergyStored(from: EnumFacing): Int {
         // Utils.println("*****getMaxEnergyStored*****");
         return 0
     }

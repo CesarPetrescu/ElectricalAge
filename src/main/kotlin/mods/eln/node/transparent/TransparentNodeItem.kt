@@ -4,7 +4,7 @@ package mods.eln.node.transparent
 import mods.eln.generic.GenericItemBlockUsingDamage
 import mods.eln.misc.Coordinate
 import mods.eln.misc.Direction.Companion.fromIntMinecraftSide
-import mods.eln.misc.Utils.addChatMessage
+import mods.eln.misc.Utils.sendMessage
 import mods.eln.misc.Utils.nullCheck
 import mods.eln.node.NodeBlock
 import net.minecraft.block.Block
@@ -34,7 +34,7 @@ class TransparentNodeItem(b: Block?) : GenericItemBlockUsingDamage<TransparentNo
         val coord = Coordinate(x, y, z, world)
         var error: String?
         if (descriptor.checkCanPlace(coord, front).also { error = it } != null) {
-            addChatMessage(player, error)
+            sendMessage(player, error)
             return false
         }
         val ghostgroup = descriptor.getGhostGroupFront(front)

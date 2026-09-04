@@ -17,7 +17,7 @@ object Achievements {
     fun init() {
         openGuide = Achievement(
             tr("achievement.open_guide"),
-            "open_guide", 0, 0, Items.book, null
+            "open_guide", 0, 0, Items.BOOK, null
         ).registerStat()
 
         I18N.TR_DESC(I18N.Type.ACHIEVEMENT, "open_guide")

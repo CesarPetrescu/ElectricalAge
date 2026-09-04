@@ -10,7 +10,7 @@ import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
-import net.minecraft.util.ChunkCoordinates
+import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import java.util.*
 import kotlin.collections.HashMap
@@ -55,7 +55,7 @@ class ElectricalAxe(name: String, strengthOn: Float, strengthOff: Float,
     private fun setCapitation(p: EntityPlayer?, stack: ItemStack, capitation: Boolean) {
         getNbt(stack).setBoolean("capitation", capitation)
         if (p != null) {
-            Utils.addChatMessage(p, "Set treecapitation to $capitation")
+            Utils.sendMessage(p, "Set treecapitation to $capitation")
         }
     }
 

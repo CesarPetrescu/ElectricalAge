@@ -1,6 +1,6 @@
 package mods.eln.registration
 
-import cpw.mods.fml.common.registry.GameRegistry
+import net.minecraftforge.fml.common.registry.GameRegistry
 import mods.eln.Eln
 import mods.eln.Eln.instance
 import mods.eln.generic.GenericItemUsingDamageDescriptor

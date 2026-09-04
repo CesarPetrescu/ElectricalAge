@@ -110,7 +110,7 @@ public class AutoMinerSlowProcess implements IProcess, INBTTReady {
                         // This is so mobs won't spawn excessively.
                         int xDist = jobCoord.x - miner.node.coordinate.x, zDist = jobCoord.z - miner.node.coordinate.z;
                         if (xDist * xDist + zDist * zDist > 25) {
-                            jobCoord.world().setBlock(jobCoord.x, jobCoord.y, jobCoord.z, Blocks.cobblestone);
+                            jobCoord.world().setBlock(jobCoord.x, jobCoord.y, jobCoord.z, Blocks.COBBLESTONE);
                         } else {
                             jobCoord.world().setBlockToAir(jobCoord.x, jobCoord.y, jobCoord.z);
                         }
@@ -230,10 +230,10 @@ public class AutoMinerSlowProcess implements IProcess, INBTTReady {
     }
 
     private boolean isMinable(Block block) {
-        return block != Blocks.air
-            && (block) != Blocks.flowing_water && (block) != Blocks.water
-            && (block) != Blocks.flowing_lava && (block) != Blocks.lava
-            && (block) != Blocks.obsidian && (block) != Blocks.bedrock;
+        return block != Blocks.AIR
+            && (block) != Blocks.FLOWING_WATER && (block) != Blocks.WATER
+            && (block) != Blocks.FLOWING_LAVA && (block) != Blocks.LAVA
+            && (block) != Blocks.OBSIDIAN && (block) != Blocks.BEDROCK;
     }
 
     private void setupJob() {
@@ -312,10 +312,10 @@ public class AutoMinerSlowProcess implements IProcess, INBTTReady {
                     jobCoord.z = miner.node.coordinate.z;
 
                     Block block = jobCoord.world().getBlock(jobCoord.x, jobCoord.y, jobCoord.z);
-                    if (block != Blocks.air
-                        && block != Blocks.flowing_water && block != Blocks.water
-                        && block != Blocks.flowing_lava && block != Blocks.lava) {
-                        if (block != Blocks.obsidian && block != Blocks.bedrock) {
+                    if (block != Blocks.AIR
+                        && block != Blocks.FLOWING_WATER && block != Blocks.WATER
+                        && block != Blocks.FLOWING_LAVA && block != Blocks.LAVA) {
+                        if (block != Blocks.OBSIDIAN && block != Blocks.BEDROCK) {
                             jobFind = true;
                             setJob(jobType.ore);
                         } else {

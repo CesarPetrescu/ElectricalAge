@@ -8,7 +8,7 @@ class CableMelt(private val element: SixNodeElement) : IDestructible {
     override fun destructImpl() {
         val coordinate = element.coordinate ?: return
         element.sixNode?.dropItem(Eln.instance.wireScrapDescriptor?.newItemStack())
-        coordinate.world().setBlock(coordinate.x, coordinate.y, coordinate.z, Blocks.air)
+        coordinate.world().setBlock(coordinate.x, coordinate.y, coordinate.z, Blocks.AIR)
     }
 
     override fun describe(): String {

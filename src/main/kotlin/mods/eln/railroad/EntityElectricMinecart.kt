@@ -25,7 +25,7 @@ class EntityElectricMinecart(world: World, x: Double, y: Double, z: Double): Ent
 
     override fun onUpdate() {
         super.onUpdate()
-        val cartCoordinate = Coordinate(posX.toInt(), posY.toInt(), posZ.toInt(), worldObj)
+        val cartCoordinate = Coordinate(posX.toInt(), posY.toInt(), posZ.toInt(), world)
         val overheadWires = getOverheadWires(cartCoordinate)
         val underTrackWires = getUnderTrackWires(cartCoordinate)
 
@@ -133,7 +133,7 @@ class EntityElectricMinecart(world: World, x: Double, y: Double, z: Double): Ent
             return true
         }
 
-        if (!worldObj.isRemote) {
+        if (!world.isRemote) {
             player.mountEntity(this)
         }
         return true
@@ -160,10 +160,10 @@ class EntityElectricMinecart(world: World, x: Double, y: Double, z: Double): Ent
     }
 
     override fun func_145817_o(): Block? {
-        return Blocks.iron_block
+        return Blocks.IRON_BLOCK
     }
 
     override fun func_145820_n(): Block? {
-        return Blocks.iron_block
+        return Blocks.IRON_BLOCK
     }
 }

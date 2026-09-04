@@ -16,7 +16,7 @@ import net.minecraft.block.BlockHopper
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.init.Blocks
 import net.minecraft.item.ItemStack
-import net.minecraft.util.AxisAlignedBB
+import net.minecraft.util.math.AxisAlignedBB
 import net.minecraft.util.ResourceLocation
 import net.minecraft.world.World
 import net.minecraftforge.client.IItemRenderer
@@ -153,7 +153,7 @@ open class TransparentNodeDescriptor @JvmOverloads constructor(
         get() = 0
 
     open fun addCollisionBoxesToList(par5AxisAlignedBB: AxisAlignedBB, list: MutableList<AxisAlignedBB?>, world: World?, x: Int, y: Int, z: Int) {
-        val bb = Blocks.stone.getCollisionBoundingBoxFromPool(world, x, y, z)
+        val bb = Blocks.STONE.getCollisionBoundingBoxFromPool(world, x, y, z)
         if (par5AxisAlignedBB.intersectsWith(bb)) list.add(bb)
     }
 }

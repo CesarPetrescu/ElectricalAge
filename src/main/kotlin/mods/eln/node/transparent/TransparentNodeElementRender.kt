@@ -1,8 +1,8 @@
 @file:Suppress("NAME_SHADOWING")
 package mods.eln.node.transparent
 
-import cpw.mods.fml.relauncher.Side
-import cpw.mods.fml.relauncher.SideOnly
+import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.relauncher.SideOnly
 import mods.eln.cable.CableRender
 import mods.eln.cable.CableRenderDescriptor
 import mods.eln.cable.CableRenderType
@@ -22,7 +22,7 @@ import net.minecraft.client.gui.GuiScreen
 import net.minecraft.entity.item.EntityItem
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.IInventory
-import net.minecraft.util.AxisAlignedBB
+import net.minecraft.util.math.AxisAlignedBB
 import org.lwjgl.opengl.GL11
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
@@ -159,7 +159,7 @@ abstract class TransparentNodeElementRender(var tileEntity: TransparentNodeEntit
     }
 
     open fun unoptimizedRenderBoundingBox(): AxisAlignedBB {
-        val base = AxisAlignedBB.getBoundingBox(
+        val base = AxisAlignedBB(
             (tileEntity.xCoord - 1).toDouble(),
             (tileEntity.yCoord - 1).toDouble(),
             (tileEntity.zCoord - 1).toDouble(),
@@ -170,7 +170,7 @@ abstract class TransparentNodeElementRender(var tileEntity: TransparentNodeEntit
 
         var merged: AxisAlignedBB = base
 
-        val collisionQuery = AxisAlignedBB.getBoundingBox(
+        val collisionQuery = AxisAlignedBB(
             (tileEntity.xCoord - 64).toDouble(),
             (tileEntity.yCoord - 64).toDouble(),
             (tileEntity.zCoord - 64).toDouble(),
@@ -182,7 +182,7 @@ abstract class TransparentNodeElementRender(var tileEntity: TransparentNodeEntit
         transparentNodeDescriptor.addCollisionBoxesToList(
             collisionQuery,
             collisionBoxes,
-            tileEntity.worldObj,
+            tileEntity.world,
             tileEntity.xCoord,
             tileEntity.yCoord,
             tileEntity.zCoord
@@ -199,7 +199,7 @@ abstract class TransparentNodeElementRender(var tileEntity: TransparentNodeEntit
                 val x = tileEntity.xCoord + element.x
                 val y = tileEntity.yCoord + element.y
                 val z = tileEntity.zCoord + element.z
-                val blockBox = AxisAlignedBB.getBoundingBox(
+                val blockBox = AxisAlignedBB(
                     x.toDouble(),
                     y.toDouble(),
                     z.toDouble(),
@@ -247,7 +247,7 @@ abstract class TransparentNodeElementRender(var tileEntity: TransparentNodeEntit
     open fun notifyNeighborSpawn() {}
     open fun serverPacketUnserialize(stream: DataInputStream?) {}
     protected fun coordinate(): Coordinate {
-        return Coordinate(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord, tileEntity.worldObj)
+        return Coordinate(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord, tileEntity.world)
     }
 
     private var uuid = 0

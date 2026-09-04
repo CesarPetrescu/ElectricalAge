@@ -9,7 +9,7 @@ import mods.eln.item.BrushDescriptor
 import mods.eln.misc.Direction
 import mods.eln.misc.LRDU
 import mods.eln.misc.RealisticEnum
-import mods.eln.misc.Utils.addChatMessage
+import mods.eln.misc.Utils.sendMessage
 import mods.eln.misc.Utils.isPlayerUsingWrench
 import mods.eln.misc.Utils.plotAmpere
 import mods.eln.misc.Utils.plotCelsius
@@ -235,7 +235,7 @@ open class CurrentCableElement(sixNode: SixNode?, side: Direction?, descriptor: 
         val currentItemStack = entityPlayer.currentEquippedItem
         if (isPlayerUsingWrench(entityPlayer)) {
             colorCare = colorCare xor 1
-            addChatMessage(entityPlayer, "Wire color care $colorCare")
+            sendMessage(entityPlayer, "Wire color care $colorCare")
             sixNode!!.reconnect()
         } else if (currentItemStack != null) {
             val gen = getDescriptor(currentItemStack)

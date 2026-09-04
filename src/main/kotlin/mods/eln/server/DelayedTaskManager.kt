@@ -1,10 +1,10 @@
 package mods.eln.server
 
-import cpw.mods.fml.common.eventhandler.SubscribeEvent
-import cpw.mods.fml.common.gameevent.TickEvent.ServerTickEvent
-import cpw.mods.fml.common.gameevent.TickEvent
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent
+import net.minecraftforge.fml.common.gameevent.TickEvent
 import net.minecraftforge.common.MinecraftForge
-import cpw.mods.fml.common.FMLCommonHandler
+import net.minecraftforge.fml.common.FMLCommonHandler
 import java.util.ArrayList
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -37,6 +37,6 @@ class DelayedTaskManager {
 
     init {
         MinecraftForge.EVENT_BUS.register(this)
-        FMLCommonHandler.instance().bus().register(this)
+        MinecraftForge.EVENT_BUS.register(this)
     }
 }

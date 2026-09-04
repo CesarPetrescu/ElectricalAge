@@ -1,7 +1,7 @@
 package mods.eln.craft
 
-import cpw.mods.fml.common.registry.EntityRegistry
-import cpw.mods.fml.common.registry.GameRegistry
+import net.minecraftforge.fml.common.registry.EntityRegistry
+import net.minecraftforge.fml.common.registry.GameRegistry
 import mods.eln.Eln
 import mods.eln.entity.ReplicatorEntity
 import mods.eln.i18n.I18N
@@ -188,11 +188,11 @@ object CraftingRecipes {
         val emptyStack: ItemStack = findItemStack("White Brush")
         Eln.whiteDesc!!.setLife(emptyStack, 0)
         for (idx in 0..15) {
-            addShapelessRecipe(emptyStack.copy(), ItemStack(Blocks.wool, 1, idx), findItemStack("Iron Cable"))
+            addShapelessRecipe(emptyStack.copy(), ItemStack(Blocks.WOOL, 1, idx), findItemStack("Iron Cable"))
         }
         for (idx in 0..15) {
             val name = Eln.brushSubNames[idx]
-            addShapelessRecipe(Eln.findItemStack(name, 1), ItemStack(Items.dye, 1, idx), emptyStack.copy())
+            addShapelessRecipe(Eln.findItemStack(name, 1), ItemStack(Items.DYE, 1, idx), emptyStack.copy())
         }
     }
 
@@ -242,7 +242,7 @@ object CraftingRecipes {
         )
         addRecipe(
             Eln.instance.signalCableDescriptor.newItemStack(12),  //Signal Wire
-            "RRR", "CCC", "RRR", 'C', ItemStack(Items.iron_ingot), 'R', "itemRubber"
+            "RRR", "CCC", "RRR", 'C', ItemStack(Items.IRON_INGOT), 'R', "itemRubber"
         )
         addRecipe(
             Eln.instance.signalBusCableDescriptor.newItemStack(1), "R", "C", 'C', Eln.instance.signalCableDescriptor.newItemStack(1), 'R',
@@ -261,10 +261,10 @@ object CraftingRecipes {
     private fun recipeThermalCable() {
         addRecipe(
             Eln.findItemStack("Copper Thermal Cable", 12), "SSS", "CCC", "SSS", 'S',
-            ItemStack(Blocks.cobblestone), 'C', "ingotCopper"
+            ItemStack(Blocks.COBBLESTONE), 'C', "ingotCopper"
         )
         addRecipe(
-            Eln.findItemStack("Copper Thermal Cable", 1), "S", "C", 'S', ItemStack(Blocks.cobblestone), 'C',
+            Eln.findItemStack("Copper Thermal Cable", 1), "S", "C", 'S', ItemStack(Blocks.COBBLESTONE), 'C',
             findItemStack("Copper Cable")
         )
     }
@@ -272,31 +272,31 @@ object CraftingRecipes {
     private fun recipeLampSocket() {
         addRecipe(
             Eln.findItemStack("Classic Lamp Socket", 3), "GIG", " G ",
-            'G', ItemStack(Blocks.glass_pane), 'I', findItemStack("Iron Cable")
+            'G', ItemStack(Blocks.GLASS_PANE), 'I', findItemStack("Iron Cable")
         )
         addRecipe(
             Eln.findItemStack("Spot Lamp Socket", 3), "GIG", " G ",
-            'G', ItemStack(Blocks.glass_pane), 'I', ItemStack(Items.iron_ingot)
+            'G', ItemStack(Blocks.GLASS_PANE), 'I', ItemStack(Items.IRON_INGOT)
         )
         addRecipe(
             Eln.findItemStack("Streetlight", 1), "G", "I", "I",
-            'G', ItemStack(Blocks.glass_pane), 'I', ItemStack(Items.iron_ingot)
+            'G', ItemStack(Blocks.GLASS_PANE), 'I', ItemStack(Items.IRON_INGOT)
         )
         addRecipe(
             Eln.findItemStack("Robust Lamp Socket", 3), "GIG",
-            'G', ItemStack(Blocks.glass_pane), 'I', ItemStack(Items.iron_ingot)
+            'G', ItemStack(Blocks.GLASS_PANE), 'I', ItemStack(Items.IRON_INGOT)
         )
         addRecipe(
             Eln.findItemStack("Flat Lamp Socket", 3), "IGI",
-            'G', ItemStack(Blocks.glass_pane), 'I', findItemStack("Iron Cable")
+            'G', ItemStack(Blocks.GLASS_PANE), 'I', findItemStack("Iron Cable")
         )
         addRecipe(
             Eln.findItemStack("Simple Lamp Socket", 3), " I ", "GGG",
-            'G', ItemStack(Blocks.glass_pane), 'I', ItemStack(Items.iron_ingot)
+            'G', ItemStack(Blocks.GLASS_PANE), 'I', ItemStack(Items.IRON_INGOT)
         )
         addRecipe(
             Eln.findItemStack("Fluorescent Lamp Socket", 3), " I ", "C C",
-            'C', findItemStack("Iron Cable"), 'I', ItemStack(Items.iron_ingot)
+            'C', findItemStack("Iron Cable"), 'I', ItemStack(Items.IRON_INGOT)
         )
         addRecipe(
             Eln.findItemStack("Suspended Lamp Socket", 2), "I", "S",
@@ -308,48 +308,48 @@ object CraftingRecipes {
         )
         addRecipe(
             Eln.findItemStack("Suspended Lamp Socket (No Swing)", 4), "I", "S",
-            'S', findItemStack("Robust Lamp Socket"), 'I', ItemStack(Items.iron_ingot)
+            'S', findItemStack("Robust Lamp Socket"), 'I', ItemStack(Items.IRON_INGOT)
         )
         addRecipe(
             Eln.findItemStack("Long Suspended Lamp Socket (No Swing)", 4), "I", "I", "S",
-            'S', findItemStack("Robust Lamp Socket"), 'I', ItemStack(Items.iron_ingot)
+            'S', findItemStack("Robust Lamp Socket"), 'I', ItemStack(Items.IRON_INGOT)
         )
         addRecipe(
             Eln.findItemStack("Sconce Lamp Socket", 2), "GCG", "GIG",
-            'G', ItemStack(Blocks.glass_pane), 'C', "dustCoal", 'I', ItemStack(Items.iron_ingot)
+            'G', ItemStack(Blocks.GLASS_PANE), 'C', "dustCoal", 'I', ItemStack(Items.IRON_INGOT)
         )
         addRecipe(
             findItemStack("120V Emergency Lamp"), "cbc", " l ", " g ",
             'c', findItemStack("Low Voltage Cable"), 'b', findItemStack("Portable Battery Pack"),
-            'l', findItemStack("120V LED Light Bulb"), 'g', ItemStack(Blocks.glass_pane)
+            'l', findItemStack("120V LED Light Bulb"), 'g', ItemStack(Blocks.GLASS_PANE)
         )
         addRecipe(
             findItemStack("240V Emergency Lamp"), "cbc", " l ", " g ",
             'c', findItemStack("Medium Voltage Cable"), 'b', findItemStack("Portable Battery Pack"),
-            'l', findItemStack("240V LED Light Bulb"), 'g', ItemStack(Blocks.glass_pane)
+            'l', findItemStack("240V LED Light Bulb"), 'g', ItemStack(Blocks.GLASS_PANE)
         )
         addRecipe(
             findItemStack("120V Basic Floodlight"), " PG", "MBP", "ICI",
-            'P', findItemStack("Iron Plate"), 'G', ItemStack(Blocks.glass_pane),
+            'P', findItemStack("Iron Plate"), 'G', ItemStack(Blocks.GLASS_PANE),
             'M', findItemStack("Electrical Motor"), 'B', findItemStack("Machine Block"),
-            'I', ItemStack(Items.iron_ingot), 'C', findItemStack("Low Voltage Cable")
+            'I', ItemStack(Items.IRON_INGOT), 'C', findItemStack("Low Voltage Cable")
         )
         addRecipe(
             findItemStack("240V Motorized Floodlight"), " PG", "MBP", "ICI",
-            'P', findItemStack("Iron Plate"), 'G', ItemStack(Blocks.glass_pane),
+            'P', findItemStack("Iron Plate"), 'G', ItemStack(Blocks.GLASS_PANE),
             'M', findItemStack("Advanced Electrical Motor"), 'B', findItemStack("Advanced Machine Block"),
-            'I', ItemStack(Items.iron_ingot), 'C', findItemStack("Medium Voltage Cable")
+            'I', ItemStack(Items.IRON_INGOT), 'C', findItemStack("Medium Voltage Cable")
         )
     }
 
     private fun recipeLampSupply() {
         addRecipe(
             Eln.findItemStack("120V Lamp Supply", 1), " I ", "ICI", " I ", 'C', "ingotCopper", 'I',
-            ItemStack(Items.iron_ingot)
+            ItemStack(Items.IRON_INGOT)
         )
         addRecipe(
             Eln.findItemStack("240V Lamp Supply", 1), " I ", "ACA", " I ", 'C', "ingotCopper", 'I',
-            ItemStack(Items.iron_ingot), 'A', findItemStack("Advanced Machine Block")
+            ItemStack(Items.IRON_INGOT), 'A', findItemStack("Advanced Machine Block")
         )
     }
 
@@ -370,24 +370,24 @@ object CraftingRecipes {
 
     private fun recipePassiveComponent() {
         addRecipe(
-            Eln.findItemStack("Signal Diode", 4), " RB", " IR", " RB", 'R', ItemStack(Items.redstone), 'I',
+            Eln.findItemStack("Signal Diode", 4), " RB", " IR", " RB", 'R', ItemStack(Items.REDSTONE), 'I',
             findItemStack("Iron Cable"), 'B', "itemRubber"
         )
         addRecipe(
-            Eln.findItemStack("10A Diode", 3), " RB", "IIR", " RB", 'R', ItemStack(Items.redstone), 'I',
+            Eln.findItemStack("10A Diode", 3), " RB", "IIR", " RB", 'R', ItemStack(Items.REDSTONE), 'I',
             findItemStack("Iron Cable"), 'B', "itemRubber"
         )
         addRecipe(findItemStack("25A Diode"), "D", "D", "D", 'D', findItemStack("10A Diode"))
         addRecipe(
-            findItemStack("Power Capacitor"), "cPc", "III", 'I', ItemStack(Items.iron_ingot), 'c',
+            findItemStack("Power Capacitor"), "cPc", "III", 'I', ItemStack(Items.IRON_INGOT), 'c',
             findItemStack("Iron Cable"), 'P', "plateIron"
         )
         addRecipe(
-            findItemStack("Power Inductor"), "   ", "cIc", "   ", 'I', ItemStack(Items.iron_ingot), 'c',
+            findItemStack("Power Inductor"), "   ", "cIc", "   ", 'I', ItemStack(Items.IRON_INGOT), 'c',
             findItemStack("Copper Cable")
         )
         addRecipe(
-            findItemStack("Variable inductor"), " S ", "cIc", " c ", 'I', ItemStack(Items.iron_ingot), 'c',
+            findItemStack("Variable inductor"), " S ", "cIc", " c ", 'I', ItemStack(Items.IRON_INGOT), 'c',
             findItemStack("Copper Cable"), 'S', findItemStack("Signal Cable")
         )
         addRecipe(
@@ -432,87 +432,87 @@ object CraftingRecipes {
             findItemStack("Copper 2 AWG Cable 600V")
         )
         addRecipe(
-            findItemStack("Low Voltage Switch"), "  I", " I ", "CAC", 'R', ItemStack(Items.redstone), 'A',
+            findItemStack("Low Voltage Switch"), "  I", " I ", "CAC", 'R', ItemStack(Items.REDSTONE), 'A',
             "itemRubber", 'I', findItemStack("Copper Cable"), 'C', findItemStack("Low Voltage Cable")
         )
         addRecipe(
-            findItemStack("Medium Voltage Switch"), "  I", "AIA", "CAC", 'R', ItemStack(Items.redstone),
+            findItemStack("Medium Voltage Switch"), "  I", "AIA", "CAC", 'R', ItemStack(Items.REDSTONE),
             'A', "itemRubber", 'I', findItemStack("Copper Cable"), 'C', findItemStack("Medium Voltage Cable")
         )
         addRecipe(
-            findItemStack("High Voltage Switch"), "AAI", "AIA", "CAC", 'R', ItemStack(Items.redstone), 'A',
+            findItemStack("High Voltage Switch"), "AAI", "AIA", "CAC", 'R', ItemStack(Items.REDSTONE), 'A',
             "itemRubber", 'I', findItemStack("Copper Cable"), 'C', findItemStack("High Voltage Cable")
         )
         addRecipe(
-            findItemStack("Very High Voltage Switch"), "AAI", "AIA", "CAC", 'R', ItemStack(Items.redstone),
+            findItemStack("Very High Voltage Switch"), "AAI", "AIA", "CAC", 'R', ItemStack(Items.REDSTONE),
             'A', "itemRubber", 'I', findItemStack("Copper Cable"), 'C', findItemStack("Very High Voltage Cable")
         )
     }
 
     private fun recipeElectricalRelay() {
         addRecipe(
-            findItemStack("5V Control Relay 10A"), "GGG", "OIO", "CRC", 'R', ItemStack(Items.redstone), 'O',
-            findItemStack("Iron Cable"), 'G', ItemStack(Blocks.glass_pane), 'I', findItemStack("Copper Cable"), 'C',
+            findItemStack("5V Control Relay 10A"), "GGG", "OIO", "CRC", 'R', ItemStack(Items.REDSTONE), 'O',
+            findItemStack("Iron Cable"), 'G', ItemStack(Blocks.GLASS_PANE), 'I', findItemStack("Copper Cable"), 'C',
             findItemStack("Copper 18 AWG Cable 300V")
         )
         addRecipe(
-            findItemStack("12V Control Relay 20A"), "GGG", "OIO", "CRC", 'R', ItemStack(Items.redstone), 'O',
-            findItemStack("Iron Cable"), 'G', ItemStack(Blocks.glass_pane), 'A', "itemRubber", 'I', findItemStack("Copper Cable"), 'C',
+            findItemStack("12V Control Relay 20A"), "GGG", "OIO", "CRC", 'R', ItemStack(Items.REDSTONE), 'O',
+            findItemStack("Iron Cable"), 'G', ItemStack(Blocks.GLASS_PANE), 'A', "itemRubber", 'I', findItemStack("Copper Cable"), 'C',
             findItemStack("Copper 12 AWG Cable 600V")
         )
         addRecipe(
-            findItemStack("12V Control Relay 50A"), "GGG", "OIO", "CRC", 'R', ItemStack(Items.redstone), 'O',
-            findItemStack("Iron Cable"), 'G', ItemStack(Blocks.glass_pane), 'A', "itemRubber", 'I', findItemStack("Copper Cable"), 'C',
+            findItemStack("12V Control Relay 50A"), "GGG", "OIO", "CRC", 'R', ItemStack(Items.REDSTONE), 'O',
+            findItemStack("Iron Cable"), 'G', ItemStack(Blocks.GLASS_PANE), 'A', "itemRubber", 'I', findItemStack("Copper Cable"), 'C',
             findItemStack("Copper 6 AWG Cable 600V")
         )
         addRecipe(
-            findItemStack("12V Control Relay 100A"), "GGG", "OIO", "CRC", 'R', ItemStack(Items.redstone), 'O',
-            findItemStack("Iron Cable"), 'G', ItemStack(Blocks.glass_pane), 'A', "itemRubber", 'I', findItemStack("Copper Cable"), 'C',
+            findItemStack("12V Control Relay 100A"), "GGG", "OIO", "CRC", 'R', ItemStack(Items.REDSTONE), 'O',
+            findItemStack("Iron Cable"), 'G', ItemStack(Blocks.GLASS_PANE), 'A', "itemRubber", 'I', findItemStack("Copper Cable"), 'C',
             findItemStack("Copper 2 AWG Cable 600V")
         )
         addRecipe(
-            findItemStack("Low Voltage Relay"), "GGG", "OIO", "CRC", 'R', ItemStack(Items.redstone), 'O',
-            findItemStack("Iron Cable"), 'G', ItemStack(Blocks.glass_pane), 'A', "itemRubber", 'I', findItemStack(
+            findItemStack("Low Voltage Relay"), "GGG", "OIO", "CRC", 'R', ItemStack(Items.REDSTONE), 'O',
+            findItemStack("Iron Cable"), 'G', ItemStack(Blocks.GLASS_PANE), 'A', "itemRubber", 'I', findItemStack(
                 "Copper Cable"
             ), 'C', findItemStack("Low Voltage Cable")
         )
         addRecipe(
-            findItemStack("Medium Voltage Relay"), "GGG", "OIO", "CRC", 'R', ItemStack(Items.redstone), 'O',
-            findItemStack("Iron Cable"), 'G', ItemStack(Blocks.glass_pane), 'A', "itemRubber", 'I', findItemStack(
+            findItemStack("Medium Voltage Relay"), "GGG", "OIO", "CRC", 'R', ItemStack(Items.REDSTONE), 'O',
+            findItemStack("Iron Cable"), 'G', ItemStack(Blocks.GLASS_PANE), 'A', "itemRubber", 'I', findItemStack(
                 "Copper Cable"
             ), 'C', findItemStack("Medium Voltage Cable")
         )
         addRecipe(
-            findItemStack("High Voltage Relay"), "GGG", "OIO", "CRC", 'R', ItemStack(Items.redstone), 'O',
-            findItemStack("Iron Cable"), 'G', ItemStack(Blocks.glass_pane), 'A', "itemRubber", 'I', findItemStack(
+            findItemStack("High Voltage Relay"), "GGG", "OIO", "CRC", 'R', ItemStack(Items.REDSTONE), 'O',
+            findItemStack("Iron Cable"), 'G', ItemStack(Blocks.GLASS_PANE), 'A', "itemRubber", 'I', findItemStack(
                 "Copper Cable"
             ), 'C', findItemStack("High Voltage Cable")
         )
         addRecipe(
-            findItemStack("Very High Voltage Relay"), "GGG", "OIO", "CRC", 'R', ItemStack(Items.redstone),
-            'O', findItemStack("Iron Cable"), 'G', ItemStack(Blocks.glass_pane), 'A', "itemRubber", 'I',
+            findItemStack("Very High Voltage Relay"), "GGG", "OIO", "CRC", 'R', ItemStack(Items.REDSTONE),
+            'O', findItemStack("Iron Cable"), 'G', ItemStack(Blocks.GLASS_PANE), 'A', "itemRubber", 'I',
             findItemStack("Copper Cable"), 'C', findItemStack("Very High Voltage Cable")
         )
         addRecipe(
-            findItemStack("Signal Relay"), "GGG", "OIO", "CRC", 'R', ItemStack(Items.redstone), 'O',
-            findItemStack("Iron Cable"), 'G', ItemStack(Blocks.glass_pane), 'I', findItemStack("Copper Cable"), 'C',
+            findItemStack("Signal Relay"), "GGG", "OIO", "CRC", 'R', ItemStack(Items.REDSTONE), 'O',
+            findItemStack("Iron Cable"), 'G', ItemStack(Blocks.GLASS_PANE), 'I', findItemStack("Copper Cable"), 'C',
             findItemStack("Signal Cable")
         )
         addRecipe(
-            findItemStack("Low Current Relay"), "GGG", "OIO", "CRC", 'R', ItemStack(Items.redstone), 'O',
-            findItemStack("Iron Cable"), 'G', ItemStack(Blocks.glass_pane), 'A', "itemRubber", 'I', findItemStack(
+            findItemStack("Low Current Relay"), "GGG", "OIO", "CRC", 'R', ItemStack(Items.REDSTONE), 'O',
+            findItemStack("Iron Cable"), 'G', ItemStack(Blocks.GLASS_PANE), 'A', "itemRubber", 'I', findItemStack(
                 "Copper Cable"
             ), 'C', findItemStack("Low Current Cable")
         )
         addRecipe(
-            findItemStack("Medium Current Relay"), "GGG", "OIO", "CRC", 'R', ItemStack(Items.redstone), 'O',
-            findItemStack("Iron Cable"), 'G', ItemStack(Blocks.glass_pane), 'A', "itemRubber", 'I', findItemStack(
+            findItemStack("Medium Current Relay"), "GGG", "OIO", "CRC", 'R', ItemStack(Items.REDSTONE), 'O',
+            findItemStack("Iron Cable"), 'G', ItemStack(Blocks.GLASS_PANE), 'A', "itemRubber", 'I', findItemStack(
                 "Copper Cable"
             ), 'C', findItemStack("Medium Current Cable")
         )
         addRecipe(
-            findItemStack("High Current Relay"), "GGG", "OIO", "CRC", 'R', ItemStack(Items.redstone), 'O',
-            findItemStack("Iron Cable"), 'G', ItemStack(Blocks.glass_pane), 'A', "itemRubber", 'I', findItemStack(
+            findItemStack("High Current Relay"), "GGG", "OIO", "CRC", 'R', ItemStack(Items.REDSTONE), 'O',
+            findItemStack("Iron Cable"), 'G', ItemStack(Blocks.GLASS_PANE), 'A', "itemRubber", 'I', findItemStack(
                 "Copper Cable"
             ), 'C', findItemStack("High Current Cable")
         )
@@ -521,16 +521,16 @@ object CraftingRecipes {
     private fun recipeWirelessSignal() {
         addRecipe(
             findItemStack("Wireless Signal Transmitter"), " S ", " R ", "ICI", 'R',
-            ItemStack(Items.redstone), 'I', findItemStack("Iron Cable"), 'C', Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'S', findItemStack(
+            ItemStack(Items.REDSTONE), 'I', findItemStack("Iron Cable"), 'C', Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'S', findItemStack(
                 "Signal Antenna"
             )
         )
         addRecipe(
-            findItemStack("Wireless Signal Repeater"), "S S", "R R", "ICI", 'R', ItemStack(Items.redstone),
+            findItemStack("Wireless Signal Repeater"), "S S", "R R", "ICI", 'R', ItemStack(Items.REDSTONE),
             'I', findItemStack("Iron Cable"), 'C', Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'S', findItemStack("Signal Antenna")
         )
         addRecipe(
-            findItemStack("Wireless Signal Receiver"), " S ", "ICI", 'R', ItemStack(Items.redstone), 'I',
+            findItemStack("Wireless Signal Receiver"), " S ", "ICI", 'R', ItemStack(Items.REDSTONE), 'I',
             findItemStack("Iron Cable"), 'C', Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'S', findItemStack("Signal Antenna")
         )
     }
@@ -538,7 +538,7 @@ object CraftingRecipes {
     private fun recipeChips() {
         addRecipe(
             findItemStack("NOT Chip"), "   ", "cCr", "   ", 'C', Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'r',
-            ItemStack(Items.redstone), 'c', findItemStack("Copper Cable")
+            ItemStack(Items.REDSTONE), 'c', findItemStack("Copper Cable")
         )
         addRecipe(
             findItemStack("AND Chip"), " c ", "cCc", " c ", 'C', Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'c', findItemStack(
@@ -548,27 +548,27 @@ object CraftingRecipes {
         )
         addRecipe(
             findItemStack("NAND Chip"), " c ", "cCr", " c ", 'C', Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'r',
-            ItemStack(Items.redstone), 'c', findItemStack("Copper Cable")
+            ItemStack(Items.REDSTONE), 'c', findItemStack("Copper Cable")
         )
         addRecipe(
             findItemStack("OR Chip"), " r ", "rCr", " r ", 'C', Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'r',
-            ItemStack(Items.redstone)
+            ItemStack(Items.REDSTONE)
         )
         addRecipe(
             findItemStack("NOR Chip"), " r ", "rCc", " r ", 'C', Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'r',
-            ItemStack(Items.redstone), 'c', findItemStack("Copper Cable")
+            ItemStack(Items.REDSTONE), 'c', findItemStack("Copper Cable")
         )
         addRecipe(
             findItemStack("XOR Chip"), " rr", "rCr", " rr", 'C', Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'r',
-            ItemStack(Items.redstone)
+            ItemStack(Items.REDSTONE)
         )
         addRecipe(
             findItemStack("XNOR Chip"), " rr", "rCc", " rr", 'C', Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'r',
-            ItemStack(Items.redstone), 'c', findItemStack("Copper Cable")
+            ItemStack(Items.REDSTONE), 'c', findItemStack("Copper Cable")
         )
         addRecipe(
             findItemStack("PAL Chip"), "rcr", "cCc", "rcr", 'C', Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced"), 'r',
-            ItemStack(Items.redstone), 'c', findItemStack("Copper Cable")
+            ItemStack(Items.REDSTONE), 'c', findItemStack("Copper Cable")
         )
         addRecipe(
             findItemStack("Schmitt Trigger Chip"), "   ", "cCc", "   ", 'C', Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced"), 'c',
@@ -592,60 +592,60 @@ object CraftingRecipes {
         addRecipe(
             findItemStack("3.3V LDO Regulator Chip"), " d ", "cCc", " r ", 'C',
             Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'd',
-            findItemStack("Signal Diode"), 'c', findItemStack("Copper Cable"), 'r', ItemStack(Items.redstone)
+            findItemStack("Signal Diode"), 'c', findItemStack("Copper Cable"), 'r', ItemStack(Items.REDSTONE)
         )
         addRecipe(
             findItemStack("5V LDO Regulator Chip"), " d ", "cCc", "rrr", 'C',
             Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'd',
-            findItemStack("Signal Diode"), 'c', findItemStack("Copper Cable"), 'r', ItemStack(Items.redstone)
+            findItemStack("Signal Diode"), 'c', findItemStack("Copper Cable"), 'r', ItemStack(Items.REDSTONE)
         )
         addRecipe(
             findItemStack("12V LDO Regulator Chip"), " d ", "cCc", "rAr", 'C',
             Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced"), 'd',
-            findItemStack("Signal Diode"), 'c', findItemStack("Copper Cable"), 'r', ItemStack(Items.redstone),
+            findItemStack("Signal Diode"), 'c', findItemStack("Copper Cable"), 'r', ItemStack(Items.REDSTONE),
             'A', findItemStack("Analogic Regulator")
         )
         addRecipe(
             findItemStack("3.3V Boost Regulator Chip"), " i ", "cCc", " r ", 'C',
             Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced"), 'i',
-            findItemStack("Power Inductor"), 'c', findItemStack("Copper Cable"), 'r', ItemStack(Items.redstone)
+            findItemStack("Power Inductor"), 'c', findItemStack("Copper Cable"), 'r', ItemStack(Items.REDSTONE)
         )
         addRecipe(
             findItemStack("5V Boost Regulator Chip"), " i ", "cCc", "rAr", 'C',
             Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced"), 'i',
-            findItemStack("Power Inductor"), 'c', findItemStack("Copper Cable"), 'r', ItemStack(Items.redstone),
+            findItemStack("Power Inductor"), 'c', findItemStack("Copper Cable"), 'r', ItemStack(Items.REDSTONE),
             'A', findItemStack("Analogic Regulator")
         )
         addRecipe(
-            findItemStack("Amplifier"), "  r", "cCc", "   ", 'r', ItemStack(Items.redstone), 'c',
+            findItemStack("Amplifier"), "  r", "cCc", "   ", 'r', ItemStack(Items.REDSTONE), 'c',
             findItemStack("Copper Cable"), 'C', Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced")
         )
         addRecipe(
-            findItemStack("Voltage controlled amplifier"), " sr", "cCc", "   ", 'r', ItemStack(Items.redstone), 'c',
+            findItemStack("Voltage controlled amplifier"), " sr", "cCc", "   ", 'r', ItemStack(Items.REDSTONE), 'c',
             findItemStack("Copper Cable"), 'C', Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced"), 's', findItemStack("Signal Cable")
         )
         addRecipe(
-            findItemStack("OpAmp"), "  r", "cCc", " c ", 'r', ItemStack(Items.redstone), 'c',
+            findItemStack("OpAmp"), "  r", "cCc", " c ", 'r', ItemStack(Items.REDSTONE), 'c',
             findItemStack("Copper Cable"), 'C', Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced")
         )
         addRecipe(
-            findItemStack("Configurable summing unit"), " cr", "cCc", " c ", 'r', ItemStack(Items.redstone),
+            findItemStack("Configurable summing unit"), " cr", "cCc", " c ", 'r', ItemStack(Items.REDSTONE),
             'c', findItemStack("Copper Cable"), 'C', Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced")
         )
         addRecipe(
-            findItemStack("Sample and hold"), " rr", "cCc", " c ", 'r', ItemStack(Items.redstone), 'c',
+            findItemStack("Sample and hold"), " rr", "cCc", " c ", 'r', ItemStack(Items.REDSTONE), 'c',
             findItemStack("Copper Cable"), 'C', Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced")
         )
         addRecipe(
             findItemStack("Voltage controlled sine oscillator"), "rrr", "cCc", "   ", 'r',
-            ItemStack(Items.redstone), 'c', findItemStack("Copper Cable"), 'C', Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced")
+            ItemStack(Items.REDSTONE), 'c', findItemStack("Copper Cable"), 'C', Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced")
         )
         addRecipe(
             findItemStack("Voltage controlled sawtooth oscillator"), "   ", "cCc", "rrr", 'r',
-            ItemStack(Items.redstone), 'c', findItemStack("Copper Cable"), 'C', Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced")
+            ItemStack(Items.REDSTONE), 'c', findItemStack("Copper Cable"), 'C', Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced")
         )
         addRecipe(
-            findItemStack("PID Regulator"), "rrr", "cCc", "rcr", 'r', ItemStack(Items.redstone), 'c',
+            findItemStack("PID Regulator"), "rrr", "cCc", "rcr", 'r', ItemStack(Items.REDSTONE), 'c',
             findItemStack("Copper Cable"), 'C', Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced")
         )
         addRecipe(
@@ -658,19 +658,19 @@ object CraftingRecipes {
     private fun recipeTransformer() {
         addRecipe(
             findItemStack("DC-DC Converter"), "C C", "III", 'C', findItemStack("Copper Cable"), 'I',
-            ItemStack(Items.iron_ingot)
+            ItemStack(Items.IRON_INGOT)
         )
         addRecipe(
             findItemStack("Variable DC-DC Converter"), "CBC", "III", 'C', findItemStack("Copper Cable"), 'I',
-            ItemStack(Items.iron_ingot), 'B', Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic")
+            ItemStack(Items.IRON_INGOT), 'B', Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic")
         )
         addRecipe(
             findItemStack("One-way DC-DC Converter"), "D", "R", 'D', findItemStack("DC-DC Converter"), 'R',
-            ItemStack(Items.redstone)
+            ItemStack(Items.REDSTONE)
         )
         addRecipe(
             findItemStack("One-way Boost vDC/DC Converter"), "D", "R", 'D', findItemStack("Variable DC-DC Converter"), 'R',
-            ItemStack(Items.redstone)
+            ItemStack(Items.REDSTONE)
         )
         addRecipe(
             findItemStack("One-way Buck vDC/DC Converter"), "D", "r", 'D', findItemStack("Variable DC-DC Converter"), 'r',
@@ -691,12 +691,12 @@ object CraftingRecipes {
 
     private fun recipeHeatFurnace() {
         addRecipe(
-            findItemStack("Stone Heat Furnace"), "BBB", "BIB", "BiB", 'B', ItemStack(Blocks.stone), 'i',
+            findItemStack("Stone Heat Furnace"), "BBB", "BIB", "BiB", 'B', ItemStack(Blocks.STONE), 'i',
             findItemStack("Copper Thermal Cable"), 'I', findItemStack("Combustion Chamber")
         )
         addRecipe(
             findItemStack("Fuel Heat Furnace"), "IcI", "mCI", "IiI", 'c', findItemStack("Cheap Chip"), 'm',
-            findItemStack("Electrical Motor"), 'C', ItemStack(Items.cauldron), 'I', ItemStack(Items.iron_ingot),
+            findItemStack("Electrical Motor"), 'C', ItemStack(Items.CAULDRON), 'I', ItemStack(Items.IRON_INGOT),
             'i', findItemStack("Copper Thermal Cable")
         )
     }
@@ -838,7 +838,7 @@ object CraftingRecipes {
     private fun recipeBattery() {
         addRecipe(
             findItemStack("Cost Oriented Battery"), "C C", "PPP", "PPP", 'C',
-            findItemStack("Low Voltage Cable"), 'P', "ingotLead", 'I', ItemStack(Items.iron_ingot)
+            findItemStack("Low Voltage Cable"), 'P', "ingotLead", 'I', ItemStack(Items.IRON_INGOT)
         )
         addRecipe(
             findItemStack("Capacity Oriented Battery"), "PBP", 'B', findItemStack("Cost Oriented Battery"), 'P',
@@ -854,22 +854,22 @@ object CraftingRecipes {
         )
         addRecipe(
             findItemStack("Life Oriented Battery"), "PBP", 'B', findItemStack("Cost Oriented Battery"), 'P',
-            ItemStack(Items.gold_ingot)
+            ItemStack(Items.GOLD_INGOT)
         )
         addRecipe(
             findItemStack("Experimental Battery"), " S ", "LDV", " C ", 'S', findItemStack(
                 "Capacity Oriented " +
                         "Battery"
             ), 'L', findItemStack("Life Oriented Battery"), 'V', findItemStack("Voltage Oriented Battery"), 'C',
-            findItemStack("Current Oriented Battery"), 'D', ItemStack(Items.diamond)
+            findItemStack("Current Oriented Battery"), 'D', ItemStack(Items.DIAMOND)
         )
         addRecipe(
             findItemStack("Single-use Battery"), "ppp", "III", "ppp", 'C', findItemStack("Low Voltage Cable"),
-            'p', ItemStack(Items.coal, 1, 0), 'I', "ingotCopper"
+            'p', ItemStack(Items.COAL, 1, 0), 'I', "ingotCopper"
         )
         addRecipe(
             findItemStack("Single-use Battery"), "ppp", "III", "ppp", 'C', findItemStack("Low Voltage Cable"),
-            'p', ItemStack(Items.coal, 1, 1), 'I', "ingotCopper"
+            'p', ItemStack(Items.COAL, 1, 1), 'I', "ingotCopper"
         )
     }
 
@@ -922,22 +922,22 @@ object CraftingRecipes {
     private fun recipeElectricalFurnace() {
         addRecipe(
             findItemStack("Electrical Furnace"), "III", "IFI", "ICI", 'C', findItemStack("Low Voltage Cable"),
-            'F', ItemStack(Blocks.furnace), 'I', ItemStack(Items.iron_ingot)
+            'F', ItemStack(Blocks.FURNACE), 'I', ItemStack(Items.IRON_INGOT)
         )
         addShapelessRecipe(
             Eln.findItemStack("Canister of Water", 1), findItemStack("Inert Canister"),
-            ItemStack(Items.water_bucket)
+            ItemStack(Items.WATER_BUCKET)
         )
     }
 
     private fun recipeSixNodeMisc() {
         addRecipe(
             findItemStack("Analog Watch"), "crc", "III", 'c', findItemStack("Iron Cable"), 'r',
-            ItemStack(Items.redstone), 'I', findItemStack("Iron Cable")
+            ItemStack(Items.REDSTONE), 'I', findItemStack("Iron Cable")
         )
         addRecipe(
             findItemStack("Digital Watch"), "rcr", "III", 'c', findItemStack("Iron Cable"), 'r',
-            ItemStack(Items.redstone), 'I', findItemStack("Iron Cable")
+            ItemStack(Items.REDSTONE), 'I', findItemStack("Iron Cable")
         )
         addRecipe(
             findItemStack("Hub"), "I I", " c ", "I I", 'c', findItemStack("Copper Cable"), 'I', findItemStack(
@@ -955,7 +955,7 @@ object CraftingRecipes {
         addRecipe(
             findItemStack("MQTT Energy Meter"), "ICI", "RMR", "ICI",
             'I', findItemStack("Iron Cable"), 'C', Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced"),
-            'R', ItemStack(Items.redstone), 'M', findItemStack("Advanced Energy Meter")
+            'R', ItemStack(Items.REDSTONE), 'M', findItemStack("Advanced Energy Meter")
         )
     }
 
@@ -1009,11 +1009,11 @@ object CraftingRecipes {
         addRecipe(
             findItemStack("Small Solar Panel"), "LLL", "CSC", "III", 'S', "plateSilicon", 'L', findItemStack(
                 "Lapis Dust"
-            ), 'I', ItemStack(Items.iron_ingot), 'C', findItemStack("Copper 16 AWG Cable 300V")
+            ), 'I', ItemStack(Items.IRON_INGOT), 'C', findItemStack("Copper 16 AWG Cable 300V")
         )
         addRecipe(
             findItemStack("Small Rotating Solar Panel"), "ISI", "I I", 'S', findItemStack("Small Solar Panel"),
-            'M', findItemStack("Electrical Motor"), 'I', ItemStack(Items.iron_ingot)
+            'M', findItemStack("Electrical Motor"), 'I', ItemStack(Items.IRON_INGOT)
         )
         for (metal in arrayOf<String>("blockSteel", "blockAluminum", "blockAluminium", "casingMachineAdvanced")) {
             for (panel in arrayOf<String>("Small Solar Panel", "Small Rotating Solar Panel")) {
@@ -1024,7 +1024,7 @@ object CraftingRecipes {
             findItemStack("2x3 Rotating Solar Panel"), "ISI", "IMI", "I I", 'S', findItemStack(
                 "2x3 Solar " +
                         "Panel"
-            ), 'M', findItemStack("Electrical Motor"), 'I', ItemStack(Items.iron_ingot)
+            ), 'M', findItemStack("Electrical Motor"), 'I', ItemStack(Items.IRON_INGOT)
         )
     }
 
@@ -1046,7 +1046,7 @@ object CraftingRecipes {
             ), 'M', findItemStack("Advanced Electrical Motor"), 'R', "itemRubber"
         )
         addRecipe(
-            findItemStack("Thermal Heat Exchanger"), "STS", "CCC", "SAS", 'S', Items.iron_ingot,  // This should
+            findItemStack("Thermal Heat Exchanger"), "STS", "CCC", "SAS", 'S', Items.IRON_INGOT,  // This should
             // be steel and then iron if DNE, but aaaaaaaaie the code no cooperate.
             'T', findItemStack("Copper Thermal Cable"), 'C', findItemStack("Copper Plate"), 'A', findItemStack(
                 "Advanced Machine Block"
@@ -1117,14 +1117,14 @@ object CraftingRecipes {
     private fun recipeRegulatorItem() {
         addRecipe(
             Eln.findItemStack("On/OFF Regulator 10 Percent", 1), "R R", " R ", " I ", 'R',
-            ItemStack(Items.redstone), 'I', findItemStack("Iron Cable")
+            ItemStack(Items.REDSTONE), 'I', findItemStack("Iron Cable")
         )
         addRecipe(
-            Eln.findItemStack("On/OFF Regulator 1 Percent", 1), "RRR", " I ", 'R', ItemStack(Items.redstone),
+            Eln.findItemStack("On/OFF Regulator 1 Percent", 1), "RRR", " I ", 'R', ItemStack(Items.REDSTONE),
             'I', findItemStack("Iron Cable")
         )
         addRecipe(
-            Eln.findItemStack("Analogic Regulator", 1), "R R", " C ", " I ", 'R', ItemStack(Items.redstone),
+            Eln.findItemStack("Analogic Regulator", 1), "R R", " C ", " I ", 'R', ItemStack(Items.REDSTONE),
             'I', findItemStack("Iron Cable"), 'C', Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic")
         )
     }
@@ -1132,127 +1132,127 @@ object CraftingRecipes {
     private fun recipeLampItem() {
         addRecipe(
             Eln.findItemStack("12V Incandescent Light Bulb", 4), " G ", "GFG", " S ",
-            'G', ItemStack(Blocks.glass_pane),
+            'G', ItemStack(Blocks.GLASS_PANE),
             'F', Eln.config.getStringOrElse("runtime.dictionary.tungstenIngot", "ingotElnTungsten"),
             'S', findItemStack("Copper Cable")
         )
         addRecipe(
             Eln.findItemStack("120V Incandescent Light Bulb", 4), " G ", "GFG", " S ",
-            'G', ItemStack(Blocks.glass_pane), 'F',
+            'G', ItemStack(Blocks.GLASS_PANE), 'F',
             Eln.config.getStringOrElse("runtime.dictionary.tungstenIngot", "ingotElnTungsten"),
             'S', findItemStack("Low Voltage Cable")
         )
         addRecipe(
             Eln.findItemStack("240V Incandescent Light Bulb", 4), " G ", "GFG", " S ",
-            'G', ItemStack(Blocks.glass_pane),
+            'G', ItemStack(Blocks.GLASS_PANE),
             'F', Eln.config.getStringOrElse("runtime.dictionary.tungstenIngot", "ingotElnTungsten"),
             'S', findItemStack("Medium Voltage Cable")
         )
         addRecipe(
             Eln.findItemStack("12V Carbon Light Bulb", 4), " G ", "GFG", " S ",
-            'G', ItemStack(Blocks.glass_pane),
-            'F', ItemStack(Items.coal),
+            'G', ItemStack(Blocks.GLASS_PANE),
+            'F', ItemStack(Items.COAL),
             'S', findItemStack("Copper Cable")
         )
         addRecipe(
             Eln.findItemStack("12V Carbon Light Bulb", 4), " G ", "GFG", " S ",
-            'G', ItemStack(Blocks.glass_pane),
-            'F', ItemStack(Items.coal, 1, 1),
+            'G', ItemStack(Blocks.GLASS_PANE),
+            'F', ItemStack(Items.COAL, 1, 1),
             'S', findItemStack("Copper Cable")
         )
         addRecipe(
             Eln.findItemStack("120V Carbon Light Bulb", 4), " G ", "GFG", " S ",
-            'G', ItemStack(Blocks.glass_pane),
-            'F', ItemStack(Items.coal),
+            'G', ItemStack(Blocks.GLASS_PANE),
+            'F', ItemStack(Items.COAL),
             'S', findItemStack("Low Voltage Cable")
         )
         addRecipe(
             Eln.findItemStack("120V Carbon Light Bulb", 4), " G ", "GFG", " S ",
-            'G', ItemStack(Blocks.glass_pane),
-            'F', ItemStack(Items.coal, 1, 1),
+            'G', ItemStack(Blocks.GLASS_PANE),
+            'F', ItemStack(Items.COAL, 1, 1),
             'S', findItemStack("Low Voltage Cable")
         )
         addRecipe(
             Eln.findItemStack("240V Carbon Light Bulb", 4), " G ", "GFG", " S ",
-            'G', ItemStack(Blocks.glass_pane),
-            'F', ItemStack(Items.coal),
+            'G', ItemStack(Blocks.GLASS_PANE),
+            'F', ItemStack(Items.COAL),
             'S', findItemStack("Medium Voltage Cable")
         )
         addRecipe(
             Eln.findItemStack("240V Carbon Light Bulb", 4), " G ", "GFG", " S ",
-            'G', ItemStack(Blocks.glass_pane),
-            'F', ItemStack(Items.coal, 1, 1),
+            'G', ItemStack(Blocks.GLASS_PANE),
+            'F', ItemStack(Items.COAL, 1, 1),
             'S', findItemStack("Medium Voltage Cable")
         )
         addRecipe(
             Eln.findItemStack("12V Fluorescent Light Bulb", 4), " G ", "GFG", " S ",
-            'G', ItemStack(Blocks.glass_pane),
-            'F', ItemStack(Items.glowstone_dust),
+            'G', ItemStack(Blocks.GLASS_PANE),
+            'F', ItemStack(Items.GLOWSTONE_DUST),
             'S', findItemStack("Copper Cable")
         )
         addRecipe(
             Eln.findItemStack("120V Fluorescent Light Bulb", 4), " G ", "GFG", " S ",
-            'G', ItemStack(Blocks.glass_pane),
-            'F', ItemStack(Items.glowstone_dust),
+            'G', ItemStack(Blocks.GLASS_PANE),
+            'F', ItemStack(Items.GLOWSTONE_DUST),
             'S', findItemStack("Low Voltage Cable")
         )
         addRecipe(
             Eln.findItemStack("240V Fluorescent Light Bulb", 4), " G ", "GFG", " S ",
-            'G', ItemStack(Blocks.glass_pane),
-            'F', ItemStack(Items.glowstone_dust),
+            'G', ItemStack(Blocks.GLASS_PANE),
+            'F', ItemStack(Items.GLOWSTONE_DUST),
             'S', findItemStack("Medium Voltage Cable")
         )
         addRecipe(
             Eln.findItemStack("12V Farming Light Bulb", 2), "GGG", "FFF", "GSG",
-            'G', ItemStack(Blocks.glass_pane),
+            'G', ItemStack(Blocks.GLASS_PANE),
             'F', Eln.config.getStringOrElse("runtime.dictionary.tungstenIngot", "ingotElnTungsten"),
             'S', findItemStack("Copper Cable")
         )
         addRecipe(
             Eln.findItemStack("120V Farming Light Bulb", 2), "GGG", "FFF", "GSG",
-            'G', ItemStack(Blocks.glass_pane),
+            'G', ItemStack(Blocks.GLASS_PANE),
             'F', Eln.config.getStringOrElse("runtime.dictionary.tungstenIngot", "ingotElnTungsten"),
             'S', findItemStack("Low Voltage Cable")
         )
         addRecipe(
             Eln.findItemStack("240V Farming Light Bulb", 2), "GGG", "FFF", "GSG",
-            'G', ItemStack(Blocks.glass_pane),
+            'G', ItemStack(Blocks.GLASS_PANE),
             'F', Eln.config.getStringOrElse("runtime.dictionary.tungstenIngot", "ingotElnTungsten"),
             'S', findItemStack("Medium Voltage Cable")
         )
         addRecipe(
             Eln.findItemStack("12V LED Light Bulb", 2), "GGG", "SSS", " C ",
-            'G', ItemStack(Blocks.glass_pane),
+            'G', ItemStack(Blocks.GLASS_PANE),
             'S', findItemStack("Silicon Ingot"),
             'C', findItemStack("Copper Cable")
         )
         addRecipe(
             Eln.findItemStack("120V LED Light Bulb", 2), "GGG", "SSS", " C ",
-            'G', ItemStack(Blocks.glass_pane),
+            'G', ItemStack(Blocks.GLASS_PANE),
             'S', findItemStack("Silicon Ingot"),
             'C', findItemStack("Low Voltage Cable")
         )
         addRecipe(
             Eln.findItemStack("240V LED Light Bulb", 2), "GGG", "SSS", " C ",
-            'G', ItemStack(Blocks.glass_pane),
+            'G', ItemStack(Blocks.GLASS_PANE),
             'S', findItemStack("Silicon Ingot"),
             'C', findItemStack("Medium Voltage Cable")
         )
         addRecipe(
             Eln.findItemStack("12V Halogen Light Bulb", 2), "GGG", "CTC", "GGG",
-            'G', ItemStack(Blocks.glass_pane),
+            'G', ItemStack(Blocks.GLASS_PANE),
             'C', findItemStack("Copper Cable"),
             'T', Eln.config.getStringOrElse("runtime.dictionary.tungstenIngot", "ingotElnTungsten")
         )
         addRecipe(
             Eln.findItemStack("120V Halogen Light Bulb", 2), "GGG", "CTC", "GGG",
-            'G', ItemStack(Blocks.glass_pane),
+            'G', ItemStack(Blocks.GLASS_PANE),
             'C', findItemStack("Low Voltage Cable"),
             'T', Eln.config.getStringOrElse("runtime.dictionary.tungstenIngot", "ingotElnTungsten")
         )
         addRecipe(
             Eln.findItemStack("240V Halogen Light Bulb", 2), "GGG", "CTC", "GGG",
-            'G', ItemStack(Blocks.glass_pane),
+            'G', ItemStack(Blocks.GLASS_PANE),
             'C', findItemStack("Medium Voltage Cable"),
             'T', Eln.config.getStringOrElse("runtime.dictionary.tungstenIngot", "ingotElnTungsten")
         )
@@ -1261,19 +1261,19 @@ object CraftingRecipes {
     private fun recipeProtection() {
         addRecipe(
             Eln.findItemStack("Overvoltage Protection", 4), "SCD", 'S', findItemStack("Electrical Probe Chip"), 'C',
-            Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'D', ItemStack(Items.redstone)
+            Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'D', ItemStack(Items.REDSTONE)
         )
         addRecipe(
             Eln.findItemStack("Overheating Protection", 4), "SCD", 'S', findItemStack("Thermal Probe Chip"), 'C',
-            Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'D', ItemStack(Items.redstone)
+            Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'D', ItemStack(Items.REDSTONE)
         )
     }
 
     private fun recipeCombustionChamber() {
-        addRecipe(findItemStack("Combustion Chamber"), " L ", "L L", " L ", 'L', ItemStack(Blocks.stone))
+        addRecipe(findItemStack("Combustion Chamber"), " L ", "L L", " L ", 'L', ItemStack(Blocks.STONE))
         addRecipe(
-            Eln.findItemStack("Thermal Insulation", 4), "WSW", "SWS", "WSW", 'S', ItemStack(Blocks.stone), 'W',
-            ItemStack(Blocks.wool)
+            Eln.findItemStack("Thermal Insulation", 4), "WSW", "SWS", "WSW", 'S', ItemStack(Blocks.STONE), 'W',
+            ItemStack(Blocks.WOOL)
         )
     }
 
@@ -1326,7 +1326,7 @@ object CraftingRecipes {
             findItemStack("Advanced Electrical Motor"), "RCR", "MIM", "CRC", 'M', findItemStack(
                 "Advanced " +
                         "Magnet"
-            ), 'I', ItemStack(Items.iron_ingot), 'R', ItemStack(Items.redstone), 'C', findItemStack(
+            ), 'I', ItemStack(Items.IRON_INGOT), 'R', ItemStack(Items.REDSTONE), 'C', findItemStack(
                 "Medium Voltage Cable"
             )
         )
@@ -1334,9 +1334,9 @@ object CraftingRecipes {
 
     private fun recipeSolarTracker() {
         addRecipe(
-            Eln.findItemStack("Solar Tracker", 4), "VVV", "RQR", "III", 'Q', ItemStack(Items.quartz), 'V',
-            ItemStack(Blocks.glass_pane), 'R', ItemStack(Items.redstone), 'G', ItemStack(Items.gold_ingot),
-            'I', ItemStack(Items.iron_ingot)
+            Eln.findItemStack("Solar Tracker", 4), "VVV", "RQR", "III", 'Q', ItemStack(Items.QUARTZ), 'V',
+            ItemStack(Blocks.GLASS_PANE), 'R', ItemStack(Items.REDSTONE), 'G', ItemStack(Items.GOLD_INGOT),
+            'I', ItemStack(Items.IRON_INGOT)
         )
     }
 
@@ -1348,36 +1348,36 @@ object CraftingRecipes {
 
     private fun recipeMeter() {
         addRecipe(
-            findItemStack("MultiMeter"), "RGR", "RER", "RCR", 'G', ItemStack(Blocks.glass_pane), 'C',
-            findItemStack("Electrical Probe Chip"), 'E', ItemStack(Items.redstone), 'R', "itemRubber"
+            findItemStack("MultiMeter"), "RGR", "RER", "RCR", 'G', ItemStack(Blocks.GLASS_PANE), 'C',
+            findItemStack("Electrical Probe Chip"), 'E', ItemStack(Items.REDSTONE), 'R', "itemRubber"
         )
         addRecipe(
-            findItemStack("Thermometer"), "RGR", "RER", "RCR", 'G', ItemStack(Blocks.glass_pane), 'C',
-            findItemStack("Thermal Probe Chip"), 'E', ItemStack(Items.redstone), 'R', "itemRubber"
+            findItemStack("Thermometer"), "RGR", "RER", "RCR", 'G', ItemStack(Blocks.GLASS_PANE), 'C',
+            findItemStack("Thermal Probe Chip"), 'E', ItemStack(Items.REDSTONE), 'R', "itemRubber"
         )
         addShapelessRecipe(findItemStack("AllMeter"), findItemStack("MultiMeter"), findItemStack("Thermometer"))
         addRecipe(
-            findItemStack("Wireless Analyser"), " S ", "RGR", "RER", 'G', ItemStack(Blocks.glass_pane), 'S',
-            findItemStack("Signal Antenna"), 'E', ItemStack(Items.redstone), 'R', "itemRubber"
+            findItemStack("Wireless Analyser"), " S ", "RGR", "RER", 'G', ItemStack(Blocks.GLASS_PANE), 'S',
+            findItemStack("Signal Antenna"), 'E', ItemStack(Items.REDSTONE), 'R', "itemRubber"
         )
         addRecipe(
             findItemStack("Config Copy Tool"), "wR", "RC", 'w', findItemStack("Wrench"), 'R',
-            ItemStack(Items.redstone), 'C', Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced")
+            ItemStack(Items.REDSTONE), 'C', Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced")
         )
     }
 
     private fun recipeElectricalDrill() {
         addRecipe(
             findItemStack("Cheap Electrical Drill"), "CMC", " T ", " P ", 'T', findItemStack("Mining Pipe"),
-            'C', Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'M', findItemStack("Electrical Motor"), 'P', ItemStack(Items.iron_pickaxe)
+            'C', Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'M', findItemStack("Electrical Motor"), 'P', ItemStack(Items.IRON_PICKAXE)
         )
         addRecipe(
-            findItemStack("Average Electrical Drill"), "RCR", " D ", " d ", 'R', Items.redstone, 'C',
-            Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'D', findItemStack("Cheap Electrical Drill"), 'd', ItemStack(Items.diamond)
+            findItemStack("Average Electrical Drill"), "RCR", " D ", " d ", 'R', Items.REDSTONE, 'C',
+            Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'D', findItemStack("Cheap Electrical Drill"), 'd', ItemStack(Items.DIAMOND)
         )
         addRecipe(
             findItemStack("Fast Electrical Drill"), "MCM", " T ", " P ", 'T', findItemStack("Mining Pipe"), 'C',
-            Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced"), 'M', findItemStack("Advanced Electrical Motor"), 'P', ItemStack(Items.diamond_pickaxe)
+            Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced"), 'M', findItemStack("Advanced Electrical Motor"), 'P', ItemStack(Items.DIAMOND_PICKAXE)
         )
         addRecipe(
             findItemStack("Turbo Electrical Drill"), "RCR", " F ", " D ", 'F', findItemStack(
@@ -1396,7 +1396,7 @@ object CraftingRecipes {
     private fun recipeOreScanner() {
         addRecipe(
             findItemStack("Ore Scanner"), "IGI", "RCR", "IGI", 'C', Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'R',
-            ItemStack(Items.redstone), 'I', findItemStack("Iron Cable"), 'G', ItemStack(Items.gold_ingot)
+            ItemStack(Items.REDSTONE), 'I', findItemStack("Iron Cable"), 'G', ItemStack(Items.GOLD_INGOT)
         )
     }
 
@@ -1413,9 +1413,9 @@ object CraftingRecipes {
         addRecipe(Eln.findItemStack("Copper Cable", 12), "III", 'I', "ingotCopper")
 
         if (Eln.config.getBooleanOrElse("gameplay.crafting.verticalIronCableCrafting", false)) {
-            addRecipe(Eln.findItemStack("Iron Cable", 12), "I  ", "I  ", "I  ", 'I', ItemStack(Items.iron_ingot))
+            addRecipe(Eln.findItemStack("Iron Cable", 12), "I  ", "I  ", "I  ", 'I', ItemStack(Items.IRON_INGOT))
         } else {
-            addRecipe(Eln.findItemStack("Iron Cable", 12), "III", 'I', ItemStack(Items.iron_ingot))
+            addRecipe(Eln.findItemStack("Iron Cable", 12), "III", 'I', ItemStack(Items.IRON_INGOT))
         }
 
         addRecipe(Eln.findItemStack("Tungsten Cable", 6), "III", 'I', Eln.config.getStringOrElse("runtime.dictionary.tungstenIngot", "ingotElnTungsten"))
@@ -1480,13 +1480,13 @@ object CraftingRecipes {
                 "Graphite Rod"
             )
         )
-        addShapelessRecipe(ItemStack(Items.diamond, 2), findItemStack("Synthetic Diamond"))
+        addShapelessRecipe(ItemStack(Items.DIAMOND, 2), findItemStack("Synthetic Diamond"))
     }
 
     private fun recipeBatteryItem() {
         addRecipe(
             findItemStack("Portable Battery"), " I ", "IPI", "IPI", 'P', "ingotLead", 'I',
-            ItemStack(Items.iron_ingot)
+            ItemStack(Items.IRON_INGOT)
         )
         addShapelessRecipe(
             findItemStack("Portable Battery Pack"), findItemStack("Portable Battery"), findItemStack(
@@ -1500,26 +1500,26 @@ object CraftingRecipes {
             findItemStack("Small Flashlight"), "GLG", "IBI", " I ",
             'L', findItemStack("12V Incandescent Light Bulb"),
             'B', findItemStack("Portable Battery"),
-            'G', ItemStack(Blocks.glass_pane),
-            'I', ItemStack(Items.iron_ingot)
+            'G', ItemStack(Blocks.GLASS_PANE),
+            'I', ItemStack(Items.IRON_INGOT)
         )
         addRecipe(
             findItemStack("Improved Flashlight"), "GLG", "IBI", " I ",
             'L', findItemStack("12V LED Light Bulb"),
             'B', findItemStack("Portable Battery Pack"),
-            'G', ItemStack(Blocks.glass_pane),
-            'I', ItemStack(Items.iron_ingot)
+            'G', ItemStack(Blocks.GLASS_PANE),
+            'I', ItemStack(Items.IRON_INGOT)
         )
         addRecipe(
             findItemStack("Portable Electrical Mining Drill"), " T ", "IBI", " I ", 'T', findItemStack(
                 "Average" +
                         " Electrical Drill"
-            ), 'B', findItemStack("Portable Battery"), 'I', ItemStack(Items.iron_ingot)
+            ), 'B', findItemStack("Portable Battery"), 'I', ItemStack(Items.IRON_INGOT)
         )
         addRecipe(
-            findItemStack("Portable Electrical Axe"), " T ", "IMI", "IBI", 'T', ItemStack(Items.iron_axe),
+            findItemStack("Portable Electrical Axe"), " T ", "IMI", "IBI", 'T', ItemStack(Items.IRON_AXE),
             'B', findItemStack("Portable Battery"), 'M', findItemStack("Electrical Motor"), 'I',
-            ItemStack(Items.iron_ingot)
+            ItemStack(Items.IRON_INGOT)
         )
         if (Eln.config.getBooleanOrElse("tools.xrayScanner.canBeCrafted", true)) {
             addRecipe(
@@ -1557,7 +1557,7 @@ object CraftingRecipes {
 
     private fun recipePortableCapacitor() {
         addRecipe(
-            findItemStack("Portable Condensator"), " r ", "cDc", " r ", 'r', ItemStack(Items.redstone), 'c',
+            findItemStack("Portable Condensator"), " r ", "cDc", " r ", 'r', ItemStack(Items.REDSTONE), 'c',
             findItemStack("Iron Cable"), 'D', findItemStack("Dielectric")
         )
         addShapelessRecipe(
@@ -1572,11 +1572,11 @@ object CraftingRecipes {
     private fun recipeMiscItem() {
         addRecipe(
             findItemStack("Cheap Chip"), " R ", "RSR", " R ", 'S', "ingotSilicon", 'R',
-            ItemStack(Items.redstone)
+            ItemStack(Items.REDSTONE)
         )
         addRecipe(
             findItemStack("Advanced Chip"), "LRL", "RCR", "LRL", 'C', Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'L', "ingotSilicon", 'R',
-            ItemStack(Items.redstone)
+            ItemStack(Items.REDSTONE)
         )
         addRecipe(
             findItemStack("Machine Block"), "rLr", "LcL", "rLr", 'L', findItemStack("Iron Cable"), 'c',
@@ -1590,11 +1590,11 @@ object CraftingRecipes {
             findItemStack("Electrical Probe Chip"), " R ", "RCR", " R ", 'C', findItemStack(
                 "High Voltage " +
                         "Cable"
-            ), 'R', ItemStack(Items.redstone)
+            ), 'R', ItemStack(Items.REDSTONE)
         )
         addRecipe(
-            findItemStack("Thermal Probe Chip"), " C ", "RIR", " C ", 'G', ItemStack(Items.gold_ingot), 'I',
-            findItemStack("Iron Cable"), 'C', "ingotCopper", 'R', ItemStack(Items.redstone)
+            findItemStack("Thermal Probe Chip"), " C ", "RIR", " C ", 'G', ItemStack(Items.GOLD_INGOT), 'I',
+            findItemStack("Iron Cable"), 'C', "ingotCopper", 'R', ItemStack(Items.REDSTONE)
         )
         addRecipe(findItemStack("Signal Antenna"), "c", "c", 'c', findItemStack("Iron Cable"))
         addRecipe(
@@ -1603,16 +1603,16 @@ object CraftingRecipes {
         )
         addRecipe(findItemStack("Wrench"), " c ", "cc ", "  c", 'c', findItemStack("Iron Cable"))
         addRecipe(
-            findItemStack("Player Filter"), " g", "gc", " g", 'g', ItemStack(Blocks.glass_pane), 'c',
-            ItemStack(Items.dye, 1, 2)
+            findItemStack("Player Filter"), " g", "gc", " g", 'g', ItemStack(Blocks.GLASS_PANE), 'c',
+            ItemStack(Items.DYE, 1, 2)
         )
         addRecipe(
-            findItemStack("Monster Filter"), " g", "gc", " g", 'g', ItemStack(Blocks.glass_pane), 'c',
-            ItemStack(Items.dye, 1, 1)
+            findItemStack("Monster Filter"), " g", "gc", " g", 'g', ItemStack(Blocks.GLASS_PANE), 'c',
+            ItemStack(Items.DYE, 1, 1)
         )
         addRecipe(
-            findItemStack("Animal Filter"), " g", "gc", " g", 'g', ItemStack(Blocks.glass_pane), 'c',
-            ItemStack(Items.dye, 1, 4)
+            findItemStack("Animal Filter"), " g", "gc", " g", 'g', ItemStack(Blocks.GLASS_PANE), 'c',
+            ItemStack(Items.DYE, 1, 4)
         )
         addRecipe(Eln.findItemStack("Casing", 1), "ppp", "p p", "ppp", 'p', findItemStack("Iron Cable"))
         addRecipe(findItemStack("Iron Clutch Plate"), " t ", "tIt", " t ", 'I', "plateIron", 't', Eln.config.getStringOrElse("runtime.dictionary.tungstenDust", "dustElnTungsten"))
@@ -1690,7 +1690,7 @@ object CraftingRecipes {
         val f = 4000f
         Eln.instance.maceratorRecipes.addRecipe(
             Recipe(
-                ItemStack(Blocks.coal_ore, 1), ItemStack(Items.coal, 3, 0),
+                ItemStack(Blocks.COAL_ORE, 1), ItemStack(Items.COAL, 3, 0),
                 1.0 * f
             )
         )
@@ -1706,7 +1706,7 @@ object CraftingRecipes {
         )
         Eln.instance.maceratorRecipes.addRecipe(
             Recipe(
-                ItemStack(Blocks.iron_ore), arrayOf<ItemStack>(
+                ItemStack(Blocks.IRON_ORE), arrayOf<ItemStack>(
                     Eln.findItemStack(
                         "Iron " +
                                 "Dust", 2
@@ -1716,7 +1716,7 @@ object CraftingRecipes {
         )
         Eln.instance.maceratorRecipes.addRecipe(
             Recipe(
-                ItemStack(Blocks.gold_ore), arrayOf<ItemStack>(
+                ItemStack(Blocks.GOLD_ORE), arrayOf<ItemStack>(
                     Eln.findItemStack(
                         "Gold " +
                                 "Dust", 2
@@ -1746,7 +1746,7 @@ object CraftingRecipes {
         )
         Eln.instance.maceratorRecipes.addRecipe(
             Recipe(
-                ItemStack(Items.coal, 1, 0), arrayOf<ItemStack>(
+                ItemStack(Items.COAL, 1, 0), arrayOf<ItemStack>(
                     Eln.findItemStack(
                         "Coal " +
                                 "Dust", 1
@@ -1756,7 +1756,7 @@ object CraftingRecipes {
         )
         Eln.instance.maceratorRecipes.addRecipe(
             Recipe(
-                ItemStack(Items.coal, 1, 1), arrayOf<ItemStack>(
+                ItemStack(Items.COAL, 1, 1), arrayOf<ItemStack>(
                     Eln.findItemStack(
                         "Coal " +
                                 "Dust", 1
@@ -1766,7 +1766,7 @@ object CraftingRecipes {
         )
         Eln.instance.maceratorRecipes.addRecipe(
             Recipe(
-                ItemStack(Blocks.sand, 1), arrayOf<ItemStack>(
+                ItemStack(Blocks.SAND, 1), arrayOf<ItemStack>(
                     Eln.findItemStack(
                         "Silicon " +
                                 "Dust", 1
@@ -1786,7 +1786,7 @@ object CraftingRecipes {
         )
         Eln.instance.maceratorRecipes.addRecipe(
             Recipe(
-                ItemStack(Items.dye, 1, 4), arrayOf<ItemStack>(
+                ItemStack(Items.DYE, 1, 4), arrayOf<ItemStack>(
                     Eln.findItemStack(
                         "Lapis " +
                                 "Dust", 1
@@ -1796,7 +1796,7 @@ object CraftingRecipes {
         )
         Eln.instance.maceratorRecipes.addRecipe(
             Recipe(
-                ItemStack(Items.diamond, 1), arrayOf<ItemStack>(
+                ItemStack(Items.DIAMOND, 1), arrayOf<ItemStack>(
                     Eln.findItemStack(
                         "Diamond" +
                                 " Dust", 1
@@ -1817,7 +1817,7 @@ object CraftingRecipes {
         )
         Eln.instance.maceratorRecipes.addRecipe(
             Recipe(
-                ItemStack(Items.iron_ingot), arrayOf<ItemStack>(
+                ItemStack(Items.IRON_INGOT), arrayOf<ItemStack>(
                     Eln.findItemStack(
                         "Iron " +
                                 "Dust", 1
@@ -1827,7 +1827,7 @@ object CraftingRecipes {
         )
         Eln.instance.maceratorRecipes.addRecipe(
             Recipe(
-                ItemStack(Items.gold_ingot), arrayOf<ItemStack>(
+                ItemStack(Items.GOLD_INGOT), arrayOf<ItemStack>(
                     Eln.findItemStack(
                         "Gold " +
                                 "Dust", 1
@@ -1857,20 +1857,20 @@ object CraftingRecipes {
 
         Eln.instance.maceratorRecipes.addRecipe(
             Recipe(
-                ItemStack(Blocks.cobblestone),
-                arrayOf<ItemStack>(ItemStack(Blocks.gravel)), 1.0 * f
+                ItemStack(Blocks.COBBLESTONE),
+                arrayOf<ItemStack>(ItemStack(Blocks.GRAVEL)), 1.0 * f
             )
         )
         Eln.instance.maceratorRecipes.addRecipe(
             Recipe(
-                ItemStack(Blocks.gravel),
-                arrayOf<ItemStack>(ItemStack(Items.flint)), 1.0 * f
+                ItemStack(Blocks.GRAVEL),
+                arrayOf<ItemStack>(ItemStack(Items.FLINT)), 1.0 * f
             )
         )
 
         Eln.instance.maceratorRecipes.addRecipe(
             Recipe(
-                ItemStack(Blocks.dirt), arrayOf<ItemStack>(ItemStack(Blocks.sand)),
+                ItemStack(Blocks.DIRT), arrayOf<ItemStack>(ItemStack(Blocks.SAND)),
                 1.0 * f
             )
         )
@@ -1967,50 +1967,50 @@ object CraftingRecipes {
         val smeltf = 5000f
         Eln.instance.arcFurnaceRecipes.addRecipe(
             Recipe(
-                ItemStack(Blocks.iron_ore, 1),
-                arrayOf<ItemStack>(ItemStack(Items.iron_ingot, 2)), smeltf.toDouble()
+                ItemStack(Blocks.IRON_ORE, 1),
+                arrayOf<ItemStack>(ItemStack(Items.IRON_INGOT, 2)), smeltf.toDouble()
             )
         )
         Eln.instance.arcFurnaceRecipes.addRecipe(
             Recipe(
-                ItemStack(Blocks.gold_ore, 1),
-                arrayOf<ItemStack>(ItemStack(Items.gold_ingot, 2)), smeltf.toDouble()
+                ItemStack(Blocks.GOLD_ORE, 1),
+                arrayOf<ItemStack>(ItemStack(Items.GOLD_INGOT, 2)), smeltf.toDouble()
             )
         )
         Eln.instance.arcFurnaceRecipes.addRecipe(
             Recipe(
-                ItemStack(Blocks.coal_ore, 1),
-                arrayOf<ItemStack>(ItemStack(Items.coal, 2)), smeltf.toDouble()
+                ItemStack(Blocks.COAL_ORE, 1),
+                arrayOf<ItemStack>(ItemStack(Items.COAL, 2)), smeltf.toDouble()
             )
         )
         Eln.instance.arcFurnaceRecipes.addRecipe(
             Recipe(
-                ItemStack(Blocks.redstone_ore, 1),
-                arrayOf<ItemStack>(ItemStack(Items.redstone, 6)), smeltf.toDouble()
+                ItemStack(Blocks.REDSTONE_ORE, 1),
+                arrayOf<ItemStack>(ItemStack(Items.REDSTONE, 6)), smeltf.toDouble()
             )
         )
         Eln.instance.arcFurnaceRecipes.addRecipe(
             Recipe(
-                ItemStack(Blocks.lapis_ore, 1),
-                arrayOf<ItemStack>(ItemStack(Blocks.lapis_block, 1)), smeltf.toDouble()
+                ItemStack(Blocks.LAPIS_ORE, 1),
+                arrayOf<ItemStack>(ItemStack(Blocks.LAPIS_BLOCK, 1)), smeltf.toDouble()
             )
         )
         Eln.instance.arcFurnaceRecipes.addRecipe(
             Recipe(
-                ItemStack(Blocks.diamond_ore, 1),
-                arrayOf<ItemStack>(ItemStack(Items.diamond, 2)), smeltf.toDouble()
+                ItemStack(Blocks.DIAMOND_ORE, 1),
+                arrayOf<ItemStack>(ItemStack(Items.DIAMOND, 2)), smeltf.toDouble()
             )
         )
         Eln.instance.arcFurnaceRecipes.addRecipe(
             Recipe(
-                ItemStack(Blocks.emerald_ore, 1),
-                arrayOf<ItemStack>(ItemStack(Items.emerald, 2)), smeltf.toDouble()
+                ItemStack(Blocks.EMERALD_ORE, 1),
+                arrayOf<ItemStack>(ItemStack(Items.EMERALD, 2)), smeltf.toDouble()
             )
         )
         Eln.instance.arcFurnaceRecipes.addRecipe(
             Recipe(
-                ItemStack(Blocks.quartz_ore, 1),
-                arrayOf<ItemStack>(ItemStack(Items.quartz, 2)), smeltf.toDouble()
+                ItemStack(Blocks.QUARTZ_ORE, 1),
+                arrayOf<ItemStack>(ItemStack(Items.QUARTZ, 2)), smeltf.toDouble()
             )
         )
         Eln.instance.arcFurnaceRecipes.addRecipe(
@@ -2054,7 +2054,7 @@ object CraftingRecipes {
         )
         Eln.instance.arcFurnaceRecipes.addRecipe(
             Recipe(
-                ItemStack(Items.clay_ball, 2), arrayOf<ItemStack>(
+                ItemStack(Items.CLAY_BALL, 2), arrayOf<ItemStack>(
                     Eln.findItemStack(
                         "Arc " +
                                 "Clay Ingot", 1
@@ -2064,7 +2064,7 @@ object CraftingRecipes {
         )
         Eln.instance.arcFurnaceRecipes.addRecipe(
             Recipe(
-                ItemStack(Items.iron_ingot, 1), arrayOf<ItemStack>(
+                ItemStack(Items.IRON_INGOT, 1), arrayOf<ItemStack>(
                     Eln.findItemStack(
                         "Arc" +
                                 " Metal Ingot", 1
@@ -2150,13 +2150,13 @@ object CraftingRecipes {
         )
         Eln.instance.plateMachineRecipes.addRecipe(
             Recipe(
-                ItemStack(Items.iron_ingot, plateConversionRatio, 0),
+                ItemStack(Items.IRON_INGOT, plateConversionRatio, 0),
                 findItemStack("Iron Plate"), 1.0 * f
             )
         )
         Eln.instance.plateMachineRecipes.addRecipe(
             Recipe(
-                ItemStack(Items.gold_ingot, plateConversionRatio, 0),
+                ItemStack(Items.GOLD_INGOT, plateConversionRatio, 0),
                 findItemStack("Gold Plate"), 1.0 * f
             )
         )
@@ -2173,14 +2173,14 @@ object CraftingRecipes {
         )
         Eln.instance.compressorRecipes.addRecipe(Recipe(Eln.findItemStack("Coal Dust", 4), findItemStack("Coal Plate"), 40000.0))
         Eln.instance.compressorRecipes.addRecipe(Recipe(Eln.findItemStack("Coal Plate", 4), findItemStack("Graphite Rod"), 80000.0))
-        Eln.instance.compressorRecipes.addRecipe(Recipe(ItemStack(Blocks.sand), findItemStack("Dielectric"), 2000.0))
-        Eln.instance.compressorRecipes.addRecipe(Recipe(ItemStack(Blocks.log), findItemStack("Tree Resin"), 3000.0))
+        Eln.instance.compressorRecipes.addRecipe(Recipe(ItemStack(Blocks.SAND), findItemStack("Dielectric"), 2000.0))
+        Eln.instance.compressorRecipes.addRecipe(Recipe(ItemStack(Blocks.LOG), findItemStack("Tree Resin"), 3000.0))
     }
 
     private fun recipeMagnetizer() {
         Eln.instance.magnetiserRecipes.addRecipe(
             Recipe(
-                ItemStack(Items.iron_ingot, 2), arrayOf<ItemStack>(
+                ItemStack(Items.IRON_INGOT, 2), arrayOf<ItemStack>(
                     findItemStack(
                         "Basic Magnet"
                     )
@@ -2199,7 +2199,7 @@ object CraftingRecipes {
         Eln.instance.magnetiserRecipes.addRecipe(
             Recipe(
                 Eln.findItemStack("Copper Dust", 1),
-                arrayOf<ItemStack>(ItemStack(Items.redstone)), 5000.0
+                arrayOf<ItemStack>(ItemStack(Items.REDSTONE)), 5000.0
             )
         )
         Eln.instance.magnetiserRecipes.addRecipe(
@@ -2214,7 +2214,7 @@ object CraftingRecipes {
         Eln.instance.magnetiserRecipes.addRecipe(
             Recipe(
                 Eln.findItemStack("Inert Canister", 1),
-                arrayOf<ItemStack>(ItemStack(Items.ender_pearl)), 150000.0
+                arrayOf<ItemStack>(ItemStack(Items.ENDER_PEARL)), 150000.0
             )
         )
     }
@@ -2279,9 +2279,9 @@ object CraftingRecipes {
         `in` = findItemStack("Tungsten Dust")
         addSmelting(`in`.item, `in`.itemDamage, findItemStack("Tungsten Ingot"))
         `in` = findItemStack("dustIron")
-        addSmelting(`in`.item, `in`.itemDamage, ItemStack(Items.iron_ingot))
+        addSmelting(`in`.item, `in`.itemDamage, ItemStack(Items.IRON_INGOT))
         `in` = findItemStack("dustGold")
-        addSmelting(`in`.item, `in`.itemDamage, ItemStack(Items.gold_ingot))
+        addSmelting(`in`.item, `in`.itemDamage, ItemStack(Items.GOLD_INGOT))
         `in` = findItemStack("Tree Resin")
         addSmelting(`in`.item, `in`.itemDamage, Eln.findItemStack("Rubber", 2))
         `in` = findItemStack("Alloy Dust")
@@ -2329,27 +2329,27 @@ object CraftingRecipes {
                 "Advanced Machine " +
                         "Block"
             ), 'C', Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced"), 'c', Eln.instance.highVoltageCableDescriptor.newItemStack(), 'R',
-            ItemStack(Blocks.redstone_block)
+            ItemStack(Blocks.REDSTONE_BLOCK)
         )
     }
 
     private fun recipeMachine() {
         addRecipe(
             Eln.findItemStack("48V Macerator", 1), "IRI", "FMF", "IcI", 'M', findItemStack("Machine Block"), 'c',
-            findItemStack("Electrical Motor"), 'F', ItemStack(Items.flint), 'I', findItemStack("Iron Cable"), 'R',
-            ItemStack(Items.redstone)
+            findItemStack("Electrical Motor"), 'F', ItemStack(Items.FLINT), 'I', findItemStack("Iron Cable"), 'R',
+            ItemStack(Items.REDSTONE)
         )
         addRecipe(
             Eln.findItemStack("240V Macerator", 1), "ICI", "DMD", "IcI", 'M', findItemStack(
                 "Advanced Machine " +
                         "Block"
             ), 'C', Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced"), 'c', findItemStack("Advanced Electrical Motor"), 'D',
-            ItemStack(Items.diamond), 'I', "ingotAlloy"
+            ItemStack(Items.DIAMOND), 'I', "ingotAlloy"
         )
         addRecipe(
             Eln.findItemStack("48V Compressor", 1), "IRI", "FMF", "IcI", 'M', findItemStack("Machine Block"), 'c',
             findItemStack("Electrical Motor"), 'F', "plateIron", 'I', findItemStack("Iron Cable"), 'R',
-            ItemStack(Items.redstone)
+            ItemStack(Items.REDSTONE)
         )
         addRecipe(
             Eln.findItemStack("240V Compressor", 1), "ICI", "DMD", "IcI", 'M', findItemStack(
@@ -2360,7 +2360,7 @@ object CraftingRecipes {
         )
         addRecipe(
             Eln.findItemStack("48V Plate Machine", 1), "IRI", "IMI", "IcI", 'M', findItemStack("Machine Block"),
-            'c', findItemStack("Electrical Motor"), 'I', findItemStack("Iron Cable"), 'R', ItemStack(Items.redstone)
+            'c', findItemStack("Electrical Motor"), 'I', findItemStack("Iron Cable"), 'R', ItemStack(Items.REDSTONE)
         )
         addRecipe(
             Eln.findItemStack("240V Plate Machine", 1), "DCD", "DMD", "DcD", 'M', findItemStack(
@@ -2371,7 +2371,7 @@ object CraftingRecipes {
         )
         addRecipe(
             Eln.findItemStack("48V Magnetizer", 1), "IRI", "cMc", "III", 'M', findItemStack("Machine Block"), 'c',
-            findItemStack("Electrical Motor"), 'I', findItemStack("Iron Cable"), 'R', ItemStack(Items.redstone)
+            findItemStack("Electrical Motor"), 'I', findItemStack("Iron Cable"), 'R', ItemStack(Items.REDSTONE)
         )
         addRecipe(
             Eln.findItemStack("240V Magnetizer", 1), "ICI", "cMc", "III", 'M', findItemStack(
@@ -2389,9 +2389,9 @@ object CraftingRecipes {
     }
 
     private fun recipeElectricalGate() {
-        addShapelessRecipe(findItemStack("Electrical Timer"), ItemStack(Items.repeater), Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"))
+        addShapelessRecipe(findItemStack("Electrical Timer"), ItemStack(Items.REPEATER), Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"))
         addRecipe(
-            Eln.findItemStack("Signal Processor", 1), "IcI", "cCc", "IcI", 'I', ItemStack(Items.iron_ingot),
+            Eln.findItemStack("Signal Processor", 1), "IcI", "cCc", "IcI", 'I', ItemStack(Items.IRON_INGOT),
             'c', findItemStack("Signal Cable"), 'C', Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic")
         )
     }
@@ -2399,38 +2399,38 @@ object CraftingRecipes {
     private fun recipeElectricalRedstone() {
         addRecipe(
             Eln.findItemStack("Redstone-to-Voltage Converter", 1), "TCS", 'S', findItemStack("Signal Cable"), 'C',
-            Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'T', ItemStack(Blocks.redstone_torch)
+            Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'T', ItemStack(Blocks.REDSTONE_TORCH)
         )
         addRecipe(
-            Eln.findItemStack("Voltage-to-Redstone Converter", 1), "CTR", 'R', ItemStack(Items.redstone), 'C',
-            Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'T', ItemStack(Blocks.redstone_torch)
+            Eln.findItemStack("Voltage-to-Redstone Converter", 1), "CTR", 'R', ItemStack(Items.REDSTONE), 'C',
+            Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'T', ItemStack(Blocks.REDSTONE_TORCH)
         )
     }
 
     private fun recipeElectricalEnvironmentalSensor() {
         addShapelessRecipe(
-            findItemStack("Electrical Daylight Sensor"), ItemStack(Blocks.daylight_detector),
+            findItemStack("Electrical Daylight Sensor"), ItemStack(Blocks.DAYLIGHT_DETECTOR),
             findItemStack("Redstone-to-Voltage Converter")
         )
         addShapelessRecipe(
-            findItemStack("Electrical Light Sensor"), ItemStack(Blocks.daylight_detector),
-            ItemStack(Items.quartz), findItemStack("Redstone-to-Voltage Converter")
+            findItemStack("Electrical Light Sensor"), ItemStack(Blocks.DAYLIGHT_DETECTOR),
+            ItemStack(Items.QUARTZ), findItemStack("Redstone-to-Voltage Converter")
         )
         addRecipe(
-            findItemStack("Humidity Sensor"), " r ", "rRr", " r ", 'R', ItemStack(Items.redstone),
+            findItemStack("Humidity Sensor"), " r ", "rRr", " r ", 'R', ItemStack(Items.REDSTONE),
             'r', "itemRubber"
         )
         addRecipe(
-            findItemStack("Thermometer Sensor"), " q ", "rRr", " r ", 'R', ItemStack(Items.redstone),
-            'r', "itemRubber", 'q', ItemStack(Items.quartz)
+            findItemStack("Thermometer Sensor"), " q ", "rRr", " r ", 'R', ItemStack(Items.REDSTONE),
+            'r', "itemRubber", 'q', ItemStack(Items.QUARTZ)
         )
         addRecipe(
             findItemStack("Electrical Anemometer Sensor"), " I ", " R ", "I I", 'R',
-            ItemStack(Items.redstone), 'I', findItemStack("Iron Cable")
+            ItemStack(Items.REDSTONE), 'I', findItemStack("Iron Cable")
         )
         addRecipe(
             findItemStack("Electrical Entity Sensor"), " G ", "GRG", " G ", 'G',
-            ItemStack(Blocks.glass_pane), 'R', ItemStack(Items.redstone)
+            ItemStack(Blocks.GLASS_PANE), 'R', ItemStack(Items.REDSTONE)
         )
         addRecipe(
             findItemStack("Electrical Fire Detector"), "cbr", "p p", "r r", 'c', findItemStack("Signal Cable"),
@@ -2440,24 +2440,24 @@ object CraftingRecipes {
             findItemStack("Electrical Fire Buzzer"), "rar", "p p", "r r", 'a', Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced"), 'r',
             "itemRubber", 'p', "plateCopper"
         )
-        addShapelessRecipe(findItemStack("Scanner"), ItemStack(Items.comparator), Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced"))
+        addShapelessRecipe(findItemStack("Scanner"), ItemStack(Items.COMPARATOR), Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced"))
     }
 
     private fun recipeElectricalVuMeter() {
         addRecipe(
             Eln.findItemStack("Analog vuMeter", 1), "WWW", "RIr", "WSW", 'W', "plankWood",
-            'R', ItemStack(Items.redstone), 'I', findItemStack("Iron Cable"), 'r', ItemStack(
-                Items.dye,
+            'R', ItemStack(Items.REDSTONE), 'I', findItemStack("Iron Cable"), 'r', ItemStack(
+                Items.DYE,
                 1, 1
             ), 'S', findItemStack("Signal Cable")
         )
         addRecipe(
             Eln.findItemStack("LED vuMeter", 1), " W ", "WTW", " S ", 'W', "plankWood",
-            'T', ItemStack(Blocks.redstone_torch), 'S', findItemStack("Signal Cable")
+            'T', ItemStack(Blocks.REDSTONE_TORCH), 'S', findItemStack("Signal Cable")
         )
         addRecipe(
             Eln.findItemStack("Multicolor LED vuMeter", 1), " W ", "WRW", " S ", 'W', "plankWood",
-            'R', ItemStack(Items.redstone), 'S', findItemStack("Signal Cable")
+            'R', ItemStack(Items.REDSTONE), 'S', findItemStack("Signal Cable")
         )
     }
 
@@ -2559,18 +2559,18 @@ object CraftingRecipes {
     private fun recipeElectricalGateSource() {
         addRecipe(
             Eln.findItemStack("Signal Trimmer", 1), "RsR", "rRr", " c ", 'M', findItemStack("Machine Block"), 'c',
-            findItemStack("Signal Cable"), 'r', "itemRubber", 's', ItemStack(Items.stick), 'R',
-            ItemStack(Items.redstone)
+            findItemStack("Signal Cable"), 'r', "itemRubber", 's', ItemStack(Items.STICK), 'R',
+            ItemStack(Items.REDSTONE)
         )
         addRecipe(
             Eln.findItemStack("Signal Switch", 3), " r ", "rRr", " c ", 'M', findItemStack("Machine Block"), 'c',
             findItemStack("Signal Cable"), 'r', "itemRubber", 'I', findItemStack("Iron Cable"), 'R',
-            ItemStack(Items.redstone)
+            ItemStack(Items.REDSTONE)
         )
         addRecipe(
             Eln.findItemStack("Signal Button", 3), " R ", "rRr", " c ", 'M', findItemStack("Machine Block"), 'c',
             findItemStack("Signal Cable"), 'r', "itemRubber", 'I', findItemStack("Iron Cable"), 'R',
-            ItemStack(Items.redstone)
+            ItemStack(Items.REDSTONE)
         )
         addRecipe(
             Eln.findItemStack("Wireless Switch", 3),
@@ -2590,7 +2590,7 @@ object CraftingRecipes {
             'I',
             findItemStack("Iron Cable"),
             'R',
-            ItemStack(Items.redstone)
+            ItemStack(Items.REDSTONE)
         )
         addRecipe(
             Eln.findItemStack("Wireless Button", 3),
@@ -2610,22 +2610,22 @@ object CraftingRecipes {
             'I',
             findItemStack("Iron Cable"),
             'R',
-            ItemStack(Items.redstone)
+            ItemStack(Items.REDSTONE)
         )
     }
 
     private fun recipeElectricalDataLogger() {
         addRecipe(
             Eln.findItemStack("Data Logger", 1), "RRR", "RGR", "RCR", 'R', "itemRubber", 'C', Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'G',
-            ItemStack(Blocks.glass_pane)
+            ItemStack(Blocks.GLASS_PANE)
         )
         addRecipe(
             Eln.findItemStack("Modern Data Logger", 1), "RRR", "RGR", "RCR", 'R', "itemRubber", 'C',
-            Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced"), 'G', ItemStack(Blocks.glass_pane)
+            Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced"), 'G', ItemStack(Blocks.GLASS_PANE)
         )
         addRecipe(
             Eln.findItemStack("Industrial Data Logger", 1), "RRR", "GGG", "RCR", 'R', "itemRubber", 'C',
-            Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced"), 'G', ItemStack(Blocks.glass_pane)
+            Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced"), 'G', ItemStack(Blocks.GLASS_PANE)
         )
     }
 
@@ -2635,55 +2635,55 @@ object CraftingRecipes {
     private fun recipeElectricalAlarm() {
         addRecipe(
             Eln.findItemStack("Nuclear Alarm", 1), "ITI", "IMI", "IcI", 'c', findItemStack("Signal Cable"), 'T',
-            ItemStack(Blocks.redstone_torch), 'I', findItemStack("Iron Cable"), 'M', ItemStack(Blocks.noteblock)
+            ItemStack(Blocks.REDSTONE_TORCH), 'I', findItemStack("Iron Cable"), 'M', ItemStack(Blocks.NOTEBLOCK)
         )
         addRecipe(
             Eln.findItemStack("Standard Alarm", 1), "MTM", "IcI", "III", 'c', findItemStack("Signal Cable"), 'T',
-            ItemStack(Blocks.redstone_torch), 'I', findItemStack("Iron Cable"), 'M', ItemStack(Blocks.noteblock)
+            ItemStack(Blocks.REDSTONE_TORCH), 'I', findItemStack("Iron Cable"), 'M', ItemStack(Blocks.NOTEBLOCK)
         )
     }
 
     private fun recipeElectricalAntenna() {
         addRecipe(
             Eln.findItemStack("Low Power Transmitter Antenna", 1), "R i", "CI ", "R i", 'C', Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'i',
-            ItemStack(Items.iron_ingot), 'I', "plateIron", 'R', ItemStack(Items.redstone)
+            ItemStack(Items.IRON_INGOT), 'I', "plateIron", 'R', ItemStack(Items.REDSTONE)
         )
         addRecipe(
             Eln.findItemStack("Low Power Receiver Antenna", 1), "i  ", " IC", "i  ", 'C', Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'I',
-            "plateIron", 'i', ItemStack(Items.iron_ingot), 'R', ItemStack(Items.redstone)
+            "plateIron", 'i', ItemStack(Items.IRON_INGOT), 'R', ItemStack(Items.REDSTONE)
         )
         addRecipe(
             Eln.findItemStack("Medium Power Transmitter Antenna", 1), "c I", "CI ", "c I", 'C', Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced"),
-            'c', Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'I', "plateIron", 'R', ItemStack(Items.redstone)
+            'c', Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'I', "plateIron", 'R', ItemStack(Items.REDSTONE)
         )
         addRecipe(
             Eln.findItemStack("Medium Power Receiver Antenna", 1), "I  ", " IC", "I  ", 'C', Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced"), 'I',
-            "plateIron", 'R', ItemStack(Items.redstone)
+            "plateIron", 'R', ItemStack(Items.REDSTONE)
         )
 
         addRecipe(
             Eln.findItemStack("High Power Transmitter Antenna", 1), "C I", "CI ", "C I", 'C', Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced"), 'c',
-            Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'I', "plateIron", 'R', ItemStack(Items.redstone)
+            Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'I', "plateIron", 'R', ItemStack(Items.REDSTONE)
         )
         addRecipe(
             Eln.findItemStack("High Power Receiver Antenna", 1), "I D", " IC", "I D", 'C', Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced"), 'I',
-            "plateIron", 'R', ItemStack(Items.redstone), 'D', ItemStack(Items.diamond)
+            "plateIron", 'R', ItemStack(Items.REDSTONE), 'D', ItemStack(Items.DIAMOND)
         )
     }
 
     private fun recipeBatteryCharger() {
         addRecipe(
             Eln.findItemStack("120V Battery Charger", 1), "RIR", "III", "RcR", 'c', findItemStack("Copper 14/2 Cable 600V"),
-            'I', findItemStack("Iron Cable"), 'R', ItemStack(Items.redstone)
+            'I', findItemStack("Iron Cable"), 'R', ItemStack(Items.REDSTONE)
         )
         addRecipe(
             Eln.findItemStack("120V Fast Battery Charger", 1), "RIR", "ICI", "RcR", 'C', Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'c',
-            findItemStack("Copper 12/2 Cable 600V"), 'I', findItemStack("Iron Cable"), 'R', ItemStack(Items.redstone)
+            findItemStack("Copper 12/2 Cable 600V"), 'I', findItemStack("Iron Cable"), 'R', ItemStack(Items.REDSTONE)
         )
 
         addRecipe(
             Eln.findItemStack("240V Battery Charger", 1), "RIR", "ICI", "RcR", 'C', Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced"), 'c',
-            findItemStack("Copper 10/2 Cable 600V"), 'I', findItemStack("Iron Cable"), 'R', ItemStack(Items.redstone)
+            findItemStack("Copper 10/2 Cable 600V"), 'I', findItemStack("Iron Cable"), 'R', ItemStack(Items.REDSTONE)
         )
     }
 
@@ -2691,8 +2691,8 @@ object CraftingRecipes {
         addRecipe(
             Eln.findItemStack("24V Egg Incubator", 1), "IGG", "E G", "CII", 'C', Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), 'E', findItemStack(
                 "Small 48V Tungsten Heating Element"
-            ), 'I', ItemStack(Items.iron_ingot), 'G',
-            ItemStack(Blocks.glass_pane)
+            ), 'I', ItemStack(Items.IRON_INGOT), 'G',
+            ItemStack(Blocks.GLASS_PANE)
         )
     }
 
@@ -2701,7 +2701,7 @@ object CraftingRecipes {
             addRecipe(
                 ItemStack(Eln.instance.elnToOtherBlockConverter), "III", "cCR", "III", 'C', Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced"), 'c',
                 findItemStack("High Voltage Cable"), 'I', findItemStack("Iron Cable"), 'R',
-                ItemStack(Items.gold_ingot)
+                ItemStack(Items.GOLD_INGOT)
             )
         }
     }
@@ -2730,25 +2730,25 @@ object CraftingRecipes {
     }
 
     private fun recipeTool() {
-        addRecipe(ItemStack(Eln.shovelCopper), "i", "s", "s", 'i', "ingotCopper", 's', ItemStack(Items.stick))
-        addRecipe(ItemStack(Eln.axeCopper), "ii", "is", " s", 'i', "ingotCopper", 's', ItemStack(Items.stick))
-        addRecipe(ItemStack(Eln.hoeCopper), "ii", " s", " s", 'i', "ingotCopper", 's', ItemStack(Items.stick))
+        addRecipe(ItemStack(Eln.shovelCopper), "i", "s", "s", 'i', "ingotCopper", 's', ItemStack(Items.STICK))
+        addRecipe(ItemStack(Eln.axeCopper), "ii", "is", " s", 'i', "ingotCopper", 's', ItemStack(Items.STICK))
+        addRecipe(ItemStack(Eln.hoeCopper), "ii", " s", " s", 'i', "ingotCopper", 's', ItemStack(Items.STICK))
         addRecipe(
             ItemStack(Eln.pickaxeCopper), "iii", " s ", " s ", 'i', "ingotCopper", 's',
-            ItemStack(Items.stick)
+            ItemStack(Items.STICK)
         )
-        addRecipe(ItemStack(Eln.swordCopper), "i", "i", "s", 'i', "ingotCopper", 's', ItemStack(Items.stick))
+        addRecipe(ItemStack(Eln.swordCopper), "i", "i", "s", 'i', "ingotCopper", 's', ItemStack(Items.STICK))
     }
 
     private fun recipeDisplays() {
         addRecipe(
-            Eln.findItemStack("Digital Display", 1), "   ", "rrr", "iii", 'r', ItemStack(Items.redstone), 'i',
+            Eln.findItemStack("Digital Display", 1), "   ", "rrr", "iii", 'r', ItemStack(Items.REDSTONE), 'i',
             findItemStack("Iron Cable")
         )
 
         addRecipe(
-            Eln.findItemStack("Nixie Tube", 1), " g ", "grg", "iii", 'g', ItemStack(Blocks.glass_pane), 'r',
-            ItemStack(Items.redstone), 'i', findItemStack("Iron Cable")
+            Eln.findItemStack("Nixie Tube", 1), " g ", "grg", "iii", 'g', ItemStack(Blocks.GLASS_PANE), 'r',
+            ItemStack(Items.REDSTONE), 'i', findItemStack("Iron Cable")
         )
     }
 
@@ -2771,9 +2771,9 @@ object CraftingRecipes {
         ReplicatorEntity.dropList.add(Eln.findItemStack("Iron Dust", 1))
         ReplicatorEntity.dropList.add(Eln.findItemStack("Copper Dust", 1))
         ReplicatorEntity.dropList.add(Eln.findItemStack("Gold Dust", 1))
-        ReplicatorEntity.dropList.add(ItemStack(Items.redstone))
-        ReplicatorEntity.dropList.add(ItemStack(Items.glowstone_dust))
-        // EntityRegistry.addSpawn(ReplicatorEntity.class, 1, 1, 2, EnumCreatureType.monster, BiomeGenBase.plains);
+        ReplicatorEntity.dropList.add(ItemStack(Items.REDSTONE))
+        ReplicatorEntity.dropList.add(ItemStack(Items.GLOWSTONE_DUST))
+        // EntityRegistry.addSpawn(ReplicatorEntity.class, 1, 1, 2, EnumCreatureType.monster, Biome.plains);
     }
 
     private fun registerElectricMinecart() {
@@ -2786,9 +2786,9 @@ object CraftingRecipes {
         )
     }
     private fun recipeChristmas(){
-        addShapelessRecipe(Eln.findItemStack("Christmas Tree", 1), findItemStack("String Lights"), ItemStack(Blocks.sapling, 1, 1), findItemStack("String Lights"))
+        addShapelessRecipe(Eln.findItemStack("Christmas Tree", 1), findItemStack("String Lights"), ItemStack(Blocks.SAPLING, 1, 1), findItemStack("String Lights"))
         addRecipe(
-            Eln.findItemStack("Holiday Candle", 1), " g ", "gbg", " i ", 'g', ItemStack(Blocks.glass_pane), 'b',
+            Eln.findItemStack("Holiday Candle", 1), " g ", "gbg", " i ", 'g', ItemStack(Blocks.GLASS_PANE), 'b',
             findItemStack("120V LED Light Bulb"), 'i', "ingotIron"
         )
         addShapelessRecipe(Eln.findItemStack("String Lights", 2), findItemStack("120V LED Light Bulb"), "materialString")

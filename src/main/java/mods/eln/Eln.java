@@ -1,16 +1,16 @@
 package mods.eln;
 
-import cpw.mods.fml.common.*;
-import cpw.mods.fml.common.Mod.EventHandler;
-import cpw.mods.fml.common.Mod.Instance;
-import cpw.mods.fml.common.event.*;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.network.FMLEventChannel;
-import cpw.mods.fml.common.network.NetworkRegistry;
-import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
-import cpw.mods.fml.common.registry.GameRegistry;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraftforge.fml.common.*;
+import net.minecraftforge.fml.common.Mod.EventHandler;
+import net.minecraftforge.fml.common.Mod.Instance;
+import net.minecraftforge.fml.common.event.*;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.network.FMLEventChannel;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
+import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
+import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import mods.eln.block.ArcClayBlock;
 import mods.eln.block.ArcClayItemBlock;
 import mods.eln.block.ArcMetalBlock;
@@ -367,15 +367,15 @@ public class Eln {
         Item itemCreativeTab = new Item().setUnlocalizedName("eln:elncreativetab").setTextureName("eln:elncreativetab");
         GameRegistry.registerItem(itemCreativeTab, "eln.itemCreativeTab");
 
-        creativeTabPowerElectronics = new GenericCreativeTab("ElnPowerElectronics", Items.redstone);
-        creativeTabCables = new GenericCreativeTab("ElnCables", Items.string);
-        creativeTabPowerDistribution = new GenericCreativeTab("ElnPowerDistribution", Items.string);
-        creativeTabSignalProcessing = new GenericCreativeTab("ElnSignalProcessing", Items.comparator);
-        creativeTabLighting = new GenericCreativeTab("ElnLighting", Item.getItemFromBlock(Blocks.redstone_lamp));
-        creativeTabToolsArmor = new GenericCreativeTab("ElnToolsArmor", Items.iron_pickaxe);
-        creativeTabOresMaterials = new GenericCreativeTab("ElnOresMaterials", Items.iron_ingot);
-        creativeTabMachines = new GenericCreativeTab("ElnMachines", Item.getItemFromBlock(Blocks.dispenser));
-        creativeTabCreative = new GenericCreativeTab("ElnCreative", Items.nether_star);
+        creativeTabPowerElectronics = new GenericCreativeTab("ElnPowerElectronics", Items.REDSTONE);
+        creativeTabCables = new GenericCreativeTab("ElnCables", Items.STRING);
+        creativeTabPowerDistribution = new GenericCreativeTab("ElnPowerDistribution", Items.STRING);
+        creativeTabSignalProcessing = new GenericCreativeTab("ElnSignalProcessing", Items.COMPARATOR);
+        creativeTabLighting = new GenericCreativeTab("ElnLighting", Item.getItemFromBlock(Blocks.REDSTONE_LAMP));
+        creativeTabToolsArmor = new GenericCreativeTab("ElnToolsArmor", Items.IRON_PICKAXE);
+        creativeTabOresMaterials = new GenericCreativeTab("ElnOresMaterials", Items.IRON_INGOT);
+        creativeTabMachines = new GenericCreativeTab("ElnMachines", Item.getItemFromBlock(Blocks.DISPENSER));
+        creativeTabCreative = new GenericCreativeTab("ElnCreative", Items.NETHER_STAR);
         creativeTabOther = creativeTabOresMaterials;
         creativeTab = creativeTabOther;
 
@@ -521,7 +521,7 @@ public class Eln {
         MinecraftForge.EVENT_BUS.register(new ElnForgeEventsHandler());
         MinecraftForge.EVENT_BUS.register(new RoomThermalBlockEventsHandler());
         MinecraftForge.EVENT_BUS.register(new ElectricMinecartChargeReporter());
-        FMLCommonHandler.instance().bus().register(new ElnFMLEventsHandler());
+        MinecraftForge.EVENT_BUS.register(new ElnFMLEventsHandler());
         MinecraftForge.EVENT_BUS.register(this);
         FMLInterModComms.sendMessage("Waila", "register", "mods.eln.integration.waila.WailaIntegration" +
                 ".callbackRegister");
@@ -598,7 +598,7 @@ public class Eln {
             nodeServer.init();
         }
         {
-            MinecraftServer s = MinecraftServer.getServer();
+            MinecraftServer s = FMLCommonHandler.instance().getMinecraftServerInstance();
             ICommandManager command = s.getCommandManager();
             ServerCommandManager manager = (ServerCommandManager) command;
             manager.registerCommand(new ElnConsoleCommands());

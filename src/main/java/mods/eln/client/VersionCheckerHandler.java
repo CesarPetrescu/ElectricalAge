@@ -2,17 +2,17 @@ package mods.eln.client;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import cpw.mods.fml.client.FMLClientHandler;
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent.ClientTickEvent;
-import cpw.mods.fml.common.gameevent.TickEvent.Phase;
+import net.minecraftforge.fml.client.FMLClientHandler;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import mods.eln.Eln;
 import mods.eln.misc.FC;
 import mods.eln.misc.Version;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.text.TextComponentString;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
@@ -48,7 +48,7 @@ public class VersionCheckerHandler {
             return;
 
         final Minecraft m = FMLClientHandler.instance().getClient();
-        final WorldClient world = m.theWorld;
+        final WorldClient world = m.world;
 
         if (m == null || world == null)
             return;
@@ -58,14 +58,14 @@ public class VersionCheckerHandler {
 
         // Print the current version when the client start a map
         if (Eln.config.getBooleanOrElse("updates.versionCheck.enabled", true)) {
-            //m.thePlayer.addChatMessage(new ChatComponentText(Version.printColor()));
+            //m.player.sendMessage(new TextComponentString(Version.printColor()));
             System.out.println(Version.printColor());
             String elnVers = "Electrical Age";
-            m.thePlayer.addChatMessage(new ChatComponentText(elnVers));
-            m.thePlayer.addChatMessage(new ChatComponentText(versionMsg));
+            m.player.sendMessage(new TextComponentString(elnVers));
+            m.player.sendMessage(new TextComponentString(versionMsg));
         }
 
-        FMLCommonHandler.instance().bus().unregister(this);
+        MinecraftForge.EVENT_BUS.unregister(this);
         ready = false;
     }
 

@@ -1,7 +1,7 @@
 @file:Suppress("NAME_SHADOWING")
 package mods.eln.misc
 
-import cpw.mods.fml.common.network.internal.FMLProxyPacket
+import net.minecraftforge.fml.common.network.internal.FMLProxyPacket
 import mods.eln.Eln
 import mods.eln.GuiHandler
 import mods.eln.i18n.I18N.tr
@@ -22,7 +22,7 @@ import net.minecraft.entity.item.EntityItem
 import net.minecraft.item.ItemStack
 import net.minecraft.network.play.client.C17PacketCustomPayload
 import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.MathHelper
+import net.minecraft.util.math.MathHelper
 import net.minecraft.util.ResourceLocation
 import net.minecraft.world.EnumSkyBlock
 import net.minecraft.world.World
@@ -49,17 +49,17 @@ object UtilsClient {
     val whiteTexture = ResourceLocation("eln", "sprites/cable.png")
     val portableBatteryOverlayResource = ResourceLocation("eln", "sprites/portablebatteryoverlay.png")
     fun distanceFromClientPlayer(@Suppress("UNUSED_PARAMETER") world: World?, xCoord: Int, yCoord: Int, zCoord: Int): Float {
-        val player = Minecraft.getMinecraft().thePlayer
+        val player = Minecraft.getMinecraft().player
         return Math.sqrt((xCoord - player.posX) * (xCoord - player.posX) + (yCoord - player.posY) * (yCoord - player.posY) + (zCoord - player.posZ) * (zCoord - player.posZ)).toFloat()
     }
 
     @JvmStatic
     fun distanceFromClientPlayer(tileEntity: SixNodeEntity): Float {
-        return distanceFromClientPlayer(tileEntity.worldObj, tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord)
+        return distanceFromClientPlayer(tileEntity.world, tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord)
     }
 
     val clientPlayer: EntityClientPlayerMP
-        get() = Minecraft.getMinecraft().thePlayer
+        get() = Minecraft.getMinecraft().player
 
     fun drawHaloNoLightSetup(halo: Obj3DPart?, r: Float, g: Float, b: Float, w: World, x: Int, y: Int, z: Int, bilinear: Boolean) {
         if (halo == null) return
@@ -77,7 +77,7 @@ object UtilsClient {
     fun clientOpenGui(gui: GuiScreen?) {
         guiLastOpen = gui
         val clientPlayer = clientPlayer
-        clientPlayer.openGui(Eln.instance, GuiHandler.genericOpen, clientPlayer.worldObj, 0, 0, 0)
+        clientPlayer.openGui(Eln.instance, GuiHandler.genericOpen, clientPlayer.world, 0, 0, 0)
     }
 
     @JvmStatic
@@ -91,12 +91,12 @@ object UtilsClient {
 
     @JvmStatic
     fun drawHaloNoLightSetup(halo: Obj3DPart?, r: Float, g: Float, b: Float, e: TileEntity, bilinear: Boolean) {
-        drawHaloNoLightSetup(halo, r, g, b, e.worldObj, e.xCoord, e.yCoord, e.zCoord, bilinear)
+        drawHaloNoLightSetup(halo, r, g, b, e.world, e.xCoord, e.yCoord, e.zCoord, bilinear)
     }
 
     @JvmStatic
     fun drawHalo(halo: Obj3DPart?, r: Float, g: Float, b: Float, e: TileEntity, bilinear: Boolean) {
-        drawHalo(halo, r, g, b, e.worldObj, e.xCoord, e.yCoord, e.zCoord, bilinear)
+        drawHalo(halo, r, g, b, e.world, e.xCoord, e.yCoord, e.zCoord, bilinear)
     }
 
     @JvmStatic
@@ -133,7 +133,7 @@ object UtilsClient {
     fun drawHaloNoLightSetup(halo: Obj3DPart?, r: Float, g: Float, b: Float, e: Entity, bilinear: Boolean) {
         if (halo == null) return
         withBilinearFilters(halo, bilinear) {
-            val light = getLight(e.worldObj, MathHelper.floor_double(e.posX), MathHelper.floor_double(e.posY), MathHelper.floor_double(e.posZ))
+            val light = getLight(e.world, MathHelper.floor_double(e.posX), MathHelper.floor_double(e.posY), MathHelper.floor_double(e.posZ))
             GL11.glColor4f(r, g, b, 1f - light / 15f)
             halo.draw()
             GL11.glColor4f(1f, 1f, 1f, 1f)
@@ -548,7 +548,7 @@ object UtilsClient {
 
     fun clientDistanceTo(e: Entity?): Double {
         if (e == null) return 100000000.0
-        val c: Entity = Minecraft.getMinecraft().thePlayer
+        val c: Entity = Minecraft.getMinecraft().player
         val x = c.posX - e.posX
         val y = c.posY - e.posY
         val z = c.posZ - e.posZ
@@ -558,7 +558,7 @@ object UtilsClient {
     @JvmStatic
     fun clientDistanceTo(t: TransparentNodeEntity?): Double {
         if (t == null) return 100000000.0
-        val c: Entity = Minecraft.getMinecraft().thePlayer
+        val c: Entity = Minecraft.getMinecraft().player
         val x = c.posX - t.xCoord
         val y = c.posY - t.yCoord
         val z = c.posZ - t.zCoord
@@ -585,7 +585,7 @@ object UtilsClient {
     fun sendPacketToServer(bos: ByteArrayOutputStream) {
         val packet = C17PacketCustomPayload(Eln.channelName, bos.toByteArray())
         Eln.eventChannel.sendToServer(FMLProxyPacket(packet))
-        // Minecraft.getMinecraft().thePlayer.sendQueue.addToSendQueue(new FMLProxyPacket(packet));
+        // Minecraft.getMinecraft().player.sendQueue.addToSendQueue(new FMLProxyPacket(packet));
     }
 
     val glListsAllocated = HashSet<Int>()

@@ -246,11 +246,11 @@ class PowerCapacitorSixElement(SixNode: SixNode, side: Direction, descriptor: Si
             val desired = compound.getInteger("capRedstoneAmt")
             object : ItemMovingHelper() {
                 override fun acceptsStack(stack: ItemStack): Boolean {
-                    return stack.item === Items.redstone
+                    return stack.item === Items.REDSTONE
                 }
 
                 override fun newStackOfSize(size: Int): ItemStack {
-                    return ItemStack(Items.redstone, size)
+                    return ItemStack(Items.REDSTONE, size)
                 }
             }.move(invoker.inventory, inventory, PowerCapacitorSixContainer.redId, desired)
             reconnect()
@@ -330,7 +330,7 @@ class PowerCapacitorSixGui(player: EntityPlayer, inventory: IInventory, var rend
 }
 
 class PowerCapacitorSixContainer(player: EntityPlayer, inventory: IInventory) : BasicContainer(player, inventory, arrayOf(
-    SlotFilter(inventory, redId, 132, 8, 13, arrayOf(ItemStackFilter(Items.redstone)),
+    SlotFilter(inventory, redId, 132, 8, 13, arrayOf(ItemStackFilter(Items.REDSTONE)),
         ISlotSkin.SlotSkin.medium, arrayOf(tr("Redstone slot"), tr("(Increases capacity)"))),
     GenericItemUsingDamageSlot(inventory, dielectricId, 132 + 20, 8, 20, DielectricItem::class.java,
         ISlotSkin.SlotSkin.medium, arrayOf(tr("Dielectric slot"), tr("(Increases maximum voltage)")))

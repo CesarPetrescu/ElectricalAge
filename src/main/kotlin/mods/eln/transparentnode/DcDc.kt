@@ -558,7 +558,7 @@ class DcDcRender(tileEntity: TransparentNodeEntity, val descriptor: TransparentN
     private var cableRenderType: CableRenderType? = null
 
     init {
-        addLoopedSound(object : LoopedSound("eln:Transformer", coordinate(), ISound.AttenuationType.LINEAR) {
+        addLoopedSound(object : LoopedSound("eln:transformer", coordinate(), ISound.AttenuationType.LINEAR) {
             override fun getVolume(): Float {
                 return if (load.position > (descriptor as DcDcDescriptor).minimalLoadToHum)
                     0.1f * (load.position - descriptor.minimalLoadToHum) / (1 - descriptor.minimalLoadToHum)
@@ -662,7 +662,7 @@ class DcDcRender(tileEntity: TransparentNodeEntity, val descriptor: TransparentN
         load.step(deltaT)
 
         if (hasCasing) {
-            if (!Utils.isPlayerAround(tileEntity.worldObj, coordinate.moved(front!!).getAxisAlignedBB(0)))
+            if (!Utils.isPlayerAround(tileEntity.world, coordinate.moved(front!!).getAxisAlignedBB(0)))
                 doorOpen.target = 0f
             else
                 doorOpen.target = 1f

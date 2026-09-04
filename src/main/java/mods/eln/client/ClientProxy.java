@@ -1,8 +1,8 @@
 package mods.eln.client;
 
-import cpw.mods.fml.client.registry.ClientRegistry;
-import cpw.mods.fml.client.registry.RenderingRegistry;
-import cpw.mods.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.client.registry.ClientRegistry;
+import net.minecraftforge.fml.client.registry.RenderingRegistry;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import mods.eln.CommonProxy;
 import mods.eln.Eln;
 import mods.eln.entity.ReplicatorEntity;
@@ -37,13 +37,13 @@ public class ClientProxy extends CommonProxy {
         RenderingRegistry.registerEntityRenderingHandler(ReplicatorEntity.class, new ReplicatorRender(new ModelSilverfish(), (float) 0.3));
 
         Eln.clientKeyHandler = new ClientKeyHandler();
-        FMLCommonHandler.instance().bus().register(Eln.clientKeyHandler);
+        MinecraftForge.EVENT_BUS.register(Eln.clientKeyHandler);
         MinecraftForge.EVENT_BUS.register(new TutorialSignOverlay());
         uuidManager = new UuidManager();
         soundClientEventListener = new SoundClientEventListener(uuidManager);
 
         if (Eln.config.getBooleanOrElse("updates.versionCheck.enabled", true))
-            FMLCommonHandler.instance().bus().register(VersionCheckerHandler.getInstance());
+            MinecraftForge.EVENT_BUS.register(VersionCheckerHandler.getInstance());
 
         new FrameTime();
         new ConnectionListener();

@@ -1,7 +1,7 @@
 package mods.eln.node.transparent
 
-import cpw.mods.fml.relauncher.Side
-import cpw.mods.fml.relauncher.SideOnly
+import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.relauncher.SideOnly
 import mods.eln.Eln
 import mods.eln.cable.CableRenderDescriptor
 import mods.eln.misc.Coordinate
@@ -15,7 +15,7 @@ import net.minecraft.init.Blocks
 import net.minecraft.inventory.Container
 import net.minecraft.inventory.ISidedInventory
 import net.minecraft.item.ItemStack
-import net.minecraft.util.AxisAlignedBB
+import net.minecraft.util.math.AxisAlignedBB
 import net.minecraft.world.World
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
@@ -105,7 +105,7 @@ open class TransparentNodeEntity : NodeBlockEntity(), ISidedInventory {
     }
 
     fun addCollisionBoxesToList(par5AxisAlignedBB: AxisAlignedBB, list: MutableList<AxisAlignedBB?>, blockCoord: Coordinate?) {
-        val desc = if (worldObj.isRemote) {
+        val desc = if (world.isRemote) {
             if (elementRender == null) null else elementRender!!.transparentNodeDescriptor
         } else {
             val node = node as TransparentNode?
@@ -124,10 +124,10 @@ open class TransparentNodeEntity : NodeBlockEntity(), ISidedInventory {
             z = zCoord
         }
         if (desc == null) {
-            val bb = Blocks.stone.getCollisionBoundingBoxFromPool(worldObj, x, y, z)
+            val bb = Blocks.STONE.getCollisionBoundingBoxFromPool(world, x, y, z)
             if (par5AxisAlignedBB.intersectsWith(bb)) list.add(bb)
         } else {
-            desc.addCollisionBoxesToList(par5AxisAlignedBB, list, worldObj, x, y, z)
+            desc.addCollisionBoxesToList(par5AxisAlignedBB, list, world, x, y, z)
         }
     }
 
@@ -156,7 +156,7 @@ open class TransparentNodeEntity : NodeBlockEntity(), ISidedInventory {
 
     open val sidedInventory: ISidedInventory
         get() {
-            if (worldObj.isRemote) {
+            if (world.isRemote) {
                 if (elementRender == null) return instance
                 val i = elementRender!!.inventory
                 if (i != null && i is ISidedInventory) {

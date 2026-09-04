@@ -5,7 +5,7 @@ package mods.eln.node.transparent
 /*
 class TransparentNodeEntityWithSiededInv : TransparentNodeEntity(), ISidedInventory {
     override fun getSidedInventory(): ISidedInventory {
-        if (worldObj.isRemote) {
+        if (world.isRemote) {
             if (elementRender == null) return instance
             val i = elementRender!!.inventory
             if (i != null && i is ISidedInventory) {

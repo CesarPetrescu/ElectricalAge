@@ -1,9 +1,9 @@
 package mods.eln.sim;
 
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent.Phase;
-import cpw.mods.fml.common.gameevent.TickEvent.ServerTickEvent;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
+import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent;
 import mods.eln.Eln;
 import mods.eln.environment.RoomThermalManager;
 import mods.eln.item.lampitem.LampLists;
@@ -75,7 +75,7 @@ public class Simulator /* ,IPacketHandler */ {
         this.electricalInterSystemOverSampling = electricalInterSystemOverSampling;
         this.thermalPeriod = thermalPeriod;
 
-        FMLCommonHandler.instance().bus().register(this);
+        MinecraftForge.EVENT_BUS.register(this);
 
         mna = new RootSystem(electricalPeriod, electricalInterSystemOverSampling);
 

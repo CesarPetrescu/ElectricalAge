@@ -1,8 +1,8 @@
 @file:Suppress("NAME_SHADOWING")
 package mods.eln.ghost
 
-import cpw.mods.fml.relauncher.Side
-import cpw.mods.fml.relauncher.SideOnly
+import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.relauncher.SideOnly
 import mods.eln.Eln
 import mods.eln.misc.Coordinate
 import mods.eln.misc.Direction.Companion.fromIntMinecraftSide
@@ -14,9 +14,9 @@ import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
-import net.minecraft.util.AxisAlignedBB
-import net.minecraft.util.MovingObjectPosition
-import net.minecraft.util.Vec3
+import net.minecraft.util.math.AxisAlignedBB
+import net.minecraft.util.math.RayTraceResult
+import net.minecraft.util.math.Vec3d
 import net.minecraft.world.IBlockAccess
 import net.minecraft.world.World
 import java.util.*
@@ -32,7 +32,7 @@ class GhostBlock : Block(Material.iron) {
         val meta = world.getBlockMetadata(x, y, z)
         when (meta) {
             tFloor -> {
-                val axisalignedbb1 = AxisAlignedBB.getBoundingBox(x.toDouble(), y.toDouble(), z.toDouble(), x.toDouble() + 1, y.toDouble() + 0.0625, z.toDouble() + 1)
+                val axisalignedbb1 = AxisAlignedBB(x.toDouble(), y.toDouble(), z.toDouble(), x.toDouble() + 1, y.toDouble() + 0.0625, z.toDouble() + 1)
                 if (axisalignedbb1 != null && par5AxisAlignedBB.intersectsWith(axisalignedbb1)) {
                     list.add(axisalignedbb1)
                 }
@@ -56,13 +56,13 @@ class GhostBlock : Block(Material.iron) {
     override fun getSelectedBoundingBoxFromPool(w: World, x: Int, y: Int, z: Int): AxisAlignedBB {
         val meta = w.getBlockMetadata(x, y, z)
         return when (meta) {
-            tFloor -> AxisAlignedBB.getBoundingBox(x.toDouble(), y.toDouble(), z.toDouble(), x.toDouble() + 1, y.toDouble() + 0.0625, z.toDouble() + 1)
-            tLadder -> AxisAlignedBB.getBoundingBox(x.toDouble(), y.toDouble(), z.toDouble(), x.toDouble() + 0, y.toDouble() + 0.0, z.toDouble() + 0)
+            tFloor -> AxisAlignedBB(x.toDouble(), y.toDouble(), z.toDouble(), x.toDouble() + 1, y.toDouble() + 0.0625, z.toDouble() + 1)
+            tLadder -> AxisAlignedBB(x.toDouble(), y.toDouble(), z.toDouble(), x.toDouble() + 0, y.toDouble() + 0.0, z.toDouble() + 0)
             else -> super.getSelectedBoundingBoxFromPool(w, x, y, z)
         }
     }
 
-    override fun collisionRayTrace(world: World, x: Int, y: Int, z: Int, startVec: Vec3, endVec: Vec3): MovingObjectPosition? {
+    override fun collisionRayTrace(world: World, x: Int, y: Int, z: Int, startVec: Vec3d, endVec: Vec3d): RayTraceResult? {
         val meta = world.getBlockMetadata(x, y, z)
         when (meta) {
             tFloor -> maxY = 0.0625
@@ -111,7 +111,7 @@ class GhostBlock : Block(Material.iron) {
         return -1
     }
 
-    override fun getPickBlock(target: MovingObjectPosition, world: World, x: Int, y: Int, z: Int, player: EntityPlayer): ItemStack? {
+    override fun getPickBlock(target: RayTraceResult, world: World, x: Int, y: Int, z: Int, player: EntityPlayer): ItemStack? {
         return null
     }
 

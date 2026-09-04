@@ -135,7 +135,7 @@ class WindTurbineSlowProcess implements IProcess, INBTTReady {
                                 notInCache = true;
                                 break;
                             }
-                            if (world.getBlock(x, y, z) != Blocks.air) {
+                            if (world.getBlock(x, y, z) != Blocks.AIR) {
                                 blockBusyCount++;
                             }
                         }

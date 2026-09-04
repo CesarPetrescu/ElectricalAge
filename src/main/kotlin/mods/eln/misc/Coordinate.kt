@@ -1,14 +1,14 @@
 package mods.eln.misc
 
-import cpw.mods.fml.common.FMLCommonHandler
+import net.minecraftforge.fml.common.FMLCommonHandler
 import mods.eln.node.NodeBlockEntity
 import net.minecraft.block.Block
 import net.minecraft.client.Minecraft
 import net.minecraft.entity.Entity
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.AxisAlignedBB
-import net.minecraft.util.Vec3
+import net.minecraft.util.math.AxisAlignedBB
+import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 import net.minecraftforge.client.MinecraftForgeClient
 import net.minecraftforge.common.DimensionManager
@@ -44,7 +44,7 @@ class Coordinate : INBTTReady {
     }
 
     // Emulates the default Minecraft behavior for determining block coordinates
-    constructor(v: Vec3, d: Int) {
+    constructor(v: Vec3d, d: Int) {
         x = floor(v.xCoord).toInt()
         y = floor(v.yCoord).toInt()
         z = floor(v.zCoord).toInt()
@@ -70,7 +70,7 @@ class Coordinate : INBTTReady {
         x = entity.xCoord
         y = entity.yCoord
         z = entity.zCoord
-        dimension = entity.worldObj.provider.dimensionId
+        dimension = entity.world.provider.dimensionId
     }
 
     constructor(x: Int, y: Int, z: Int, dimention: Int) {
@@ -92,8 +92,8 @@ class Coordinate : INBTTReady {
         x = entity.xCoord
         y = entity.yCoord
         z = entity.zCoord
-        dimension = entity.worldObj.provider.dimensionId
-        if (entity.worldObj.isRemote) w = entity.worldObj
+        dimension = entity.world.provider.dimensionId
+        if (entity.world.isRemote) w = entity.world
     }
 
     fun newWithOffset(x: Int, y: Int, z: Int): Coordinate {
@@ -147,7 +147,7 @@ class Coordinate : INBTTReady {
         }
 
     fun getAxisAlignedBB(ray: Int): AxisAlignedBB {
-        return AxisAlignedBB.getBoundingBox((
+        return AxisAlignedBB((
             x - ray).toDouble(), (y - ray).toDouble(), (z - ray).toDouble(), (
             x + ray + 1).toDouble(), (y + ray + 1).toDouble(), (z + ray + 1).toDouble())
     }
@@ -179,7 +179,7 @@ class Coordinate : INBTTReady {
     }
 
     // Emulates the default Minecraft behavior for determining block coordinates
-    fun setPosition(vp: Vec3) {
+    fun setPosition(vp: Vec3d) {
         x = floor(vp.xCoord).toInt()
         y = floor(vp.yCoord).toInt()
         z = floor(vp.zCoord).toInt()
@@ -224,9 +224,9 @@ class Coordinate : INBTTReady {
         z += coordinate.z
     }
 
-    fun setWorld(worldObj: World) {
-        if (worldObj.isRemote) w = worldObj
-        dimension = worldObj.provider.dimensionId
+    fun setWorld(world: World) {
+        if (world.isRemote) w = world
+        dimension = world.provider.dimensionId
     }
 
     fun setMetadata(meta: Int) {
@@ -256,14 +256,14 @@ class Coordinate : INBTTReady {
     }
 
     // Emulates the default Minecraft behavior for determining block coordinates
-    fun toVec3(): Vec3 {
-        return Vec3.createVectorHelper(this.x + 0.5, this.y + 0.5, this.z + 0.5)
+    fun toVec3(): Vec3d {
+        return Vec3d(this.x + 0.5, this.y + 0.5, this.z + 0.5)
     }
 
     companion object {
         @JvmStatic
         fun getAxisAlignedBB(a: Coordinate, b: Coordinate): AxisAlignedBB {
-            return AxisAlignedBB.getBoundingBox(
+            return AxisAlignedBB(
                 a.x.coerceAtMost(b.x).toDouble(), a.y.coerceAtMost(b.y).toDouble(), a.z.coerceAtMost(b.z).toDouble(),
                 a.x.coerceAtLeast(b.x) + 1.0, a.y.coerceAtLeast(b.y) + 1.0, a.z.coerceAtLeast(b.z) + 1.0)
         }

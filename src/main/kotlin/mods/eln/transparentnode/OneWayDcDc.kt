@@ -862,7 +862,7 @@ class OneWayDcDcRender(
     private var cableRenderType: CableRenderType? = null
 
     init {
-        addLoopedSound(object : LoopedSound("eln:Transformer", coordinate(), ISound.AttenuationType.LINEAR) {
+        addLoopedSound(object : LoopedSound("eln:transformer", coordinate(), ISound.AttenuationType.LINEAR) {
             override fun getVolume(): Float {
                 return if (load.position > oneWayDescriptor.minimalLoadToHum)
                     0.1f * (load.position - oneWayDescriptor.minimalLoadToHum) / (1 - oneWayDescriptor.minimalLoadToHum)
@@ -1004,7 +1004,7 @@ class OneWayDcDcRender(
         super.refresh(deltaT)
         load.step(deltaT)
         if (hasCasing) {
-            doorOpen.target = if (!Utils.isPlayerAround(tileEntity.worldObj, coordinate.moved(front!!).getAxisAlignedBB(0))) 0f else 1f
+            doorOpen.target = if (!Utils.isPlayerAround(tileEntity.world, coordinate.moved(front!!).getAxisAlignedBB(0))) 0f else 1f
             doorOpen.step(deltaT)
         }
     }

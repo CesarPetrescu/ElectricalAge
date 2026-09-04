@@ -1,6 +1,6 @@
 package mods.eln.fluid
 
-import cpw.mods.fml.common.registry.GameRegistry
+import net.minecraftforge.fml.common.registry.GameRegistry
 import mods.eln.Eln.*
 import net.minecraft.block.Block
 import net.minecraft.init.Items
@@ -27,10 +27,10 @@ fun registerElnFluids() {
                 val fb = ItemBucket(fluidBlock)
                 val bucketName = "${it.name}_bucket"
                 val bucketTextureName = "$MODID:${it.name}_bucket"
-                fb.setUnlocalizedName(bucketName).setContainerItem(Items.bucket)
+                fb.setUnlocalizedName(bucketName).setContainerItem(Items.BUCKET)
                 fb.setTextureName(bucketTextureName)
                 GameRegistry.registerItem(fb, bucketName)
-                FluidContainerRegistry.registerFluidContainer(fluid, ItemStack(fb), ItemStack(Items.bucket))
+                FluidContainerRegistry.registerFluidContainer(fluid, ItemStack(fb), ItemStack(Items.BUCKET))
                 BucketHandler.buckets[fluidBlock] = fb
                 MinecraftForge.EVENT_BUS.register(BucketHandler)
             }

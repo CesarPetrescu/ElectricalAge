@@ -1,6 +1,6 @@
 package mods.eln.railroad
 
-import cpw.mods.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import mods.eln.Eln
 import mods.eln.i18n.I18N
 import mods.eln.misc.Utils
@@ -11,7 +11,7 @@ class ElectricMinecartChargeReporter {
     @SubscribeEvent
     fun onPlayerInteract(event: PlayerInteractEvent) {
         val player = event.entityPlayer ?: return
-        val world = player.worldObj
+        val world = player.world
         if (world == null || world.isRemote) return
 
         when (event.action) {
@@ -27,7 +27,7 @@ class ElectricMinecartChargeReporter {
                     return
                 }
                 val message = I18N.tr("Cart Energy: ") + Utils.plotEnergy(minecart.energyBufferJoules)
-                Utils.addChatMessage(player, message)
+                Utils.sendMessage(player, message)
             }
             else -> return
         }

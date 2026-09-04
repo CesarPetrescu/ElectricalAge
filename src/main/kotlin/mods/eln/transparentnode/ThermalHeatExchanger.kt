@@ -27,7 +27,7 @@ import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraftforge.client.IItemRenderer
-import net.minecraftforge.common.util.ForgeDirection
+import net.minecraft.util.EnumFacing
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.FluidTank
@@ -85,8 +85,8 @@ class ThermalHeatExchangerElement(
 ): TransparentNodeElement(transparentNode, descriptor) {
 
     companion object {
-        val INPUT_SIDE = ForgeDirection.DOWN
-        val OUTPUT_SIDE = ForgeDirection.UP
+        val INPUT_SIDE = EnumFacing.DOWN
+        val OUTPUT_SIDE = EnumFacing.UP
     }
 
     val thermalPairs = mutableListOf<ThermalPairing>()

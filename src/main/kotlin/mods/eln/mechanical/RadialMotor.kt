@@ -34,7 +34,7 @@ class RadialMotorDescriptor(baseName: String, obj: Obj3D) :
         const val GAS_GUZZLER_CONSTANT = 0.5
     }
 
-    override val sound = "eln:RadialEngine"
+    override val sound = "eln:radialengine"
     override val static = arrayOf(
         obj.getPart("Body_Cylinder.001")
     )

@@ -131,7 +131,7 @@ public class ElectricalRedstoneInputElement extends SixNodeElement {
             Item item = currentItemStack.getItem();
             /*if (item== Eln.toolsSetItem) {
 				colorCare = colorCare ^ 1;
-				entityPlayer.addChatMessage("Wire color care " + colorCare);
+				entityPlayer.sendMessage("Wire color care " + colorCare);
 				sixNode.reconnect();
 			}
 			if (item == Eln.brushItem) {
@@ -142,7 +142,7 @@ public class ElectricalRedstoneInputElement extends SixNodeElement {
 					
 					sixNode.reconnect();
 				} else {
-					entityPlayer.addChatMessage("Brush is empty");
+					entityPlayer.sendMessage("Brush is empty");
 				}
 			}*/
         }

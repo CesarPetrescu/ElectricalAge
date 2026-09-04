@@ -1,6 +1,6 @@
 package mods.eln.ore
 
-import cpw.mods.fml.common.IWorldGenerator
+import net.minecraftforge.fml.common.IWorldGenerator
 import mods.eln.Eln
 import mods.eln.generic.GenericItemBlockUsingDamageDescriptor
 import mods.eln.wiki.Data
@@ -56,7 +56,7 @@ class OreDescriptor(
                 spawnHeightMin + random.nextInt(spawnHeightMax - spawnHeightMin) //Y coordinate less than 40 to gen at
             val posZ = z + random.nextInt(16) //Z coordinate to gen at
             val size = spawnSizeMin + random.nextInt(spawnSizeMax - spawnSizeMin)
-            WorldGenMinable(Eln.oreBlock, metadata, size, Blocks.stone).generate(
+            WorldGenMinable(Eln.oreBlock, metadata, size, Blocks.STONE).generate(
                 w,
                 random,
                 posX,

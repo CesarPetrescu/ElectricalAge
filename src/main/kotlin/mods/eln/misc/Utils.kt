@@ -3,7 +3,7 @@ package mods.eln.misc
 
 import mods.eln.Eln
 import net.minecraft.entity.EntityLivingBase
-import net.minecraft.util.MathHelper
+import net.minecraft.util.math.MathHelper
 import net.minecraft.item.ItemStack
 import net.minecraft.tileentity.TileEntityFurnace
 import net.minecraft.nbt.NBTTagCompound
@@ -13,8 +13,8 @@ import net.minecraft.entity.player.EntityPlayerMP
 import net.minecraft.network.play.server.S3FPacketCustomPayload
 import org.lwjgl.opengl.GL11
 import net.minecraft.world.World
-import cpw.mods.fml.common.FMLCommonHandler
-import cpw.mods.fml.relauncher.Side
+import net.minecraftforge.fml.common.FMLCommonHandler
+import net.minecraftforge.fml.relauncher.Side
 import mods.eln.ServerKeyHandler
 import net.minecraftforge.common.DimensionManager
 import net.minecraft.entity.item.EntityItem
@@ -24,12 +24,12 @@ import net.minecraft.client.Minecraft
 import net.minecraft.world.EnumSkyBlock
 import mods.eln.node.ITileEntitySpawnClient
 import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.util.AxisAlignedBB
+import net.minecraft.util.math.AxisAlignedBB
 import mods.eln.generic.GenericItemUsingDamage
 import mods.eln.generic.GenericItemBlockUsingDamage
 import net.minecraft.creativetab.CreativeTabs
 import net.minecraftforge.oredict.OreDictionary
-import net.minecraft.util.Vec3
+import net.minecraft.util.math.Vec3d
 import net.minecraft.client.entity.EntityOtherPlayerMP
 import net.minecraft.init.Blocks
 import java.lang.SecurityException
@@ -40,7 +40,7 @@ import net.minecraft.item.crafting.ShapedRecipes
 import net.minecraftforge.oredict.ShapedOreRecipe
 import net.minecraft.item.crafting.ShapelessRecipes
 import net.minecraftforge.oredict.ShapelessOreRecipe
-import net.minecraft.util.ChatComponentText
+import net.minecraft.util.text.TextComponentString
 import net.minecraft.world.IBlockAccess
 import kotlin.jvm.JvmOverloads
 import net.minecraft.item.crafting.FurnaceRecipes
@@ -667,7 +667,7 @@ object Utils {
             null
         } else {
             ItemDamage = stream.readShort()
-            if (old == null || Item.getIdFromItem(old.entityItem.item) != itemId.toInt() || old.entityItem.itemDamage != ItemDamage.toInt()) EntityItem(tileEntity.worldObj, tileEntity.xCoord + 0.5, tileEntity.yCoord + 0.5, tileEntity.zCoord + 1.2, newItemStack(itemId.toInt(), 1, ItemDamage.toInt())) else old
+            if (old == null || Item.getIdFromItem(old.entityItem.item) != itemId.toInt() || old.entityItem.itemDamage != ItemDamage.toInt()) EntityItem(tileEntity.world, tileEntity.xCoord + 0.5, tileEntity.yCoord + 0.5, tileEntity.zCoord + 1.2, newItemStack(itemId.toInt(), 1, ItemDamage.toInt())) else old
         }
     }
 
@@ -685,7 +685,7 @@ object Utils {
         val x = t.xCoord
         val y = t.yCoord
         val z = t.zCoord
-        val w = t.worldObj
+        val w = t.world
         var o: TileEntity? = w.getTileEntity(x + 1, y, z)
         if (o != null && o is ITileEntitySpawnClient) (o as ITileEntitySpawnClient).tileEntityNeighborSpawn()
         o = w.getTileEntity(x - 1, y, z)
@@ -849,8 +849,8 @@ object Utils {
     }
 
     @JvmStatic
-    fun getVec05(c: Coordinate): Vec3 {
-        return Vec3.createVectorHelper(c.x + (if (c.x < 0) -1 else 1) * 0.5, c.y + (if (c.y < 0) -1 else 1) * 0.5, c.z + (if (c.z < 0) -1 else 1) * 0.5)
+    fun getVec05(c: Coordinate): Vec3d {
+        return Vec3d(c.x + (if (c.x < 0) -1 else 1) * 0.5, c.y + (if (c.y < 0) -1 else 1) * 0.5, c.z + (if (c.z < 0) -1 else 1) * 0.5)
     }
 
     fun getHeadPosY(e: Entity): Double {
@@ -947,7 +947,7 @@ object Utils {
             val xInt = xFloor.toInt()
             val yInt = yFloor.toInt()
             val zInt = zFloor.toInt()
-            var block = Blocks.air
+            var block = Blocks.AIR
             if (w.blockExists(xInt + posXint, yInt + posYint, zInt + posZint)) block = w.getBlock(xInt + posXint, yInt + posYint, zInt + posZint)
             var dToStack: Float = if (d + dBest < rangeMax) dBest else {
                 rangeMax - d
@@ -1134,12 +1134,12 @@ object Utils {
     @JvmStatic
     fun isWater(waterCoord: Coordinate): Boolean {
         val block = waterCoord.block
-        return block === Blocks.flowing_water || block === Blocks.water
+        return block === Blocks.FLOWING_WATER || block === Blocks.WATER
     }
 
     @JvmStatic
-    fun addChatMessage(entityPlayer: EntityPlayer, string: String?) {
-        entityPlayer.addChatMessage(ChatComponentText(string))
+    fun sendMessage(entityPlayer: EntityPlayer, string: String?) {
+        entityPlayer.sendMessage(TextComponentString(string))
     }
 
     @JvmStatic
@@ -1198,9 +1198,9 @@ object Utils {
     }
 
     @JvmStatic
-    fun updateAllLightTypes(worldObj: World, xCoord: Int, yCoord: Int, zCoord: Int) {
-        worldObj.func_147451_t(xCoord, yCoord, zCoord)
-        worldObj.markBlocksDirtyVertical(xCoord, zCoord, 0, 255)
+    fun updateAllLightTypes(world: World, xCoord: Int, yCoord: Int, zCoord: Int) {
+        world.func_147451_t(xCoord, yCoord, zCoord)
+        world.markBlocksDirtyVertical(xCoord, zCoord, 0, 255)
     }
 
     @JvmStatic

@@ -10,7 +10,7 @@ import mods.eln.wiki.Data;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
 
 import java.util.List;
@@ -89,7 +89,7 @@ public class TeleporterDescriptor extends TransparentNodeDescriptor {
         temp.setDimension(c.dimension);
         temp.applyTransformation(front, c);
 
-        AxisAlignedBB bb = AxisAlignedBB.getBoundingBox(temp.x, temp.y, temp.z, temp.x + 1, temp.y + areaH, temp.z + 1);
+        AxisAlignedBB bb = AxisAlignedBB(temp.x, temp.y, temp.z, temp.x + 1, temp.y + areaH, temp.z + 1);
         return bb;
     }
 

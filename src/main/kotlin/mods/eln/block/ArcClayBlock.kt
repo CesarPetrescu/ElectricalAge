@@ -1,7 +1,7 @@
 package mods.eln.block
 
-import cpw.mods.fml.relauncher.Side
-import cpw.mods.fml.relauncher.SideOnly
+import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.relauncher.SideOnly
 import mods.eln.Eln
 import mods.eln.i18n.I18N.TR_NAME
 import mods.eln.i18n.I18N.Type

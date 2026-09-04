@@ -17,7 +17,7 @@ import net.minecraft.inventory.ISidedInventory
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.tileentity.TileEntity
-import net.minecraftforge.common.util.ForgeDirection
+import net.minecraft.util.EnumFacing
 import net.minecraftforge.fluids.IFluidHandler
 import java.lang.reflect.Array
 import java.lang.reflect.Method
@@ -73,7 +73,7 @@ class ScannerElement(sixNode: SixNode, side: Direction, descriptor: SixNodeDescr
         val scannedCoord = Coordinate(coordinate!!).apply {
             move(appliedLRDU)
         }
-        val targetSide: ForgeDirection = appliedLRDU.inverse.toForge()
+        val targetSide: EnumFacing = appliedLRDU.inverse.toForge()
         val te = scannedCoord.tileEntity
         // TODO: Throttling.
         var out: Double? = null
@@ -92,7 +92,7 @@ class ScannerElement(sixNode: SixNode, side: Direction, descriptor: SixNodeDescr
         slowProcessList.add(updater)
     }
 
-    private fun scanBlock(scannedCoord: Coordinate, targetSide: ForgeDirection): Double {
+    private fun scanBlock(scannedCoord: Coordinate, targetSide: EnumFacing): Double {
         val block = scannedCoord.block
         return when {
             block.hasComparatorInputOverride() ->
@@ -103,7 +103,7 @@ class ScannerElement(sixNode: SixNode, side: Direction, descriptor: SixNodeDescr
         }
     }
 
-    private fun scanTileEntity(te: TileEntity, targetSide: ForgeDirection): Double? {
+    private fun scanTileEntity(te: TileEntity, targetSide: EnumFacing): Double? {
         if (te is IFluidHandler) {
             val info = te.getTankInfo(targetSide)?.filter { it.capacity > 0 } ?: return 0.0
             if (info.isEmpty()) return 0.0

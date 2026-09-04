@@ -46,7 +46,7 @@ class SixNode : Node() {
     var internalElectricalConnectionList = ArrayList<ElectricalConnection>(1)
     var internalThermalConnectionList = ArrayList<ThermalConnection>(1)
     @JvmField
-    var sixNodeCacheBlock = Blocks.air
+    var sixNodeCacheBlock = Blocks.AIR
     @JvmField
     var sixNodeCacheBlockMeta: Byte = 0
     @JvmField
@@ -426,11 +426,11 @@ class SixNode : Node() {
     }
 
     override fun onBlockActivated(entityPlayer: EntityPlayer, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
-        return if (sixNodeCacheBlock !== Blocks.air) {
+        return if (sixNodeCacheBlock !== Blocks.AIR) {
             false
         } else {
             val stack = entityPlayer.currentEquippedItem
-            var b = Blocks.air
+            var b = Blocks.AIR
             if (stack != null) b = Block.getBlockFromItem(stack.item)
             var isWrenchReplacingBlock = false
             if (ServerKeyHandler.get(ServerKeyHandler.WRENCH) && stack != null) {

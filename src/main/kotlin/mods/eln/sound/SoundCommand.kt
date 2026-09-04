@@ -92,7 +92,7 @@ class SoundCommand {
     }
 
     fun set(c: TileEntity): SoundCommand {
-        world = c.worldObj
+        world = c.world
         x = c.xCoord + 0.5
         y = c.yCoord + 0.5
         z = c.zCoord + 0.5

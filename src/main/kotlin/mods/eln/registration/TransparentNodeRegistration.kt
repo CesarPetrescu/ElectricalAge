@@ -53,7 +53,7 @@ import mods.eln.transparentnode.waterturbine.WaterTurbineDescriptor
 import mods.eln.transparentnode.windturbine.WindTurbineDescriptor
 import net.minecraft.init.Blocks
 import net.minecraft.item.ItemStack
-import net.minecraft.util.Vec3
+import net.minecraft.util.math.Vec3d
 import kotlin.math.pow
 
 object TransparentNodeRegistration {
@@ -736,7 +736,7 @@ object TransparentNodeRegistration {
     private fun registerElectricalFurnace(id: Int) {
         var subId: Int
         var name: String?
-        instance.furnaceList.add(ItemStack(Blocks.furnace))
+        instance.furnaceList.add(ItemStack(Blocks.FURNACE))
         run {
             subId = 0
             name = TR_NAME(I18N.Type.NONE, "Electrical Furnace")
@@ -805,7 +805,7 @@ object TransparentNodeRegistration {
             )
             transparentNodeItem.addDescriptor(subId + (id shl 6), desc)
             desc.setDefaultIcon("old800varcfurnace")
-            desc.setRunningSound("eln:Arcfurnace_loop")
+            desc.setRunningSound("eln:arcfurnace_loop")
         }
         /*
 
@@ -915,7 +915,7 @@ object TransparentNodeRegistration {
             )
             desc.setDefaultIcon("50vmagnetizer")
             transparentNodeItem.addDescriptor(subId + (id shl 6), desc)
-            desc.setRunningSound("eln:Motor")
+            desc.setRunningSound("eln:motor")
         }
 
         run {
@@ -928,7 +928,7 @@ object TransparentNodeRegistration {
             )
             desc.setDefaultIcon("200vmagnetizer")
             transparentNodeItem.addDescriptor(subId + (id shl 6), desc)
-            desc.setRunningSound("eln:Motor")
+            desc.setRunningSound("eln:motor")
         }
     }
 
@@ -1260,7 +1260,7 @@ object TransparentNodeRegistration {
                 2,
                 2,
                 0.07,
-                "eln:WINDTURBINE_BIG_SF",
+                "eln:windturbine_big_sf",
                 1f
             )
 
@@ -1289,7 +1289,7 @@ object TransparentNodeRegistration {
             3,// int offY,
             7, 2, 2,// int rayX,int rayY,int rayZ,
             2, 0.07,// int blockMalusMinCount,double blockMalus
-            "eln:WINDTURBINE_BIG_SF", 1f // Use the wind turbine sound and play at normal volume (1 => 100%)
+            "eln:windturbine_big_sf", 1f // Use the wind turbine sound and play at normal volume (1 => 100%)
         );
 
         GhostGroup g = new GhostGroup();
@@ -1532,7 +1532,7 @@ object TransparentNodeRegistration {
                 40,
                 51200.0
             ).powerDistribution()
-            descriptor.renderOffset = Vec3.createVectorHelper(0.0, -0.1, 0.0)
+            descriptor.renderOffset = Vec3d(0.0, -0.1, 0.0)
             val g = GhostGroup()
             g.addElement(0, 1, 0)
             g.addElement(0, 2, 0)

@@ -4,7 +4,7 @@ import mods.eln.generic.GenericItemUsingDamageDescriptor
 import mods.eln.lightblock.LightBlockEntity
 import net.minecraft.entity.Entity
 import net.minecraft.item.ItemStack
-import net.minecraft.util.MathHelper
+import net.minecraft.util.math.MathHelper
 import net.minecraft.world.World
 
 abstract class FlashlightItem(name: String?) : GenericItemUsingDamageDescriptor(name!!) {

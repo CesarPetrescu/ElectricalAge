@@ -35,4 +35,6 @@ src/main/resources/mixins.*([!.]).json
 *.blend1
 *.blend2
 .kotlin/
-.codex.gradle-home/
+.codex
+.gradle-home/
+

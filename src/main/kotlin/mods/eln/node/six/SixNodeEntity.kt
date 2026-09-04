@@ -15,7 +15,7 @@ import net.minecraft.client.gui.GuiScreen
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.init.Blocks
 import net.minecraft.inventory.Container
-import net.minecraft.util.AxisAlignedBB
+import net.minecraft.util.math.AxisAlignedBB
 import net.minecraft.world.World
 import java.io.DataInputStream
 import java.io.IOException
@@ -25,7 +25,7 @@ class SixNodeEntity : NodeBlockEntity() {
     var elementRenderList = arrayOfNulls<SixNodeElementRender>(6)
     @JvmField
     var elementRenderIdList = ShortArray(6)
-    var sixNodeCacheBlock = Blocks.air
+    var sixNodeCacheBlock = Blocks.AIR
     var sixNodeCacheBlockMeta: Byte = 0
     override fun serverPublishUnserialize(stream: DataInputStream) {
         val sixNodeCacheBlockOld = sixNodeCacheBlock
@@ -75,13 +75,13 @@ class SixNodeEntity : NodeBlockEntity() {
             e.printStackTrace()
         }
 
-        //	worldObj.setLightValue(EnumSkyBlock.Sky, xCoord,yCoord,zCoord,15);
+        //	world.setLightValue(EnumSkyBlock.Sky, xCoord,yCoord,zCoord,15);
         if (sixNodeCacheBlock !== sixNodeCacheBlockOld) {
-            val chunk = worldObj.getChunkFromBlockCoords(xCoord, zCoord)
+            val chunk = world.getChunkFromBlockCoords(xCoord, zCoord)
             chunk.generateHeightMap()
             updateSkylight(chunk)
             chunk.generateSkylightMap()
-            updateAllLightTypes(worldObj, xCoord, yCoord, zCoord)
+            updateAllLightTypes(world, xCoord, yCoord, zCoord)
         }
     }
 
@@ -134,7 +134,7 @@ class SixNodeEntity : NodeBlockEntity() {
         var bb = localRenderBoundingBox()
         for (render in elementRenderList) {
             val custom = render?.getRenderBoundingBox(this) ?: continue
-            bb = AxisAlignedBB.getBoundingBox(
+            bb = AxisAlignedBB(
                 minOf(bb.minX, custom.minX),
                 minOf(bb.minY, custom.minY),
                 minOf(bb.minZ, custom.minZ),
@@ -165,7 +165,7 @@ class SixNodeEntity : NodeBlockEntity() {
     }
 
     fun hasVolume(@Suppress("UNUSED_PARAMETER") world: World?, @Suppress("UNUSED_PARAMETER") x: Int, @Suppress("UNUSED_PARAMETER") y: Int, @Suppress("UNUSED_PARAMETER") z: Int): Boolean {
-        return if (worldObj.isRemote) {
+        return if (world.isRemote) {
             for (e in elementRenderList) {
                 if (e != null && e.sixNodeDescriptor.hasVolume()) return true
             }
@@ -192,7 +192,7 @@ class SixNodeEntity : NodeBlockEntity() {
     }
 
     override fun isProvidingWeakPower(side: Direction?): Int {
-        return if (worldObj.isRemote) {
+        return if (world.isRemote) {
             var max = 0
             for (r in elementRenderList) {
                 if (r == null) continue

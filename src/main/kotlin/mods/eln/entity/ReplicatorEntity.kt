@@ -77,11 +77,11 @@ class ReplicatorEntity(world: World) : EntityMob(world) {
             heal(1.0f)
         }
         if (hunger < hungerToDuplicate) {
-            val entityLiving = ReplicatorEntity(worldObj)
+            val entityLiving = ReplicatorEntity(world)
             entityLiving.setLocationAndAngles(posX, posY, posZ, 0.0f, 0.0f)
             entityLiving.rotationYawHead = entityLiving.rotationYaw
             entityLiving.renderYawOffset = entityLiving.rotationYaw
-            worldObj.spawnEntityInWorld(entityLiving)
+            world.spawnEntityInWorld(entityLiving)
             entityLiving.playLivingSound()
             hunger = 0.0
         }

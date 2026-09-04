@@ -20,7 +20,7 @@ import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.entity.projectile.EntityArrow
-import net.minecraft.util.AxisAlignedBB
+import net.minecraft.util.math.AxisAlignedBB
 import net.minecraft.world.EnumSkyBlock
 import org.lwjgl.opengl.GL11
 import java.io.DataInputStream
@@ -61,7 +61,7 @@ class LampSocketRender(tileEntity: SixNodeEntity, side: Direction, sixNodeDescri
                 if (MIN_LIGHT_ON_VALUE in (oldLightValue + 1)..lightValue) {
                     val rand = Math.random()
                     if (rand > 0.1) play(SoundCommand("eln:neon_lamp").mulVolume(0.7f, (1.0 + (rand / 6.0)).toFloat()).smallRange())
-                    else play(SoundCommand("eln:NEON_LFNOISE").mulVolume(0.2f, 1f).verySmallRange())
+                    else play(SoundCommand("eln:neon_lfnoise").mulVolume(0.2f, 1f).verySmallRange())
                 }
                 oldLightValue = lightValue
             }
@@ -186,7 +186,7 @@ class LampSocketRender(tileEntity: SixNodeEntity, side: Direction, sixNodeDescri
     override fun getRenderBoundingBox(tileEntity: SixNodeEntity): AxisAlignedBB? {
         if (!descriptor.extendedRenderBounds) return null
 
-        return AxisAlignedBB.getBoundingBox(
+        return AxisAlignedBB(
             (tileEntity.xCoord - 1).toDouble(),
             tileEntity.yCoord.toDouble(),
             (tileEntity.zCoord - 1).toDouble(),

@@ -1,6 +1,6 @@
 package mods.eln.simplenode.computerprobe
 
-import cpw.mods.fml.common.Optional
+import net.minecraftforge.fml.common.Optional
 import li.cil.oc.api.Network
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
@@ -32,7 +32,7 @@ class ComputerProbeEntity : SimpleNodeEntity(ComputerProbeNode.getNodeUuidStatic
 
     override fun updateEntity() {
         super.updateEntity()
-        if (worldObj.isRemote || !Other.ocLoaded) return
+        if (world.isRemote || !Other.ocLoaded) return
         val node = ensureOpenComputersNode() ?: return
         if (!addedToNetwork || node.network() == null) {
             addedToNetwork = true
@@ -59,14 +59,14 @@ class ComputerProbeEntity : SimpleNodeEntity(ComputerProbeNode.getNodeUuidStatic
 
     override fun invalidate() {
         super.invalidate()
-        if (!worldObj.isRemote && Other.ocLoaded) {
+        if (!world.isRemote && Other.ocLoaded) {
             ocNode?.remove()
         }
     }
 
     override fun onChunkUnload() {
         super.onChunkUnload()
-        if (!worldObj.isRemote && Other.ocLoaded) {
+        if (!world.isRemote && Other.ocLoaded) {
             ocNode?.remove()
         }
     }

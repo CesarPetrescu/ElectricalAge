@@ -2,20 +2,20 @@ package mods.eln.fluid
 
 import mods.eln.misc.INBTTReady
 import net.minecraft.nbt.NBTTagCompound
-import net.minecraftforge.common.util.ForgeDirection
+import net.minecraft.util.EnumFacing
 import net.minecraftforge.fluids.*
 
 open class ElementSidedFluidHandler: IFluidHandler, INBTTReady {
 
-    protected val tanks = mutableMapOf<ForgeDirection, TankData>()
+    protected val tanks = mutableMapOf<EnumFacing, TankData>()
 
     /**
      * This method allows you to create tank references for each side of a block. You can use the same reference of tank
-     * to create a block that allows access from all sides, or just a tank per ForgeDirection for machinery.
+     * to create a block that allows access from all sides, or just a tank per EnumFacing for machinery.
      *
-     * @param tankData a mutable map of TankData, accessed by the ForgeDirection.
+     * @param tankData a mutable map of TankData, accessed by the EnumFacing.
      */
-    constructor(tankData: Map<ForgeDirection, TankData>) {
+    constructor(tankData: Map<EnumFacing, TankData>) {
         for (entry in tankData) {
             tanks[entry.key] = entry.value
         }
@@ -27,12 +27,12 @@ open class ElementSidedFluidHandler: IFluidHandler, INBTTReady {
      */
     constructor(tankSizeMb: Int) {
         val tank = TankData(FluidTank(tankSizeMb), mutableListOf())
-        ForgeDirection.VALID_DIRECTIONS.forEach {
+        EnumFacing.VALID_DIRECTIONS.forEach {
             tanks[it] = tank
         }
     }
 
-    fun setFluidWhitelist(direction: ForgeDirection, fluidWhitelist: List<Fluid>) {
+    fun setFluidWhitelist(direction: EnumFacing, fluidWhitelist: List<Fluid>) {
         val tank = tanks[direction]
         if (tank != null) {
             // Note: The tank reference may be used in more than one side; this affects the tank more so than the side
@@ -41,12 +41,12 @@ open class ElementSidedFluidHandler: IFluidHandler, INBTTReady {
         }
     }
 
-    fun addFluidWhitelist(direction: ForgeDirection, fluidWhitelist: Fluid) {
+    fun addFluidWhitelist(direction: EnumFacing, fluidWhitelist: Fluid) {
         val tank = tanks[direction]
         tank?.fluidWhitelist?.add(fluidWhitelist)
     }
 
-    fun getFluidType(direction: ForgeDirection): Fluid? {
+    fun getFluidType(direction: EnumFacing): Fluid? {
         return try {
             tanks[direction]?.tank?.fluid?.getFluid()
         } catch (e: Exception) {
@@ -54,7 +54,7 @@ open class ElementSidedFluidHandler: IFluidHandler, INBTTReady {
         }
     }
 
-    fun getCapacity(direction: ForgeDirection): Int {
+    fun getCapacity(direction: EnumFacing): Int {
         return try {
             val tank = tanks[direction]
             return tank?.tank?.capacity?: 0
@@ -63,7 +63,7 @@ open class ElementSidedFluidHandler: IFluidHandler, INBTTReady {
         }
     }
 
-    fun getFluidAmount(direction: ForgeDirection): Int {
+    fun getFluidAmount(direction: EnumFacing): Int {
         return try {
             val tank = tanks[direction]
             return tank?.tank?.fluidAmount?: 0
@@ -72,7 +72,7 @@ open class ElementSidedFluidHandler: IFluidHandler, INBTTReady {
         }
     }
 
-    override fun fill(from: ForgeDirection?, resource: FluidStack?, doFill: Boolean): Int {
+    override fun fill(from: EnumFacing?, resource: FluidStack?, doFill: Boolean): Int {
         if (from == null || resource == null) return 0
         val tank = tanks[from] ?: return 0
         return if (tank.tank.fluidAmount > 0 || tank.fluidWhitelist.isEmpty()) {
@@ -90,7 +90,7 @@ open class ElementSidedFluidHandler: IFluidHandler, INBTTReady {
         }
     }
 
-    override fun canFill(from: ForgeDirection?, fluid: Fluid?): Boolean {
+    override fun canFill(from: EnumFacing?, fluid: Fluid?): Boolean {
         if (from == null || fluid == null) return false
         val tank = tanks[from]?: return false
         // Check if the fluid in there is the same fluid
@@ -104,26 +104,26 @@ open class ElementSidedFluidHandler: IFluidHandler, INBTTReady {
         }
     }
 
-    override fun getTankInfo(from: ForgeDirection?): Array<FluidTankInfo> {
+    override fun getTankInfo(from: EnumFacing?): Array<FluidTankInfo> {
         if (from == null) return arrayOf()
         val tank = tanks[from]?: return arrayOf()
         return arrayOf(tank.tank.info)
     }
 
-    override fun drain(from: ForgeDirection?, resource: FluidStack?, doDrain: Boolean): FluidStack? {
+    override fun drain(from: EnumFacing?, resource: FluidStack?, doDrain: Boolean): FluidStack? {
         if (from == null || resource == null) return null
         val tank = tanks[from]?: return null
         return tank.tank.drain(resource.amount, doDrain)
     }
 
-    override fun drain(from: ForgeDirection?, maxDrain: Int, doDrain: Boolean): FluidStack? {
+    override fun drain(from: EnumFacing?, maxDrain: Int, doDrain: Boolean): FluidStack? {
         if (from == null) return null
         val tank = tanks[from]?: return null
         return tank.tank.drain(maxDrain, doDrain)
     }
 
     @Suppress("ReplaceJavaStaticMethodWithKotlinAnalog")
-    fun fractionalDrain(from: ForgeDirection, demand: Double): Double {
+    fun fractionalDrain(from: EnumFacing, demand: Double): Double {
         val tank = tanks[from]?: return 0.0
         val drain = Math.ceil(demand - tank.fractionalDemandMb)
         val drained = drain(from, drain.toInt(), true)?.amount?.toDouble() ?: 0.0
@@ -133,7 +133,7 @@ open class ElementSidedFluidHandler: IFluidHandler, INBTTReady {
         return actual
     }
 
-    override fun canDrain(from: ForgeDirection?, fluid: Fluid?): Boolean {
+    override fun canDrain(from: EnumFacing?, fluid: Fluid?): Boolean {
         if (from == null || fluid == null) return false
         val tank = tanks[from]?: return false
         val currentFluid = tank.tank.fluid?.getFluid() ?: return false
@@ -151,7 +151,7 @@ open class ElementSidedFluidHandler: IFluidHandler, INBTTReady {
         //println("numTanks: $numTanks")
         //println("tankList $tankList")
         tanks.clear()
-        ForgeDirection.VALID_DIRECTIONS.forEach {
+        EnumFacing.VALID_DIRECTIONS.forEach {
             val tankRef = nbt.getInteger("${str}${it.name}tankRef")
             if (tankRef != -1 && numTanks != 0) {
                 //println("$it: $tankRef")
@@ -173,7 +173,7 @@ open class ElementSidedFluidHandler: IFluidHandler, INBTTReady {
             idx: Int, tank: TankData ->
             tank.writeToNBT(nbt, "${str}tank$idx")
         }
-        ForgeDirection.VALID_DIRECTIONS.forEach {
+        EnumFacing.VALID_DIRECTIONS.forEach {
             val tank = tanks[it]
             val tankRef = tanksList.indexOf(tank)
             nbt.setInteger("${str}${it.name}tankRef", tankRef)

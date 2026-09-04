@@ -1,7 +1,7 @@
 package mods.eln
 
-import cpw.mods.fml.common.eventhandler.SubscribeEvent
-import cpw.mods.fml.common.network.FMLNetworkEvent.ServerCustomPacketEvent
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.fml.common.network.FMLNetworkEvent.ServerCustomPacketEvent
 import io.netty.channel.ChannelHandler.Sharable
 import mods.eln.client.ClientKeyHandler
 import mods.eln.client.ClientProxy
@@ -88,7 +88,7 @@ class PacketHandler {
     private fun packetPlaySound(stream: DataInputStream, @Suppress("UNUSED_PARAMETER") manager: NetworkManager, player: EntityPlayer) {
         try {
             if (stream.readByte().toInt() != player.dimension) return
-            SoundClient.play(SoundCommand.fromStream(stream, player.worldObj))
+            SoundClient.play(SoundCommand.fromStream(stream, player.world))
         } catch (e: IOException) {
             e.printStackTrace()
         }
@@ -97,7 +97,7 @@ class PacketHandler {
     private fun packetOpenLocalGui(stream: DataInputStream, @Suppress("UNUSED_PARAMETER") manager: NetworkManager, player: EntityPlayer) {
         try {
             player.openGui(Eln.instance, stream.readInt(),
-                player.worldObj, stream.readInt(), stream.readInt(),
+                player.world, stream.readInt(), stream.readInt(),
                 stream.readInt())
         } catch (e: IOException) {
             e.printStackTrace()
@@ -125,7 +125,7 @@ class PacketHandler {
             val z = stream.readInt()
             val dimension = stream.readByte().toInt()
             if (player.dimension == dimension) {
-                val entity = player.worldObj.getTileEntity(x, y, z)
+                val entity = player.world.getTileEntity(x, y, z)
                 if (entity != null && entity is INodeEntity) {
                     val node = entity as INodeEntity
                     if (node.nodeUuid == stream.readUTF()) {
@@ -154,7 +154,7 @@ class PacketHandler {
             val z: Int = stream.readInt()
             val dimension: Int = stream.readByte().toInt()
             if (player.dimension == dimension) {
-                val entity = player.worldObj.getTileEntity(x, y, z)
+                val entity = player.world.getTileEntity(x, y, z)
                 if (entity != null && entity is INodeEntity) {
                     val node = entity as INodeEntity
                     if (node.nodeUuid == stream.readUTF()) {

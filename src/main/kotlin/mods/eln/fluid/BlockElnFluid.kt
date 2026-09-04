@@ -1,8 +1,8 @@
 package mods.eln.fluid
 
-import cpw.mods.fml.common.registry.GameRegistry
-import cpw.mods.fml.relauncher.Side
-import cpw.mods.fml.relauncher.SideOnly
+import net.minecraftforge.fml.common.registry.GameRegistry
+import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.relauncher.SideOnly
 import net.minecraft.block.material.Material
 import net.minecraft.client.renderer.texture.IIconRegister
 import net.minecraft.init.Blocks
@@ -29,12 +29,12 @@ class BlockElnFluid(
         setBlockName(internalName)
         GameRegistry.registerBlock(this, ItemBlock::class.java, internalName)
         if (density <= FluidRegistry.WATER.density) {
-            displacements[Blocks.water] = false
-            displacements[Blocks.flowing_water] = false
+            displacements[Blocks.WATER] = false
+            displacements[Blocks.FLOWING_WATER] = false
         }
         if (density <= FluidRegistry.LAVA.density) {
-            displacements[Blocks.lava] = false
-            displacements[Blocks.flowing_lava] = false
+            displacements[Blocks.LAVA] = false
+            displacements[Blocks.FLOWING_LAVA] = false
         }
     }
 
