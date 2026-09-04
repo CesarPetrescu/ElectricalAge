@@ -11,7 +11,7 @@ import net.minecraft.tileentity.TileEntity
 import net.minecraft.world.IBlockAccess
 import net.minecraft.world.World
 
-class ConduitBlock(): SimpleNodeBlock(Material.rock) {
+class ConduitBlock(): SimpleNodeBlock(Material.ROCK) {
 
     override fun createNewTileEntity(worldIn: World?, meta: Int): TileEntity {
         return ConduitEntity()

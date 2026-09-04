@@ -1,7 +1,7 @@
 package mods.eln.node
 
 import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.world.WorldSavedData
+import net.minecraft.world.storage.WorldSavedData
 
 class NodeManagerNbt(par1Str: String?) : WorldSavedData(par1Str) {
     override fun isDirty(): Boolean {

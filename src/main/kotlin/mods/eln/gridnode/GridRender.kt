@@ -153,9 +153,9 @@ abstract class GridRender(tileEntity: TransparentNodeEntity, descriptor: Transpa
             // Figure out the lighting.
             //            Vec3d middle = Vec3d(0, 0, 0);
             //            for (Vec3d x : v) {
-            //                middle = middle.addVector(x.xCoord, x.yCoord, x.zCoord);
+            //                middle = middle.add(x.xCoord, x.yCoord, x.zCoord);
             //            }
-            //            middle = multiply(middle, v.length).addVector(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord);
+            //            middle = multiply(middle, v.length).add(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord);
             //            glColor3d(
             //                    139 / 255.0,
             //                    69 / 255.0,
@@ -170,7 +170,7 @@ abstract class GridRender(tileEntity: TransparentNodeEntity, descriptor: Transpa
         }
 
         private fun translate(start: Array<Vec3d>, delta: Vec3d): Array<Vec3d> {
-            return start.mapIndexed { _, vec3 -> vec3.addVector(delta.xCoord, delta.yCoord, delta.zCoord) }.toTypedArray()
+            return start.mapIndexed { _, vec3 -> vec3.add(delta.xCoord, delta.yCoord, delta.zCoord) }.toTypedArray()
         }
 
         private fun spread(a: Vec3d, b: Vec3d): Array<Vec3d> {
@@ -181,7 +181,7 @@ abstract class GridRender(tileEntity: TransparentNodeEntity, descriptor: Transpa
             // This is just to copy.
             // We don't care what r is, so long as it's linearly independent of delta.
             val r = delta.normalize()
-            r.rotateAroundY(1f)
+            r.rotateYaw(1f)
             r.rotateAroundX(1f)
             // This gives us one vector which is perpendicular to delta.
             val x1 = multiply(delta.crossProduct(r).normalize(), cableWidth)

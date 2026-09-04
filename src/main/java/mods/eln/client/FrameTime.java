@@ -1,5 +1,7 @@
 package mods.eln.client;
 
+import net.minecraftforge.common.MinecraftForge;
+
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
@@ -62,7 +64,7 @@ public class FrameTime {
             float deltaTcaped = getNotCaped2();
             while (i.hasNext()) {
                 NodeBlockEntity e = i.next();
-                if (e.getWorldObj() != w) {
+                if (e.getWorld() != w) {
                     i.remove();
                     continue;
                 }

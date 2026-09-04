@@ -32,7 +32,7 @@ public class ElectricalWatchRender extends SixNodeElementRender {
         super.draw();
         long time;
         if (upToDate)
-            time = getTileEntity().getWorldObj().getWorldTime();
+            time = getTileEntity().getWorld().getWorldTime();
         else
             time = oldDate;
         time += 6000;

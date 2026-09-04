@@ -1,5 +1,7 @@
 package mods.eln.node
 
+import net.minecraftforge.common.MinecraftForge
+
 import net.minecraftforge.fml.common.FMLCommonHandler
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
@@ -29,7 +31,7 @@ class NodeServer {
                     node.publishToAllPlayer()
                 }
             }
-            for (obj in server.configurationManager.playerEntityList) {
+            for (obj in server.playerList.playerEntityList) {
                 val player = obj as EntityPlayerMP?
                 var openContainerNode: NodeBase? = null
                 var container: INodeContainer? = null

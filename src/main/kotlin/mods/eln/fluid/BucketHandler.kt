@@ -34,10 +34,10 @@ object BucketHandler {
     }
 
     private fun fillCustomBucket(world: World, pos: RayTraceResult): ItemStack? {
-        val block = world.getBlock(pos.blockX, pos.blockY, pos.blockZ)
+        val block = world.getBlock(pos.blockPos.x, pos.blockPos.y, pos.blockPos.z)
         val bucket = buckets[block]
-        return if (bucket != null && world.getBlockMetadata(pos.blockX, pos.blockY, pos.blockZ) == 0) {
-            world.setBlockToAir(pos.blockX, pos.blockY, pos.blockZ)
+        return if (bucket != null && world.getBlockMetadata(pos.blockPos.x, pos.blockPos.y, pos.blockPos.z) == 0) {
+            world.setBlockToAir(pos.blockPos.x, pos.blockPos.y, pos.blockPos.z)
             ItemStack(bucket)
         } else null
     }

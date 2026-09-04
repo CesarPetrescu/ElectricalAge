@@ -264,7 +264,7 @@ object RoomThermalManager {
     }
 
     private fun scanPlayersForRooms(server: MinecraftServer, dimensionFilter: Set<Int>?) {
-        val players = server.configurationManager.playerEntityList
+        val players = server.playerList.playerEntityList
             .mapNotNull { it as? EntityPlayerMP }
 
         if (players.isEmpty()) return

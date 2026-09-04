@@ -42,7 +42,7 @@ class GhostNodeWailaProvider(private val transparentNodeProvider: TransparentNod
     }
 
     private fun getGhostData(accessor: IWailaDataAccessor): GhostNodeWailaData? {
-        val coord = Coordinate(accessor.position.blockX, accessor.position.blockY, accessor.position.blockZ,
+        val coord = Coordinate(accessor.position.x, accessor.position.y, accessor.position.z,
             accessor.world)
         var ghostData: GhostNodeWailaData? = null
         try {

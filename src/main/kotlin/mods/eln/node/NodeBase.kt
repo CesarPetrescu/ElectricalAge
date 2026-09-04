@@ -401,7 +401,7 @@ abstract class NodeBase {
     @JvmOverloads
     fun sendPacketToAllClient(bos: ByteArrayOutputStream?, range: Double = 100000.0) {
         val server = FMLCommonHandler.instance().minecraftServerInstance
-        for (obj in server.configurationManager.playerEntityList) {
+        for (obj in server.playerList.playerEntityList) {
             val player = obj as EntityPlayerMP?
             val worldServer = FMLCommonHandler.instance().getMinecraftServerInstance().worldServerForDimension(player!!.dimension) as WorldServer
             val playerManager = worldServer.playerManager
@@ -433,7 +433,7 @@ abstract class NodeBase {
 
     fun publishToAllPlayer() {
         val server = FMLCommonHandler.instance().minecraftServerInstance
-        for (obj in server.configurationManager.playerEntityList) {
+        for (obj in server.playerList.playerEntityList) {
             val player = obj as EntityPlayerMP?
             val worldServer = FMLCommonHandler.instance().getMinecraftServerInstance().worldServerForDimension(player!!.dimension) as WorldServer
             val playerManager = worldServer.playerManager

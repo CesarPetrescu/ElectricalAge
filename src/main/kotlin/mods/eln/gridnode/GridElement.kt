@@ -262,10 +262,10 @@ abstract class GridElement(transparentNode: TransparentNode, descriptor: Transpa
                 val offset = link.b.subtract(link.a)
                 for (i in 0..1) {
                     val start = getRenderCablePoint(ourSide, i)
-                    start.rotateAroundY(Math.toRadians(idealRenderingAngle.toDouble()).toFloat())
+                    start.rotateYaw(Math.toRadians(idealRenderingAngle.toDouble()).toFloat())
                     var end = target.getRenderCablePoint(theirSide, i)
-                    end.rotateAroundY(Math.toRadians(target.idealRenderingAngle.toDouble()).toFloat())
-                    end = end.addVector(offset.x.toDouble(), offset.y.toDouble(), offset.z.toDouble())
+                    end.rotateYaw(Math.toRadians(target.idealRenderingAngle.toDouble()).toFloat())
+                    end = end.add(offset.x.toDouble(), offset.y.toDouble(), offset.z.toDouble())
                     writeVec(stream, start)
                     writeVec(stream, end)
                 }
@@ -284,7 +284,7 @@ abstract class GridElement(transparentNode: TransparentNode, descriptor: Transpa
     }
 
     protected open fun getRenderCablePoint(side: Direction, i: Int): Vec3d =
-        getCablePoint(side, i).addVector(
+        getCablePoint(side, i).add(
             desc.renderOffset.xCoord, desc.renderOffset.yCoord, desc.renderOffset.zCoord
         )
 

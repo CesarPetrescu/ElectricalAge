@@ -54,19 +54,19 @@ class FlyWheelElement(node: TransparentNode, desc_: TransparentNodeDescriptor) :
             for(obj in objects) {
                 val ent = obj as Entity
                 Utils.println(String.format("FPP.sP: considering %s", ent))
-                val dx = Math.abs(ent.posX - coord.x - 0.5)
-                val dy = Math.abs(ent.posY - coord.y - 1)
-                val dz = Math.abs(ent.posZ - coord.z - 0.5)
+                val dx = Math.abs(ent.x - coord.x - 0.5)
+                val dy = Math.abs(ent.y - coord.y - 1)
+                val dz = Math.abs(ent.z - coord.z - 0.5)
                 if(dy > yTolerance) {
-                    Utils.println("FPP.sP: dy out of range (" + dy + "; c.y " + coord.y + " e.y" + ent.posY + "): " + ent)
+                    Utils.println("FPP.sP: dy out of range (" + dy + "; c.y " + coord.y + " e.y" + ent.y + "): " + ent)
                     continue
                 }
                 if(dx > xzTolerance) {
-                    Utils.println("FPP.sP: dx out of range (" + dx + "; c.x " + coord.x + " e.x" + ent.posX + "): " + ent)
+                    Utils.println("FPP.sP: dx out of range (" + dx + "; c.x " + coord.x + " e.x" + ent.x + "): " + ent)
                     continue
                 }
                 if(dz > xzTolerance) {
-                    Utils.println("FPP.sP: dz out of range (" + dz + "; c.z " + coord.z + " e.z" + ent.posZ + "): " + ent)
+                    Utils.println("FPP.sP: dz out of range (" + dz + "; c.z " + coord.z + " e.z" + ent.z + "): " + ent)
                     continue
                 }
                 val mag = velocityF.getValue(rads).coerceIn(0.0, 1.0)

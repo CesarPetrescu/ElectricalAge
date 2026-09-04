@@ -10,7 +10,7 @@ import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.world.World
 
-class OreBlock : Block(Material.rock) {
+class OreBlock : Block(Material.ROCK) {
     init {
         setHardness(3.0f) //The block hardness
         setResistance(5.0f) //The explosion resistance

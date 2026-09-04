@@ -129,11 +129,11 @@ class LampSocketRender(tileEntity: SixNodeEntity, side: Direction, sixNodeDescri
             entityTimeout -= deltaT
 
             if (entityTimeout < 0) {
-                entityList = tileEntity.getWorldObj().getEntitiesWithinAABB(Entity::class.java, Coordinate(
+                entityList = tileEntity.getWorld().getEntitiesWithinAABB(Entity::class.java, Coordinate(
                     tileEntity.xCoord,
                     tileEntity.yCoord - 2,
                     tileEntity.zCoord,
-                    tileEntity.getWorldObj()
+                    tileEntity.getWorld()
                 ).getAxisAlignedBB(2))
                 entityTimeout = 0.1
             }
@@ -150,8 +150,8 @@ class LampSocketRender(tileEntity: SixNodeEntity, side: Direction, sixNodeDescri
                 perturbVz += (e.motionX * eFactor * deltaT)
             }
 
-            if (tileEntity.getWorldObj().getSavedLightValue(EnumSkyBlock.Sky, tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord) > 3) {
-                val weather = (UtilsClient.getWeather(tileEntity.getWorldObj()) * 0.9) + 0.1
+            if (tileEntity.getWorld().getSavedLightValue(EnumSkyBlock.Sky, tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord) > 3) {
+                val weather = (UtilsClient.getWeather(tileEntity.getWorld()) * 0.9) + 0.1
 
                 // TODO: Reduce swinging of lamps to some degree?
                 weatherAngleY += ((0.4 - Math.random()) * deltaT * (Math.PI / 0.2) * weather)

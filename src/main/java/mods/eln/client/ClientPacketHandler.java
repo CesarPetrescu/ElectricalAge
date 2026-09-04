@@ -1,5 +1,7 @@
 package mods.eln.client;
 
+import net.minecraftforge.common.MinecraftForge;
+
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientCustomPacketEvent;
 import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;

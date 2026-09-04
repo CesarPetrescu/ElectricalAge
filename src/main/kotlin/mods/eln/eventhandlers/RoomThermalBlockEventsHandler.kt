@@ -1,35 +1,33 @@
 package mods.eln.eventhandlers
 
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import mods.eln.environment.RoomThermalManager
-import net.minecraft.world.ChunkPosition
 import net.minecraftforge.event.world.BlockEvent
 import net.minecraftforge.event.world.ExplosionEvent
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 
 class RoomThermalBlockEventsHandler {
     @SubscribeEvent
-    fun onBlockBreak(event: BlockEvent.BreakEvent) {
-        RoomThermalManager.onBlockChanged(event.world, event.x, event.y, event.z)
-    }
+    fun onBlockBreak(event: BlockEvent.BreakEvent) = onChanged(event)
 
     @SubscribeEvent
-    fun onBlockPlace(event: BlockEvent.PlaceEvent) {
-        RoomThermalManager.onBlockChanged(event.world, event.x, event.y, event.z)
-    }
+    fun onBlockPlace(event: BlockEvent.PlaceEvent) = onChanged(event)
 
     @SubscribeEvent
-    fun onBlockMultiPlace(event: BlockEvent.MultiPlaceEvent) {
-        RoomThermalManager.onBlockChanged(event.world, event.x, event.y, event.z)
+    fun onBlockMultiPlace(event: BlockEvent.MultiPlaceEvent) = onChanged(event)
+
+    private fun onChanged(event: BlockEvent) {
+        val pos = event.pos
+        RoomThermalManager.onBlockChanged(event.world, pos.x, pos.y, pos.z)
     }
 
     @SubscribeEvent
     fun onExplosionDetonate(event: ExplosionEvent.Detonate) {
         val world = event.world
         if (world == null || world.isRemote) return
-
-        for (obj in event.affectedBlocks) {
-            val pos = obj as? ChunkPosition ?: continue
-            RoomThermalManager.onBlockChanged(world, pos.chunkPosX, pos.chunkPosY, pos.chunkPosZ)
+        // 1.8 replaced ChunkPosition with BlockPos throughout, including the explosion's
+        // affected-block list.
+        for (pos in event.affectedBlocks) {
+            RoomThermalManager.onBlockChanged(world, pos.x, pos.y, pos.z)
         }
     }
 }

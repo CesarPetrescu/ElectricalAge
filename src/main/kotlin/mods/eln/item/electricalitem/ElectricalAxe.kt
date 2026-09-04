@@ -71,7 +71,7 @@ class ElectricalAxe(name: String, strengthOn: Float, strengthOff: Float,
                 tool = this,
                 stack = stack,
                 leaves = true,
-                origCoords = ChunkCoordinates(x, y, z)
+                origCoords = BlockPos(x, y, z)
             )
             true
         } else {
@@ -143,7 +143,7 @@ object TreeCapitation : IProcess {
      * documentation).
      * @return The created block swapper.
      */
-    fun addBlockSwapper(world: World, player: EntityPlayer, tool: ElectricalTool, origCoords: ChunkCoordinates, leaves: Boolean, stack: ItemStack) {
+    fun addBlockSwapper(world: World, player: EntityPlayer, tool: ElectricalTool, origCoords: BlockPos, leaves: Boolean, stack: ItemStack) {
         val swapper = BlockSwapper(world, player, tool, origCoords, BLOCK_RANGE, leaves, stack)
 
         // Block swapper registration should only occur on the server
@@ -196,7 +196,7 @@ object TreeCapitation : IProcess {
         /**
          * The origin of the swapper (eg, where it started).
          */
-        private val origin: ChunkCoordinates,
+        private val origin: BlockPos,
         /**
          * The initial range which this block swapper starts with.
          */
@@ -220,7 +220,7 @@ object TreeCapitation : IProcess {
          * The set of already swaps coordinates which do not have
          * to be revisited.
          */
-        private val completedCoords: MutableSet<ChunkCoordinates>
+        private val completedCoords: MutableSet<BlockPos>
 
         init {
 
@@ -264,9 +264,9 @@ object TreeCapitation : IProcess {
                     tool = tool,
                     stack = stack,
                     world = world,
-                    x = candidate.coordinates.posX,
-                    y = candidate.coordinates.posY,
-                    z = candidate.coordinates.posZ
+                    x = candidate.coordinates.x,
+                    y = candidate.coordinates.y,
+                    z = candidate.coordinates.z
                 )
 
                 remainingSwaps--
@@ -276,10 +276,10 @@ object TreeCapitation : IProcess {
                 // Then, go through all of the adjacent blocks and look if
                 // any of them are any good.
                 for (adj in adjacent(candidate.coordinates)) {
-                    val block = world.getBlock(adj.posX, adj.posY, adj.posZ)
+                    val block = world.getBlock(adj.x, adj.y, adj.z)
 
-                    val isWood = block.isWood(world, adj.posX, adj.posY, adj.posZ)
-                    val isLeaf = block.isLeaves(world, adj.posX, adj.posY, adj.posZ)
+                    val isWood = block.isWood(world, adj.x, adj.y, adj.z)
+                    val isLeaf = block.isLeaves(world, adj.x, adj.y, adj.z)
 
                     // If it's not wood or a leaf, we aren't interested.
                     if (!isWood && !isLeaf)
@@ -301,8 +301,8 @@ object TreeCapitation : IProcess {
             return true
         }
 
-        fun adjacent(original: ChunkCoordinates): List<ChunkCoordinates> {
-            val coords = ArrayList<ChunkCoordinates>()
+        fun adjacent(original: BlockPos): List<BlockPos> {
+            val coords = ArrayList<BlockPos>()
             // Visit all the surrounding blocks in the provided radius.
             // Gotta love these nested loops, right?
             for (dx in -SINGLE_BLOCK_RADIUS..SINGLE_BLOCK_RADIUS)
@@ -312,7 +312,7 @@ object TreeCapitation : IProcess {
                         if (dx == 0 && dy == 0 && dz == 0)
                             continue
 
-                        coords.add(ChunkCoordinates(original.posX + dx, original.posY + dy, original.posZ + dz))
+                        coords.add(BlockPos(original.x + dx, original.y + dy, original.z + dz))
                     }
 
             return coords
@@ -336,7 +336,7 @@ object TreeCapitation : IProcess {
             /**
              * The location of this swap candidate.
              */
-            var coordinates: ChunkCoordinates,
+            var coordinates: BlockPos,
             /**
              * The remaining range of this swap candidate.
              */

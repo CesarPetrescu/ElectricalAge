@@ -65,9 +65,9 @@ private fun parseZoneBounds(ics: EntityPlayerMP, args: List<String>, commandName
             cprint(ics, "${FC.BRIGHT_YELLOW}Usage: /eln $commandName <radius> or /eln $commandName x1 y1 z1 x2 y2 z2", indent = 1)
             return null
         }
-        val x = ics.playerCoordinates.posX
-        val y = ics.playerCoordinates.posY
-        val z = ics.playerCoordinates.posZ
+        val x = ics.playerCoordinates.x
+        val y = ics.playerCoordinates.y
+        val z = ics.playerCoordinates.z
         return ZoneBounds(x - radius, x + radius, y - radius, y + radius, z - radius, z + radius)
     }
     if (args.size != 6) {
@@ -385,7 +385,7 @@ class ElnZoneDumpCommand : IConsoleCommand {
         val warnings = mutableListOf<String>()
         val builder = StringBuilder()
         builder.append("Zone dump for $rangeDescription\n")
-        builder.append("Player: ${ics.commandSenderName}\n")
+        builder.append("Player: ${ics.name}\n")
         builder.append("Generated: ${Date()}\n\n")
 
         builder.append("Nodes:\n")
@@ -858,9 +858,9 @@ class ElnStopShaftCommand : IConsoleCommand {
             if (node !is TransparentNode) return@forEach
 
             val shaftElement = node.element as? ShaftElement ?: return@forEach
-            val dx = (node.coordinate.x + 0.5) - ics.posX
-            val dy = (node.coordinate.y + 0.5) - ics.posY
-            val dz = (node.coordinate.z + 0.5) - ics.posZ
+            val dx = (node.coordinate.x + 0.5) - ics.x
+            val dy = (node.coordinate.y + 0.5) - ics.y
+            val dz = (node.coordinate.z + 0.5) - ics.z
             val distanceSq = dx * dx + dy * dy + dz * dz
             if (distanceSq <= radiusSq && distanceSq < bestDistanceSq) {
                 bestDistanceSq = distanceSq
@@ -937,9 +937,9 @@ class ElnResetAmbientTempsCommand : IConsoleCommand {
         nodeManager.nodeList.forEach { node ->
             if (node.coordinate.dimension != dim) return@forEach
 
-            val dx = (node.coordinate.x + 0.5) - ics.posX
-            val dy = (node.coordinate.y + 0.5) - ics.posY
-            val dz = (node.coordinate.z + 0.5) - ics.posZ
+            val dx = (node.coordinate.x + 0.5) - ics.x
+            val dy = (node.coordinate.y + 0.5) - ics.y
+            val dz = (node.coordinate.z + 0.5) - ics.z
             val distanceSq = dx * dx + dy * dy + dz * dz
             if (distanceSq > rangeSq) return@forEach
 

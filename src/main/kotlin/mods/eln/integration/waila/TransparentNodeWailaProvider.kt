@@ -17,7 +17,7 @@ import net.minecraft.world.World
 class TransparentNodeWailaProvider : IWailaDataProvider {
     override fun getWailaBody(itemStack: ItemStack?, currenttip: MutableList<String>,
                               accessor: IWailaDataAccessor, config: IWailaConfigHandler?): MutableList<String>? {
-        val coord = Coordinate(accessor.position.blockX, accessor.position.blockY, accessor.position.blockZ,
+        val coord = Coordinate(accessor.position.x, accessor.position.y, accessor.position.z,
             accessor.world)
         try {
             WailaCache.nodes.get(coord)?.forEach { entry ->

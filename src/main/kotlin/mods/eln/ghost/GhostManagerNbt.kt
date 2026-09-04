@@ -2,7 +2,7 @@ package mods.eln.ghost
 
 import mods.eln.Eln
 import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.world.WorldSavedData
+import net.minecraft.world.storage.WorldSavedData
 
 class GhostManagerNbt(par1Str: String?) : WorldSavedData(par1Str) {
     override fun isDirty(): Boolean {

@@ -2,7 +2,7 @@ package mods.eln.server
 
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.world.World
-import net.minecraft.world.WorldSavedData
+import net.minecraft.world.storage.WorldSavedData
 
 class ElnWorldStorage(str: String?) : WorldSavedData(str) {
     private var dim = 0

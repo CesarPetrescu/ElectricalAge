@@ -135,7 +135,7 @@ class LampSocketProcess(var element: LampSocketElement) : IProcess {
         if (randTarget > Math.random()) {
             val rotationVector = Vec3d(1.0, 0.0, 0.0)
             rotationVector.rotateAroundZ((element.projectionRotationAngle * (Math.PI / 180.0)).toFloat())
-            rotationVector.rotateAroundY(((Math.random() - 0.5) * Math.PI / 2.0).toFloat())
+            rotationVector.rotateYaw(((Math.random() - 0.5) * Math.PI / 2.0).toFloat())
             rotationVector.rotateAroundZ(((Math.random() - 0.5) * Math.PI / 2.0).toFloat())
             element.front.rotateOnXnLeft(rotationVector)
             element.side.rotateFromXN(rotationVector)

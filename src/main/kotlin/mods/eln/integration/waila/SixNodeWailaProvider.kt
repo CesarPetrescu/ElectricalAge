@@ -17,7 +17,7 @@ import net.minecraft.world.World
 @Optional.Interface(iface = "mcp.mobius.waila.api.IWailaDataProvider", modid = "Waila")
 class SixNodeWailaProvider : IWailaDataProvider {
     private fun getSixData(accessor: IWailaDataAccessor): SixNodeWailaData? {
-        val coord = Coordinate(accessor.position.blockX, accessor.position.blockY, accessor.position.blockZ,
+        val coord = Coordinate(accessor.position.x, accessor.position.y, accessor.position.z,
             accessor.world)
         val side = Direction.from(accessor.side)
         var sixData: SixNodeWailaData? = null

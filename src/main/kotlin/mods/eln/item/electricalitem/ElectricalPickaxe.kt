@@ -27,7 +27,7 @@ class ElectricalPickaxe(name: String, strengthOn: Float, strengthOff: Float,
 
     override fun getStrVsBlock(stack: ItemStack, block: Block?): Float {
         var value = when {
-            block != null && (block.material === Material.iron || block.material === Material.glass || block.material === Material.anvil || block.material === Material.rock) -> getStrength(stack)
+            block != null && (block.material === Material.iron || block.material === Material.glass || block.material === Material.anvil || block.material === Material.ROCK) -> getStrength(stack)
             else -> super.getStrVsBlock(stack, block)
         }
         if (blocksEffectiveAgainst.any { it == block }) {

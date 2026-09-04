@@ -1,5 +1,7 @@
 package mods.eln.client;
 
+import net.minecraftforge.common.MinecraftForge;
+
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.minecraftforge.fml.client.FMLClientHandler;

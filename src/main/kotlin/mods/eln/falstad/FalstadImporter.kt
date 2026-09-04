@@ -70,7 +70,7 @@ object FalstadImporter {
     }
 
     fun importFromClipboardAsync(player: EntityPlayerMP, netlist: String) {
-        val playerName = player.commandSenderName
+        val playerName = player.name
         val dimension = player.world.provider.dimensionId
         planningExecutor.execute {
             val parseResult = try {
@@ -78,7 +78,7 @@ object FalstadImporter {
             } catch (_: Exception) {
                 Eln.delayedTask.add(object : mods.eln.server.DelayedTaskManager.ITask {
                     override fun run() {
-                        val livePlayer = player.mcServer.configurationManager.func_152612_a(playerName)
+                        val livePlayer = player.mcServer.playerList.func_152612_a(playerName)
                         if (livePlayer != null) {
                             sendMessage(livePlayer, tr("Falstad import: clipboard is not valid Falstad data."))
                         }
@@ -89,7 +89,7 @@ object FalstadImporter {
             val plan = FalstadLayoutPlanner.plan(parseResult)
             Eln.delayedTask.add(object : mods.eln.server.DelayedTaskManager.ITask {
                 override fun run() {
-                    val livePlayer = player.mcServer.configurationManager.func_152612_a(playerName)
+                    val livePlayer = player.mcServer.playerList.func_152612_a(playerName)
                     if (livePlayer == null || livePlayer.world.provider.dimensionId != dimension) {
                         return
                     }
@@ -569,14 +569,14 @@ object FalstadImporter {
             x,
             y,
             z,
-            Block.blockRegistry.getNameForObject(supportBlock),
+            Block.REGISTRY.getNameForObject(supportBlock),
             supportMeta,
             supportBlock.material.isSolid,
             supportReplaceable,
             resolvedX,
             targetY,
             resolvedZ,
-            Block.blockRegistry.getNameForObject(targetBlock),
+            Block.REGISTRY.getNameForObject(targetBlock),
             targetMeta,
             targetReplaceable,
             targetTile
@@ -589,11 +589,11 @@ object FalstadImporter {
             canEdit,
             canPlaceOnSide,
             precheck,
-            Block.blockRegistry.getNameForObject(supportBlock),
-            Block.blockRegistry.getNameForObject(targetBlock),
+            Block.REGISTRY.getNameForObject(supportBlock),
+            Block.REGISTRY.getNameForObject(targetBlock),
             targetTile
         )
-        return "desc=${descriptor.name}, front=$front->$resolvedFront, canEdit=$canEdit, canPlace=$canPlaceOnSide, precheck=$precheck, target=${Block.blockRegistry.getNameForObject(targetBlock)}, tile=$targetTile"
+        return "desc=${descriptor.name}, front=$front->$resolvedFront, canEdit=$canEdit, canPlace=$canPlaceOnSide, precheck=$precheck, target=${Block.REGISTRY.getNameForObject(targetBlock)}, tile=$targetTile"
     }
 
     private fun getTopElement(world: World, area: Area, point: FalstadPoint): SixNodeElement? {

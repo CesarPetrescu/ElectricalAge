@@ -5,7 +5,7 @@ import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityList
 import net.minecraft.entity.EnumCreatureAttribute
 import net.minecraft.entity.SharedMonsterAttributes
-import net.minecraft.entity.ai.EntityAIAttackOnCollide
+import net.minecraft.entity.ai.EntityAIAttackMelee
 import net.minecraft.entity.ai.EntityAIHurtByTarget
 import net.minecraft.entity.ai.EntityAILookIdle
 import net.minecraft.entity.ai.EntityAIMoveThroughVillage
@@ -41,9 +41,9 @@ class ReplicatorEntity(world: World) : EntityMob(world) {
         val replicatorAi = ReplicatorCableAI(this)
         var priority = 0
         tasks.addTask(priority++, EntityAISwimming(this))
-        tasks.addTask(priority++, EntityAIAttackOnCollide(this, EntityPlayer::class.java, 1.0, false))
-        tasks.addTask(priority++, EntityAIAttackOnCollide(this, EntityVillager::class.java, 1.0, true))
-        tasks.addTask(priority++, EntityAIAttackOnCollide(this, ReplicatorEntity::class.java, 1.0, true))
+        tasks.addTask(priority++, EntityAIAttackMelee(this, EntityPlayer::class.java, 1.0, false))
+        tasks.addTask(priority++, EntityAIAttackMelee(this, EntityVillager::class.java, 1.0, true))
+        tasks.addTask(priority++, EntityAIAttackMelee(this, ReplicatorEntity::class.java, 1.0, true))
         tasks.addTask(priority++, replicatorAi)
         tasks.addTask(priority++, EntityAIMoveTowardsRestriction(this, 1.0))
         tasks.addTask(priority++, EntityAIMoveThroughVillage(this, 1.0, false))
@@ -117,7 +117,7 @@ class ReplicatorEntity(world: World) : EntityMob(world) {
                 val entry = entryObject as Map.Entry<*, *>
                 if (entry.value == ReplicatorEntity::class.java) {
                     entityDropItem(
-                        ItemStack(Item.itemRegistry.getObject("spawn_egg") as Item, 1, entry.key as Int),
+                        ItemStack(Item.REGISTRY.getObject("spawn_egg") as Item, 1, entry.key as Int),
                         0.5f
                     )
                     break

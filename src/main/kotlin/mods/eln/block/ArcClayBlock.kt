@@ -9,7 +9,7 @@ import net.minecraft.block.Block
 import net.minecraft.block.material.Material
 import net.minecraft.item.ItemBlock
 
-class ArcClayBlock : Block(Material.rock) {
+class ArcClayBlock : Block(Material.ROCK) {
 
     init {
         setTranslationKey(TR_NAME(Type.TILE, "arc_clay_block"))
@@ -24,7 +24,7 @@ class ArcClayBlock : Block(Material.rock) {
     }
 }
 
-class ArcMetalBlock : Block(Material.rock) {
+class ArcMetalBlock : Block(Material.ROCK) {
 
     init {
         setTranslationKey(TR_NAME(Type.TILE, "arc_metal_block"))

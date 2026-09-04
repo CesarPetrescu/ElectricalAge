@@ -268,7 +268,7 @@ class GridSwitchElement(node: TransparentNode, descriptor: TransparentNodeDescri
         }
         val part = (if(i == 0) { desc.plus } else { desc.gnd })[idx]
         val ro = desc.renderOffset
-        val pt = part.boundingBox().centre().addVector(
+        val pt = part.boundingBox().centre().add(
             ro.xCoord, ro.yCoord, ro.zCoord
         )
         // Rotate this point by a quarter turn around y to correspond to our rendering offset

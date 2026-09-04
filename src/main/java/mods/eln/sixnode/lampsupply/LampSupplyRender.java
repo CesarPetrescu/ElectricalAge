@@ -61,7 +61,7 @@ public class LampSupplyRender extends SixNodeElementRender {
 
     @Override
     public void refresh(float deltaT) {
-        if (!Utils.isPlayerAround(getTileEntity().getWorldObj(), coord.getAxisAlignedBB(0)))
+        if (!Utils.isPlayerAround(getTileEntity().getWorld(), coord.getAxisAlignedBB(0)))
             interpolator.setTarget(0f);
         else
             interpolator.setTarget(1f);

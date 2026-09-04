@@ -133,7 +133,7 @@ class ElnConsoleCommands: ICommand {
             cprint(ics,"${FC.DARK_CYAN}Command not found, run /eln ls for commands${FC.BRIGHT_GREY }")
             return
         }
-        cprint(ics, "${FC.DARK_CYAN}${ics.commandSenderName} $${FC.DARK_YELLOW} /eln ${args.joinToString(" ")}")
+        cprint(ics, "${FC.DARK_CYAN}${ics.name} $${FC.DARK_YELLOW} /eln ${args.joinToString(" ")}")
         val canRun = permissions.any { command.requiredPermission().contains(it) }
         if (canRun) {
             command.runCommand(ics, args.toList().drop(1))
@@ -147,12 +147,12 @@ class ElnConsoleCommands: ICommand {
         var creative = false
         var singlePlayer = false
         var isOperator = false
-        val player = ics.entityWorld.getPlayerEntityByName(ics.commandSenderName)
+        val player = ics.entityWorld.getPlayerEntityByName(ics.name)
         val console = player == null
         if (!console) {
             creative = player.capabilities.isCreativeMode
             singlePlayer = FMLCommonHandler.instance().getMinecraftServerInstance().isSinglePlayer
-            isOperator = FMLCommonHandler.instance().getMinecraftServerInstance().configurationManager.func_152603_m().func_152700_a(player.displayName) != null
+            isOperator = FMLCommonHandler.instance().getMinecraftServerInstance().playerList.func_152603_m().func_152700_a(player.displayName) != null
         }
         val playerPerms = mutableListOf<UserPermission>()
         if (creative)
