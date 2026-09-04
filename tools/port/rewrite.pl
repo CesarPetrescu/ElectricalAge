@@ -79,8 +79,16 @@ my @exprs = (
     [qr/\bFMLCommonHandler\.instance\(\)\.bus\(\)/   => 'MinecraftForge.EVENT_BUS'],
 );
 
+# The compatibility bridges deliberately name the old API in their documentation,
+# so rewriting them is never correct.
+my %skip = map { $_ => 1 } (
+    'src/main/kotlin/mods/eln/misc/McBridge.kt',
+    'src/main/kotlin/mods/eln/client/itemrender/LegacyItemRender.kt',
+);
+
 my $changed_files = 0;
 for my $file (@ARGV) {
+    next if $skip{$file};
     open my $fh, '<', $file or die "$file: $!";
     my $src = do { local $/; <$fh> };
     close $fh;
