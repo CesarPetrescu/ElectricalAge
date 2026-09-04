@@ -3,8 +3,9 @@ package mods.eln.server.console
 import mods.eln.misc.FC
 import net.minecraft.command.ICommand
 import net.minecraft.command.ICommandSender
-import net.minecraft.event.ClickEvent
+import net.minecraft.util.text.event.ClickEvent
 import net.minecraft.server.MinecraftServer
+import net.minecraft.util.math.BlockPos
 import net.minecraft.util.text.TextComponentString
 
 val ElnConsoleCommandList = mutableListOf<IConsoleCommand>()
@@ -52,7 +53,7 @@ class ElnConsoleCommands: ICommand {
 
         fun cprint(ics: ICommandSender, text: String, url: String) {
             val msg = TextComponentString(FC.BRIGHT_GREY + text)
-            msg.chatStyle.chatClickEvent = ClickEvent(ClickEvent.Action.OPEN_URL, url)
+            msg.style.setClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, url))
             ics.sendMessage(msg)
         }
 
@@ -103,31 +104,22 @@ class ElnConsoleCommands: ICommand {
         }
     }
 
-    // What the heck was Mojang thinking here?
-    override fun compareTo(other: Any?): Int {
-        val isString = other !is String
-        if (isString) {
-            println("CompareTo is not String: ${other?.javaClass?.name}")
-        }
-        if (other is String) {
-            return "eln2".compareTo(other)
-        } else {
-            return "eln2".compareTo(other.toString())
-        }
-    }
+    // ICommand is Comparable<ICommand> on 1.12, not Comparable<Object>: commands sort by name.
+    override fun compareTo(other: ICommand): Int = name.compareTo(other.name)
 
-    override fun getCommandName() = "eln"
-    override fun getCommandUsage(p_71518_1_: ICommandSender) =
+    override fun getName() = "eln"
+
+    override fun getUsage(sender: ICommandSender) =
         "${FC.DARK_CYAN}Electrical Age Console, run /eln ls for commands${FC.BRIGHT_GREY }"
 
-    override fun getCommandAliases() = mutableListOf<String>()
+    override fun getAliases() = mutableListOf<String>()
 
-    override fun processCommand(ics: ICommandSender, args: Array<out String>) {
+    override fun execute(server: MinecraftServer, ics: ICommandSender, args: Array<out String>) {
         if (args.isEmpty()) {
             cprint(ics,"${FC.DARK_CYAN}Electrical Age Console, run /eln ls for commands${FC.BRIGHT_GREY }")
             return
         }
-        val permissions = determinePermissionsList(ics)
+        val permissions = determinePermissionsList(server, ics)
         val command = findConsoleCommand(args[0])
         if (command == null) {
             cprint(ics,"${FC.DARK_CYAN}Command not found, run /eln ls for commands${FC.BRIGHT_GREY }")
@@ -143,7 +135,7 @@ class ElnConsoleCommands: ICommand {
         }
     }
 
-    fun determinePermissionsList(ics: ICommandSender): List<UserPermission> {
+    fun determinePermissionsList(server: MinecraftServer, ics: ICommandSender): List<UserPermission> {
         var creative = false
         var singlePlayer = false
         var isOperator = false
@@ -151,8 +143,8 @@ class ElnConsoleCommands: ICommand {
         val console = player == null
         if (!console) {
             creative = player.capabilities.isCreativeMode
-            singlePlayer = FMLCommonHandler.instance().getMinecraftServerInstance().isSinglePlayer
-            isOperator = FMLCommonHandler.instance().getMinecraftServerInstance().playerList.func_152603_m().func_152700_a(player.displayName) != null
+            singlePlayer = server.isSinglePlayer
+                isOperator = server.playerList.oppedPlayers.getEntry(player.gameProfile) != null
         }
         val playerPerms = mutableListOf<UserPermission>()
         if (creative)
@@ -169,9 +161,11 @@ class ElnConsoleCommands: ICommand {
     }
 
     // We don't actually use this because we do it on command execution for more control
-    override fun canCommandSenderUseCommand(ics: ICommandSender) = true
+    override fun checkPermission(server: MinecraftServer, ics: ICommandSender) = true
 
-    override fun addTabCompletionOptions(ics: ICommandSender, args: Array<out String>): MutableList<String> {
+    override fun getTabCompletions(
+        server: MinecraftServer, ics: ICommandSender, args: Array<out String>, targetPos: BlockPos?
+    ): MutableList<String> {
         if (args.toList().isEmpty() || args[0] == "") {
             return ElnConsoleCommandList.map {it.name}.toMutableList()
         }

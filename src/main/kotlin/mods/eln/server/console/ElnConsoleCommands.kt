@@ -65,9 +65,11 @@ private fun parseZoneBounds(ics: EntityPlayerMP, args: List<String>, commandName
             cprint(ics, "${FC.BRIGHT_YELLOW}Usage: /eln $commandName <radius> or /eln $commandName x1 y1 z1 x2 y2 z2", indent = 1)
             return null
         }
-        val x = ics.playerCoordinates.x
-        val y = ics.playerCoordinates.y
-        val z = ics.playerCoordinates.z
+        // ICommandSender.playerCoordinates became getPosition() (a BlockPos) on 1.8.
+        val senderPos = ics.position
+        val x = senderPos.x
+        val y = senderPos.y
+        val z = senderPos.z
         return ZoneBounds(x - radius, x + radius, y - radius, y + radius, z - radius, z + radius)
     }
     if (args.size != 6) {
@@ -364,7 +366,7 @@ class ElnZoneDumpCommand : IConsoleCommand {
         val maxZ = bounds.maxZ
 
         val world = ics.world
-        val dim = world.provider.dimensionId
+        val dim = world.provider.dimension
         val rangeDescription = "($minX,$minY,$minZ) -> ($maxX,$maxY,$maxZ) in dim $dim"
 
         val nodeManager = NodeManager.instance
@@ -607,7 +609,7 @@ class ElnZoneCleanCommand : IConsoleCommand {
         val maxZ = bounds.maxZ
 
         val world = ics.world
-        val dim = world.provider.dimensionId
+        val dim = world.provider.dimension
         val nodeManager = NodeManager.instance
         val nodes = nodeManager?.nodeList ?: emptyList()
         val nodesToProcess = nodes.filter {
@@ -697,7 +699,7 @@ class ElnZoneRemoveCommand : IConsoleCommand {
         val maxZ = bounds.maxZ
 
         val world = ics.world
-        val dim = world.provider.dimensionId
+        val dim = world.provider.dimension
         val nodeManager = NodeManager.instance
         if (nodeManager == null) {
             cprint(ics, "${FC.BRIGHT_RED}Node manager unavailable, cannot run zoneremove.", indent = 1)
@@ -849,7 +851,7 @@ class ElnStopShaftCommand : IConsoleCommand {
         }
 
         val world = ics.world
-        val dim = world.provider.dimensionId
+        val dim = world.provider.dimension
         var bestDistanceSq = Double.MAX_VALUE
         var bestShaftElement: ShaftElement? = null
 
@@ -858,9 +860,9 @@ class ElnStopShaftCommand : IConsoleCommand {
             if (node !is TransparentNode) return@forEach
 
             val shaftElement = node.element as? ShaftElement ?: return@forEach
-            val dx = (node.coordinate.x + 0.5) - ics.x
-            val dy = (node.coordinate.y + 0.5) - ics.y
-            val dz = (node.coordinate.z + 0.5) - ics.z
+            val dx = (node.coordinate.x + 0.5) - ics.positionVector.x
+            val dy = (node.coordinate.y + 0.5) - ics.positionVector.y
+            val dz = (node.coordinate.z + 0.5) - ics.positionVector.z
             val distanceSq = dx * dx + dy * dy + dz * dz
             if (distanceSq <= radiusSq && distanceSq < bestDistanceSq) {
                 bestDistanceSq = distanceSq
@@ -928,7 +930,7 @@ class ElnResetAmbientTempsCommand : IConsoleCommand {
         }
 
         val rangeSq = range.toDouble() * range.toDouble()
-        val dim = ics.world.provider.dimensionId
+        val dim = ics.world.provider.dimension
         var devicesTouched = 0
         var thermalLoadsReset = 0
         var minAmbientC = Double.POSITIVE_INFINITY
@@ -937,9 +939,9 @@ class ElnResetAmbientTempsCommand : IConsoleCommand {
         nodeManager.nodeList.forEach { node ->
             if (node.coordinate.dimension != dim) return@forEach
 
-            val dx = (node.coordinate.x + 0.5) - ics.x
-            val dy = (node.coordinate.y + 0.5) - ics.y
-            val dz = (node.coordinate.z + 0.5) - ics.z
+            val dx = (node.coordinate.x + 0.5) - ics.positionVector.x
+            val dy = (node.coordinate.y + 0.5) - ics.positionVector.y
+            val dz = (node.coordinate.z + 0.5) - ics.positionVector.z
             val distanceSq = dx * dx + dy * dy + dz * dz
             if (distanceSq > rangeSq) return@forEach
 
