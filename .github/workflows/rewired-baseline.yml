@@ -1,0 +1,87 @@
+name: Re-Wired baseline
+
+on:
+  push:
+    branches:
+      - ci/rewired-baseline-build
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  baseline:
+    name: Build exact Re-Wired main snapshot
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: Checkout exact Re-Wired source
+        uses: actions/checkout@v4
+        with:
+          repository: brambora69123/electrical-age-rewired
+          ref: 3a0088b384aa4111c3a7f984d4cbc5f4ff142ed9
+          path: rewired
+          fetch-depth: 1
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: gradle
+          cache-dependency-path: |
+            rewired/*.gradle
+            rewired/gradle.properties
+            rewired/gradle/wrapper/gradle-wrapper.properties
+
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Record environment
+        working-directory: rewired
+        shell: bash
+        run: |
+          set -euxo pipefail
+          java -version 2>&1 | tee baseline-java.log
+          git rev-parse HEAD | tee baseline-commit.log
+          sha256sum gradle/wrapper/gradle-wrapper.jar | tee baseline-wrapper.log
+
+      - name: Set up decompiled workspace
+        working-directory: rewired
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew setupDecompWorkspace --no-daemon --stacktrace 2>&1 | tee baseline-setup.log
+
+      - name: Clean build
+        working-directory: rewired
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew clean build --no-daemon --stacktrace 2>&1 | tee baseline-build.log
+
+      - name: List outputs
+        if: always()
+        working-directory: rewired
+        shell: bash
+        run: |
+          find build/libs -maxdepth 1 -type f -printf '%f %s bytes\n' 2>/dev/null | sort | tee baseline-artifacts.log || true
+
+      - name: Upload baseline logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rewired-baseline-logs
+          path: rewired/baseline-*.log
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload built jars
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rewired-baseline-jars
+          path: rewired/build/libs/*.jar
+          if-no-files-found: error
+          retention-days: 14
