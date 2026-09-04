@@ -1,16 +1,22 @@
 package mods.eln.i18n
 
 import net.minecraftforge.fml.common.FMLCommonHandler
-import net.minecraftforge.fml.common.registry.LanguageRegistry
 import mods.eln.misc.Utils
 
 /**
  * Internationalization and localization helper class.
+ *
+ * 1.12.2: LanguageRegistry is gone. The side-neutral replacement is the (deprecated but functional)
+ * [net.minecraft.util.text.translation.I18n], backed by LanguageMap: the client swaps the current
+ * locale into it on resource reload, the dedicated server injects every mod's en_us.lang into it.
+ * Keys and placeholder syntax are unchanged, so the generated lang files stay valid.
  */
 object I18N {
-    private val languageRegistry: LanguageRegistry? by lazy {
-        try { LanguageRegistry.instance() } catch (_: Throwable) { null }
-    }
+    @Suppress("DEPRECATION")
+    private fun lookup(key: String): String? =
+        if (net.minecraft.util.text.translation.I18n.canTranslate(key))
+            net.minecraft.util.text.translation.I18n.translateToLocal(key)
+        else null
 
     /**
      * Defines the different translatable types.
@@ -132,10 +138,10 @@ object I18N {
      */
     @JvmStatic
     fun tr(text: String, vararg objects: Any?): String {
-        // Try to find the translation for the string using forge API.
+        // Try to find the translation for the string using the Minecraft language map.
         var translation: String? = null
         try {
-            translation = languageRegistry?.getStringLocalization(encodeLangKey(text))
+            translation = lookup(encodeLangKey(text))
         } catch (_: Throwable) {
             // Forge classes may not be available in test environments (ExceptionInInitializerError,
             // NoClassDefFoundError, etc.). Fall back to the original text.
