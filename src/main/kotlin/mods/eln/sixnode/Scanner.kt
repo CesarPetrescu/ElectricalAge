@@ -18,6 +18,8 @@ import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.EnumFacing
+import net.minecraftforge.fluids.capability.CapabilityFluidHandler
+import net.minecraftforge.items.CapabilityItemHandler
 import mods.eln.fluid.ISidedFluidHandler
 import java.lang.reflect.Array
 import java.lang.reflect.Method
@@ -93,55 +95,85 @@ class ScannerElement(sixNode: SixNode, side: Direction, descriptor: SixNodeDescr
     }
 
     private fun scanBlock(scannedCoord: Coordinate, targetSide: EnumFacing): Double {
-        val block = scannedCoord.block
+        val world = scannedCoord.world()
+        val pos = scannedCoord.pos
+        val state = world.getBlockState(pos)
+        val block = state.block
         return when {
-            block.hasComparatorInputOverride() ->
-                block.getComparatorInputOverride(scannedCoord.world(), scannedCoord.x, scannedCoord.y, scannedCoord.z, targetSide.ordinal) / 15.0
-            block.isOpaqueCube -> 1.0
-            block.isAir(scannedCoord.world(), scannedCoord.x, scannedCoord.y, scannedCoord.z) -> 0.0
+            block.hasComparatorInputOverride(state) ->
+                block.getComparatorInputOverride(state, world, pos) / 15.0
+            state.isOpaqueCube -> 1.0
+            block.isAir(state, world, pos) -> 0.0
             else -> 1.0/3.0
         }
     }
 
+    /**
+     * How full the scanned tile entity is, 0..1, or null when it holds nothing scannable.
+     *
+     * Storage on 1.12.2 is exposed through capabilities: nearly every modded tank and machine
+     * answers getCapability(FLUID/ITEM_HANDLER, side) rather than implementing the old
+     * interfaces, so those are queried first, for the face the scanner touches. The mod's own
+     * side-aware fluid handler and the vanilla inventory interfaces remain as fallbacks. Checking
+     * the interfaces alone - as the Re-Wired port does - misses most modern storage blocks.
+     */
     private fun scanTileEntity(te: TileEntity, targetSide: EnumFacing): Double? {
         if (te is ISidedFluidHandler) {
-            val info = te.getTankInfo(targetSide)?.filter { it.capacity > 0 } ?: return 0.0
+            val info = te.getTankInfo(targetSide).filter { it.capacity > 0 }
             if (info.isEmpty()) return 0.0
-            return info.sumOf {
-                (it.fluid?.amount ?: 0).toDouble() / it.capacity
-            } / info.size
-        } else if (hbmFluidUserClass?.isInstance(te) == true) {
+            return info.sumOf { (it.fluid?.amount ?: 0).toDouble() / it.capacity } / info.size
+        }
+        if (te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, targetSide)) {
+            val handler = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, targetSide)
+            val tanks = handler?.tankProperties?.filter { it.capacity > 0 } ?: return 0.0
+            if (tanks.isEmpty()) return 0.0
+            return tanks.sumOf { (it.contents?.amount ?: 0).toDouble() / it.capacity } / tanks.size
+        }
+        if (hbmFluidUserClass?.isInstance(te) == true) {
             return scanHbmFluidUser(te)
-        } else if (te is ISidedInventory) {
+        }
+        if (te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, targetSide)) {
+            val handler = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, targetSide) ?: return 0.0
+            if (handler.slots == 0) return 0.0
+            return when (mode) {
+                ScanMode.SIMPLE -> {
+                    var sum = 0
+                    var limit = 0
+                    for (slot in 0 until handler.slots) {
+                        sum += handler.getStackInSlot(slot).count
+                        limit += handler.getSlotLimit(slot)
+                    }
+                    if (limit == 0) 0.0 else sum.toDouble() / limit
+                }
+                ScanMode.SLOTS ->
+                    (0 until handler.slots).count { !handler.getStackInSlot(it).isEmpty }.toDouble() / handler.slots
+            }
+        }
+        if (te is ISidedInventory) {
             var sum = 0
             var limit = 0
-            val slots = te.getAccessibleSlotsFromSide(targetSide.ordinal)
+            val slots = te.getSlotsForFace(targetSide)
             when (mode) {
                 ScanMode.SIMPLE -> slots.forEach {
-                        sum += te.getStackInSlot(it)?.count ?: 0
-                        limit += te.inventoryStackLimit
-                    }
-
+                    sum += te.getStackInSlot(it).count
+                    limit += te.inventoryStackLimit
+                }
                 ScanMode.SLOTS -> slots.forEach {
-                    sum += if ((te.getStackInSlot(it)?.count ?: 0) > 0) 1 else 0
+                    sum += if (te.getStackInSlot(it).count > 0) 1 else 0
                     limit += 1
                 }
             }
-            return sum.toDouble() / limit
-        } else if (te is IInventory) {
+            return if (limit == 0) 0.0 else sum.toDouble() / limit
+        }
+        if (te is IInventory) {
+            if (te.sizeInventory == 0) return 0.0
             val sum = when (mode) {
-                ScanMode.SIMPLE -> (0..te.sizeInventory - 1).sumOf {
-                    te.getStackInSlot(it)?.count ?: 0
-                }.toDouble()
-
-                ScanMode.SLOTS -> (0..te.sizeInventory - 1).count {
-                    (te.getStackInSlot(it)?.count ?: 0) > 0
-                }.toDouble() * te.inventoryStackLimit
+                ScanMode.SIMPLE -> (0 until te.sizeInventory).sumOf { te.getStackInSlot(it).count }.toDouble()
+                ScanMode.SLOTS -> (0 until te.sizeInventory).count { te.getStackInSlot(it).count > 0 }.toDouble() * te.inventoryStackLimit
             }
             return sum / te.inventoryStackLimit / te.sizeInventory
-        } else {
-            return null
         }
+        return null
     }
 
     private fun scanHbmFluidUser(te: TileEntity): Double? {
