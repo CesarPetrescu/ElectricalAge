@@ -62,6 +62,7 @@ my @members = (
     ['getUnlocalizedName'       => 'getTranslationKey'],
     ['unlocalizedName'          => 'translationKey'],
     ['func_150939_a'            => 'block'],
+    ['hasNoTags'                => 'isEmpty'],
 );
 
 # --- expression rewrites ----------------------------------------------------
@@ -77,6 +78,7 @@ my @exprs = (
     [qr/\bS3FPacketCustomPayload\b/                  => 'SPacketCustomPayload'],
     [qr/net\.minecraft\.network\.play\.server\.SPacketCustomPayload/ => 'net.minecraft.network.play.server.SPacketCustomPayload'],
     [qr/\bVec3d\.createVectorHelper\s*\(/            => 'Vec3d('],
+    [qr/\bItemStack\.loadItemStackFromNBT\s*\(/       => 'ItemStack('],
     [qr/\bVec3\.createVectorHelper\s*\(/             => 'Vec3d('],
     [qr/\bAxisAlignedBB\.getBoundingBox\s*\(/        => 'AxisAlignedBB('],
     [qr/\bTessellator\.instance\b/                   => 'Tessellator.getInstance()'],
@@ -89,6 +91,8 @@ my @exprs = (
 my %skip = map { $_ => 1 } (
     'src/main/kotlin/mods/eln/misc/McBridge.kt',
     'src/main/kotlin/mods/eln/client/itemrender/LegacyItemRender.kt',
+    # Forge's Fluid kept setUnlocalizedName; the MCP rename does not apply to it.
+    'src/main/kotlin/mods/eln/fluid/FluidRegistration.kt',
 );
 
 my $changed_files = 0;

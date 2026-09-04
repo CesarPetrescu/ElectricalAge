@@ -99,6 +99,7 @@ import net.minecraft.world.WorldServer;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.oredict.OreDictionary;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -127,6 +128,11 @@ public class Eln {
     @SidedProxy(clientSide = "mods.eln.client.ClientProxy", serverSide = "mods.eln.CommonProxy")
     public static CommonProxy proxy;
     public final static String MODID = "Eln";
+
+    static {
+        // Must run before any mod's preInit: Eln's fluids use Forge's universal bucket (1.12.2).
+        FluidRegistry.enableUniversalBucket();
+    }
     public final static Logger LOGGER = LogManager.getLogger(MODID);
     public final static String NAME = "Electrical Age - jrddunbr's build";
     public final static String UPDATE_URL = "https://github.com/age-series/ElectricalAge/releases";
@@ -412,10 +418,10 @@ public class Eln {
         ElnRegistry.registerBlock(oreBlock, "Eln.Ore", OreItem.class);
         ElnRegistry.registerBlock(arcClayBlock, "Eln.arc_clay_block", ArcClayItemBlock.class);
         ElnRegistry.registerBlock(arcMetalBlock, "Eln.arc_metal_block", ArcMetalItemBlock.class);
-        TileEntity.addMapping(TransparentNodeEntity.class, "TransparentNodeEntity");
-        TileEntity.addMapping(TransparentNodeEntityWithFluid.class, "TransparentNodeEntityWF");
-        TileEntity.addMapping(SixNodeEntity.class, "SixNodeEntity");
-        TileEntity.addMapping(LightBlockEntity.class, "LightBlockEntity");
+        ElnRegistry.registerTileEntity(TransparentNodeEntity.class, "TransparentNodeEntity");
+        ElnRegistry.registerTileEntity(TransparentNodeEntityWithFluid.class, "TransparentNodeEntityWF");
+        ElnRegistry.registerTileEntity(SixNodeEntity.class, "SixNodeEntity");
+        ElnRegistry.registerTileEntity(LightBlockEntity.class, "LightBlockEntity");
 
         NodeManager.registerUuid(sixNodeBlock.getNodeUuid(), SixNode.class);
         NodeManager.registerUuid(transparentNodeBlock.getNodeUuid(), TransparentNode.class);
