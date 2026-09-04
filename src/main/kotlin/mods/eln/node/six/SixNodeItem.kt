@@ -54,7 +54,7 @@ class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b
             if (side == 4) x--
             if (side == 5) x++
         }
-        if (stack.stackSize == 0) return false
+        if (stack.count == 0) return false
         val descriptor = getDescriptor(stack)
         if (descriptor is UtilityCableDescriptor && !descriptor.hasLengthForPlacement(stack)) {
             sendMessage(player, "Not enough wire length remaining to place another segment")
@@ -70,11 +70,11 @@ class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b
                 if (shouldConsumeUtilityCableLength(player)) {
                     descriptor.consumeLengthForPlacement(stack)
                     if (!descriptor.hasLengthForPlacement(stack)) {
-                        stack.stackSize -= 1
+                        stack.count -= 1
                     }
                 }
             } else {
-                stack.stackSize -= 1
+                stack.count -= 1
             }
         }
         return true

@@ -122,14 +122,14 @@ class WireSnipsContainer(private val player: EntityPlayer) : Container() {
             if (inputSlot.hasStack) {
                 return null
             }
-            val moved = min(stack.stackSize, inputSlot.slotStackLimit)
+            val moved = min(stack.count, inputSlot.slotStackLimit)
             val movedStack = stack.copy()
-            movedStack.stackSize = moved
+            movedStack.count = moved
             inputSlot.putStack(movedStack)
-            stack.stackSize -= moved
+            stack.count -= moved
         }
 
-        if (stack.stackSize <= 0) {
+        if (stack.count <= 0) {
             slot.putStack(null)
         } else {
             slot.onSlotChanged()

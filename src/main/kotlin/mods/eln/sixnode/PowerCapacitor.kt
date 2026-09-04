@@ -62,7 +62,7 @@ class PowerCapacitorSixDescriptor(name: String,
         val core = inventory.getStackInSlot(PowerCapacitorSixContainer.redId)
         val diel = inventory.getStackInSlot(PowerCapacitorSixContainer.dielectricId)
         return if (core == null || diel == null) getCValue(0, 0.0) else {
-            getCValue(core.stackSize, getUNominalValue(inventory))
+            getCValue(core.count, getUNominalValue(inventory))
         }
     }
 
@@ -70,7 +70,7 @@ class PowerCapacitorSixDescriptor(name: String,
         val diel = inventory.getStackInSlot(PowerCapacitorSixContainer.dielectricId)
         return if (diel == null) 10000.0 else {
             val desc = GenericItemUsingDamageDescriptor.getDescriptor(diel, DielectricItem::class.java) as? DielectricItem
-            if (desc == null) 10000.0 else desc.uNominal * diel.stackSize
+            if (desc == null) 10000.0 else desc.uNominal * diel.count
         }
     }
 
@@ -276,13 +276,13 @@ class PowerCapacitorSixElement(SixNode: SixNode, side: Direction, descriptor: Si
         if (stack == null) {
             compound.setInteger("capRedstoneAmt", 0)
         } else {
-            compound.setInteger("capRedstoneAmt", stack.stackSize)
+            compound.setInteger("capRedstoneAmt", stack.count)
         }
         stack = inventory.getStackInSlot(PowerCapacitorSixContainer.dielectricId)
         if (stack == null) {
             compound.setInteger("capDielectricAmt", 0)
         } else {
-            compound.setInteger("capDielectricAmt", stack.stackSize)
+            compound.setInteger("capDielectricAmt", stack.count)
         }
     }
 

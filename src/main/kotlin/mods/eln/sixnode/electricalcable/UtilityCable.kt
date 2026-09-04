@@ -113,7 +113,7 @@ interface IUtilityCableInventory {
             if (existingCableLength >= requiredCableLength) {
                 srcCableDesc.setRemainingLengthMeters(dstItemStack, requiredCableLength)
                 if (!creativeFree) srcCableDesc.setRemainingLengthMeters(srcItemStack, existingCableLength - requiredCableLength)
-                if (!creativeFree && abs(srcCableDesc.getRemainingLengthMeters(srcItemStack)) < UtilityCableDescriptor.LENGTH_METERS_EPSILON) srcItemStack.stackSize -= 1
+                if (!creativeFree && abs(srcCableDesc.getRemainingLengthMeters(srcItemStack)) < UtilityCableDescriptor.LENGTH_METERS_EPSILON) srcItemStack.count -= 1
                 dstInventory.setInventorySlotContents(dstIndex, dstItemStack)
                 dstInventory.markDirty()
                 return true

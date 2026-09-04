@@ -225,8 +225,8 @@ public class BatteryChargerElement extends SixNodeElement {
                 double boost = 1.0;
                 double eff = 1.0;
                 if (booster != null) {
-                    boost = Math.pow(1.25, booster.stackSize);
-                    eff = Math.pow(0.9, booster.stackSize);
+                    boost = Math.pow(1.25, booster.getCount());
+                    eff = Math.pow(0.9, booster.getCount());
                 }
 
                 energyCounter += powerResistor.getPower() * time * eff;

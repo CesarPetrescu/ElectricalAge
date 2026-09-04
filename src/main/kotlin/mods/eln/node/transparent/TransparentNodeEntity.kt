@@ -209,8 +209,8 @@ open class TransparentNodeEntity : NodeBlockEntity(), ISidedInventory {
         return sidedInventory.inventoryStackLimit
     }
 
-    override fun isUseableByPlayer(var1: EntityPlayer): Boolean {
-        return sidedInventory.isUseableByPlayer(var1)
+    override fun isUsableByPlayer(var1: EntityPlayer): Boolean {
+        return sidedInventory.isUsableByPlayer(var1)
     }
 
     override fun openInventory() {

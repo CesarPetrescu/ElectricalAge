@@ -35,7 +35,7 @@ class FakeSideInventory : ISidedInventory {
     }
 
     override fun markDirty() {}
-    override fun isUseableByPlayer(var1: EntityPlayer): Boolean {
+    override fun isUsableByPlayer(var1: EntityPlayer): Boolean {
         return false
     }
 

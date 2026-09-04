@@ -52,11 +52,11 @@ open class TransparentNodeElementInventory : ISidedInventory, INBTTReady, IUtili
     override fun decrStackSize(slot: Int, amt: Int): ItemStack? {
         var stack = getStackInSlot(slot)
         if (stack != null) {
-            if (stack.stackSize <= amt) {
+            if (stack.count <= amt) {
                 setInventorySlotContents(slot, null)
             } else {
                 stack = stack.splitStack(amt)
-                if (stack.stackSize == 0) {
+                if (stack.count == 0) {
                     setInventorySlotContents(slot, null)
                 }
             }
@@ -74,8 +74,8 @@ open class TransparentNodeElementInventory : ISidedInventory, INBTTReady, IUtili
 
     override fun setInventorySlotContents(slot: Int, stack: ItemStack?) {
         inv[slot] = stack
-        if (stack != null && stack.stackSize > inventoryStackLimit) {
-            stack.stackSize = inventoryStackLimit
+        if (stack != null && stack.count > inventoryStackLimit) {
+            stack.count = inventoryStackLimit
         }
     }
 
@@ -87,7 +87,7 @@ open class TransparentNodeElementInventory : ISidedInventory, INBTTReady, IUtili
         return stackLimit
     }
 
-    override fun isUseableByPlayer(player: EntityPlayer): Boolean {
+    override fun isUsableByPlayer(player: EntityPlayer): Boolean {
         return true
     }
 

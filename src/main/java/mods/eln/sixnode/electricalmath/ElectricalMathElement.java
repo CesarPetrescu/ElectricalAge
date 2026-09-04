@@ -216,7 +216,7 @@ public class ElectricalMathElement extends SixNodeElement implements IConfigurab
         int redstoneInStack = 0;
 
         ItemStack stack = inventory.getStackInSlot(ElectricalMathContainer.restoneSlotId);
-        if (stack != null) redstoneInStack = stack.stackSize;
+        if (stack != null) redstoneInStack = stack.getCount();
 
         redstoneReady = redstoneRequired <= redstoneInStack;
         needPublish();

@@ -42,7 +42,7 @@ internal fun dcDcWinding(stack: ItemStack?): DcDcWinding? {
     val amount = if (descriptor is UtilityCableDescriptor) {
         descriptor.getRemainingLengthMeters(stack)
     } else {
-        stack.stackSize.toDouble()
+        stack.count.toDouble()
     }
     if (!amount.isFinite() || amount <= UtilityCableDescriptor.LENGTH_METERS_EPSILON) return null
     return DcDcWinding(descriptor, amount)
@@ -119,7 +119,7 @@ private fun strictWindingConstructionProblem(stack: ItemStack?, label: String): 
     val amount = if (descriptor is UtilityCableDescriptor) {
         descriptor.getRemainingLengthMeters(stack)
     } else {
-        stack.stackSize.toDouble()
+        stack.count.toDouble()
     }
     if (!amount.isFinite() || amount <= UtilityCableDescriptor.LENGTH_METERS_EPSILON) {
         return WindingConstructionProblem(null, tr("Needs %1$ Winding", label))
@@ -158,7 +158,7 @@ private fun dcDcWindingRenderAmount(stack: ItemStack?): Double? {
     val amount = if (descriptor is UtilityCableDescriptor) {
         descriptor.getRemainingLengthMeters(stack)
     } else {
-        stack.stackSize.toDouble()
+        stack.count.toDouble()
     }
     return amount.takeIf { it.isFinite() && it > UtilityCableDescriptor.LENGTH_METERS_EPSILON }
 }

@@ -205,9 +205,9 @@ class ElectricalFuseHolderElement(sixNode: SixNode, side: Direction, descriptor:
         val itemStack = entityPlayer.heldItemMainhand
         val fuseDescriptor = itemStack?.let { GenericItemUsingDamageDescriptor.getDescriptor(it) } as? ElectricalFuseDescriptor
         if (itemStack != null) {
-            if (fuseDescriptor != null && itemStack.stackSize > 0) {
+            if (fuseDescriptor != null && itemStack.count > 0) {
                 // The player puts in a new lead fuse.
-                if (!(Eln.config.getBooleanOrElse("gameplay.qol.creativeNoConsumeInsertedItems", false) && entityPlayer is EntityPlayerMP && Utils.isCreative(entityPlayer))) itemStack.stackSize--
+                if (!(Eln.config.getBooleanOrElse("gameplay.qol.creativeNoConsumeInsertedItems", false) && entityPlayer is EntityPlayerMP && Utils.isCreative(entityPlayer))) itemStack.count--
                 takenOutFuse = installedFuse
                 installedFuse = fuseDescriptor
             }

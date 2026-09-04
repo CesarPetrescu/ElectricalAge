@@ -2111,7 +2111,7 @@ object CraftingRecipes {
             return
         }
         val output = outOres[0].copy()
-        output.stackSize = outputCount
+        output.count = outputCount
         LogWrapper.info("Adding mod recipe from $inputName to $outputName")
         for (input in inOres) {
             Eln.instance.maceratorRecipes.addRecipe(Recipe(input, output, f.toDouble()))

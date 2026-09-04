@@ -16,9 +16,9 @@ private class SimpleInventory(size: Int) : IInventory {
     override fun decrStackSize(slot: Int, amount: Int): ItemStack? {
         val stack = stacks[slot] ?: return null
         val removed = stack.copy()
-        removed.stackSize = amount.coerceAtMost(stack.stackSize)
-        stack.stackSize -= removed.stackSize
-        if (stack.stackSize <= 0) stacks[slot] = null
+        removed.count = amount.coerceAtMost(stack.count)
+        stack.count -= removed.count
+        if (stack.count <= 0) stacks[slot] = null
         return removed
     }
 
@@ -31,7 +31,7 @@ private class SimpleInventory(size: Int) : IInventory {
     override fun hasCustomInventoryName(): Boolean = false
     override fun getInventoryStackLimit(): Int = 64
     override fun markDirty() {}
-    override fun isUseableByPlayer(player: net.minecraft.entity.player.EntityPlayer?): Boolean = true
+    override fun isUsableByPlayer(player: net.minecraft.entity.player.EntityPlayer?): Boolean = true
     override fun openInventory() {}
     override fun closeInventory() {}
     override fun isItemValidForSlot(slot: Int, stack: ItemStack?): Boolean = true
@@ -63,7 +63,7 @@ class StackMachineProcessTest {
         process.process(1.0)
 
         assertTrue(inventory.getStackInSlot(0) == null)
-        assertEquals(1, inventory.getStackInSlot(1)!!.stackSize)
+        assertEquals(1, inventory.getStackInSlot(1)!!.count)
     }
 
     @Test

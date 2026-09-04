@@ -535,12 +535,12 @@ object UtilsClient {
             RenderHelper.disableStandardItemLighting()
             GL11.glDisable(32826)
         }
-        if (par1ItemStack!!.stackSize > 1) {
+        if (par1ItemStack!!.count > 1) {
             disableDepthTest()
             // GL11.glPushMatrix();
             // GL
             // GL11.glScalef(0.5f, 0.5f, 0.5f);
-            Minecraft.getMinecraft().fontRenderer.drawStringWithShadow("" + par1ItemStack.stackSize, x + 10, y + 9, -0x1)
+            Minecraft.getMinecraft().fontRenderer.drawStringWithShadow("" + par1ItemStack.count, x + 10, y + 9, -0x1)
             // GL11.glPopMatrix();
             enableDepthTest()
         }

@@ -180,7 +180,7 @@ public class EggIncubatorElement extends TransparentNodeElement {
         super.networkSerialize(stream);
         try {
             if (inventory.getStackInSlot(EggIncubatorContainer.EggSlotId) == null) stream.writeByte(0);
-            else stream.writeByte(inventory.getStackInSlot(EggIncubatorContainer.EggSlotId).stackSize);
+            else stream.writeByte(inventory.getStackInSlot(EggIncubatorContainer.EggSlotId).getCount());
 
             node.lrduCubeMask.getTranslate(front.down()).serialize(stream);
 

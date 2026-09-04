@@ -96,7 +96,7 @@ public class ElectricalFurnaceProcess implements IProcess {
             if (var1 == null) return false;
             if (inventory.getStackInSlot(ElectricalFurnaceElement.outSlotId) == null) return true;
             if (!inventory.getStackInSlot(ElectricalFurnaceElement.outSlotId).isItemEqual(var1)) return false;
-            int result = inventory.getStackInSlot(ElectricalFurnaceElement.outSlotId).stackSize + var1.stackSize;
+            int result = inventory.getStackInSlot(ElectricalFurnaceElement.outSlotId).getCount() + var1.getCount();
             return (result <= inventory.getInventoryStackLimit() && result <= var1.getMaxStackSize());
         }
     }
@@ -115,7 +115,7 @@ public class ElectricalFurnaceProcess implements IProcess {
             if (inventory.getStackInSlot(ElectricalFurnaceElement.outSlotId) == null) {
                 inventory.setInventorySlotContents(ElectricalFurnaceElement.outSlotId, var1.copy());
             } else if (inventory.getStackInSlot(ElectricalFurnaceElement.outSlotId).isItemEqual(var1)) {
-                inventory.decrStackSize(ElectricalFurnaceElement.outSlotId, -var1.stackSize);
+                inventory.decrStackSize(ElectricalFurnaceElement.outSlotId, -var1.getCount());
             }
 
             inventory.decrStackSize(ElectricalFurnaceElement.inSlotId, 1);

@@ -41,7 +41,7 @@ public class PowerInductorDescriptor extends TransparentNodeDescriptor {
         if (core == null)
             return getlValue(0);
         else
-            return getlValue(core.stackSize);
+            return getlValue(core.getCount());
     }
 
     public double getRsValue(IInventory inventory) {

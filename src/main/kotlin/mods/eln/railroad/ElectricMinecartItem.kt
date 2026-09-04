@@ -34,7 +34,7 @@ class ElectricMinecartItem(name: String) : GenericItemUsingDamageDescriptor(name
                 }
                 world.spawnEntity(minecart)
             }
-            --stack.stackSize
+            --stack.count
             true
         } else false
     }

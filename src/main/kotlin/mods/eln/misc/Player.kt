@@ -13,7 +13,7 @@ fun EntityPlayer.totalItemsCarried(stack: ItemStack): Int {
     return inventory.mainInventory
         .filterNotNull()
         .filter { it.isItemEqual(stack) }
-        .sumOf { it.stackSize }
+        .sumOf { it.count }
 }
 
 fun EntityPlayer.removeMultipleItems(stack: ItemStack, count: Int) {
@@ -24,8 +24,8 @@ fun EntityPlayer.removeMultipleItems(stack: ItemStack, count: Int) {
         inventory.mainInventory.indices.reversed().forEach { i ->
             val invStack = inventory.mainInventory[i]
             if (invStack?.isItemEqual(stack) == true) {
-                left -= invStack.splitStack(invStack.stackSize.coerceAtMost(left)).stackSize
-                assert(invStack.stackSize >= 0)
+                left -= invStack.splitStack(invStack.count.coerceAtMost(left)).count
+                assert(invStack.count >= 0)
                 // Black magic used to synchronize immediately with the client.
                 val slot = openContainer.getSlotFromInventory(inventory, i)
                 playerNetServerHandler.sendPacket(S2FPacketSetSlot(openContainer.windowId, slot.slotNumber, invStack))

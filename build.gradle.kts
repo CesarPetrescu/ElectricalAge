@@ -114,6 +114,13 @@ dependencies {
     compileOnly(rfg.deobf("org.squiddev:cc-tweaked-1.12.2:1.89.2"))
     compileOnly(rfg.deobf("net.industrial-craft:industrialcraft-2:2.8.222-ex112:api"))
 
+    // Build-time only: the lang-file generator parses the mod's own sources for tr()
+    // and TR_NAME() call sites. Never published, never loaded at runtime.
+    compileOnly("com.github.javaparser:javaparser-core:3.26.3")
+    compileOnly("org.jetbrains.kotlin:kotlin-compiler-embeddable:2.2.21")
+    runtimeOnly("com.github.javaparser:javaparser-core:3.26.3")
+    runtimeOnly("org.jetbrains.kotlin:kotlin-compiler-embeddable:2.2.21")
+
     testImplementation("junit:junit:4.13.2")
     testImplementation(kotlin("test-junit"))
 }

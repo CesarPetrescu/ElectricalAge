@@ -118,12 +118,12 @@ class ScannerElement(sixNode: SixNode, side: Direction, descriptor: SixNodeDescr
             val slots = te.getAccessibleSlotsFromSide(targetSide.ordinal)
             when (mode) {
                 ScanMode.SIMPLE -> slots.forEach {
-                        sum += te.getStackInSlot(it)?.stackSize ?: 0
+                        sum += te.getStackInSlot(it)?.count ?: 0
                         limit += te.inventoryStackLimit
                     }
 
                 ScanMode.SLOTS -> slots.forEach {
-                    sum += if ((te.getStackInSlot(it)?.stackSize ?: 0) > 0) 1 else 0
+                    sum += if ((te.getStackInSlot(it)?.count ?: 0) > 0) 1 else 0
                     limit += 1
                 }
             }
@@ -131,11 +131,11 @@ class ScannerElement(sixNode: SixNode, side: Direction, descriptor: SixNodeDescr
         } else if (te is IInventory) {
             val sum = when (mode) {
                 ScanMode.SIMPLE -> (0..te.sizeInventory - 1).sumOf {
-                    te.getStackInSlot(it)?.stackSize ?: 0
+                    te.getStackInSlot(it)?.count ?: 0
                 }.toDouble()
 
                 ScanMode.SLOTS -> (0..te.sizeInventory - 1).count {
-                    (te.getStackInSlot(it)?.stackSize ?: 0) > 0
+                    (te.getStackInSlot(it)?.count ?: 0) > 0
                 }.toDouble() * te.inventoryStackLimit
             }
             return sum / te.inventoryStackLimit / te.sizeInventory

@@ -502,14 +502,14 @@ object Utils {
 
         // First, make a list of possible target slots.
         val slots = ArrayList<Int>(4)
-        var need = stack.stackSize
+        var need = stack.count
         run {
             var i = 0
             while (i < inventory.sizeInventory && need > 0) {
                 val slot = inventory.getStackInSlot(i)
-                if (slot != null && slot.stackSize < limit && slot.isItemEqual(stack)) {
+                if (slot != null && slot.count < limit && slot.isItemEqual(stack)) {
                     slots.add(i)
-                    need -= limit - slot.stackSize
+                    need -= limit - slot.count
                 }
                 i++
             }
@@ -529,7 +529,7 @@ object Utils {
         }
 
         // Yes. Proceed.
-        var toPut = stack.stackSize
+        var toPut = stack.count
         for (slot in slots) {
             val target = inventory.getStackInSlot(slot)
             if (target == null) {
@@ -538,9 +538,9 @@ object Utils {
                 toPut -= amount
                 changed = true
             } else {
-                val space = limit - target.stackSize
+                val space = limit - target.count
                 val amount = toPut.coerceAtMost(space)
-                target.stackSize += amount
+                target.count += amount
                 toPut -= amount
                 if (amount > 0) changed = true
             }
@@ -575,15 +575,15 @@ object Utils {
                     oneStackDone = true
                     break
                 } else if (targetStack.isItemEqual(stack)) {
-                    // inventory.decrStackSize(idx, -stack.stackSize);
-                    val transferMax = limit - targetStack.stackSize
+                    // inventory.decrStackSize(idx, -stack.count);
+                    val transferMax = limit - targetStack.count
                     if (transferMax > 0) {
-                        var transfer = stack!!.stackSize
+                        var transfer = stack!!.count
                         if (transfer > transferMax) transfer = transferMax
-                        outputStack[idx]!!.stackSize += transfer
-                        stack.stackSize -= transfer
+                        outputStack[idx]!!.count += transfer
+                        stack.count -= transfer
                     }
-                    if (stack!!.stackSize == 0) {
+                    if (stack!!.count == 0) {
                         oneStackDone = true
                         break
                     }
@@ -603,20 +603,20 @@ object Utils {
                 val targetStack = inventory.getStackInSlot(slotsIdList[idx])
                 if (targetStack == null) {
                     inventory.setInventorySlotContents(slotsIdList[idx], stack.copy())
-                    stack.stackSize = 0
+                    stack.count = 0
                     changed = true
                     break
                 } else if (targetStack.isItemEqual(stack)) {
-                    // inventory.decrStackSize(idx, -stack.stackSize);
-                    val transferMax = limit - targetStack.stackSize
+                    // inventory.decrStackSize(idx, -stack.count);
+                    val transferMax = limit - targetStack.count
                     if (transferMax > 0) {
-                        var transfer = stack.stackSize
+                        var transfer = stack.count
                         if (transfer > transferMax) transfer = transferMax
                         inventory.decrStackSize(slotsIdList[idx], -transfer)
-                        stack.stackSize -= transfer
+                        stack.count -= transfer
                         if (transfer > 0) changed = true
                     }
-                    if (stack.stackSize == 0) {
+                    if (stack.count == 0) {
                         break
                     }
                 }

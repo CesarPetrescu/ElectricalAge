@@ -50,11 +50,11 @@ class SixNodeElementInventory : IInventory, INBTTReady, IUtilityCableInventory {
     override fun decrStackSize(slot: Int, amt: Int): ItemStack? {
         var stack = getStackInSlot(slot)
         if (stack != null) {
-            if (stack.stackSize <= amt) {
+            if (stack.count <= amt) {
                 setInventorySlotContents(slot, null)
             } else {
                 stack = stack.splitStack(amt)
-                if (stack.stackSize == 0) {
+                if (stack.count == 0) {
                     setInventorySlotContents(slot, null)
                 }
             }
@@ -73,8 +73,8 @@ class SixNodeElementInventory : IInventory, INBTTReady, IUtilityCableInventory {
     override fun setInventorySlotContents(slot: Int, stack: ItemStack?) {
         try {
             inv[slot] = stack
-            if (stack != null && stack.stackSize > inventoryStackLimit) {
-                stack.stackSize = inventoryStackLimit
+            if (stack != null && stack.count > inventoryStackLimit) {
+                stack.count = inventoryStackLimit
             }
         } catch (e: Exception) {
             // TODO: handle exception
@@ -89,7 +89,7 @@ class SixNodeElementInventory : IInventory, INBTTReady, IUtilityCableInventory {
         return stackLimit
     }
 
-    override fun isUseableByPlayer(player: EntityPlayer): Boolean {
+    override fun isUsableByPlayer(player: EntityPlayer): Boolean {
         return true
     }
 

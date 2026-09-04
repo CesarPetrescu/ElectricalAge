@@ -102,7 +102,7 @@ abstract class GridElement(transparentNode: TransparentNode, descriptor: Transpa
                     if (cable is UtilityCableDescriptor && consumeLength) {
                         cable.setRemainingLengthMeters(stack, cable.getRemainingLengthMeters(stack) - cableLength)
                         if (cable.getRemainingLengthMeters(stack) <= 0.0) {
-                            stack.stackSize -= 1
+                            stack.count -= 1
                         }
                         entityPlayer.inventory.markDirty()
                     } else if (cable !is UtilityCableDescriptor) {

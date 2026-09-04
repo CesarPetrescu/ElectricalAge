@@ -53,7 +53,7 @@ public class ElectricalMathGui extends GuiContainerEln {
         ItemStack stack = render.inventory.getStackInSlot(ElectricalMathContainer.restoneSlotId);
 
         if (stack != null)
-            redNbr = stack.stackSize;
+            redNbr = stack.getCount();
         if (!expression.getText().equals(render.expression)) {
             c = 0xFF404040;
             helper.drawString(8 + 44 / 2, 29, c, tr("Waiting for completion..."));

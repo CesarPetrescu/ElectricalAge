@@ -198,7 +198,7 @@ class FabricatorProcess(val element: FabricatorElement): IProcess {
         val canOutput = if (outputSlot != null) {
             val stack = element.inventory.getStackInSlot(FabricatorSlots.OUTPUT.slotId)
             if (operation != null)
-                stack!!.item == operation.outputItem.item && stack.stackSize + operation.perSheet < stack.maxStackSize
+                stack!!.item == operation.outputItem.item && stack.count + operation.perSheet < stack.maxStackSize
             else
                 true
         } else {
@@ -232,16 +232,16 @@ class FabricatorProcess(val element: FabricatorElement): IProcess {
             if (Math.random() <= operation.yieldPercentage) {
                 if (element.inventory.getStackInSlot(FabricatorSlots.OUTPUT.slotId) == null) {
                     val newStack = operation.outputItem.copy()
-                    newStack.stackSize = operation.perSheet
+                    newStack.count = operation.perSheet
                     element.inventory.setInventorySlotContents(FabricatorSlots.OUTPUT.slotId, newStack)
                     element.inventory.markDirty()
                     powerConsumed -= powerRequired
                     element.needPublish()
                 } else {
-                    val stackSize = element.inventory.getStackInSlot(FabricatorSlots.OUTPUT.slotId)!!.stackSize
+                    val stackSize = element.inventory.getStackInSlot(FabricatorSlots.OUTPUT.slotId)!!.count
                     if (stackSize in 0..63) {
                         val newStack = operation.outputItem.copy()
-                        newStack.stackSize = stackSize + operation.perSheet
+                        newStack.count = stackSize + operation.perSheet
                         element.inventory.setInventorySlotContents(FabricatorSlots.OUTPUT.slotId, newStack)
                         element.inventory.markDirty()
                         powerConsumed -= powerRequired

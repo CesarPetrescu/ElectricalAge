@@ -52,7 +52,7 @@ class PowerInductorSixDescriptor(name: String,
 
     fun getlValue(inventory: IInventory): Double {
         val core = inventory.getStackInSlot(PowerInductorSixContainer.cableId)
-        return if (core == null) getlValue(0) else getlValue(core.stackSize)
+        return if (core == null) getlValue(0) else getlValue(core.count)
     }
 
     fun getRsValue(inventory: IInventory): Double {
@@ -251,7 +251,7 @@ class PowerInductorSixElement(SixNode: SixNode, side: Direction, descriptor: Six
         if (stack == null) {
             compound.setInteger("indCableAmt", 0)
         } else {
-            compound.setInteger("indCableAmt", stack.stackSize)
+            compound.setInteger("indCableAmt", stack.count)
         }
         stack = inventory.getStackInSlot(PowerInductorSixContainer.coreId)
         val desc = GenericItemUsingDamageDescriptor.getDescriptor(stack)

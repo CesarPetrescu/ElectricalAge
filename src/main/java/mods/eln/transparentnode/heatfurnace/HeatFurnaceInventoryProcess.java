@@ -42,7 +42,7 @@ public class HeatFurnaceInventoryProcess implements IProcess, INBTTReady {
 
         int combustionChamberNbr = 0;
         if (combustionChamberStack != null) {
-            combustionChamberNbr = combustionChamberStack.stackSize;
+            combustionChamberNbr = combustionChamberStack.getCount();
         }
         furnace.furnaceProcess.nominalPower = furnace.descriptor.nominalPower + furnace.descriptor.combustionChamberPower * combustionChamberNbr;
 

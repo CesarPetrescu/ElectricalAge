@@ -352,7 +352,7 @@ class TurbineElement(node: TransparentNode, desc_: TransparentNodeDescriptor) :
         // Slot is empty, insert the blade, keeping its condition NBT intact.
         if (Eln.config.getBooleanOrElse("gameplay.qol.creativeNoConsumeInsertedItems", false) && player is EntityPlayerMP && Utils.isCreative(player)) {
             val bladeCopy = held.copy()
-            bladeCopy.stackSize = 1
+            bladeCopy.count = 1
             inventory.setInventorySlotContents(BLADE_SLOT, bladeCopy)
         } else {
             inventory.setInventorySlotContents(BLADE_SLOT, held.splitStack(1))

@@ -24,7 +24,7 @@ class Recipe {
     }
 
     fun canBeCraftedBy(stack: ItemStack?): Boolean {
-        return if (stack == null) false else input.stackSize <= stack.stackSize && Utils.areSame(stack, input)
+        return if (stack == null) false else input.count <= stack.count && Utils.areSame(stack, input)
     }
 
     val outputCopy: Array<ItemStack?>

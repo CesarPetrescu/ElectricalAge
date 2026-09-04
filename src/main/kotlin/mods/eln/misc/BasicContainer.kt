@@ -19,7 +19,7 @@ open class BasicContainer(player: EntityPlayer, protected var inventory: IInvent
     }
 
     override fun canInteractWith(player: EntityPlayer): Boolean {
-        return inventory.isUseableByPlayer(player)
+        return inventory.isUsableByPlayer(player)
     }
 
     private fun bindPlayerInventory(inventoryPlayer: InventoryPlayer?) {
@@ -54,7 +54,7 @@ open class BasicContainer(player: EntityPlayer, protected var inventory: IInvent
                 }
             }
 
-            if (itemstack1.stackSize == 0) {
+            if (itemstack1.count == 0) {
                 slot.putStack(null as ItemStack?)
             } else {
                 slot.onSlotChanged()
@@ -73,7 +73,7 @@ open class BasicContainer(player: EntityPlayer, protected var inventory: IInvent
         var slot: Slot
         var itemstack1: ItemStack?
         if (par1ItemStack.isStackable) {
-            while (par1ItemStack.stackSize > 0 && (!par4 && k < par3 || par4 && k >= par2)) {
+            while (par1ItemStack.count > 0 && (!par4 && k < par3 || par4 && k >= par2)) {
                 slot = inventorySlots[k] as Slot
                 itemstack1 = slot.stack
                 if (slot.isItemValid(par1ItemStack) && itemstack1 != null && itemstack1.item === par1ItemStack.item && (!par1ItemStack.hasSubtypes || par1ItemStack.itemDamage == itemstack1.itemDamage) && ItemStack.areItemStackTagsEqual(
@@ -81,17 +81,17 @@ open class BasicContainer(player: EntityPlayer, protected var inventory: IInvent
                         itemstack1
                     )
                 ) {
-                    val l = itemstack1.stackSize + par1ItemStack.stackSize
+                    val l = itemstack1.count + par1ItemStack.count
                     val maxSize = min(slot.slotStackLimit.toDouble(), par1ItemStack.maxStackSize.toDouble())
                         .toInt()
                     if (l <= maxSize) {
-                        par1ItemStack.stackSize = 0
-                        itemstack1.stackSize = l
+                        par1ItemStack.count = 0
+                        itemstack1.count = l
                         slot.onSlotChanged()
                         flag1 = true
-                    } else if (itemstack1.stackSize < maxSize) {
-                        par1ItemStack.stackSize -= maxSize - itemstack1.stackSize
-                        itemstack1.stackSize = maxSize
+                    } else if (itemstack1.count < maxSize) {
+                        par1ItemStack.count -= maxSize - itemstack1.count
+                        itemstack1.count = maxSize
                         slot.onSlotChanged()
                         flag1 = true
                     }
@@ -103,7 +103,7 @@ open class BasicContainer(player: EntityPlayer, protected var inventory: IInvent
                 }
             }
         }
-        if (par1ItemStack.stackSize > 0) {
+        if (par1ItemStack.count > 0) {
             k = if (par4) {
                 par3 - 1
             } else {
@@ -113,19 +113,19 @@ open class BasicContainer(player: EntityPlayer, protected var inventory: IInvent
                 slot = inventorySlots[k] as Slot
                 itemstack1 = slot.stack
                 if (itemstack1 == null && slot.isItemValid(par1ItemStack)) {
-                    val l = par1ItemStack.stackSize
+                    val l = par1ItemStack.count
                     val maxSize = min(slot.slotStackLimit.toDouble(), par1ItemStack.maxStackSize.toDouble())
                         .toInt()
                     if (l <= maxSize) {
                         slot.putStack(par1ItemStack.copy())
                         slot.onSlotChanged()
-                        par1ItemStack.stackSize = 0
+                        par1ItemStack.count = 0
                         flag1 = true
                         break
                     } else {
-                        par1ItemStack.stackSize -= maxSize
+                        par1ItemStack.count -= maxSize
                         val newItemStack = par1ItemStack.copy()
-                        newItemStack.stackSize = maxSize
+                        newItemStack.count = maxSize
                         slot.putStack(newItemStack)
                         slot.onSlotChanged()
                         flag1 = true

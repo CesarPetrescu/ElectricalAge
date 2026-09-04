@@ -45,7 +45,7 @@ public class PowerCapacitorDescriptor extends TransparentNodeDescriptor {
         if (core == null || diel == null)
             return getCValue(0, 0);
         else {
-            return getCValue(core.stackSize, getUNominalValue(inventory));
+            return getCValue(core.getCount(), getUNominalValue(inventory));
         }
     }
 
@@ -55,7 +55,7 @@ public class PowerCapacitorDescriptor extends TransparentNodeDescriptor {
             return 10000;
         else {
             DielectricItem desc = (DielectricItem) GenericItemUsingDamageDescriptor.getDescriptor(diel, DielectricItem.class);
-            return desc == null ? 10000 : desc.uNominal * diel.stackSize;
+            return desc == null ? 10000 : desc.uNominal * diel.getCount();
         }
     }
 

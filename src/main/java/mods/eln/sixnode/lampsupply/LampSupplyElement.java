@@ -442,7 +442,7 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
     private int getRange(LampSupplyDescriptor desc, IInventory inventory2) {
         ItemStack stack = getInventory().getStackInSlot(LampSupplyContainer.cableSlotId);
         if (stack == null) return desc.range;
-        return desc.range + stack.stackSize;
+        return desc.range + stack.getCount();
     }
 
     @Override

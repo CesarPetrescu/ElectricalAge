@@ -259,24 +259,24 @@ class LegacyDcDcElement(transparentNode: TransparentNode, descriptor: Transparen
         val coreFactor = coreDescriptor?.cableMultiplicator ?: 1.0
         val hasValidCore = coreDescriptor != null
 
-        if (primaryCable == null || !hasValidCore || primaryCable.stackSize < 1) {
+        if (primaryCable == null || !hasValidCore || primaryCable.count < 1) {
             primaryLoad.highImpedance()
             populated = false
         } else {
             primaryLoad.serialResistance = coreFactor * 0.01
         }
 
-        if (secondaryCable == null || !hasValidCore || secondaryCable.stackSize < 1) {
+        if (secondaryCable == null || !hasValidCore || secondaryCable.count < 1) {
             secondaryLoad.highImpedance()
             populated = false
         } else {
             secondaryLoad.serialResistance = coreFactor * 0.01
         }
 
-        populated = primaryCable != null && secondaryCable != null && primaryCable.stackSize >= 1 && secondaryCable.stackSize >= 1 && hasValidCore
+        populated = primaryCable != null && secondaryCable != null && primaryCable.count >= 1 && secondaryCable.count >= 1 && hasValidCore
 
         ratioControl = if (populated) {
-            secondaryCable!!.stackSize.toDouble() / primaryCable!!.stackSize.toDouble()
+            secondaryCable!!.count.toDouble() / primaryCable!!.count.toDouble()
         } else {
             1.0
         }
@@ -317,11 +317,11 @@ class LegacyDcDcElement(transparentNode: TransparentNode, descriptor: Transparen
             if (inventory.getStackInSlot(0) == null)
                 stream.writeByte(0)
             else
-                stream.writeByte(inventory.getStackInSlot(0)!!.stackSize)
+                stream.writeByte(inventory.getStackInSlot(0)!!.count)
             if (inventory.getStackInSlot(1) == null)
                 stream.writeByte(0)
             else
-                stream.writeByte(inventory.getStackInSlot(1)!!.stackSize)
+                stream.writeByte(inventory.getStackInSlot(1)!!.count)
             Utils.serialiseItemStack(stream, inventory.getStackInSlot(LegacyDcDcContainer.ferromagneticSlotId))
             Utils.serialiseItemStack(stream, inventory.getStackInSlot(LegacyDcDcContainer.primaryCableSlotId))
             Utils.serialiseItemStack(stream, inventory.getStackInSlot(LegacyDcDcContainer.secondaryCableSlotId))

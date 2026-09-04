@@ -515,7 +515,7 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
         val material = input.detectIngotMaterial() ?: return
         if (loadedMaterial != null && loadedMaterial != material) return
         loadedMaterial = material
-        loadedMassKg += input.stackSize.toDouble()
+        loadedMassKg += input.count.toDouble()
         inventory.setInventorySlotContents(0, null)
         inventory.markDirty()
     }
@@ -527,7 +527,7 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
     private fun absorbInsulationInput() {
         val input = inventory.getStackInSlot(1) ?: return
         if (!input.matchesOre("itemRubber")) return
-        insulationMetersBuffer += input.stackSize * 32.0
+        insulationMetersBuffer += input.count * 32.0
         inventory.setInventorySlotContents(1, null)
         inventory.markDirty()
     }

@@ -49,7 +49,7 @@ class RecipesList {
         fun getGlobalRecipeWithOutput(output: ItemStack): ArrayList<Recipe> {
             var output = output
             output = output.copy()
-            output.stackSize = 1
+            output.count = 1
             val list = ArrayList<Recipe>()
             for (recipesList in listOfList) {
                 list.addAll(recipesList.getRecipeFromOutput(output))
@@ -79,7 +79,7 @@ class RecipesList {
         fun getGlobalRecipeWithInput(input: ItemStack): ArrayList<Recipe> {
             var input = input
             input = input.copy()
-            input.stackSize = 64
+            input.count = 64
             val list = ArrayList<Recipe>()
             for (recipesList in listOfList) {
                 val r = recipesList.getRecipe(input)
@@ -91,7 +91,7 @@ class RecipesList {
             if (smeltResult != null) {
                 try {
                     val input1 = input.copy()
-                    input1.stackSize = 1
+                    input1.count = 1
                     list.add(Recipe(input1, smeltResult, ElectricalFurnaceProcess.energyNeededPerSmelt).also { smeltRecipe = it })
                     smeltRecipe.machineList.addAll(Eln.instance.furnaceList)
                 } catch (e: Exception) {

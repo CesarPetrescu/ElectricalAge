@@ -29,7 +29,7 @@ public abstract class ItemMovingHelper {
         int now = 0;
         ItemStack stack = dst.getStackInSlot(dstSlot);
         if(stack != null) {
-            now = stack.stackSize;
+            now = stack.getCount();
         }
         Utils.println(String.format("IMH.m: now %d, desired %d", now, desired));
         if(now < desired) {
@@ -40,17 +40,17 @@ public abstract class ItemMovingHelper {
                 if(!acceptsStack(invStack)) continue;
                 if (Utils.getItemObject(invStack) instanceof UtilityCableDescriptor) {
                     if (IUtilityCableInventory.trimCable(invStack, dst, dstSlot)) {
-                        if (invStack.stackSize == 0) src.setInventorySlotContents(idx, null);
+                        if (invStack.getCount() == 0) src.setInventorySlotContents(idx, null);
                         syncItemInSlot(src, idx);
-                        diff -= Math.min(invStack.stackSize, diff);
+                        diff -= Math.min(invStack.getCount(), diff);
                         Utils.println(String.format("IMH.m: moved %d into node", (desired - now) - diff));
                         return; // trimCable automatically marks the destination inventory as dirty, if necessary
                     } else continue;
                 }
-                int move = Math.min(invStack.stackSize, diff);
+                int move = Math.min(invStack.getCount(), diff);
                 diff -= move;
-                invStack.stackSize -= move;
-                if(invStack.stackSize == 0) {
+                invStack.shrink(move);
+                if(invStack.getCount() == 0) {
                     invStack = null;
                 }
                 src.setInventorySlotContents(idx, invStack);
