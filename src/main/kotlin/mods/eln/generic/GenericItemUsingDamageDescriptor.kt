@@ -14,6 +14,8 @@ import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.ResourceLocation
+import net.minecraft.block.state.IBlockState
+import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
 import mods.eln.client.itemrender.IItemRenderer.ItemRendererHelper
@@ -120,11 +122,12 @@ open class GenericItemUsingDamageDescriptor {
         return nbt
     }
 
-    open fun getStrVsBlock(stack: ItemStack, block: Block?): Float {
+    /** 1.8's Item.getDestroySpeed: the block is identified by its state now, not the Block. */
+    open fun getDestroySpeed(stack: ItemStack, state: IBlockState): Float {
         return 0.2f
     }
 
-    open fun onBlockDestroyed(stack: ItemStack, w: World, block: Block, x: Int, y: Int, z: Int, entity: EntityLivingBase): Boolean {
+    open fun onBlockDestroyed(stack: ItemStack, w: World, state: IBlockState, pos: BlockPos, entity: EntityLivingBase): Boolean {
         return false
     }
 

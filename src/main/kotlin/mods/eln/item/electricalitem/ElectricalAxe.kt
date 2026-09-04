@@ -11,6 +11,7 @@ import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.util.math.BlockPos
+import net.minecraft.block.state.IBlockState
 import net.minecraft.world.World
 import java.util.*
 import kotlin.collections.HashMap
@@ -34,10 +35,11 @@ class ElectricalAxe(name: String, strengthOn: Float, strengthOff: Float,
         list.add(tr("Cuts down trees. Right-click to make it act like a regular axe."))
     }
 
-    override fun getStrVsBlock(stack: ItemStack, block: Block?): Float {
+    override fun getDestroySpeed(stack: ItemStack, state: IBlockState): Float {
+        val material = state.material
         return when {
-            block != null && (block.material === Material.wood || block.material === Material.plants || block.material === Material.vine) -> getStrength(stack)
-            else -> super.getStrVsBlock(stack, block)
+            material === Material.WOOD || material === Material.PLANTS || material === Material.VINE -> getStrength(stack)
+            else -> super.getDestroySpeed(stack, state)
         }
     }
 
@@ -63,7 +65,7 @@ class ElectricalAxe(name: String, strengthOn: Float, strengthOff: Float,
         }
     }
 
-    override fun onBlockDestroyed(stack: ItemStack, w: World, block: Block, x: Int, y: Int, z: Int, entity: EntityLivingBase): Boolean {
+    override fun onBlockDestroyed(stack: ItemStack, w: World, state: IBlockState, pos: BlockPos, entity: EntityLivingBase): Boolean {
         return if (entity is EntityPlayer && getCapitation(stack)) {
             TreeCapitation.addBlockSwapper(
                 world = w,
@@ -71,11 +73,11 @@ class ElectricalAxe(name: String, strengthOn: Float, strengthOff: Float,
                 tool = this,
                 stack = stack,
                 leaves = true,
-                origCoords = BlockPos(x, y, z)
+                origCoords = pos
             )
             true
         } else {
-            super.onBlockDestroyed(stack, w, block, x, y, z, entity)
+            super.onBlockDestroyed(stack, w, state, pos, entity)
         }
     }
 }
@@ -150,7 +152,7 @@ object TreeCapitation : IProcess {
         if (world.isRemote)
             return
 
-        val dim = world.provider.dimensionId
+        val dim = world.provider.dimension
         blockSwappers[dim] = blockSwappers[dim]?.plus(swapper) ?: listOf(swapper)
     }
 
@@ -259,15 +261,7 @@ object TreeCapitation : IProcess {
 
                 // Otherwise, perform the break and then look at the adjacent tiles.
                 // This is a ridiculous function call here.
-                removeBlockWithDrops(
-                    player = player,
-                    tool = tool,
-                    stack = stack,
-                    world = world,
-                    x = candidate.coordinates.x,
-                    y = candidate.coordinates.y,
-                    z = candidate.coordinates.z
-                )
+                removeBlockWithDrops(player, tool, stack, world, candidate.coordinates)
 
                 remainingSwaps--
 
@@ -276,10 +270,11 @@ object TreeCapitation : IProcess {
                 // Then, go through all of the adjacent blocks and look if
                 // any of them are any good.
                 for (adj in adjacent(candidate.coordinates)) {
-                    val block = world.getBlock(adj.x, adj.y, adj.z)
+                    val adjState = world.getBlockState(adj)
+                    val block = adjState.block
 
-                    val isWood = block.isWood(world, adj.x, adj.y, adj.z)
-                    val isLeaf = block.isLeaves(world, adj.x, adj.y, adj.z)
+                    val isWood = block.isWood(world, adj)
+                    val isLeaf = block.isLeaves(adjState, world, adj)
 
                     // If it's not wood or a leaf, we aren't interested.
                     if (!isWood && !isLeaf)
@@ -366,32 +361,36 @@ object TreeCapitation : IProcess {
     /**
      * The bits below, however, are from ToolCommons.java. Mostly. Maybe about half, by now.
      */
-    fun removeBlockWithDrops(player: EntityPlayer, tool: ElectricalTool, stack: ItemStack, world: World, x: Int, y: Int, z: Int) {
-        if (world.isRemote || !world.isBlockLoaded(x, y, z))
+    fun removeBlockWithDrops(player: EntityPlayer, tool: ElectricalTool, stack: ItemStack, world: World, pos: BlockPos) {
+        if (world.isRemote || !world.isBlockLoaded(pos))
             return
 
-        val block = world.getBlock(x, y, z)
-        val meta = world.getBlockMetadata(x, y, z)
+        val state = world.getBlockState(pos)
+        val block = state.block
 
-        if (block != null && !block.isAir(world, x, y, z) && block.getPlayerRelativeBlockHardness(player, world, x, y, z) > 0) {
-            if (!block.canHarvestBlock(player, meta))
+        if (!block.isAir(state, world, pos) && state.getPlayerRelativeBlockHardness(player, world, pos) > 0) {
+            if (!block.canHarvestBlock(world, pos, player))
                 return
 
             if (!player.capabilities.isCreativeMode) {
                 val energy = tool.getEnergy(stack)
-                tool.subtractEnergyForBlockBreak(stack, block)
+                tool.subtractEnergyForBlockBreak(stack, state)
                 val newEnergy = tool.getEnergy(stack)
                 if (newEnergy > 0 && newEnergy < energy) {
-                    val localMeta = world.getBlockMetadata(x, y, z)
-                    block.onBlockHarvested(world, x, y, z, localMeta, player)
+                    // Same sequence as PlayerInteractionManager.tryHarvestBlock. The tile entity
+                    // is captured before removedByPlayer() discards it, because harvestBlock()
+                    // hands it to the block so drops that depend on it (inventories, our own
+                    // node blocks) can still read it.
+                    val tileEntity = world.getTileEntity(pos)
+                    block.onBlockHarvested(world, pos, state, player)
 
-                    if (block.removedByPlayer(world, player, x, y, z, true)) {
-                        block.onBlockDestroyedByPlayer(world, x, y, z, localMeta)
-                        block.harvestBlock(world, player, x, y, z, localMeta)
+                    if (block.removedByPlayer(state, world, pos, player, true)) {
+                        block.onPlayerDestroy(world, pos, state)
+                        block.harvestBlock(world, player, pos, state, tileEntity, stack)
                     }
                 }
             } else {
-                world.setBlockToAir(x, y, z)
+                world.setBlockToAir(pos)
             }
         }
     }

@@ -15,6 +15,8 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
@@ -202,20 +204,20 @@ public class GenericItemUsingDamage<Descriptor extends GenericItemUsingDamageDes
     }
 
     @Override
-    public float func_150893_a(ItemStack stack, Block block) { //getStrVsBlock
+    public float getDestroySpeed(ItemStack stack, IBlockState state) {
         GenericItemUsingDamageDescriptor d = getDescriptor(stack);
         if (d == null)
             return 0.2f;
-        return d.getStrVsBlock(stack, block);
+        return d.getDestroySpeed(stack, state);
     }
 
     @Override
-    public boolean canHarvestBlock(Block par1Block, ItemStack item) {
+    public boolean canHarvestBlock(IBlockState state, ItemStack stack) {
         return true;
     }
 
     @Override
-    public boolean onBlockDestroyed(ItemStack stack, World w, Block block, int x, int y, int z, EntityLivingBase entity) {
+    public boolean onBlockDestroyed(ItemStack stack, World w, IBlockState state, BlockPos pos, EntityLivingBase entity) {
         if (w.isRemote) {
             return false;
         }
@@ -224,7 +226,7 @@ public class GenericItemUsingDamage<Descriptor extends GenericItemUsingDamageDes
 
         if (d == null)
             return true;
-        return d.onBlockDestroyed(stack, w, block, x, y, z, entity);
+        return d.onBlockDestroyed(stack, w, state, pos, entity);
     }
 
     @Override

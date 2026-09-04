@@ -10,6 +10,8 @@ import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
+import net.minecraft.block.state.IBlockState
+import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 
 class ElectricalPickaxe(name: String, strengthOn: Float, strengthOff: Float,
@@ -25,12 +27,13 @@ class ElectricalPickaxe(name: String, strengthOn: Float, strengthOff: Float,
         Data.addPortable(newItemStack())
     }
 
-    override fun getStrVsBlock(stack: ItemStack, block: Block?): Float {
+    override fun getDestroySpeed(stack: ItemStack, state: IBlockState): Float {
+        val material = state.material
         var value = when {
-            block != null && (block.material === Material.iron || block.material === Material.glass || block.material === Material.anvil || block.material === Material.ROCK) -> getStrength(stack)
-            else -> super.getStrVsBlock(stack, block)
+            material === Material.IRON || material === Material.GLASS || material === Material.ANVIL || material === Material.ROCK -> getStrength(stack)
+            else -> super.getDestroySpeed(stack, state)
         }
-        if (blocksEffectiveAgainst.any { it == block }) {
+        if (blocksEffectiveAgainst.any { it == state.block }) {
             value = getStrength(stack)
         }
         return value
@@ -53,8 +56,8 @@ class ElectricalPickaxe(name: String, strengthOn: Float, strengthOff: Float,
         }
     }
 
-    override fun onBlockDestroyed(stack: ItemStack, w: World, block: Block, x: Int, y: Int, z: Int, entity: EntityLivingBase): Boolean {
-        val ok = super.onBlockDestroyed(stack, w, block, x, y, z, entity)
+    override fun onBlockDestroyed(stack: ItemStack, w: World, state: IBlockState, pos: BlockPos, entity: EntityLivingBase): Boolean {
+        val ok = super.onBlockDestroyed(stack, w, state, pos, entity)
         if (entity !is EntityPlayer) return ok
         if (!ok) return ok
         if (!getConservative(stack)) {
@@ -62,10 +65,7 @@ class ElectricalPickaxe(name: String, strengthOn: Float, strengthOff: Float,
                 for (b in (-1..0)) {
                     for (c in (-1..1)) {
                         if (a == 0 && b == 0 && c == 0) continue
-                        val i = x+a
-                        val j = y+b
-                        val k = z+c
-                        removeBlockWithDrops(entity, this, stack, w, i, j, k)
+                        removeBlockWithDrops(entity, this, stack, w, pos.add(a, b, c))
                     }
                 }
             }

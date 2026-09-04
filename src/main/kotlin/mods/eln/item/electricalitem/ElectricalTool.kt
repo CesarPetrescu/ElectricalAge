@@ -13,6 +13,8 @@ import net.minecraft.init.Blocks
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.ResourceLocation
+import net.minecraft.block.state.IBlockState
+import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
 import mods.eln.client.itemrender.IItemRenderer.ItemRendererHelper
@@ -28,14 +30,14 @@ open class ElectricalTool(name: String, var strengthOn: Float, var strengthOff: 
         return super.onEntitySwing(entityLiving, stack)
     }
 
-    override fun onBlockDestroyed(stack: ItemStack, w: World, block: Block, x: Int, y: Int, z: Int, entity: EntityLivingBase): Boolean {
-        subtractEnergyForBlockBreak(stack, block)
+    override fun onBlockDestroyed(stack: ItemStack, w: World, state: IBlockState, pos: BlockPos, entity: EntityLivingBase): Boolean {
+        subtractEnergyForBlockBreak(stack, state)
         Utils.println("destroy")
         return true
     }
 
-    fun subtractEnergyForBlockBreak(stack: ItemStack, block: Block) {
-        if (getStrVsBlock(stack, block) == strengthOn) {
+    fun subtractEnergyForBlockBreak(stack: ItemStack, state: IBlockState) {
+        if (getDestroySpeed(stack, state) == strengthOn) {
             var e = getEnergy(stack) - energyPerBlock
             if (e < 0) e = 0.0
             setEnergy(stack, e)
