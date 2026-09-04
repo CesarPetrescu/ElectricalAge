@@ -101,6 +101,14 @@ Java is measured with `./gradlew compileJava --continue` and counting `error:`
 lines (`-Xmaxerrs 10000` is set so javac reports all of them):
 
      199  baseline, first javac run against the compiled Kotlin
+       0  Java compiles
+
+Then the runtime gates, all reachable headlessly (`tools/port/headless.md`):
+
+    build -x test    green, reobfuscated jar produced
+    test             305 / 305, unmodified
+    runServer        boots to "Done"
+    runClient        reaches the main menu, zero model/blockstate/sound errors
 
 ## Tooling
 
@@ -111,9 +119,10 @@ lines (`-Xmaxerrs 10000` is set so javac reports all of them):
 
 ## Phases
 
-0. **Build** - RFG on 1.12.2, relocated shading, tests, `Tags`. Exit: compiler reaches Minecraft API errors only.
-1. **Compile** - the 632 MC-coupled files, bottom-up. Exit: `build -x test` green, then all 104 upstream tests pass unmodified.
+0. **Build** - RFG on 1.12.2, relocated shading, tests, `Tags`. Exit: compiler reaches Minecraft API errors only. **Done.**
+1. **Compile** - the 632 MC-coupled files, bottom-up. Exit: `build -x test` green, then all upstream tests pass unmodified. **Done** (305 tests).
 2. **Boot** - registry events, model loader, blockstates, TESRs, sounds. Exit: 50 V cable + battery + lamp works on a *dedicated* server and survives a restart.
+   Server and client both start clean; the in-world circuit is what remains.
 3. **Render** - `GlStateManager` sweep, TEISR for 3D items, six-node camouflage. Exit: screenshots match 1.7.10.
 4. **Gameplay** - 449 crafting recipes, fluid/item/energy capabilities, integrations, advancements. Exit: scripted survival run, ore to 800 V grid.
 5. **Release** - per-descriptor sweep, multiplayer soak, MNA parity, upstream catch-up.
