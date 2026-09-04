@@ -61,7 +61,7 @@ jobs:
         shell: bash
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends xvfb xauth
+          sudo apt-get install -y --no-install-recommends xvfb xauth x11-xserver-utils mesa-utils
 
       - name: Record environment
         working-directory: rewired
@@ -71,6 +71,7 @@ jobs:
           java -version 2>&1 | tee baseline-java.log
           git rev-parse HEAD | tee baseline-commit.log
           sha256sum gradle/wrapper/gradle-wrapper.jar | tee baseline-wrapper.log
+          xrandr --version 2>&1 | tee baseline-xrandr-version.log
 
       - name: Set up decompiled workspace
         working-directory: rewired
@@ -134,12 +135,16 @@ jobs:
         shell: bash
         env:
           ALSOFT_DRIVERS: null
+          LIBGL_ALWAYS_SOFTWARE: '1'
         run: |
           set -euo pipefail
           rm -rf run/logs run/crash-reports
           : > baseline-client.log
+          : > baseline-xdisplay.log
 
-          setsid xvfb-run -a -s '-screen 0 1280x720x24' ./gradlew runClient --no-daemon --stacktrace > baseline-client.log 2>&1 &
+          setsid xvfb-run -a -s '-screen 0 1280x720x24 -ac +extension GLX +render -noreset' \
+            bash -lc 'xrandr --query > baseline-xdisplay.log 2>&1; glxinfo -B >> baseline-xdisplay.log 2>&1 || true; exec ./gradlew runClient --no-daemon --stacktrace' \
+            > baseline-client.log 2>&1 &
           pid=$!
           ready=0
 
@@ -162,6 +167,7 @@ jobs:
           kill -KILL -- "-$pid" 2>/dev/null || true
           wait "$pid" 2>/dev/null || true
 
+          cat baseline-xdisplay.log || true
           find run -type f -name 'latest.log' -print -exec tail -n 250 {} \; >> baseline-client.log 2>/dev/null || true
           tail -n 300 baseline-client.log
 
