@@ -522,7 +522,7 @@ object UtilsClient {
         // ForgeHooksClient.renderInventoryItem(new RenderBlocks(),Minecraft.getMinecraft().getTextureManager(),par1ItemStack,false,0,x,y);
         itemRenderer.zLevel = 400.0f
         // ForgeHooksClient.renderInventoryItem(renderBlocks, engine, item, inColor, zLevel, x, y)
-        if (par1ItemStack == null || par1ItemStack.isEmpty) return
+        if (par1ItemStack.isNothing() || par1ItemStack.isEmpty) return
         // 1.8 dropped the font/texture-manager arguments: RenderItem resolves the baked model
         // and the atlas itself.
         itemRenderer.renderItemAndEffectIntoGUI(par1ItemStack, x, y)

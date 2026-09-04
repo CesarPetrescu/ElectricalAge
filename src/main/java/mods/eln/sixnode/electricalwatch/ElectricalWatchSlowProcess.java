@@ -1,5 +1,6 @@
 package mods.eln.sixnode.electricalwatch;
 
+import mods.eln.misc.McBridge;
 import mods.eln.generic.GenericItemUsingDamageDescriptor;
 import mods.eln.item.electricalitem.BatteryItem;
 import mods.eln.misc.INBTTReady;
@@ -37,7 +38,7 @@ public class ElectricalWatchSlowProcess implements IProcess, INBTTReady {
             if (upToDate) {
                 upToDate = false;
                 oldDate = element.sixNode.coordinate.world().getWorldTime();
-                if (battery != null && batteryStack != null) battery.setEnergy(batteryStack, 0);
+                if (battery != null && !McBridge.isNothing(batteryStack)) battery.setEnergy(batteryStack, 0);
                 element.needPublish();
             }
         } else {

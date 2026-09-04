@@ -1,5 +1,6 @@
 package mods.eln.transparentnode.heatfurnace;
 
+import mods.eln.misc.McBridge;
 import mods.eln.i18n.I18N;
 import mods.eln.item.regulator.IRegulatorDescriptor;
 import mods.eln.misc.Direction;
@@ -168,13 +169,13 @@ public class HeatFurnaceElement extends TransparentNodeElement {
         try {
             switch (packetType) {
                 case unserializeGain:
-                    if (inventory.getStackInSlot(HeatFurnaceContainer.regulatorId) == null) {
+                    if (McBridge.isNothing(inventory.getStackInSlot(HeatFurnaceContainer.regulatorId))) {
                         furnaceProcess.setGain(stream.readFloat());
                     }
                     needPublish();
                     break;
                 case unserializeTemperatureTarget:
-                    //if(inventory.getStackInSlot(HeatFurnaceContainer.regulatorId) == null)
+                    //if(McBridge.isNothing(inventory.getStackInSlot(HeatFurnaceContainer.regulatorId)))
                 {
                     regulator.setTarget(stream.readFloat());
                 }
@@ -226,7 +227,7 @@ public class HeatFurnaceElement extends TransparentNodeElement {
     void computeInventory() {
         ItemStack regulatorStack = inventory.getStackInSlot(HeatFurnaceContainer.regulatorId);
 
-        if (regulatorStack != null && !controlExternal) {
+        if (!McBridge.isNothing(regulatorStack) && !controlExternal) {
             IRegulatorDescriptor regulator = (IRegulatorDescriptor) Utils.getItemObject(regulatorStack);
 
             regulator.applyTo(this.regulator, 500.0, 10.0, 0.1, 0.1);

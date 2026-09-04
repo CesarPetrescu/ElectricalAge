@@ -19,6 +19,7 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
 import mods.eln.client.itemrender.IItemRenderer.ItemRendererHelper
+import mods.eln.misc.isNothing
 
 open class GenericItemUsingDamageDescriptor {
 
@@ -85,7 +86,7 @@ open class GenericItemUsingDamageDescriptor {
     fun isHidden(): Boolean = hidden
 
     fun checkSameItemStack(stack: ItemStack?): Boolean {
-        if (stack == null) return false
+        if (stack.isNothing()) return false
         return !(stack.item !== this.parentItem || stack.itemDamage != parentItemDamage)
     }
 
@@ -154,7 +155,7 @@ open class GenericItemUsingDamageDescriptor {
 
         @JvmStatic
         fun getDescriptor(stack: ItemStack?): GenericItemUsingDamageDescriptor? {
-            if (stack == null) return null
+            if (stack.isNothing()) return null
             return if (stack.item !is GenericItemUsingDamage<*>) null else (stack.item as GenericItemUsingDamage<*>).getDescriptor(stack)
         }
 

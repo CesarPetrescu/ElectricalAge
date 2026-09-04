@@ -368,6 +368,9 @@ public class Obj3D {
      */
     @Nullable
     private BufferedReader getResourceAsStream(String filePath, boolean trySource) {
+        // Minecraft 1.11+ lowercases every ResourceLocation path, so the asset tree is lowercase
+        // while callers still pass the original mixed-case model names.
+        filePath = filePath.toLowerCase(java.util.Locale.ROOT);
         BufferedReader reader = null;
         if (trySource) {
             final String path = "../src/main/resources/assets/eln/" + filePath;

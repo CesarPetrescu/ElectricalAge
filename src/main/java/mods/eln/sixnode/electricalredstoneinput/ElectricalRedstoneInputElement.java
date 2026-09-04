@@ -1,5 +1,6 @@
 package mods.eln.sixnode.electricalredstoneinput;
 
+import mods.eln.misc.McBridge;
 import mods.eln.i18n.I18N;
 import mods.eln.misc.Direction;
 import mods.eln.misc.LRDU;
@@ -127,7 +128,7 @@ public class ElectricalRedstoneInputElement extends SixNodeElement {
     public boolean onBlockActivated(EntityPlayer entityPlayer, Direction side, float vx, float vy, float vz) {
         if (onBlockActivatedRotate(entityPlayer)) return true;
         ItemStack currentItemStack = entityPlayer.getHeldItemMainhand();
-        if (currentItemStack != null) {
+        if (!McBridge.isNothing(currentItemStack)) {
             Item item = currentItemStack.getItem();
             /*if (item== Eln.toolsSetItem) {
 				colorCare = colorCare ^ 1;

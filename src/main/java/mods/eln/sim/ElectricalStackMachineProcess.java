@@ -1,5 +1,6 @@
 package mods.eln.sim;
 
+import mods.eln.misc.McBridge;
 import mods.eln.misc.Recipe;
 import mods.eln.misc.RecipesList;
 import mods.eln.misc.Utils;
@@ -63,7 +64,7 @@ public class ElectricalStackMachineProcess implements IProcess {
     public void process(double time) {
         ItemStack itemStackIn = inventory.getStackInSlot(inputSlotId);
 
-        boolean itemTypeChanged = itemStackIn == null && itemStackInOld != null || itemStackIn != null && itemStackInOld == null || itemStackIn != null && !itemStackIn.getTranslationKey().equals(itemStackInOld.getTranslationKey());
+        boolean itemTypeChanged = McBridge.isNothing(itemStackIn) && !McBridge.isNothing(itemStackInOld) || !McBridge.isNothing(itemStackIn) && McBridge.isNothing(itemStackInOld) || !McBridge.isNothing(itemStackIn) && !itemStackIn.getTranslationKey().equals(itemStackInOld.getTranslationKey());
 
         if (itemTypeChanged || (!smeltCan()) || !smeltInProcess) {
             smeltInit();
@@ -106,7 +107,7 @@ public class ElectricalStackMachineProcess implements IProcess {
      * Returns true if the furnace can smelt an item, i.e. has a source item, destination stack isn't full, etc.
      */
     public boolean smeltCan() {
-        if (inventory.getStackInSlot(inputSlotId) == null) {
+        if (McBridge.isNothing(inventory.getStackInSlot(inputSlotId))) {
             return false;
         } else {
             ItemStack[] output = getSmeltResult();

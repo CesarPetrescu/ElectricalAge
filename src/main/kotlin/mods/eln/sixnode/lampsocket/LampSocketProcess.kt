@@ -18,6 +18,8 @@ import kotlin.math.abs
 import mods.eln.misc.xCoord
 import mods.eln.misc.yCoord
 import mods.eln.misc.zCoord
+import mods.eln.misc.getBlockState
+import mods.eln.misc.isNothing
 
 class LampSocketProcess(var element: LampSocketElement) : IProcess {
 
@@ -37,7 +39,7 @@ class LampSocketProcess(var element: LampSocketElement) : IProcess {
         var activeLampSupplyConnection = false
         var newLightValue = BoilerplateLampData.MIN_LIGHT_VALUE
 
-        if (lampStack != null && cableStack != null) {
+        if (!lampStack.isNothing() && !cableStack.isNothing()) {
             val lampDescriptor = Utils.getItemObject(lampStack) as LampDescriptor
 
             if (element.poweredByLampSupply) {
@@ -227,13 +229,13 @@ class LampSocketProcess(var element: LampSocketElement) : IProcess {
         var inventoryChanged = false
         var publishChanges = false
 
-        if (lampInInventory != (lampStack != null)) {
-            lampInInventory = (lampStack != null)
+        if (lampInInventory != (!lampStack.isNothing())) {
+            lampInInventory = (!lampStack.isNothing())
             inventoryChanged = true
         }
 
-        if (cableInInventory != (cableStack != null)) {
-            cableInInventory = (cableStack != null)
+        if (cableInInventory != (!cableStack.isNothing())) {
+            cableInInventory = (!cableStack.isNothing())
             inventoryChanged = true
         }
 

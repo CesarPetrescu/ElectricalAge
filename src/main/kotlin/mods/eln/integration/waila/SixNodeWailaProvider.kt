@@ -14,6 +14,7 @@ import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
+import mods.eln.misc.isNothing
 
 @Optional.Interface(iface = "mcp.mobius.waila.api.IWailaDataProvider", modid = "waila")
 class SixNodeWailaProvider : IWailaDataProvider {
@@ -49,7 +50,7 @@ class SixNodeWailaProvider : IWailaDataProvider {
                             pos: BlockPos?): NBTTagCompound = tag
 
     override fun getWailaHead(itemStack: ItemStack?, currenttip: MutableList<String>, accessor: IWailaDataAccessor,
-                              config: IWailaConfigHandler?): MutableList<String> = if (itemStack != null) {
+                              config: IWailaConfigHandler?): MutableList<String> = if (!itemStack.isNothing()) {
         mutableListOf("${SpecialChars.WHITE}${itemStack.displayName}")
     } else {
         currenttip

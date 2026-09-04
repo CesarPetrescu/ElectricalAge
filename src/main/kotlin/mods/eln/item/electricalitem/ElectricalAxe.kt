@@ -19,6 +19,8 @@ import mods.eln.misc.getBlock
 import mods.eln.misc.getBlockMetadata
 import mods.eln.misc.isBlockLoaded
 import mods.eln.misc.setBlockToAir
+import mods.eln.misc.getBlockState
+import mods.eln.misc.getTileEntity
 
 
 class ElectricalAxe(name: String, strengthOn: Float, strengthOff: Float,

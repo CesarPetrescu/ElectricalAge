@@ -1,5 +1,6 @@
 package mods.eln.sixnode.groundcable;
 
+import mods.eln.misc.McBridge;
 import mods.eln.Eln;
 import mods.eln.generic.GenericItemUsingDamageDescriptor;
 import mods.eln.i18n.I18N;
@@ -87,7 +88,7 @@ public class GroundCableElement extends SixNodeElement {
 
     @Override
     public int getConnectionMask(LRDU lrdu) {
-        //if (inventory.getStackInSlot(GroundCableContainer.cableSlotId) == null) return 0;
+        //if (McBridge.isNothing(inventory.getStackInSlot(GroundCableContainer.cableSlotId))) return 0;
         Object adjacentElement = getAdjacentConnectionElement(lrdu);
         UtilityCableElement utilityCable = adjacentElement instanceof UtilityCableElement ? (UtilityCableElement) adjacentElement : null;
         if (utilityCable != null) {
@@ -153,7 +154,7 @@ public class GroundCableElement extends SixNodeElement {
             colorCare = colorCare ^ 1;
             Utils.sendMessage(entityPlayer, "Wire color care " + colorCare);
             sixNode.reconnect();
-        } else if (currentItemStack != null) {
+        } else if (!McBridge.isNothing(currentItemStack)) {
             Item item = currentItemStack.getItem();
 
             GenericItemUsingDamageDescriptor gen = BrushDescriptor.getDescriptor(currentItemStack);

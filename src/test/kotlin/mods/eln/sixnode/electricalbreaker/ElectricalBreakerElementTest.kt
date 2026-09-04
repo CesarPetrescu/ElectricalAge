@@ -1,5 +1,6 @@
 package mods.eln.sixnode.electricalbreaker
 
+import mods.eln.bootstrapMinecraft
 import mods.eln.cable.CableRenderDescriptor
 import mods.eln.misc.Direction
 import mods.eln.misc.LRDU
@@ -16,6 +17,10 @@ import org.junit.Test
 import java.util.LinkedHashMap
 
 class ElectricalBreakerElementTest {
+    init {
+        bootstrapMinecraft()
+    }
+
     @Test
     fun requestedColorUsesColorDataEvenWhenColorCareIsOff() {
         val breaker = ElectricalBreakerElement(

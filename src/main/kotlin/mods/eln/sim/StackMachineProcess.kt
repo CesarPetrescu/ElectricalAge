@@ -5,6 +5,7 @@ import mods.eln.misc.RecipesList
 import mods.eln.misc.Utils
 import net.minecraft.inventory.IInventory
 import net.minecraft.item.ItemStack
+import mods.eln.misc.isNothing
 
 class StackMachineProcess(
     var inventory: IInventory?,
@@ -68,7 +69,7 @@ class StackMachineProcess(
      * Returns true if the furnace can smelt an item, i.e. has a source item, destination stack isn't full, etc.
      */
     fun canSmelt(): Boolean {
-        return if (inventory!!.getStackInSlot(inputSlotId) == null) {
+        return if (inventory!!.getStackInSlot(inputSlotId).isNothing()) {
             false
         } else {
             getSmeltResult() ?: return false

@@ -77,7 +77,7 @@ public class ConfigCopyToolDescriptor extends GenericItemUsingDamageDescriptor {
             ItemStack stackInSlot = inv.getStackInSlot(slot);
 
             // MOVE THE OLD ITEM OUT OF THE DESTINATION INVENTORY (INTO THE PLAYER INVENTORY)
-            if (stackInSlot != null) {
+            if (!McBridge.isNothing(stackInSlot)) {
                 GenericItemBlockUsingDamageDescriptor thisCableDesc = GenericItemBlockUsingDamageDescriptor.getDescriptor(stackInSlot, GenericCableDescriptor.class);
                 if (thisCableDesc != null) {
                     if (thisCableDesc instanceof UtilityCableDescriptor) {
@@ -134,7 +134,7 @@ public class ConfigCopyToolDescriptor extends GenericItemUsingDamageDescriptor {
     }
 
     public static void writeCableType(NBTTagCompound compound, String name, ItemStack stack) {
-        if(stack != null) {
+        if(!McBridge.isNothing(stack)) {
             Eln.logger.info("CCT Copy: " + name + "Amt: " + stack.getCount());
             compound.setInteger(name + "Amt", stack.getCount());
         }
@@ -213,7 +213,7 @@ public class ConfigCopyToolDescriptor extends GenericItemUsingDamageDescriptor {
     }
 
     public static void writeGenDescriptor(NBTTagCompound compound, String name, ItemStack stack) {
-        if(stack != null) {
+        if(!McBridge.isNothing(stack)) {
             Eln.logger.info("CCT Copy: " + name + "Amt: " + stack.getCount());
             compound.setInteger(name + "Amt", stack.getCount());
         }
@@ -267,7 +267,7 @@ public class ConfigCopyToolDescriptor extends GenericItemUsingDamageDescriptor {
     }
 
     public static void writeVanillaStack(NBTTagCompound compound, String name, ItemStack stack) {
-        if(stack == null) {
+        if(McBridge.isNothing(stack)) {
             Eln.logger.info("CCT Copy: " + name + "Amt: 0");
             compound.setInteger(name, -1);
             compound.setInteger(name + "Amt", 0);

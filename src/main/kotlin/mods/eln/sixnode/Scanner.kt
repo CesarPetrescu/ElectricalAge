@@ -26,6 +26,7 @@ import java.lang.reflect.Method
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.util.*
+import mods.eln.misc.getBlockState
 
 /**
  * A comparator-alike. It doesn't "compare" anything, though.

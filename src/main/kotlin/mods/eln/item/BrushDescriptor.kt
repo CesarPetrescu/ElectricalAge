@@ -13,6 +13,7 @@ import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.ResourceLocation
 import mods.eln.client.itemrender.IItemRenderer
 import org.lwjgl.opengl.GL11
+import mods.eln.misc.isNothing
 
 class BrushDescriptor(name: String): GenericItemUsingDamageDescriptor(name) {
 
@@ -33,7 +34,7 @@ class BrushDescriptor(name: String): GenericItemUsingDamageDescriptor(name) {
 
     fun getColor(stack: ItemStack) = stack.itemDamage and 0xF
 
-    private fun getLife(stack: ItemStack?) = if (stack == null || stack.tagCompound == null)
+    private fun getLife(stack: ItemStack?) = if (stack.isNothing() || stack.tagCompound == null)
         32
     else
         stack.tagCompound!!.getInteger("life")
@@ -51,7 +52,7 @@ class BrushDescriptor(name: String): GenericItemUsingDamageDescriptor(name) {
     override fun addInformation(itemStack: ItemStack?, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
 
-        if (itemStack != null) {
+        if (!itemStack.isNothing()) {
             val creative = Minecraft.getMinecraft().player.capabilities.isCreativeMode
             list.add(tr("Can paint %1$ blocks", if (creative) "infinite" else itemStack.tagCompound!!.getInteger("life")))
         }

@@ -1,5 +1,6 @@
 package mods.eln.transparentnode.electricalmachine;
 
+import mods.eln.misc.McBridge;
 import mods.eln.Eln;
 import mods.eln.i18n.I18N;
 import mods.eln.item.ConfigCopyToolDescriptor;
@@ -144,7 +145,7 @@ public class ElectricalMachineElement extends TransparentNodeElement implements 
 
         int boosterCount = 0;
         stack = getInventory().getStackInSlot(boosterSlotId);
-        if (stack != null) {
+        if (!McBridge.isNothing(stack)) {
             boosterCount = stack.getCount();
         }
         double speedUp = Math.pow(descriptor.boosterSpeedUp, boosterCount);

@@ -49,6 +49,7 @@ import kotlin.math.abs
 import mods.eln.misc.xCoord
 import mods.eln.misc.yCoord
 import mods.eln.misc.zCoord
+import mods.eln.misc.isNothing
 
 enum class WireMachineKind(
     val displayName: String,
@@ -275,7 +276,7 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
     }
 
     private fun insulatorSelectedDescriptor(): UtilityCableDescriptor? {
-        val input = inventory.getStackInSlot(0) ?: return null
+        val input = inventory.getStackInSlot(0).takeUnless { it.isEmpty } ?: return null
         val inputWire = input.asUtilityCableDescriptor()
         if (inputWire != null) {
             if (inputWire.insulated || inputWire.conductorCount != 1) return null
@@ -299,7 +300,7 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
     }
 
     private fun insulatorTargetLengthMeters(): Double {
-        val input = inventory.getStackInSlot(0) ?: return 0.0
+        val input = inventory.getStackInSlot(0).takeUnless { it.isEmpty } ?: return 0.0
         val inputWire = input.asUtilityCableDescriptor()
         if (inputWire != null) return inputWire.getRemainingLengthMeters(input)
         val bundle = Eln.instance.woundWireBundleDescriptor
@@ -411,7 +412,7 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
     }
 
     private fun prepareInsulator(option: UtilityCableDescriptor?, targetLength: Double): Boolean {
-        val input = inventory.getStackInSlot(0) ?: return false
+        val input = inventory.getStackInSlot(0).takeUnless { it.isEmpty } ?: return false
         val output = inventory.getStackInSlot(2)
         if (output != null) return false
         val descriptor = option ?: return false
@@ -437,7 +438,7 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
     }
 
     private fun finishInsulator(descriptor: UtilityCableDescriptor, targetLength: Double) {
-        val input = inventory.getStackInSlot(0) ?: return
+        val input = inventory.getStackInSlot(0).takeUnless { it.isEmpty } ?: return
         val output = descriptor.newItemStack(1)
         descriptor.setRemainingLengthMeters(output, targetLength)
         inventory.setInventorySlotContents(2, output)
@@ -469,7 +470,7 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
         val descriptor = option ?: return false
         if (targetLength <= 0.0) return false
         if (!descriptor.insulated || descriptor.conductorCount <= 1) return false
-        if (inventory.getStackInSlot(5) != null) return false
+        if (!inventory.getStackInSlot(5).isNothing()) return false
 
         val inputs = combinerInputs()
         if (inputs.size != descriptor.conductorCount) return false
@@ -485,7 +486,7 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
     private fun finishCombiner(descriptor: UtilityCableDescriptor, targetLength: Double) {
         val bundleDescriptor = Eln.instance.woundWireBundleDescriptor ?: return
         for (slot in 0 until 5) {
-            val stack = inventory.getStackInSlot(slot) ?: continue
+            val stack = inventory.getStackInSlot(slot).takeUnless { it.isEmpty } ?: continue
             val cable = stack.asUtilityCableDescriptor() ?: continue
             val remaining = cable.getRemainingLengthMeters(stack) - targetLength
             if (remaining <= 0.0) {
@@ -512,7 +513,7 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
     }
 
     private fun absorbMetalInput() {
-        val input = inventory.getStackInSlot(0) ?: return
+        val input = inventory.getStackInSlot(0).takeUnless { it.isEmpty } ?: return
         val material = input.detectIngotMaterial() ?: return
         if (loadedMaterial != null && loadedMaterial != material) return
         loadedMaterial = material
@@ -526,7 +527,7 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
     }
 
     private fun absorbInsulationInput() {
-        val input = inventory.getStackInSlot(1) ?: return
+        val input = inventory.getStackInSlot(1).takeUnless { it.isEmpty } ?: return
         if (!input.matchesOre("itemRubber")) return
         insulationMetersBuffer += input.count * 32.0
         inventory.setInventorySlotContents(1, ItemStack.EMPTY)

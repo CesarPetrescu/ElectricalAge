@@ -18,6 +18,7 @@ import mods.eln.misc.setBlockToAir
 import mods.eln.misc.xCoord
 import mods.eln.misc.yCoord
 import mods.eln.misc.zCoord
+import mods.eln.misc.getBlockState
 
 class LightBlockEntity : TileEntity(), ITickable {
 

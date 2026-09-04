@@ -1,5 +1,6 @@
 package mods.eln.transparentnode.turret;
 
+import mods.eln.misc.McBridge;
 import mods.eln.Eln;
 import mods.eln.generic.GenericItemUsingDamageDescriptor;
 import mods.eln.i18n.I18N;
@@ -249,7 +250,7 @@ public class TurretElement extends TransparentNodeElement implements IConfigurab
         info.put(I18N.tr("Charge power"), Utils.plotPower("", chargePower));
 
         ItemStack filterStack = acceptingInventory.getInventory().getStackInSlot(TurretContainer.filterId);
-        if (filterStack != null) {
+        if (!McBridge.isNothing(filterStack)) {
             GenericItemUsingDamageDescriptor gen = EntitySensorFilterDescriptor.getDescriptor(filterStack);
             if (gen != null && gen instanceof EntitySensorFilterDescriptor) {
                 EntitySensorFilterDescriptor filter = (EntitySensorFilterDescriptor) gen;

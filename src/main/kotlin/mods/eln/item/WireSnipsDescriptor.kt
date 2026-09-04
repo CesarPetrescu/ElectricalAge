@@ -22,6 +22,7 @@ import net.minecraft.inventory.Slot
 import net.minecraft.item.ItemStack
 import net.minecraft.world.World
 import kotlin.math.min
+import mods.eln.misc.isNothing
 
 private const val WIRE_SNIPS_CUT_ACTION_BASE = 1_000_000_000
 private const val WIRE_SNIPS_CUT_ACTION_SLOT_SCALE = 1_000_000
@@ -82,7 +83,7 @@ class WireSnipsContainer(private val player: EntityPlayer) : Container() {
         val targetLength = (encoded % WIRE_SNIPS_CUT_ACTION_SLOT_SCALE).toDouble()
         if (slot != WIRE_SNIPS_INPUT_SLOT_INDEX || targetLength <= 0.0) return false
 
-        val stack = inputInventory.getStackInSlot(WIRE_SNIPS_INPUT_SLOT_INDEX) ?: return false
+        val stack = inputInventory.getStackInSlot(WIRE_SNIPS_INPUT_SLOT_INDEX).takeUnless { it.isEmpty } ?: return false
         val descriptor = UtilityCableDescriptor.allDescriptors().firstOrNull { it.checkSameItemStack(stack) } ?: return false
         val available = descriptor.getRemainingLengthMeters(stack)
         if (targetLength >= available) return false
@@ -139,7 +140,7 @@ class WireSnipsContainer(private val player: EntityPlayer) : Container() {
 
     override fun onContainerClosed(player: EntityPlayer) {
         super.onContainerClosed(player)
-        val stack = inputInventory.getStackInSlot(WIRE_SNIPS_INPUT_SLOT_INDEX) ?: return
+        val stack = inputInventory.getStackInSlot(WIRE_SNIPS_INPUT_SLOT_INDEX).takeUnless { it.isEmpty } ?: return
         inputInventory.setInventorySlotContents(WIRE_SNIPS_INPUT_SLOT_INDEX, ItemStack.EMPTY)
         if (!player.inventory.addItemStackToInventory(stack)) {
             player.dropItem(stack, false)
@@ -197,7 +198,7 @@ class WireSnipsGui(player: EntityPlayer) : GuiContainerEln(WireSnipsContainer(pl
         drawString(8, 6, tr("Wire Snips"))
         drawString(8, 20, tr("Input Wire"))
         drawString(8, 62, tr("Length (m)"))
-        if (stack == null) {
+        if (stack.isNothing()) {
             drawString(8, 104, tr("Insert a wire coil to cut"))
             return
         }

@@ -375,7 +375,7 @@ object Utils {
     fun writeToNBT(nbt: NBTTagCompound, str: String?, inventory: IInventory) {
         val var2 = NBTTagList()
         for (var3 in 0 until inventory.sizeInventory) {
-            if (inventory.getStackInSlot(var3) != null) {
+            if (!inventory.getStackInSlot(var3).isNothing()) {
                 val var4 = NBTTagCompound()
                 var4.setByte("Slot", var3.toByte())
                 inventory.getStackInSlot(var3).writeToNBT(var4)
@@ -481,7 +481,7 @@ object Utils {
 
     @JvmStatic
     fun dropItem(itemStack: ItemStack?, x: Int, y: Int, z: Int, world: World) {
-        if (itemStack == null) return
+        if (itemStack.isNothing()) return
         if (world.gameRules.getBoolean("doTileDrops")) {
             val var6 = 0.7f
             val var7 = (world.rand.nextFloat() * var6).toDouble() + (1.0f - var6).toDouble() * 0.5
@@ -520,7 +520,7 @@ object Utils {
         }
         var i = 0
         while (i < inventory.sizeInventory && need > 0) {
-            if (inventory.getStackInSlot(i) == null) {
+            if (inventory.getStackInSlot(i).isNothing()) {
                 slots.add(i)
                 need -= limit
             }
@@ -563,18 +563,18 @@ object Utils {
         val outputStack = arrayOfNulls<ItemStack>(slotsIdList.size)
         val inputStack = arrayOfNulls<ItemStack>(stackList.size)
         for (idx in outputStack.indices) {
-            if (inventory.getStackInSlot(slotsIdList[idx]) != null) outputStack[idx] = inventory.getStackInSlot(slotsIdList[idx]).copy()
+            if (!inventory.getStackInSlot(slotsIdList[idx]).isNothing()) outputStack[idx] = inventory.getStackInSlot(slotsIdList[idx]).copy()
         }
         for (idx in stackList.indices) {
             inputStack[idx] = stackList[idx].copy()
         }
         var oneStackDone: Boolean
         for (stack in inputStack) {
-            // if(stack == null) continue;
+            // if(stack.isNothing()) continue;
             oneStackDone = false
             for (idx in slotsIdList.indices) {
                 val targetStack = outputStack[idx]
-                if (targetStack == null) {
+                if (targetStack.isNothing()) {
                     outputStack[idx] = stack
                     oneStackDone = true
                     break
@@ -605,7 +605,7 @@ object Utils {
         for (stack in stackList) {
             for (idx in slotsIdList.indices) {
                 val targetStack = inventory.getStackInSlot(slotsIdList[idx])
-                if (targetStack == null) {
+                if (targetStack.isNothing()) {
                     inventory.setInventorySlotContents(slotsIdList[idx], stack.copy())
                     stack.count = 0
                     changed = true
@@ -644,7 +644,7 @@ object Utils {
     @JvmStatic
     @Throws(IOException::class)
     fun serialiseItemStack(stream: DataOutputStream, stack: ItemStack?) {
-        if (stack == null) {
+        if (stack.isNothing()) {
             stream.writeShort(-1)
             stream.writeShort(-1)
         } else {
@@ -779,7 +779,7 @@ object Utils {
 
     @JvmStatic
     fun getItemObject(stack: ItemStack?): Any? {
-        if (stack == null) return null
+        if (stack.isNothing()) return null
         val i = stack.item
         if (i is GenericItemUsingDamage<*>) {
             return i.getDescriptor(stack)

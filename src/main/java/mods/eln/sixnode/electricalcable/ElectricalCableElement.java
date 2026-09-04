@@ -172,7 +172,7 @@ public class ElectricalCableElement extends SixNodeElement {
             colorCare = colorCare ^ 1;
             Utils.sendMessage(entityPlayer, "Wire color care " + colorCare);
             sixNode.reconnect();
-        } else if (currentItemStack != null) {
+        } else if (!McBridge.isNothing(currentItemStack)) {
             Item item = currentItemStack.getItem();
 
             GenericItemUsingDamageDescriptor gen = GenericItemUsingDamageDescriptor.getDescriptor(currentItemStack);

@@ -1,5 +1,6 @@
 package mods.eln.sixnode.electricaldatalogger;
 
+import mods.eln.misc.McBridge;
 import mods.eln.Eln;
 import mods.eln.sim.IProcess;
 import net.minecraft.item.ItemStack;
@@ -30,7 +31,7 @@ public class ElectricalDataLoggerProcess implements IProcess {
         if (e.printToDo) {
             ItemStack paperStack = e.inventory.getStackInSlot(ElectricalDataLoggerContainer.paperSlotId);
             ItemStack printStack = e.inventory.getStackInSlot(ElectricalDataLoggerContainer.printSlotId);
-            if (paperStack != null && printStack == null) {
+            if (!McBridge.isNothing(paperStack) && McBridge.isNothing(printStack)) {
                 e.inventory.decrStackSize(ElectricalDataLoggerContainer.paperSlotId, 1);
                 ItemStack print = Eln.instance.dataLogsPrintDescriptor.newItemStack(1);
                 Eln.instance.dataLogsPrintDescriptor.initializeStack(print, e.logs);

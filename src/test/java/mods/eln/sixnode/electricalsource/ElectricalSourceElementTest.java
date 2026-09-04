@@ -1,5 +1,6 @@
 package mods.eln.sixnode.electricalsource;
 
+import mods.eln.TestLogConfigKt;
 import mods.eln.misc.Direction;
 import mods.eln.node.six.SixNode;
 import net.minecraft.nbt.NBTTagCompound;
@@ -10,6 +11,7 @@ import static org.junit.Assert.assertEquals;
 public class ElectricalSourceElementTest {
     @Test
     public void configuredVoltageDrivesRedHotWithInverseVoltage() {
+        TestLogConfigKt.bootstrapMinecraft();
         ElectricalSourceElement source = new ElectricalSourceElement(
             new SixNode(),
             Direction.ZP,

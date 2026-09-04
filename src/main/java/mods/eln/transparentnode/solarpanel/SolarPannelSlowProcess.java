@@ -1,5 +1,6 @@
 package mods.eln.transparentnode.solarpanel;
 
+import mods.eln.misc.McBridge;
 import mods.eln.misc.Coordinate;
 import mods.eln.misc.Utils;
 import mods.eln.sim.IProcess;

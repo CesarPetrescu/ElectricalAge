@@ -1,5 +1,6 @@
 package mods.eln.sixnode.energymeter;
 
+import mods.eln.misc.McBridge;
 import mods.eln.cable.CableRenderDescriptor;
 import mods.eln.misc.Direction;
 import mods.eln.misc.LRDU;
@@ -112,7 +113,7 @@ public class EnergyMeterRender extends SixNodeElementRender {
             ItemStack itemStack = Utils.unserialiseItemStack(stream);
             energyUnit = stream.readByte();
             timeUnit = stream.readByte();
-            if (itemStack != null) {
+            if (!McBridge.isNothing(itemStack)) {
                 ElectricalCableDescriptor desc = (ElectricalCableDescriptor) ElectricalCableDescriptor.getDescriptor(itemStack, ElectricalCableDescriptor.class);
                 if (desc == null)
                     cableRender = null;

@@ -1,5 +1,6 @@
 package mods.eln.sixnode.lampsupply;
 
+import mods.eln.misc.McBridge;
 import mods.eln.Eln;
 import mods.eln.i18n.I18N;
 import mods.eln.item.ConfigCopyToolDescriptor;
@@ -357,7 +358,7 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
 
     void setupFromInventory() {
         ItemStack cableStack = getInventory().getStackInSlot(LampSupplyContainer.cableSlotId);
-        if (cableStack != null) {
+        if (!McBridge.isNothing(cableStack)) {
             GenericItemBlockUsingDamageDescriptor desc = GenericItemBlockUsingDamageDescriptor.getDescriptor(cableStack, GenericCableDescriptor.class);
             if (desc instanceof GenericCableDescriptor) {
                 ((GenericCableDescriptor) desc).applyTo(powerLoad);
@@ -441,7 +442,7 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
 
     private int getRange(LampSupplyDescriptor desc, IInventory inventory2) {
         ItemStack stack = getInventory().getStackInSlot(LampSupplyContainer.cableSlotId);
-        if (stack == null) return desc.range;
+        if (McBridge.isNothing(stack)) return desc.range;
         return desc.range + stack.getCount();
     }
 

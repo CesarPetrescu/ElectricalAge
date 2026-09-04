@@ -1,5 +1,6 @@
 package mods.eln.generic;
 
+import mods.eln.misc.McBridge;
 import mods.eln.registration.ElnRegistry;
 
 import net.minecraftforge.fml.common.registry.GameRegistry;
@@ -72,7 +73,7 @@ public class GenericItemUsingDamage<Descriptor extends GenericItemUsingDamageDes
     }
 
     public Descriptor getDescriptor(ItemStack itemStack) {
-        if (itemStack == null)
+        if (McBridge.isNothing(itemStack))
             return defaultElement;
         if (itemStack.getItem() != this)
             return defaultElement;

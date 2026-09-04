@@ -1,5 +1,6 @@
 package mods.eln.transparentnode.electricalfurnace;
 
+import mods.eln.misc.McBridge;
 import mods.eln.generic.GenericItemUsingDamageDescriptor;
 import mods.eln.item.ThermalIsolatorElement;
 import mods.eln.node.transparent.TransparentNodeElementInventory;
@@ -29,7 +30,7 @@ public class ElectricalFurnaceProcess implements IProcess {
     public void process(double time) {
         ItemStack itemStack = inventory.getStackInSlot(furnace.thermalIsolatorSlotId);
 
-        if (itemStack == null) {
+        if (McBridge.isNothing(itemStack)) {
             furnace.descriptor.refreshTo(furnace.thermalLoad, 1);
         } else {
             ThermalIsolatorElement element = (ThermalIsolatorElement) GenericItemUsingDamageDescriptor.getDescriptor(
@@ -89,12 +90,12 @@ public class ElectricalFurnaceProcess implements IProcess {
      * Returns true if the furnace can smelt an item, i.e. has a source item, destination stack isn't full, etc.
      */
     private boolean smeltCan() {
-        if (inventory.getStackInSlot(ElectricalFurnaceElement.inSlotId) == null) {
+        if (McBridge.isNothing(inventory.getStackInSlot(ElectricalFurnaceElement.inSlotId))) {
             return false;
         } else {
             ItemStack var1 = getSmeltResult();
             if (var1 == null) return false;
-            if (inventory.getStackInSlot(ElectricalFurnaceElement.outSlotId) == null) return true;
+            if (McBridge.isNothing(inventory.getStackInSlot(ElectricalFurnaceElement.outSlotId))) return true;
             if (!inventory.getStackInSlot(ElectricalFurnaceElement.outSlotId).isItemEqual(var1)) return false;
             int result = inventory.getStackInSlot(ElectricalFurnaceElement.outSlotId).getCount() + var1.getCount();
             return (result <= inventory.getInventoryStackLimit() && result <= var1.getMaxStackSize());
@@ -112,7 +113,7 @@ public class ElectricalFurnaceProcess implements IProcess {
         if (smeltCan()) {
             ItemStack var1 = getSmeltResult();
 
-            if (inventory.getStackInSlot(ElectricalFurnaceElement.outSlotId) == null) {
+            if (McBridge.isNothing(inventory.getStackInSlot(ElectricalFurnaceElement.outSlotId))) {
                 inventory.setInventorySlotContents(ElectricalFurnaceElement.outSlotId, var1.copy());
             } else if (inventory.getStackInSlot(ElectricalFurnaceElement.outSlotId).isItemEqual(var1)) {
                 inventory.decrStackSize(ElectricalFurnaceElement.outSlotId, -var1.getCount());

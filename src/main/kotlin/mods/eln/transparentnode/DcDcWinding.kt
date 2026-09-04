@@ -15,6 +15,7 @@ import net.minecraft.item.ItemStack
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.sqrt
+import mods.eln.misc.isNothing
 
 private const val MAX_RENDERED_WINDINGS = 256
 private const val NATIVE_RENDER_AREA_MM2 = 33.631
@@ -31,7 +32,7 @@ internal data class DcDcConstructionStatus(
 )
 
 internal fun dcDcWinding(stack: ItemStack?): DcDcWinding? {
-    if (stack == null) return null
+    if (stack.isNothing()) return null
     val descriptor = ElectricalCableDescriptor.getDescriptor(
         stack,
         ElectricalCableDescriptor::class.java
@@ -107,7 +108,7 @@ private data class WindingConstructionProblem(
 )
 
 private fun strictWindingConstructionProblem(stack: ItemStack?, label: String): WindingConstructionProblem {
-    if (stack == null) return WindingConstructionProblem(null, tr("Needs %1$ Winding", label))
+    if (stack.isNothing()) return WindingConstructionProblem(null, tr("Needs %1$ Winding", label))
     val descriptor = ElectricalCableDescriptor.getDescriptor(
         stack,
         ElectricalCableDescriptor::class.java
@@ -128,7 +129,7 @@ private fun strictWindingConstructionProblem(stack: ItemStack?, label: String): 
 }
 
 private fun flexibleWindingConstructionProblem(stack: ItemStack?, label: String): String? {
-    if (stack == null) return tr("Needs %1$ Winding", label)
+    if (stack.isNothing()) return tr("Needs %1$ Winding", label)
     val descriptor = ElectricalCableDescriptor.getDescriptor(
         stack,
         ElectricalCableDescriptor::class.java
@@ -149,7 +150,7 @@ private fun formatWindingMeters(amount: Double): String {
 }
 
 private fun dcDcWindingRenderAmount(stack: ItemStack?): Double? {
-    if (stack == null) return null
+    if (stack.isNothing()) return null
     val descriptor = ElectricalCableDescriptor.getDescriptor(
         stack,
         ElectricalCableDescriptor::class.java
@@ -164,7 +165,7 @@ private fun dcDcWindingRenderAmount(stack: ItemStack?): Double? {
 }
 
 internal fun dcDcRenderedWindingThickness(stack: ItemStack?): Float {
-    if (stack == null) return 1.0f
+    if (stack.isNothing()) return 1.0f
     val descriptor = ElectricalCableDescriptor.getDescriptor(
         stack,
         ElectricalCableDescriptor::class.java
@@ -196,7 +197,7 @@ internal class DcDcWindingThermalProcess(
     private var lastPublishedTemperatureCelsius = Double.NaN
 
     fun configure(stack: ItemStack?) {
-        val utilityStackDescriptor = if (stack == null) {
+        val utilityStackDescriptor = if (stack.isNothing()) {
             null
         } else {
             ElectricalCableDescriptor.getDescriptor(
@@ -259,7 +260,7 @@ internal class DcDcWindingThermalProcess(
     }
 
     private fun meltInsertedWire(utility: UtilityCableDescriptor) {
-        val stack = inventory.getStackInSlot(slot) ?: return
+        val stack = inventory.getStackInSlot(slot).takeUnless { it.isEmpty } ?: return
         val melted = utility.meltedDescriptor ?: return
         val replacement = melted.newItemStack(1)
         melted.setRemainingLengthMeters(replacement, utility.getRemainingLengthMeters(stack))
@@ -272,7 +273,7 @@ internal class DcDcWindingThermalProcess(
 }
 
 internal fun meltDcDcWindingIfOverCurrent(inventory: IInventory, slot: Int, current: Double): Boolean {
-    val stack = inventory.getStackInSlot(slot) ?: return false
+    val stack = inventory.getStackInSlot(slot).takeUnless { it.isEmpty } ?: return false
     val descriptor = dcDcWinding(stack)?.descriptor as? UtilityCableDescriptor ?: return false
     val limit = dcDcWindingMeltCurrent(stack)
     if (abs(current) <= limit) return false

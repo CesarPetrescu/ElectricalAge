@@ -19,7 +19,7 @@ class Obj3DLoadTest {
         assertTrue(socket.faceGroup.isNotEmpty())
         val fg = socket.faceGroup.first()
         assertNotNull(fg.textureResource)
-        assertTrue(fg.textureResource.toString().contains("eln:model/StreetLight/StreetLight_on.png"))
+        assertTrue(fg.textureResource.toString().contains("eln:model/streetlight/streetlight_on.png"))
         assertEquals("noLampDraw", obj.getString("type"))
         assertEquals("enable", obj.getString("cable"))
         assertTrue(obj.xDim > 0f)

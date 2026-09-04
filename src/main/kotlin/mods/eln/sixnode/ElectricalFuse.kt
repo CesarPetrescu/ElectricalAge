@@ -23,6 +23,7 @@ import org.lwjgl.opengl.GL11
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
+import mods.eln.misc.isNothing
 
 class ElectricalFuseHolderDescriptor(name: String, obj: Obj3D) :
     SixNodeDescriptor(name, ElectricalFuseHolderElement::class.java, ElectricalFuseHolderRender::class.java) {
@@ -129,7 +130,7 @@ class ElectricalFuseHolderElement(sixNode: SixNode, side: Direction, descriptor:
         val fuseCompound = nbt.getTag("fuse") as? NBTTagCompound
         if (fuseCompound != null) {
             val fuseStack = ItemStack(fuseCompound)
-            if (fuseStack != null) {
+            if (!fuseStack.isNothing()) {
                 installedFuse = GenericItemUsingDamageDescriptor.getDescriptor(fuseStack) as? ElectricalFuseDescriptor
             }
         }
@@ -204,7 +205,7 @@ class ElectricalFuseHolderElement(sixNode: SixNode, side: Direction, descriptor:
         var takenOutFuse: ElectricalFuseDescriptor? = null
         val itemStack = entityPlayer.heldItemMainhand
         val fuseDescriptor = itemStack?.let { GenericItemUsingDamageDescriptor.getDescriptor(it) } as? ElectricalFuseDescriptor
-        if (itemStack != null) {
+        if (!itemStack.isNothing()) {
             if (fuseDescriptor != null && itemStack.count > 0) {
                 // The player puts in a new lead fuse.
                 if (!(Eln.config.getBooleanOrElse("gameplay.qol.creativeNoConsumeInsertedItems", false) && entityPlayer is EntityPlayerMP && Utils.isCreative(entityPlayer))) itemStack.count--

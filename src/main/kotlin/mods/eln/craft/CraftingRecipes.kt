@@ -21,6 +21,7 @@ import net.minecraftforge.oredict.ShapedOreRecipe
 import net.minecraftforge.oredict.ShapelessOreRecipe
 import java.util.*
 import kotlin.collections.HashSet
+import mods.eln.misc.isNothing
 
 object CraftingRecipes {
 
@@ -173,7 +174,7 @@ object CraftingRecipes {
     }
 
     private fun recipeExists(stack: ItemStack?): Boolean {
-        if (stack == null) return false
+        if (stack.isNothing()) return false
         for (o in ForgeRegistries.RECIPES) {
             if (o.recipeOutput.isEmpty) continue
             if (areSame(stack, o.recipeOutput)) return true

@@ -1,5 +1,6 @@
 package mods.eln.sixnode.thermalcable;
 
+import mods.eln.misc.McBridge;
 import mods.eln.Eln;
 import mods.eln.cable.CableRenderDescriptor;
 import mods.eln.misc.RealisticEnum;
@@ -84,7 +85,7 @@ public class ThermalCableDescriptor extends SixNodeDescriptor {
 
     /*
     static void setThermalLoadFrom(ItemStack itemStack, ThermalLoad thermalLoad) {
-        if (itemStack == null || itemStack.itemID != Eln.sixNodeBlock.blockID || (itemStack.getItemDamage() & 0xFF) != Eln.electricalCableId) {
+        if (McBridge.isNothing(itemStack) || itemStack.itemID != Eln.sixNodeBlock.blockID || (itemStack.getItemDamage() & 0xFF) != Eln.electricalCableId) {
             thermalLoad.setHighImpedance();
         } else {
             ThermalCableDescriptor cableDescriptor = ThermalCableDescriptor.list[(itemStack.getItemDamage() >> 8) & 0xFF];

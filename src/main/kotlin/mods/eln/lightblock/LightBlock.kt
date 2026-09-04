@@ -16,6 +16,7 @@ import net.minecraft.util.math.Vec3d
 import net.minecraft.world.IBlockAccess
 import net.minecraft.world.World
 import java.util.Random
+import mods.eln.misc.isReplaceable
 
 /**
  * The invisible block Electrical Age places to light a room.

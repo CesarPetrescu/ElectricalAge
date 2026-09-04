@@ -1,5 +1,6 @@
 package mods.eln.item;
 
+import mods.eln.misc.McBridge;
 import mods.eln.misc.Utils;
 import mods.eln.sixnode.electricalcable.IUtilityCableInventory;
 import mods.eln.sixnode.electricalcable.UtilityCableDescriptor;
@@ -28,7 +29,7 @@ public abstract class ItemMovingHelper {
         }
         int now = 0;
         ItemStack stack = dst.getStackInSlot(dstSlot);
-        if(stack != null) {
+        if(!McBridge.isNothing(stack)) {
             now = stack.getCount();
         }
         Utils.println(String.format("IMH.m: now %d, desired %d", now, desired));
@@ -36,7 +37,7 @@ public abstract class ItemMovingHelper {
             int diff = desired - now;
             for(int idx = 0; idx < src.getSizeInventory(); idx++) {
                 ItemStack invStack = src.getStackInSlot(idx);
-                if(invStack == null) continue;
+                if(McBridge.isNothing(invStack)) continue;
                 if(!acceptsStack(invStack)) continue;
                 if (Utils.getItemObject(invStack) instanceof UtilityCableDescriptor) {
                     if (IUtilityCableInventory.trimCable(invStack, dst, dstSlot)) {

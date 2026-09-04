@@ -1,5 +1,6 @@
 package mods.eln.sixnode.lampsupply;
 
+import mods.eln.misc.McBridge;
 import mods.eln.cable.CableRenderDescriptor;
 import mods.eln.cable.CableRenderType;
 import mods.eln.generic.GenericItemBlockUsingDamageDescriptor;
@@ -92,7 +93,7 @@ public class LampSupplyRender extends SixNodeElementRender {
             }
 
             ItemStack cableStack = Utils.unserialiseItemStack(stream);
-            if (cableStack != null) {
+            if (!McBridge.isNothing(cableStack)) {
                 GenericItemBlockUsingDamageDescriptor desc = GenericItemBlockUsingDamageDescriptor.getDescriptor(cableStack, GenericCableDescriptor.class);
                 if (desc instanceof GenericCableDescriptor) cableRender = ((GenericCableDescriptor) desc).render;
             } else {

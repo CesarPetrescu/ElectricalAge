@@ -29,6 +29,7 @@ import net.minecraft.nbt.NBTTagCompound
 import org.lwjgl.opengl.GL11
 import java.io.DataInputStream
 import java.io.DataOutputStream
+import mods.eln.misc.isNothing
 
 class ClutchPlateItem(
     name: String,
@@ -63,7 +64,7 @@ class ClutchPlateItem(
 
     override fun addInformation(itemStack: ItemStack?, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
-        if(itemStack != null) {
+        if(!itemStack.isNothing()) {
             val wear = getWear(itemStack)
             if(wear < 0.2) {
                 list.add(tr("Condition:") + " " + tr("New"))
@@ -226,7 +227,7 @@ class ClutchElement(node: TransparentNode, desc_: TransparentNodeDescriptor) : S
 
             val plateDescriptor = clutchPlateDescriptor
             val stack = clutchPlateStack
-            if(plateDescriptor == null || stack == null) {
+            if(plateDescriptor == null || stack.isNothing()) {
                 // Utils.println("CP.p: stop: no inventory")
                 slipping = true
                 return
@@ -240,7 +241,7 @@ class ClutchElement(node: TransparentNode, desc_: TransparentNodeDescriptor) : S
                 slipping = true
                 return
             }
-            val hasPin = (clutchPinStack != null)
+            val hasPin = (!clutchPinStack.isNothing())
 
             if(leftShaft == rightShaft) Utils.println("WARN (ClutchProcess): Networks are the same!")
 
@@ -368,9 +369,9 @@ class ClutchElement(node: TransparentNode, desc_: TransparentNodeDescriptor) : S
         stream.writeBoolean(slipping)
         val stack = clutchPlateStack
         val pDisc = clutchPlateDescriptor
-        val worn = (stack == null) || (pDisc!!.getWear(stack) >= 1.0)
+        val worn = (stack.isNothing()) || (pDisc!!.getWear(stack) >= 1.0)
         stream.writeBoolean(worn)
-        stream.writeBoolean(clutchPinStack != null)
+        stream.writeBoolean(!clutchPinStack.isNothing())
     }
 
     /*
@@ -434,7 +435,7 @@ class ClutchElement(node: TransparentNode, desc_: TransparentNodeDescriptor) : S
             }.joinToString(", "))
             val desc = clutchPlateDescriptor
             val stack = clutchPlateStack
-            if (desc != null && stack != null)
+            if (desc != null && !stack.isNothing())
                 info.put("Wear", String.format("%.6f", desc.getWear(stack)))
         }
         info.put(tr("Clutching"), Utils.plotVolt(inputGate.signalVoltage))

@@ -28,6 +28,7 @@ import org.lwjgl.opengl.GL11
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
+import mods.eln.misc.isNothing
 
 class FabricatorDescriptor(
     name: String
@@ -230,7 +231,7 @@ class FabricatorProcess(val element: FabricatorElement): IProcess {
             element.inventory.decrStackSize(FabricatorSlots.COPPER_PLATE.slotId, 1)
             element.inventory.decrStackSize(FabricatorSlots.SILICON_WAFER.slotId, 1)
             if (Math.random() <= operation.yieldPercentage) {
-                if (element.inventory.getStackInSlot(FabricatorSlots.OUTPUT.slotId) == null) {
+                if (element.inventory.getStackInSlot(FabricatorSlots.OUTPUT.slotId).isNothing()) {
                     val newStack = operation.outputItem.copy()
                     newStack.count = operation.perSheet
                     element.inventory.setInventorySlotContents(FabricatorSlots.OUTPUT.slotId, newStack)
@@ -374,7 +375,7 @@ class FabricatorInventory: TransparentNodeElementInventory {
     }
 
     override fun canInsertItem(slot: Int, stack: ItemStack?, side: Int): Boolean {
-        if (stack == null) return false
+        if (stack.isNothing()) return false
         val itemDescriptor = GenericItemUsingDamageDescriptor.getDescriptor(stack) ?: return false
         if (itemDescriptor === Eln.siliconWafer && slot == FabricatorSlots.SILICON_WAFER.slotId) return true
         if (itemDescriptor === Eln.plateCopper && slot == FabricatorSlots.COPPER_PLATE.slotId) return true

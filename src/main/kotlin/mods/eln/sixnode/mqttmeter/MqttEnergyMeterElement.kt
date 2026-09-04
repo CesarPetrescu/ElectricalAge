@@ -41,6 +41,7 @@ import java.io.DataOutputStream
 import java.io.IOException
 import kotlin.math.abs
 import java.util.LinkedHashMap
+import mods.eln.misc.isNothing
 
 class MqttEnergyMeterElement(sixNode: SixNode, side: Direction, descriptor: SixNodeDescriptor) : SixNodeElement(sixNode, side, descriptor) {
 
@@ -121,7 +122,7 @@ class MqttEnergyMeterElement(sixNode: SixNode, side: Direction, descriptor: SixN
     override fun getThermalLoad(lrdu: LRDU, mask: Int): ThermalLoad? = null
 
     override fun getConnectionMask(lrdu: LRDU): Int {
-        if (elementInventory.getStackInSlot(MqttEnergyMeterContainer.cableSlotId) == null) return 0
+        if (elementInventory.getStackInSlot(MqttEnergyMeterContainer.cableSlotId).isNothing()) return 0
         if (front == lrdu || front.inverse() == lrdu) return NodeBase.maskElectricalAll
         return 0
     }

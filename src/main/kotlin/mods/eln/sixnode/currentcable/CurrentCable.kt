@@ -41,6 +41,7 @@ import org.lwjgl.opengl.GL11
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
+import mods.eln.misc.isNothing
 
 class CurrentCableDescriptor(
     name: String?,
@@ -237,7 +238,7 @@ open class CurrentCableElement(sixNode: SixNode?, side: Direction?, descriptor: 
             colorCare = colorCare xor 1
             sendMessage(entityPlayer, "Wire color care $colorCare")
             sixNode!!.reconnect()
-        } else if (currentItemStack != null) {
+        } else if (!currentItemStack.isNothing()) {
             val gen = getDescriptor(currentItemStack)
             if (gen is BrushDescriptor) {
                 val brush = gen

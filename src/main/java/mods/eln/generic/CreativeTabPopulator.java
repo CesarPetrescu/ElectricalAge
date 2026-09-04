@@ -1,5 +1,6 @@
 package mods.eln.generic;
 
+import mods.eln.misc.McBridge;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import mods.eln.Eln;
@@ -52,7 +53,7 @@ public final class CreativeTabPopulator {
 
         for (Iterator<ItemStack> iterator = list.iterator(); iterator.hasNext(); ) {
             ItemStack stack = iterator.next();
-            if (stack == null) continue;
+            if (McBridge.isNothing(stack)) continue;
 
             if (isRegulatorChip(stack)) {
                 regulators.add(stack);

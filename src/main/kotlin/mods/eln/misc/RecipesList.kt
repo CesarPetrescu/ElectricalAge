@@ -32,7 +32,7 @@ class RecipesList {
         val list = ArrayList<Recipe>()
         for (r in recipes) {
             for (stack in r.outputCopy) {
-                if (stack != null) {
+                if (!stack.isNothing()) {
                     if (Utils.areSame(stack, output)) {
                         list.add(r)
                         break

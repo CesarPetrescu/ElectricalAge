@@ -8,6 +8,7 @@ import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
+import mods.eln.misc.isNothing
 
 // Config data for one blade tier, mirrors BoilerplateLampData in LampTechnology.kt.
 data class BladeConfigData(
@@ -135,13 +136,13 @@ class TurbineBladeDescriptor(
     ) {
         super.addInformation(stack, player, list, par4)
         list.add(tr($$"Nominal Lifetime: %1$h",nominalLifeInHours.toInt()))
-        if (stack != null) list.add(tr("Condition: %1$", getConditionLabel(stack)))
+        if (!stack.isNothing()) list.add(tr("Condition: %1$", getConditionLabel(stack)))
         if (tierDescription.isNotEmpty()) list.add(tr(tierDescription))
     }
 
     companion object {
         fun getDescriptor(stack: ItemStack?): TurbineBladeDescriptor? {
-            if (stack == null) return null
+            if (stack.isNothing()) return null
             val item = stack.item as? GenericItemUsingDamage<*> ?: return null
             return item.getDescriptor(stack) as? TurbineBladeDescriptor
         }

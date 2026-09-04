@@ -1,5 +1,6 @@
 package mods.eln.generic;
 
+import mods.eln.misc.McBridge;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import mods.eln.Eln;
@@ -23,7 +24,7 @@ public class GenericCreativeTab extends CreativeTabs {
     }
 
     public void setIcon(ItemStack stack) {
-        if (stack == null) {
+        if (McBridge.isNothing(stack)) {
             this.iconStack = null;
         } else {
             this.iconStack = stack.copy();
@@ -33,7 +34,7 @@ public class GenericCreativeTab extends CreativeTabs {
     @Override
     @SideOnly(Side.CLIENT)
     public ItemStack createIcon() {
-        return iconStack != null ? iconStack : new ItemStack(Items.REDSTONE);
+        return !McBridge.isNothing(iconStack) ? iconStack : new ItemStack(Items.REDSTONE);
     }
 
     @Override

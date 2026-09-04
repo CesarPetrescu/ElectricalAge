@@ -66,7 +66,7 @@ public class AutoMinerSlowProcess implements IProcess, INBTTReady {
         IInventory i = getDropInventory();
         if (i == null) return false;
         for (int idx = 0; idx < i.getSizeInventory(); idx++) {
-            if (i.getStackInSlot(idx) == null)
+            if (McBridge.isNothing(i.getStackInSlot(idx)))
                 return true;
         }
         return false;
@@ -272,7 +272,7 @@ public class AutoMinerSlowProcess implements IProcess, INBTTReady {
         } else if (drill == null) {
             if (jobCoord.y != miner.node.coordinate.y) {
                 ItemStack pipeStack = miner.getInventory().getStackInSlot(AutoMinerContainer.MiningPipeSlotId);
-                if (pipeStack == null || (pipeStack.getCount() != pipeStack.getMaxStackSize() && pipeStack.getCount() != miner.getInventory().getInventoryStackLimit())) {
+                if (McBridge.isNothing(pipeStack) || (pipeStack.getCount() != pipeStack.getMaxStackSize() && pipeStack.getCount() != miner.getInventory().getInventoryStackLimit())) {
                     jobFind = true;
                     setJob(jobType.pipeRemove);
                 } else {

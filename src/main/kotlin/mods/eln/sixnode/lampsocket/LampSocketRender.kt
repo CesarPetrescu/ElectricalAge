@@ -32,6 +32,7 @@ import kotlin.math.sin
 import mods.eln.misc.xCoord
 import mods.eln.misc.yCoord
 import mods.eln.misc.zCoord
+import mods.eln.misc.isNothing
 
 class LampSocketRender(tileEntity: SixNodeEntity, side: Direction, sixNodeDescriptor: SixNodeDescriptor) :
     SixNodeElementRender(tileEntity, side, sixNodeDescriptor) {
@@ -99,10 +100,10 @@ class LampSocketRender(tileEntity: SixNodeEntity, side: Direction, sixNodeDescri
             }
 
             val lampStack = unserialiseItemStack(stream)
-            lampDescriptor = if (lampStack != null) getItemObject(lampStack) as LampDescriptor else null
+            lampDescriptor = if (!lampStack.isNothing()) getItemObject(lampStack) as LampDescriptor else null
 
             val cableStack = unserialiseItemStack(stream)
-            cableDescriptor = if (cableStack != null) getItemObject(cableStack) as GenericCableDescriptor else null
+            cableDescriptor = if (!cableStack.isNothing()) getItemObject(cableStack) as GenericCableDescriptor else null
         } catch (e: IOException) {
             e.printStackTrace()
         }

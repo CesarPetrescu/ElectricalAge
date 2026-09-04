@@ -69,7 +69,14 @@ tasks.injectTags.configure {
 tasks.processResources.configure {
     val projVersion = project.version.toString()
     inputs.property("version", projVersion)
-    filesMatching("mcmod.info") { expand(mapOf("modVersion" to projVersion)) }
+    filesMatching("mcmod.info") {
+        expand(mapOf(
+            "modVersion" to projVersion,
+            "modId" to project.property("modId").toString(),
+            "modName" to project.property("modName").toString(),
+            "minecraftVersion" to "1.12.2",
+        ))
+    }
     exclude(
         "**/_Common", "**/_TEMPLATES", "**/export_*.png", "**/*.blend*",
         "**/temp/**/*", "**/model-to-be-integrated/**/*", "**/unused-models/**/*",

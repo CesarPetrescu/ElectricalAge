@@ -76,7 +76,7 @@ open class BasicContainer(player: EntityPlayer, protected var inventory: IInvent
             while (par1ItemStack.count > 0 && (!par4 && k < par3 || par4 && k >= par2)) {
                 slot = inventorySlots[k] as Slot
                 itemstack1 = slot.stack
-                if (slot.isItemValid(par1ItemStack) && itemstack1 != null && itemstack1.item === par1ItemStack.item && (!par1ItemStack.hasSubtypes || par1ItemStack.itemDamage == itemstack1.itemDamage) && ItemStack.areItemStackTagsEqual(
+                if (slot.isItemValid(par1ItemStack) && !itemstack1.isNothing() && itemstack1.item === par1ItemStack.item && (!par1ItemStack.hasSubtypes || par1ItemStack.itemDamage == itemstack1.itemDamage) && ItemStack.areItemStackTagsEqual(
                         par1ItemStack,
                         itemstack1
                     )
@@ -112,7 +112,7 @@ open class BasicContainer(player: EntityPlayer, protected var inventory: IInvent
             while (!par4 && k < par3 || par4 && k >= par2) {
                 slot = inventorySlots[k] as Slot
                 itemstack1 = slot.stack
-                if (itemstack1 == null && slot.isItemValid(par1ItemStack)) {
+                if (itemstack1.isNothing() && slot.isItemValid(par1ItemStack)) {
                     val l = par1ItemStack.count
                     val maxSize = min(slot.slotStackLimit.toDouble(), par1ItemStack.maxStackSize.toDouble())
                         .toInt()

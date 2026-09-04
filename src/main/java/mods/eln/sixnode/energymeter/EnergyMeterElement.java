@@ -1,5 +1,6 @@
 package mods.eln.sixnode.energymeter;
 
+import mods.eln.misc.McBridge;
 import mods.eln.Eln;
 import mods.eln.i18n.I18N;
 import mods.eln.misc.Direction;
@@ -116,7 +117,7 @@ public class EnergyMeterElement extends SixNodeElement {
 
     @Override
     public int getConnectionMask(LRDU lrdu) {
-        if (inventory.getStackInSlot(EnergyMeterContainer.cableSlotId) == null) return 0;
+        if (McBridge.isNothing(inventory.getStackInSlot(EnergyMeterContainer.cableSlotId))) return 0;
         if (front == lrdu) return NodeBase.maskElectricalAll;
         if (front.inverse() == lrdu) return NodeBase.maskElectricalAll;
 

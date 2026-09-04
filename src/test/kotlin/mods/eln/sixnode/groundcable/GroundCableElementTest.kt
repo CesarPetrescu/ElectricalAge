@@ -1,5 +1,6 @@
 package mods.eln.sixnode.groundcable
 
+import mods.eln.bootstrapMinecraft
 import mods.eln.cable.CableRenderDescriptor
 import mods.eln.misc.Direction
 import mods.eln.misc.LRDU
@@ -19,6 +20,10 @@ import org.junit.Assert.assertSame
 import org.junit.Test
 
 class GroundCableElementTest {
+    init {
+        bootstrapMinecraft()
+    }
+
     @Test
     fun multiConductorUtilityCableConnectionMaskSelectsGroundConductor() {
         val groundCable = GroundCableElement(SixNode(), Direction.ZP, GroundCableDescriptor("Test Ground Cable", null))

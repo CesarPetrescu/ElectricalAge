@@ -13,8 +13,8 @@
 		"logoFile": "assets/eln/logo.png",
 		"screenshots": [],
 		"parent": "",
-		"requiredMods": ["CoFHCore"],
-		"dependencies": ["CoFHCore"],
+		"requiredMods": [],
+		"dependencies": [],
 		"dependants": [],
 		"useDependencyInformation": false
 	}]

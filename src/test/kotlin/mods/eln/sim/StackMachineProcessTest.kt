@@ -1,5 +1,6 @@
 package mods.eln.sim
 
+import mods.eln.bootstrapMinecraft
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -8,36 +9,55 @@ import mods.eln.misc.RecipesList
 import net.minecraft.inventory.IInventory
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
+import net.minecraft.util.text.ITextComponent
+import net.minecraft.util.text.TextComponentString
 
+/** Minimal 1.12.2 IInventory: slots are never null, an empty slot holds ItemStack.EMPTY. */
 private class SimpleInventory(size: Int) : IInventory {
-    private val stacks = arrayOfNulls<ItemStack>(size)
+    private val stacks = Array(size) { ItemStack.EMPTY }
     override fun getSizeInventory(): Int = stacks.size
-    override fun getStackInSlot(slot: Int): ItemStack? = stacks[slot]
-    override fun decrStackSize(slot: Int, amount: Int): ItemStack? {
-        val stack = stacks[slot] ?: return null
+    override fun isEmpty(): Boolean = stacks.all { it.isEmpty }
+    override fun getStackInSlot(slot: Int): ItemStack = stacks[slot]
+    override fun decrStackSize(slot: Int, amount: Int): ItemStack {
+        val stack = stacks[slot]
+        if (stack.isEmpty) return ItemStack.EMPTY
         val removed = stack.copy()
         removed.count = amount.coerceAtMost(stack.count)
         stack.count -= removed.count
-        if (stack.count <= 0) stacks[slot] = null
+        if (stack.count <= 0) stacks[slot] = ItemStack.EMPTY
         return removed
     }
 
-    override fun getStackInSlotOnClosing(slot: Int): ItemStack? = stacks[slot]
-    override fun setInventorySlotContents(slot: Int, stack: ItemStack?) {
+    override fun removeStackFromSlot(slot: Int): ItemStack {
+        val stack = stacks[slot]
+        stacks[slot] = ItemStack.EMPTY
+        return stack
+    }
+
+    override fun setInventorySlotContents(slot: Int, stack: ItemStack) {
         stacks[slot] = stack
     }
 
-    override fun getInventoryName(): String = "inv"
-    override fun hasCustomInventoryName(): Boolean = false
+    override fun getName(): String = "inv"
+    override fun hasCustomName(): Boolean = false
+    override fun getDisplayName(): ITextComponent = TextComponentString(name)
     override fun getInventoryStackLimit(): Int = 64
     override fun markDirty() {}
-    override fun isUsableByPlayer(player: net.minecraft.entity.player.EntityPlayer?): Boolean = true
-    override fun openInventory() {}
-    override fun closeInventory() {}
-    override fun isItemValidForSlot(slot: Int, stack: ItemStack?): Boolean = true
+    override fun isUsableByPlayer(player: net.minecraft.entity.player.EntityPlayer): Boolean = true
+    override fun openInventory(player: net.minecraft.entity.player.EntityPlayer) {}
+    override fun closeInventory(player: net.minecraft.entity.player.EntityPlayer) {}
+    override fun isItemValidForSlot(slot: Int, stack: ItemStack): Boolean = true
+    override fun getField(id: Int): Int = 0
+    override fun setField(id: Int, value: Int) {}
+    override fun getFieldCount(): Int = 0
+    override fun clear() = stacks.fill(ItemStack.EMPTY)
 }
 
 class StackMachineProcessTest {
+    init {
+        bootstrapMinecraft()
+    }
+
     @Test
     fun processSmeltsWhenEnergyAvailable() {
         val inventory = SimpleInventory(3)
@@ -62,8 +82,8 @@ class StackMachineProcessTest {
 
         process.process(1.0)
 
-        assertTrue(inventory.getStackInSlot(0) == null)
-        assertEquals(1, inventory.getStackInSlot(1)!!.count)
+        assertTrue(inventory.getStackInSlot(0).isEmpty)
+        assertEquals(1, inventory.getStackInSlot(1).count)
     }
 
     @Test

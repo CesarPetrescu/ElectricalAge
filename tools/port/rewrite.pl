@@ -139,6 +139,24 @@ for my $file (@ARGV) {
     # net.minecraft.util.math.Vec3d.createVectorHelper style leftovers
     $src =~ s/\bVec3dd\b/Vec3d/g;
 
+    # 1.11+: stacks are never null; "no stack" is ItemStack.EMPTY. Rewrite the 1.7.10 null tests
+    # on anything that is recognisably a stack (name, inventory slot, held item) to isNothing().
+    {
+        # "stacks" (arrays/grids of stacks) is excluded: those really are nullable.
+        my $stack = qr/((?:[\w!?]+\.)*(?:\w*[sS]tack(?!s\b)\w*|getStackInSlot\([^()]*\)|heldItemMainhand|getHeldItem\([^()]*\)|getHeldItemMainhand\(\)))/;
+        if ($file =~ /\.kt$/) {
+            $src =~ s/(?<![\w.])$stack\s*==\s*null\b/$1.isNothing()/g;
+            $src =~ s/(?<![\w.])$stack\s*!=\s*null\b/!$1.isNothing()/g;
+            $src =~ s/\bgetStackInSlot\(([^()]*)\)\s*\?:/getStackInSlot($1).takeUnless { it.isEmpty } ?:/g;
+        } else {
+            $src =~ s/(?<![\w.])$stack\s*==\s*null\b/McBridge.isNothing($1)/g;
+            $src =~ s/(?<![\w.])$stack\s*!=\s*null\b/!McBridge.isNothing($1)/g;
+            if ($src =~ /McBridge\.isNothing/ && $src !~ /^import mods\.eln\.misc\.McBridge;/m) {
+                $src =~ s/^(package [^;]+;\n)/$1\nimport mods.eln.misc.McBridge;/m;
+            }
+        }
+    }
+
     # Java cannot call the Kotlin (x, y, z) extension adapters as members; route the
     # 1.7.10-shaped world calls through their static form on mods.eln.misc.McBridge.
     if ($file =~ /\.java$/) {
@@ -153,7 +171,8 @@ for my $file (@ARGV) {
         my $recv = qr/((?:\w+(?:\(\))?\.)*\w+(?:\(\))?)/;
         my $hit = 0;
         for my $m (qw(getBlock getBlockMetadata getBlockState getTileEntity setBlockToAir isAirBlock setBlock isBlockLoaded)) {
-            $hit += ($src =~ s/(?<![\w.])(?!McBridge\.)$recv\.$m\(\s*(?![)\s])/McBridge.$m($1, /g);
+            # only the (x, y, z) form: a BlockPos argument is already the 1.12 call
+            $hit += ($src =~ s/(?<![\w.])(?!McBridge\.)$recv\.$m\(\s*(?![)\s]|new\b|\w*[pP]os\b)/McBridge.$m($1, /g);
         }
         if ($hit && $src !~ /^import mods\.eln\.misc\.McBridge;/m) {
             $src =~ s/^(package [^;]+;\n)/$1\nimport mods.eln.misc.McBridge;/m;

@@ -37,6 +37,7 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
 import kotlin.math.pow
+import mods.eln.misc.isNothing
 
 class FloodlightElement(transparentNode: TransparentNode, transparentNodeDescriptor: TransparentNodeDescriptor) :
     TransparentNodeElement(transparentNode, transparentNodeDescriptor), IConfigurable {
@@ -285,22 +286,22 @@ class FloodlightElement(transparentNode: TransparentNode, transparentNodeDescrip
         info[I18N.tr("Power Consumption")] = plotPower("", electricalLoad.voltage.pow(2) / parallelResistance)
 
         val lamp1Stack = inventory.getStackInSlot(FloodlightContainer.LAMP_SLOT_1_ID)
-        if (lamp1Stack != null) info[I18N.tr("Bulb 1")] = lamp1Stack.displayName
+        if (!lamp1Stack.isNothing()) info[I18N.tr("Bulb 1")] = lamp1Stack.displayName
         else info[I18N.tr("Bulb 1")] = I18N.tr("None")
 
         val lamp2Stack = inventory.getStackInSlot(FloodlightContainer.LAMP_SLOT_2_ID)
-        if (lamp2Stack != null) info[I18N.tr("Bulb 2")] = lamp2Stack.displayName
+        if (!lamp2Stack.isNothing()) info[I18N.tr("Bulb 2")] = lamp2Stack.displayName
         else info[I18N.tr("Bulb 2")] = I18N.tr("None")
 
         if (Eln.config.getBooleanOrElse("ui.waila.easyMode", false)) {
             info[I18N.tr("Voltage")] = plotVolt("", electricalLoad.voltage)
 
-            if (lamp1Stack != null) {
+            if (!lamp1Stack.isNothing()) {
                 val lamp1Descriptor = getItemObject(lamp1Stack) as LampDescriptor
                 info[I18N.tr("Bulb 1 Life Left")] = plotValue(lamp1Descriptor.getLifeInTag(lamp1Stack)) + I18N.tr(" Hours")
             }
 
-            if (lamp2Stack != null) {
+            if (!lamp2Stack.isNothing()) {
                 val lamp2Descriptor = getItemObject(lamp2Stack) as LampDescriptor
                 info[I18N.tr("Bulb 2 Life Left")] = plotValue(lamp2Descriptor.getLifeInTag(lamp2Stack)) + I18N.tr(" Hours")
             }

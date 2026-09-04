@@ -13,6 +13,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import kotlin.math.abs
 import kotlin.math.pow
+import mods.eln.misc.isNothing
 
 class LampDescriptor(name: String, iconName: String, val lampData: SpecificLampData) : GenericItemUsingDamageDescriptorUpgrade(name) {
 
@@ -100,7 +101,7 @@ class LampDescriptor(name: String, iconName: String, val lampData: SpecificLampD
         list.add(I18N.tr("Nominal brightness: %1$", Utils.plotValue(lampData.nominalLightValue.toDouble())))
         list.add(I18N.tr($$"Nominal lifetime: %1$h", lampData.technology.nominalLifeInHours))
 
-        if (itemStack != null) {
+        if (!itemStack.isNothing()) {
             if (Eln.config.getBooleanOrElse("debug.logging.enabled", false)) {
                 list.add(I18N.tr($$"Current lifetime: %1$h", getLifeInTag(itemStack)))
             }

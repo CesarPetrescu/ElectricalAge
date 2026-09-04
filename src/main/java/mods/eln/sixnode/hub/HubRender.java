@@ -1,5 +1,6 @@
 package mods.eln.sixnode.hub;
 
+import mods.eln.misc.McBridge;
 import mods.eln.cable.CableRenderDescriptor;
 import mods.eln.misc.Direction;
 import mods.eln.misc.LRDU;
@@ -47,7 +48,7 @@ public class HubRender extends SixNodeElementRender {
         try {
             for (int idx = 0; idx < 4; idx++) {
                 ItemStack cableStack = Utils.unserialiseItemStack(stream);
-                if (cableStack != null) {
+                if (!McBridge.isNothing(cableStack)) {
                     ElectricalCableDescriptor desc = (ElectricalCableDescriptor) ElectricalCableDescriptor.getDescriptor(cableStack, ElectricalCableDescriptor.class);
                     if(desc != null) {
                         cableRender[idx] = desc.render;

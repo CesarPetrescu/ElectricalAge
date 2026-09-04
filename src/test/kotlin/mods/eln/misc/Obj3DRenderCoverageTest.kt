@@ -18,7 +18,7 @@ class Obj3DRenderCoverageTest {
 
         obj.bindTexture("Panel.png")
         assertNotNull(UtilsClient.lastResource)
-        assertTrue(UtilsClient.lastResource.toString().contains("eln:model/TestObj3D/Panel.png"))
+        assertTrue(UtilsClient.lastResource.toString().contains("eln:model/testobj3d/panel.png"))
 
         val panel = obj.getPart("panel")
         assertNotNull(panel)
@@ -91,7 +91,7 @@ class Obj3DRenderCoverageTest {
         val part = obj.getPart("socket")
         assertNotNull(part)
         val fg = part.faceGroup.first()
-        fg.textureResource = ResourceLocation("eln", "model/StreetLight/StreetLight_on.png")
+        fg.textureResource = ResourceLocation("eln", "model/streetlight/streetlight_on.png")
         fg.draw()
     }
 }

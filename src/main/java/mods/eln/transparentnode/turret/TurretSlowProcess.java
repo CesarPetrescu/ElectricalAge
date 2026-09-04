@@ -1,5 +1,6 @@
 package mods.eln.transparentnode.turret;
 
+import mods.eln.misc.McBridge;
 import mods.eln.sim.fsm.CompositeState;
 import mods.eln.sim.fsm.State;
 import mods.eln.sim.fsm.StateMachine;
@@ -154,7 +155,7 @@ public class TurretSlowProcess extends StateMachine {
 
             Class<?> filterClass = null;
             ItemStack filterStack = element.getInventory().getStackInSlot(TurretContainer.filterId);
-            if (filterStack != null) {
+            if (!McBridge.isNothing(filterStack)) {
                 GenericItemUsingDamageDescriptor gen = EntitySensorFilterDescriptor.getDescriptor(filterStack);
                 if (gen != null && gen instanceof EntitySensorFilterDescriptor) {
                     EntitySensorFilterDescriptor filter = (EntitySensorFilterDescriptor) gen;
@@ -250,7 +251,7 @@ public class TurretSlowProcess extends StateMachine {
 
             Class<?> filterClass = null;
             ItemStack filterStack = element.getInventory().getStackInSlot(TurretContainer.filterId);
-            if (filterStack != null) {
+            if (!McBridge.isNothing(filterStack)) {
                 GenericItemUsingDamageDescriptor gen = EntitySensorFilterDescriptor.getDescriptor(filterStack);
                 if (gen != null && gen instanceof EntitySensorFilterDescriptor) {
                     EntitySensorFilterDescriptor filter = (EntitySensorFilterDescriptor) gen;

@@ -42,6 +42,8 @@ import mods.eln.misc.setBlockToAir
 import mods.eln.misc.xCoord
 import mods.eln.misc.yCoord
 import mods.eln.misc.zCoord
+import mods.eln.misc.getBlockState
+import mods.eln.misc.isReplaceable
 
 class SixNodeBlock  // public static ArrayList<Integer> repertoriedItemStackId = new ArrayList<Integer>();
 // private IIcon icon;
@@ -64,7 +66,7 @@ class SixNodeBlock  // public static ArrayList<Integer> repertoriedItemStackId =
         var bestStack: ItemStack? = null
         var bestDistance = Int.MAX_VALUE
         for (slot in 0 until 9) {
-            val stack = inventory.getStackInSlot(slot) ?: continue
+            val stack = inventory.getStackInSlot(slot).takeUnless { it.isEmpty } ?: continue
             if (!descriptor.checkSameItemStack(stack)) continue
             val distance = hotbarDistance(currentSlot, slot)
             if (distance < bestDistance) {

@@ -14,6 +14,7 @@ import net.minecraft.util.ResourceLocation
 import net.minecraft.world.World
 import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
 import mods.eln.client.itemrender.IItemRenderer.ItemRendererHelper
+import mods.eln.misc.isNothing
 
 class ElectricalFlashlightItem(name: String, var lightMin: Int, var rangeMin: Int, dischargeMin: Double, var lightMax: Int,
                                rangeMax: Int, dischargeMax: Double, energyStorage: Double, chargePower: Double) : FlashlightItem(name), IItemEnergyBattery {
@@ -91,7 +92,7 @@ class ElectricalFlashlightItem(name: String, var lightMin: Int, var rangeMin: In
     override fun addInformation(itemStack: ItemStack?, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         list.add(tr("Discharge power: %1\$W", Utils.plotValue(dischargeMin)))
-        if (itemStack != null) {
+        if (!itemStack.isNothing()) {
             list.add(tr("Stored Energy: %1\$J (%2$%)", Utils.plotValue(getEnergy(itemStack)),
                 (getEnergy(itemStack) / energyStorage * 100).toInt()))
             list.add(tr("State:") + " " + if (getLightState(itemStack) != 0) tr("On") else tr("Off"))

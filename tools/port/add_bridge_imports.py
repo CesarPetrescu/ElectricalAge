@@ -14,7 +14,7 @@ SYMBOLS = [
     "xCoord", "yCoord", "zCoord",
     "getBlock", "getBlockMetadata", "getBlockState", "getTileEntity",
     "setBlock", "setBlockToAir", "isBlockLoaded", "isAirBlock",
-    "getIndirectPowerLevelTo", "markBlockForUpdate",
+    "getIndirectPowerLevelTo", "markBlockForUpdate", "isReplaceable", "isNothing",
 ]
 PKG = "mods.eln.misc"
 

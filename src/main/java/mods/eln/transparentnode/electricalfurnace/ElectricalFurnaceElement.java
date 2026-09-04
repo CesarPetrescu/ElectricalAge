@@ -1,5 +1,6 @@
 package mods.eln.transparentnode.electricalfurnace;
 
+import mods.eln.misc.McBridge;
 import mods.eln.Eln;
 import mods.eln.generic.GenericItemUsingDamageDescriptor;
 import mods.eln.i18n.I18N;
@@ -169,7 +170,7 @@ public class ElectricalFurnaceElement extends TransparentNodeElement {
         ItemStack itemStack;
         heatingCorpResistor.setState(powerOn);
         itemStack = inventory.getStackInSlot(heatingCorpSlotId);
-        if (itemStack == null) {
+        if (McBridge.isNothing(itemStack)) {
             thermalRegulator.setMinimumResistance(MnaConst.highImpedance);
             voltageWatchdog.setNominalVoltage(100000);
         } else {
@@ -185,7 +186,7 @@ public class ElectricalFurnaceElement extends TransparentNodeElement {
         }
 
         itemStack = inventory.getStackInSlot(thermalRegulatorSlotId);
-        if (itemStack == null) {
+        if (McBridge.isNothing(itemStack)) {
             thermalRegulator.setNone();
         } else {
             IRegulatorDescriptor element = (IRegulatorDescriptor) GenericItemUsingDamageDescriptor.getDescriptor(
@@ -283,7 +284,7 @@ public class ElectricalFurnaceElement extends TransparentNodeElement {
     public Map<String, String> getWaila() {
         Map<String, String> info = new HashMap<String, String>();
         info.put(I18N.tr("Temperature"), plotAmbientCelsius("", thermalLoad.temperatureCelsius));
-        if (inventory.getStackInSlot(heatingCorpSlotId) != null) {
+        if (!McBridge.isNothing(inventory.getStackInSlot(heatingCorpSlotId))) {
             info.put(I18N.tr("Heating element"), inventory.getStackInSlot(heatingCorpSlotId).getDisplayName());
         } else {
             info.put(I18N.tr("Heating element"), I18N.tr("None"));

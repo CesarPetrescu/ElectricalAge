@@ -23,6 +23,7 @@ import net.minecraft.world.World
 import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
 import mods.eln.client.itemrender.IItemRenderer.ItemRendererHelper
 import org.lwjgl.opengl.GL11
+import mods.eln.misc.isNothing
 
 @ExperimentalUnsignedTypes
 class PortableOreScannerItem(name: String?, private val obj: Obj3D,
@@ -103,7 +104,7 @@ class PortableOreScannerItem(name: String?, private val obj: Obj3D,
     override fun addInformation(itemStack: ItemStack?, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         list.add(tr("Discharge power: %1\$W", Utils.plotValue(dischargePower)))
-        if (itemStack != null) {
+        if (!itemStack.isNothing()) {
             list.add(tr("Stored energy: %1\$J (%2$%)", Utils.plotValue(getEnergy(itemStack)),
                 (getEnergy(itemStack) / energyStorage * 100).toInt()))
         }

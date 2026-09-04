@@ -42,6 +42,7 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
 import kotlin.math.pow
+import mods.eln.misc.isNothing
 
 class LampSocketElement(sixNode: SixNode, side: Direction, sixNodeDescriptor: SixNodeDescriptor) :
     SixNodeElement(sixNode, side, sixNodeDescriptor), IConfigurable {
@@ -243,7 +244,7 @@ class LampSocketElement(sixNode: SixNode, side: Direction, sixNodeDescriptor: Si
 
     override fun getElectricalLoad(lrdu: LRDU, mask: Int): ElectricalLoad? {
         return when {
-            inventory.getStackInSlot(LampSocketContainer.CABLE_SLOT_ID) == null -> null
+            inventory.getStackInSlot(LampSocketContainer.CABLE_SLOT_ID).isNothing() -> null
             poweredByLampSupply -> null
             grounded -> electricalLoad
             else -> null
@@ -256,7 +257,7 @@ class LampSocketElement(sixNode: SixNode, side: Direction, sixNodeDescriptor: Si
 
     override fun getConnectionMask(lrdu: LRDU): Int {
         return when {
-            inventory.getStackInSlot(LampSocketContainer.CABLE_SLOT_ID) == null -> 0
+            inventory.getStackInSlot(LampSocketContainer.CABLE_SLOT_ID).isNothing() -> 0
             poweredByLampSupply -> 0
             grounded -> NodeBase.maskElectricalPower
             front == lrdu || front == lrdu.inverse() -> NodeBase.maskElectricalPower
@@ -319,13 +320,13 @@ class LampSocketElement(sixNode: SixNode, side: Direction, sixNodeDescriptor: Si
         info[I18N.tr("Power Consumption")] = plotPower("", electricalLoad.voltage.pow(2) / lampResistor.resistance)
 
         val lampStack = inventory.getStackInSlot(LampSocketContainer.LAMP_SLOT_ID)
-        if (lampStack != null) info[I18N.tr("Bulb")] = lampStack.displayName
+        if (!lampStack.isNothing()) info[I18N.tr("Bulb")] = lampStack.displayName
         else info[I18N.tr("Bulb")] = I18N.tr("None")
 
         if (Eln.config.getBooleanOrElse("ui.waila.easyMode", false)) {
             info[I18N.tr("Voltage")] = plotVolt("", electricalLoad.voltage)
 
-            if (lampStack != null) {
+            if (!lampStack.isNothing()) {
                 val lampDescriptor = getItemObject(lampStack) as LampDescriptor
                 info[I18N.tr("Bulb Life Left")] = plotValue(lampDescriptor.getLifeInTag(lampStack)) + I18N.tr(" Hours")
             }

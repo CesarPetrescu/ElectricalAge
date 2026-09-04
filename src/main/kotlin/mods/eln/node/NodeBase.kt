@@ -44,6 +44,8 @@ import java.util.ArrayList
 import kotlin.experimental.or
 import mods.eln.misc.getBlock
 import mods.eln.misc.setBlockToAir
+import mods.eln.misc.isNothing
+import mods.eln.misc.isReplaceable
 
 abstract class NodeBase {
     var neighborOpaque: Byte = 0
@@ -127,7 +129,7 @@ abstract class NodeBase {
         neighborBlockRead()
         NodeManager.instance!!.addNode(this)
         initializeFromThat(front, entityLiving, itemStack)
-        if (itemStack != null) println("Node::constructor( meta = " + itemStack.itemDamage + ")")
+        if (!itemStack.isNothing()) println("Node::constructor( meta = " + itemStack.itemDamage + ")")
     }
 
     abstract fun initializeFromThat(front: Direction, entityLiving: EntityLivingBase?, itemStack: ItemStack?)
@@ -150,7 +152,7 @@ abstract class NodeBase {
     }
 
     open fun onBlockActivated(entityPlayer: EntityPlayer, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
-        if (!entityPlayer.world.isRemote && entityPlayer.heldItemMainhand != null) {
+        if (!entityPlayer.world.isRemote && !entityPlayer.heldItemMainhand.isNothing()) {
             val equipped = entityPlayer.heldItemMainhand
             if (Eln.multiMeterElement.checkSameItemStack(equipped)) {
                 val str = multiMeterString(side)
@@ -463,7 +465,7 @@ abstract class NodeBase {
     }
 
     fun dropItem(itemStack: ItemStack?) {
-        if (itemStack == null) return
+        if (itemStack.isNothing()) return
         if (coordinate.world().gameRules.getBoolean("doTileDrops")) {
             val var6 = 0.7f
             val var7 = (coordinate.world().rand.nextFloat() * var6).toDouble() + (1.0f - var6).toDouble() * 0.5

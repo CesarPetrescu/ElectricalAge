@@ -6,10 +6,11 @@ import mods.eln.sixnode.electricalcable.UtilityCableMaterial
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
+import mods.eln.misc.isNothing
 
 class RollerWheelDescriptor(name: String, private val materialName: String, iconName: String) : GenericItemUsingDamageDescriptor(name, iconName) {
     fun matchesMaterial(stack: ItemStack?, material: UtilityCableMaterial): Boolean {
-        return stack != null && checkSameItemStack(stack) && material.label.equals(materialName, ignoreCase = true)
+        return !stack.isNothing() && checkSameItemStack(stack) && material.label.equals(materialName, ignoreCase = true)
     }
 }
 

@@ -9,6 +9,7 @@ import mods.eln.sixnode.electricalcable.UtilityCableDescriptor
 import net.minecraft.entity.player.InventoryPlayer
 import net.minecraft.inventory.IInventory
 import net.minecraft.item.ItemStack
+import mods.eln.misc.isNothing
 
 class AutoAcceptInventoryProxy(val inventory: IInventory) {
     companion object {
@@ -31,8 +32,8 @@ class AutoAcceptInventoryProxy(val inventory: IInventory) {
     private open class ItemAcceptorIfEmpty(index: Int, acceptedItems: Array<out Class<out Any>>)
         : ItemAcceptor(index, acceptedItems) {
         override fun take(itemStack: ItemStack?, inventory: IInventory): Boolean {
-            if (inventory.getStackInSlot(index) == null) {
-                if (itemStack != null ) {
+            if (inventory.getStackInSlot(index).isNothing()) {
+                if (!itemStack.isNothing() ) {
                     GenericItemUsingDamageDescriptor.getDescriptor(itemStack)?.let { desc ->
                         if (acceptedItems.any { it.isAssignableFrom(desc.javaClass) }) {
                             val newItemStack = desc.newItemStack()
@@ -64,7 +65,7 @@ class AutoAcceptInventoryProxy(val inventory: IInventory) {
         override fun take(itemStack: ItemStack?, inventory: IInventory): Boolean {
             if (super.take(itemStack, inventory)) return true
 
-            if (itemStack == null) return false
+            if (itemStack.isNothing()) return false
 
             val existingStack = inventory.getStackInSlot(index)
             if (existingStack?.count ?: 0 >= maxItems) return false
@@ -97,7 +98,7 @@ class AutoAcceptInventoryProxy(val inventory: IInventory) {
         override fun take(itemStack: ItemStack?, inventory: IInventory): Boolean {
             if (super.take(itemStack, inventory)) return true
 
-            if (itemStack == null) return false
+            if (itemStack.isNothing()) return false
 
             // TODO: What do we do with the item that is actually in the slot? For the moment it just disappears.
 
@@ -171,7 +172,7 @@ class AutoAcceptInventoryProxy(val inventory: IInventory) {
     fun takeFrom(inv: InventoryPlayer, nodeElement: INodeElement?, publish: Boolean = false, notifyInventoryChange: Boolean = false, matchDescriptor: GenericItemUsingDamageDescriptor? = null): Boolean {
         var ret = false
         for(idx in 0 until inv.sizeInventory) {
-            val stack = inv.getStackInSlot(idx) ?: continue
+            val stack = inv.getStackInSlot(idx).takeUnless { it.isEmpty } ?: continue
             if(matchDescriptor != null) {
                 val desc = GenericItemUsingDamageDescriptor.getDescriptor(stack)
                 if(matchDescriptor != desc) continue

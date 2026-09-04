@@ -1,5 +1,6 @@
 package mods.eln.sixnode.electricaldigitaldisplay;
 
+import mods.eln.misc.McBridge;
 import mods.eln.generic.GenericItemUsingDamageDescriptor;
 import mods.eln.i18n.I18N;
 import mods.eln.item.BrushDescriptor;
@@ -129,7 +130,7 @@ public class ElectricalDigitalDisplayElement extends SixNodeElement implements I
     @Override
     public boolean onBlockActivated(EntityPlayer entityPlayer, Direction side, float vx, float vy, float vz) {
         ItemStack stack = entityPlayer.getHeldItemMainhand();
-        if(stack != null) {
+        if(!McBridge.isNothing(stack)) {
             GenericItemUsingDamageDescriptor desc = BrushDescriptor.getDescriptor(stack);
             if(desc != null && desc instanceof BrushDescriptor) {
                 BrushDescriptor brush = (BrushDescriptor) desc;

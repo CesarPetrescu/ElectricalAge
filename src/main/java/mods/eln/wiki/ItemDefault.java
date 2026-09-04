@@ -1,5 +1,6 @@
 package mods.eln.wiki;
 
+import mods.eln.misc.McBridge;
 import mods.eln.gui.GuiLabel;
 import mods.eln.gui.IGuiObject;
 import mods.eln.misc.Recipe;
@@ -39,7 +40,7 @@ public class ItemDefault extends Default {
         super.initGui();
         try {
 
-            if (stack == null) return;
+            if (McBridge.isNothing(stack)) return;
             int y = 6;
 
             Object desc = Utils.getItemObject(stack);
@@ -57,7 +58,7 @@ public class ItemDefault extends Default {
 
             List<IRecipe> recipeOutList = new ArrayList<IRecipe>();
             List<IRecipe> recipeInList = new ArrayList<IRecipe>();
-            if (stack != null) {
+            if (!McBridge.isNothing(stack)) {
                 for (Object o : ForgeRegistries.RECIPES) {
                     try {
                         if (o instanceof IRecipe) {
@@ -69,7 +70,7 @@ public class ItemDefault extends Default {
                             }
 
                             for (ItemStack rStack : Utils.getRecipeInputs(r)) {
-                                if (rStack != null && rStack.getItem() == stack.getItem() && rStack.getItemDamage() == stack.getItemDamage()) {
+                                if (!McBridge.isNothing(rStack) && rStack.getItem() == stack.getItem() && rStack.getItemDamage() == stack.getItemDamage()) {
                                     recipeInList.add(r);
                                     break;
                                 }

@@ -1,5 +1,6 @@
 package mods.eln.transparentnode.heatfurnace;
 
+import mods.eln.misc.McBridge;
 import mods.eln.Eln;
 import mods.eln.generic.GenericItemUsingDamageDescriptor;
 import mods.eln.item.ThermalIsolatorElement;
@@ -27,7 +28,7 @@ public class HeatFurnaceInventoryProcess implements IProcess, INBTTReady {
         ItemStack isolatorChamberStack = furnace.inventory.getStackInSlot(HeatFurnaceContainer.isolatorId);
 
         double isolationFactor = 1;
-        if (isolatorChamberStack != null) {
+        if (!McBridge.isNothing(isolatorChamberStack)) {
             ThermalIsolatorElement iso = (ThermalIsolatorElement) GenericItemUsingDamageDescriptor.getDescriptor(
                 isolatorChamberStack, ThermalIsolatorElement.class);
             if (iso == null) {
@@ -41,7 +42,7 @@ public class HeatFurnaceInventoryProcess implements IProcess, INBTTReady {
         furnace.thermalLoad.setRp(furnace.descriptor.thermal.Rp / isolationFactor);
 
         int combustionChamberNbr = 0;
-        if (combustionChamberStack != null) {
+        if (!McBridge.isNothing(combustionChamberStack)) {
             combustionChamberNbr = combustionChamberStack.getCount();
         }
         furnace.furnaceProcess.nominalPower = furnace.descriptor.nominalPower + furnace.descriptor.combustionChamberPower * combustionChamberNbr;
@@ -49,7 +50,7 @@ public class HeatFurnaceInventoryProcess implements IProcess, INBTTReady {
         if (furnace.getTakeFuel()) {
             if (Eln.config.getBooleanOrElse("machines.heatFurnace.consumeFuel", false)) {
                 combustibleBuffer = furnace.furnaceProcess.nominalCombustibleEnergy;
-            } else if (combustibleStack != null) {
+            } else if (!McBridge.isNothing(combustibleStack)) {
                 double itemEnergy = Utils.getItemEnergie(combustibleStack);
                 if (itemEnergy != 0) {
                     if (furnace.furnaceProcess.combustibleEnergy + combustibleBuffer < furnace.furnaceProcess.nominalCombustibleEnergy) {

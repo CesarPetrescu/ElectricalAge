@@ -38,6 +38,7 @@ import mods.eln.client.itemrender.IItemRenderer
 import org.lwjgl.opengl.GL11
 import java.util.HashMap
 import kotlin.math.abs
+import mods.eln.misc.isNothing
 
 class PowerInductorSixDescriptor(name: String,
                                  obj: Obj3D,
@@ -56,7 +57,7 @@ class PowerInductorSixDescriptor(name: String,
     }
 
     fun getRsValue(inventory: IInventory): Double {
-        val core = inventory.getStackInSlot(PowerInductorSixContainer.coreId) ?: return MnaConst.highImpedance
+        val core = inventory.getStackInSlot(PowerInductorSixContainer.coreId).takeUnless { it.isEmpty } ?: return MnaConst.highImpedance
         val coreDescriptor = GenericItemUsingDamageDescriptor.getDescriptor(
             core, FerromagneticCoreDescriptor::class.java) as? FerromagneticCoreDescriptor ?: return MnaConst.highImpedance
         val coreFactor = coreDescriptor.cableMultiplicator
@@ -248,7 +249,7 @@ class PowerInductorSixElement(SixNode: SixNode, side: Direction, descriptor: Six
 
     override fun writeConfigTool(compound: NBTTagCompound, invoker: EntityPlayer) {
         var stack = inventory.getStackInSlot(PowerInductorSixContainer.cableId)
-        if (stack == null) {
+        if (stack.isNothing()) {
             compound.setInteger("indCableAmt", 0)
         } else {
             compound.setInteger("indCableAmt", stack.count)

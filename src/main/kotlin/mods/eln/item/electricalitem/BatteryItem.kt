@@ -13,6 +13,7 @@ import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.ResourceLocation
 import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
 import mods.eln.client.itemrender.IItemRenderer.ItemRendererHelper
+import mods.eln.misc.isNothing
 
 class BatteryItem(name: String, var energyStorage: Double, var chargePower: Double, var dischargePower: Double, private val priority: Int) : GenericItemUsingDamageDescriptor(name), IItemEnergyBattery {
 
@@ -31,7 +32,7 @@ class BatteryItem(name: String, var energyStorage: Double, var chargePower: Doub
         super.addInformation(itemStack, entityPlayer, list, par4)
         list.add(tr("Charge power: %1\$W", Utils.plotValue(chargePower)))
         list.add(tr("Discharge power: %1\$W", Utils.plotValue(dischargePower)))
-        if (itemStack != null) {
+        if (!itemStack.isNothing()) {
             list.add(tr("Stored energy: %1\$J (%2$%)", Utils.plotValue(getEnergy(itemStack)),
                 (getEnergy(itemStack) / energyStorage * 100).toInt()))
         }

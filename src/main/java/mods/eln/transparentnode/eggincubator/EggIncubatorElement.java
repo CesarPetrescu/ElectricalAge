@@ -1,5 +1,6 @@
 package mods.eln.transparentnode.eggincubator;
 
+import mods.eln.misc.McBridge;
 import mods.eln.Eln;
 import mods.eln.i18n.I18N;
 import mods.eln.misc.Direction;
@@ -72,7 +73,7 @@ public class EggIncubatorElement extends TransparentNodeElement {
         @Override
         public void process(double time) {
             energy -= powerResistor.getPower() * time;
-            if (inventory.getStackInSlot(EggIncubatorContainer.EggSlotId) != null) {
+            if (!McBridge.isNothing(inventory.getStackInSlot(EggIncubatorContainer.EggSlotId))) {
                 descriptor.setState(powerResistor, true);
                 if (energy <= 0) {
                     inventory.decrStackSize(EggIncubatorContainer.EggSlotId, 1);
@@ -179,7 +180,7 @@ public class EggIncubatorElement extends TransparentNodeElement {
     public void networkSerialize(DataOutputStream stream) {
         super.networkSerialize(stream);
         try {
-            if (inventory.getStackInSlot(EggIncubatorContainer.EggSlotId) == null) stream.writeByte(0);
+            if (McBridge.isNothing(inventory.getStackInSlot(EggIncubatorContainer.EggSlotId))) stream.writeByte(0);
             else stream.writeByte(inventory.getStackInSlot(EggIncubatorContainer.EggSlotId).getCount());
 
             node.lrduCubeMask.getTranslate(front.down()).serialize(stream);
@@ -195,7 +196,7 @@ public class EggIncubatorElement extends TransparentNodeElement {
     @Override
     public Map<String, String> getWaila() {
         Map<String, String> info = new HashMap<String, String>();
-        info.put(I18N.tr("Has egg"), inventory.getStackInSlot(EggIncubatorContainer.EggSlotId) != null ?
+        info.put(I18N.tr("Has egg"), !McBridge.isNothing(inventory.getStackInSlot(EggIncubatorContainer.EggSlotId)) ?
             I18N.tr("Yes") : I18N.tr("No"));
         if (Eln.config.getBooleanOrElse("ui.waila.easyMode", false)) {
             info.put(I18N.tr("Power consumption"), Utils.plotPower("", powerResistor.getPower()));

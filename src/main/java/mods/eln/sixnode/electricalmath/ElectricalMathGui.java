@@ -1,5 +1,6 @@
 package mods.eln.sixnode.electricalmath;
 
+import mods.eln.misc.McBridge;
 import mods.eln.gui.GuiContainerEln;
 import mods.eln.gui.GuiHelperContainer;
 import mods.eln.gui.GuiTextFieldEln;
@@ -52,7 +53,7 @@ public class ElectricalMathGui extends GuiContainerEln {
         int redNbr = 0;
         ItemStack stack = render.inventory.getStackInSlot(ElectricalMathContainer.restoneSlotId);
 
-        if (stack != null)
+        if (!McBridge.isNothing(stack))
             redNbr = stack.getCount();
         if (!expression.getText().equals(render.expression)) {
             c = 0xFF404040;

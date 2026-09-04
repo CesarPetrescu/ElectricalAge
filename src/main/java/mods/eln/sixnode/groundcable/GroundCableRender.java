@@ -1,5 +1,6 @@
 package mods.eln.sixnode.groundcable;
 
+import mods.eln.misc.McBridge;
 import mods.eln.Eln;
 import mods.eln.cable.CableRenderDescriptor;
 import mods.eln.misc.Direction;
@@ -55,7 +56,7 @@ public class GroundCableRender extends SixNodeElementRender {
             color = (b >> 4) & 0xF;
 
             ItemStack cableStack = Utils.unserialiseItemStack(stream);
-            if (cableStack != null) {
+            if (!McBridge.isNothing(cableStack)) {
                 ElectricalCableDescriptor desc = (ElectricalCableDescriptor) ElectricalCableDescriptor.getDescriptor(cableStack, ElectricalCableDescriptor.class);
 
                 if (desc == null)

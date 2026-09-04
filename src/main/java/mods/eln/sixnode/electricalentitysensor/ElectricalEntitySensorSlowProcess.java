@@ -1,5 +1,6 @@
 package mods.eln.sixnode.electricalentitysensor;
 
+import mods.eln.misc.McBridge;
 import mods.eln.generic.GenericItemUsingDamageDescriptor;
 import mods.eln.item.EntitySensorFilterDescriptor;
 import mods.eln.misc.Coordinate;
@@ -53,7 +54,7 @@ public class ElectricalEntitySensorSlowProcess implements IProcess, INBTTReady {
 
             Class<?> filterClass = EntityLivingBase.class;
 
-            if (filterStack != null) {
+            if (!McBridge.isNothing(filterStack)) {
                 GenericItemUsingDamageDescriptor gen = EntitySensorFilterDescriptor.getDescriptor(filterStack);
                 if (gen != null && gen instanceof EntitySensorFilterDescriptor) {
                     EntitySensorFilterDescriptor filter = (EntitySensorFilterDescriptor) gen;

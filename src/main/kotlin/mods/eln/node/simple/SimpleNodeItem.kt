@@ -9,6 +9,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
+import mods.eln.misc.getBlockState
 
 class SimpleNodeItem(b: Block) : ItemBlock(b) {
     var block: SimpleNodeBlock

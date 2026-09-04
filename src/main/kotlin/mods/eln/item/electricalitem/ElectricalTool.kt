@@ -18,6 +18,7 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
 import mods.eln.client.itemrender.IItemRenderer.ItemRendererHelper
+import mods.eln.misc.isNothing
 
 open class ElectricalTool(name: String, var strengthOn: Float, var strengthOff: Float,
                           var energyStorage: Double, var energyPerBlock: Double, var chargePower: Double) : GenericItemUsingDamageDescriptor(name), IItemEnergyBattery {
@@ -66,7 +67,7 @@ open class ElectricalTool(name: String, var strengthOn: Float, var strengthOff: 
 
     override fun addInformation(itemStack: ItemStack?, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
-        if (itemStack != null) list.add(tr("Stored energy: %1\$J (%2$%)", Utils.plotValue(getEnergy(itemStack)),
+        if (!itemStack.isNothing()) list.add(tr("Stored energy: %1\$J (%2$%)", Utils.plotValue(getEnergy(itemStack)),
             (getEnergy(itemStack) / energyStorage * 100).toInt()))
     }
 

@@ -1,5 +1,6 @@
 package mods.eln.transparentnode.thermaldissipatorpassive;
 
+import mods.eln.misc.McBridge;
 
 import mods.eln.Eln;
 import mods.eln.i18n.I18N;
@@ -93,7 +94,7 @@ public class ThermalDissipatorPassiveElement extends TransparentNodeElement {
     public boolean onBlockActivated(EntityPlayer player, Direction side,
                                     float vx, float vy, float vz) {
         ItemStack stack = player.getHeldItemMainhand();
-        if (stack == null) return false;
+        if (McBridge.isNothing(stack)) return false;
         if (stack.getItem() == Items.WATER_BUCKET) {
             thermalLoad.temperatureCelsius *= 0.5;
 

@@ -14,6 +14,7 @@ import kotlin.math.*
 import mods.eln.misc.xCoord
 import mods.eln.misc.yCoord
 import mods.eln.misc.zCoord
+import mods.eln.misc.isNothing
 
 class FloodlightProcess(val element: FloodlightElement) : IProcess {
 
@@ -43,7 +44,7 @@ class FloodlightProcess(val element: FloodlightElement) : IProcess {
         lampStacks.add(element.inventory.getStackInSlot(FloodlightContainer.LAMP_SLOT_2_ID))
 
         for ((idx, lampStack) in lampStacks.withIndex()) {
-            if (lampStack != null) {
+            if (!lampStack.isNothing()) {
                 val lampDescriptor = getItemObject(lampStack) as LampDescriptor
                 val lampData = lampDescriptor.lampData
                 val lampVoltage = abs(element.electricalLoad.voltage)

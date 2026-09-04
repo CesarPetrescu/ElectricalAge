@@ -1,5 +1,6 @@
 package mods.eln;
 
+import mods.eln.misc.McBridge;
 import mods.eln.registration.ElnRegistry;
 
 import net.minecraftforge.fml.common.*;
@@ -130,8 +131,10 @@ public class Eln {
     // the lang/model asset paths all derive from it.
     public final static String MODID = "eln";
 
-    static {
-        // Must run before any mod's preInit: Eln's fluids use Forge's universal bucket (1.12.2).
+    public Eln() {
+        // Must run before any mod's preInit (FML constructs mod instances first): Eln's fluids use
+        // Forge's universal bucket on 1.12.2. Not a static initializer, so the unit tests that touch
+        // Eln's static fields do not drag Blocks/Items in without a Bootstrap.
         FluidRegistry.enableUniversalBucket();
     }
     public final static Logger LOGGER = LogManager.getLogger(MODID);
@@ -304,7 +307,7 @@ public class Eln {
 
     public static ItemStack findItemStack(String name, int stackSize) {
         ItemStack stack = ElnRegistry.findItemStack(name, stackSize);
-        if (stack == null) {
+        if (McBridge.isNothing(stack)) {
             stack = dictionnaryOreFromMod.get(name);
             stack = Utils.newItemStack(Item.getIdFromItem(stack.getItem()), stackSize, stack.getItemDamage());
         }
@@ -633,7 +636,7 @@ public class Eln {
     }
 
     private void setTabIcon(CreativeTabs tab, ItemStack stack) {
-        if (tab instanceof GenericCreativeTab && stack != null && stack.getItem() != null) {
+        if (tab instanceof GenericCreativeTab && !McBridge.isNothing(stack) && stack.getItem() != null) {
             ((GenericCreativeTab) tab).setIcon(stack);
         }
     }

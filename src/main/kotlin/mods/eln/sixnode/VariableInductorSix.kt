@@ -124,8 +124,7 @@ class VariableInductorSixDescriptor(
     }
 
     fun getRsValue(inventory: IInventory): Double {
-        val core = inventory.getStackInSlot(VariableInductorSixContainer.coreId)
-            ?: return MnaConst.highImpedance
+        val core = inventory.getStackInSlot(VariableInductorSixContainer.coreId).takeUnless { it.isEmpty } ?: return MnaConst.highImpedance
         val coreDescriptor =
             GenericItemUsingDamageDescriptor.getDescriptor(core) as? FerromagneticCoreDescriptor
                 ?: return MnaConst.highImpedance

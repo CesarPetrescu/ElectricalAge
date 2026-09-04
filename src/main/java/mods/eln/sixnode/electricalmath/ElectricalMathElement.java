@@ -1,5 +1,6 @@
 package mods.eln.sixnode.electricalmath;
 
+import mods.eln.misc.McBridge;
 import mods.eln.i18n.I18N;
 import mods.eln.item.ConfigCopyToolDescriptor;
 import mods.eln.item.IConfigurable;
@@ -216,7 +217,7 @@ public class ElectricalMathElement extends SixNodeElement implements IConfigurab
         int redstoneInStack = 0;
 
         ItemStack stack = inventory.getStackInSlot(ElectricalMathContainer.restoneSlotId);
-        if (stack != null) redstoneInStack = stack.getCount();
+        if (!McBridge.isNothing(stack)) redstoneInStack = stack.getCount();
 
         redstoneReady = redstoneRequired <= redstoneInStack;
         needPublish();

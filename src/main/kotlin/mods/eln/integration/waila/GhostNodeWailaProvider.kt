@@ -21,6 +21,10 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.RayTraceResult
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
+import mods.eln.misc.getBlock
+import mods.eln.misc.getBlockState
+import mods.eln.misc.getTileEntity
+import mods.eln.misc.isNothing
 
 @Optional.Interface(iface = "mcp.mobius.waila.api.IWailaDataProvider", modid = "waila")
 class GhostNodeWailaProvider(private val transparentNodeProvider: TransparentNodeWailaProvider,
@@ -85,7 +89,7 @@ class GhostNodeWailaProvider(private val transparentNodeProvider: TransparentNod
                             world: World?, pos: BlockPos?): NBTTagCompound = tag
 
     override fun getWailaHead(itemStack: ItemStack?, currenttip: MutableList<String>, accessor: IWailaDataAccessor,
-                              config: IWailaConfigHandler?): MutableList<String> = if (itemStack != null) {
+                              config: IWailaConfigHandler?): MutableList<String> = if (!itemStack.isNothing()) {
         mutableListOf("${SpecialChars.WHITE}${itemStack.displayName}")
     } else {
         currenttip

@@ -31,6 +31,8 @@ import mods.eln.misc.getBlockMetadata
 import mods.eln.misc.getTileEntity
 import mods.eln.misc.setBlock
 import mods.eln.misc.setBlockToAir
+import mods.eln.misc.getBlockState
+import mods.eln.misc.isReplaceable
 
 class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b), IItemRenderer {
     private fun shouldConsumeUtilityCableLength(player: EntityPlayer): Boolean {

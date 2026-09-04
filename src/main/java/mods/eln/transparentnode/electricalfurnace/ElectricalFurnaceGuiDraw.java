@@ -1,5 +1,6 @@
 package mods.eln.transparentnode.electricalfurnace;
 
+import mods.eln.misc.McBridge;
 import mods.eln.gui.*;
 import mods.eln.generic.GenericItemUsingDamageDescriptor;
 import mods.eln.item.HeatingCorpElement;
@@ -90,7 +91,7 @@ public class ElectricalFurnaceGuiDraw extends GuiContainerEln {
         //drawString(8, 6, Utils.plotPower("Consummation", render.heatingCorpResistorP));
 
         ItemStack stack = render.inventory.getStackInSlot(ElectricalFurnaceElement.heatingCorpSlotId);
-        if (stack == null) {
+        if (McBridge.isNothing(stack)) {
             supplyBar.setEnabled(false);
         } else {
             HeatingCorpElement desc = (HeatingCorpElement) GenericItemUsingDamageDescriptor.getDescriptor(

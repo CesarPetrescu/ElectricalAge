@@ -1,5 +1,6 @@
 package mods.eln.generic;
 
+import mods.eln.misc.McBridge;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import mods.eln.Eln;
@@ -99,13 +100,13 @@ public class GenericItemBlockUsingDamageDescriptor {
     }
 
     public boolean checkSameItemStack(ItemStack stack) {
-        if(stack == null) return false;
+        if(McBridge.isNothing(stack)) return false;
         if(stack.getItem() != parentItem || stack.getItemDamage() != parentItemDamage) return false;
         return true;
     }
 
     public static GenericItemBlockUsingDamageDescriptor getDescriptor(ItemStack stack) {
-        if (stack == null) return null;
+        if (McBridge.isNothing(stack)) return null;
         Item item = stack.getItem();
         if (item instanceof GenericItemBlockUsingDamage == false) return null;
         GenericItemBlockUsingDamage genItem = (GenericItemBlockUsingDamage) item;

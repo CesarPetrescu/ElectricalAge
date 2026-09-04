@@ -50,6 +50,7 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
 import java.util.*
+import mods.eln.misc.isNothing
 
 class DcDcDescriptor(
     name: String,
@@ -411,7 +412,7 @@ class DcDcElement(transparentNode: TransparentNode, descriptor: TransparentNodeD
                     secondaryLoad.current / secondaryMeltCurrent).toFloat(), 0f, 1f)
             }
             stream.writeFloat(load)
-            stream.writeBoolean(inventory.getStackInSlot(3) != null)
+            stream.writeBoolean(!inventory.getStackInSlot(3).isNothing())
         } catch (e: IOException) {
             e.printStackTrace()
         }
@@ -456,7 +457,7 @@ class DcDcElement(transparentNode: TransparentNode, descriptor: TransparentNodeD
     }
 
     private fun flexibleWindingProblem(stack: ItemStack?, label: String): String? {
-        if (stack == null) return tr("Needs %1$ Winding", label)
+        if (stack.isNothing()) return tr("Needs %1$ Winding", label)
         val descriptor = ElectricalCableDescriptor.getDescriptor(
             stack,
             ElectricalCableDescriptor::class.java
@@ -469,7 +470,7 @@ class DcDcElement(transparentNode: TransparentNode, descriptor: TransparentNodeD
     }
 
     private fun windingStatus(stack: ItemStack?, current: Double, thermalLoad: NbtThermalLoad): String {
-        val descriptor = if (stack == null) {
+        val descriptor = if (stack.isNothing()) {
             null
         } else {
             ElectricalCableDescriptor.getDescriptor(
@@ -596,20 +597,20 @@ class DcDcRender(tileEntity: TransparentNodeEntity, val descriptor: TransparentN
             primaryThickness = stream.readFloat()
             secondaryThickness = stream.readFloat()
             val feroStack = Utils.unserialiseItemStack(stream)
-            if (feroStack != null) {
+            if (!feroStack.isNothing()) {
                 val feroDesc: GenericItemUsingDamageDescriptor? = GenericItemUsingDamageDescriptor.getDescriptor(feroStack, FerromagneticCoreDescriptor::class.java)
                 if (feroDesc != null)
                     feroPart = (feroDesc as FerromagneticCoreDescriptor).feroPart
             }
             val priStack = Utils.unserialiseItemStack(stream)
-            if (priStack != null) {
+            if (!priStack.isNothing()) {
                 val priDesc: GenericItemBlockUsingDamageDescriptor? = ElectricalCableDescriptor.getDescriptor(priStack, ElectricalCableDescriptor::class.java)
                 if (priDesc != null)
                     priRender = (priDesc as ElectricalCableDescriptor).render
             }
 
             val secStack = Utils.unserialiseItemStack(stream)
-            if (secStack != null) {
+            if (!secStack.isNothing()) {
                 val secDesc: GenericItemBlockUsingDamageDescriptor? = ElectricalCableDescriptor.getDescriptor(secStack, ElectricalCableDescriptor::class.java)
                 if (secDesc != null)
                     secRender = (secDesc as ElectricalCableDescriptor).render

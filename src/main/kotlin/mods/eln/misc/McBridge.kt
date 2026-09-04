@@ -4,12 +4,15 @@ package mods.eln.misc
 
 import net.minecraft.block.Block
 import net.minecraft.block.state.IBlockState
+import net.minecraft.item.ItemStack
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.IBlockAccess
 import net.minecraft.world.World
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 /**
  * Bridges between the 1.7.10 shapes Electrical Age is written against and the 1.12.2 API.
@@ -92,3 +95,16 @@ fun World.markBlockForUpdate(x: Int, y: Int, z: Int) = markBlockForUpdate(BlockP
 /** 1.7.10's `Block.isReplaceable(world, x, y, z)`. */
 fun Block.isReplaceable(world: IBlockAccess, x: Int, y: Int, z: Int): Boolean =
     isReplaceable(world, BlockPos(x, y, z))
+
+// ------------------------------------------------------------- empty stacks
+
+/**
+ * 1.11+: an empty slot, an empty hand and a failed lookup are [ItemStack.EMPTY], never null.
+ * Every 1.7.10 `stack == null` test means this. The contract keeps Kotlin's smart cast for the
+ * `!isNothing()` branch, exactly like `String?.isNullOrEmpty()`.
+ */
+@OptIn(ExperimentalContracts::class)
+fun ItemStack?.isNothing(): Boolean {
+    contract { returns(false) implies (this@isNothing != null) }
+    return this == null || this.isEmpty
+}

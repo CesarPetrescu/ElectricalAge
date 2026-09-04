@@ -1,5 +1,6 @@
 package mods.eln.transparentnode.heatfurnace;
 
+import mods.eln.misc.McBridge;
 import mods.eln.gui.*;
 import mods.eln.misc.Utils;
 import mods.eln.node.transparent.TransparentNodeElementInventory;
@@ -76,10 +77,10 @@ public class HeatFurnaceGuiDraw extends GuiContainerEln {
         takeFuel.enabled = !render.controleExternal;
 
 
-        vuMeterGain.setEnable(inventory.getStackInSlot(HeatFurnaceContainer.regulatorId) == null && !render.controleExternal);
+        vuMeterGain.setEnable(McBridge.isNothing(inventory.getStackInSlot(HeatFurnaceContainer.regulatorId)) && !render.controleExternal);
         if (render.gainSyncNew) syncVumeterGain();
 
-        vuMeterHeat.setEnable(inventory.getStackInSlot(HeatFurnaceContainer.regulatorId) != null && !render.controleExternal);
+        vuMeterHeat.setEnable(!McBridge.isNothing(inventory.getStackInSlot(HeatFurnaceContainer.regulatorId)) && !render.controleExternal);
         if (render.temperatureTargetSyncNew) syncVumeterHeat();
 
         vuMeterHeat.temperatureHit = (float) render.temperature;

@@ -3,6 +3,7 @@ package mods.eln.sixnode.lampsocket
 import mods.eln.gui.*
 import mods.eln.i18n.I18N
 import net.minecraft.entity.player.EntityPlayer
+import mods.eln.misc.isNothing
 
 class LampSocketGui(player: EntityPlayer, val render: LampSocketRender) :
     GuiContainerEln(LampSocketContainer(player, render.inventory, render.descriptor)) {
@@ -64,8 +65,8 @@ class LampSocketGui(player: EntityPlayer, val render: LampSocketRender) :
             val cableStack = render.inventory.getStackInSlot(LampSocketContainer.CABLE_SLOT_ID)
 
             when {
-                cableStack == null -> textboxLampSupplyChannel.setComment(1, "§4" + I18N.tr("Cable slot empty"))
-                lampStack == null -> textboxLampSupplyChannel.setComment(1, "§4" + I18N.tr("Lamp slot empty"))
+                cableStack.isNothing() -> textboxLampSupplyChannel.setComment(1, "§4" + I18N.tr("Cable slot empty"))
+                lampStack.isNothing() -> textboxLampSupplyChannel.setComment(1, "§4" + I18N.tr("Lamp slot empty"))
                 render.activeLampSupplyConnection -> textboxLampSupplyChannel.setComment(1, "§2" + I18N.tr("Connected to %1$", render.lampSupplyChannel))
                 else -> textboxLampSupplyChannel.setComment(1, "§4" + I18N.tr("%1$ is not in range!", render.lampSupplyChannel))
             }

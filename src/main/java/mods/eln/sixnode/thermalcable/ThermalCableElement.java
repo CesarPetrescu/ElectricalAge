@@ -1,5 +1,6 @@
 package mods.eln.sixnode.thermalcable;
 
+import mods.eln.misc.McBridge;
 import mods.eln.generic.GenericItemUsingDamageDescriptor;
 import mods.eln.i18n.I18N;
 import mods.eln.item.BrushDescriptor;
@@ -128,7 +129,7 @@ public class ThermalCableElement extends SixNodeElement {
             colorCare = colorCare ^ 1;
             Utils.sendMessage(entityPlayer, "Wire color care " + colorCare);
             sixNode.reconnect();
-        } else if (currentItemStack != null) {
+        } else if (!McBridge.isNothing(currentItemStack)) {
             Item item = currentItemStack.getItem();
 
             GenericItemUsingDamageDescriptor gen = BrushDescriptor.getDescriptor(currentItemStack);

@@ -37,6 +37,7 @@ import java.io.DataOutputStream
 import java.io.IOException
 import java.lang.reflect.InvocationTargetException
 import java.util.*
+import mods.eln.misc.isNothing
 
 class SixNode : Node() {
     @JvmField
@@ -431,9 +432,9 @@ class SixNode : Node() {
         } else {
             val stack = entityPlayer.heldItemMainhand
             var b = Blocks.AIR
-            if (stack != null) b = Block.getBlockFromItem(stack.item)
+            if (!stack.isNothing()) b = Block.getBlockFromItem(stack.item)
             var isWrenchReplacingBlock = false
-            if (ServerKeyHandler.get(ServerKeyHandler.WRENCH) && stack != null) {
+            if (ServerKeyHandler.get(ServerKeyHandler.WRENCH) && !stack.isNothing()) {
                 for (a in sixNodeCacheList) {
                     if (a.accept(stack)) {
                         isWrenchReplacingBlock = true

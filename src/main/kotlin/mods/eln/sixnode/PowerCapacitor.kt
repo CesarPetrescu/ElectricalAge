@@ -44,6 +44,7 @@ import org.lwjgl.opengl.GL11
 import java.util.HashMap
 import kotlin.math.abs
 import kotlin.math.pow
+import mods.eln.misc.isNothing
 
 class PowerCapacitorSixDescriptor(name: String,
                                   obj: Obj3D,
@@ -273,13 +274,13 @@ class PowerCapacitorSixElement(SixNode: SixNode, side: Direction, descriptor: Si
 
     override fun writeConfigTool(compound: NBTTagCompound, invoker: EntityPlayer) {
         var stack = inventory.getStackInSlot(PowerCapacitorSixContainer.redId)
-        if (stack == null) {
+        if (stack.isNothing()) {
             compound.setInteger("capRedstoneAmt", 0)
         } else {
             compound.setInteger("capRedstoneAmt", stack.count)
         }
         stack = inventory.getStackInSlot(PowerCapacitorSixContainer.dielectricId)
-        if (stack == null) {
+        if (stack.isNothing()) {
             compound.setInteger("capDielectricAmt", 0)
         } else {
             compound.setInteger("capDielectricAmt", stack.count)

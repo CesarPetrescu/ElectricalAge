@@ -36,6 +36,7 @@ import java.util.*
 import mods.eln.misc.xCoord
 import mods.eln.misc.yCoord
 import mods.eln.misc.zCoord
+import mods.eln.misc.isNothing
 
 abstract class TurbineDescriptor(baseName: String, obj: Obj3D) :
     SimpleShaftDescriptor(baseName, TurbineElement::class, TurbineRender::class, EntityMetaTag.Fluid) {
@@ -194,7 +195,7 @@ class TurbineElement(node: TransparentNode, desc_: TransparentNodeDescriptor) :
             val blade = TurbineBladeDescriptor.getDescriptor(bladeStack)
 
             // No blade installed means no power.
-            if (blade == null || bladeStack == null) {
+            if (blade == null || bladeStack.isNothing()) {
                 efficiency = 0f
                 rc.target = 0f
                 rc.step(time.toFloat())
@@ -299,7 +300,7 @@ class TurbineElement(node: TransparentNode, desc_: TransparentNodeDescriptor) :
         info[tr("Energy")] = Utils.plotEnergy("", shaft.energy)
         val bladeStack = inventory.getStackInSlot(BLADE_SLOT)
         val blade = TurbineBladeDescriptor.getDescriptor(bladeStack)
-        if (blade != null && bladeStack != null) {
+        if (blade != null && !bladeStack.isNothing()) {
             val condition = blade.getCondition(bladeStack)
             val lifeLeftH = condition * blade.nominalLifeInHours
             val lifeLeftStr = when {
@@ -328,7 +329,7 @@ class TurbineElement(node: TransparentNode, desc_: TransparentNodeDescriptor) :
         stream.writeFloat(volume)
         val bladeStack = inventory.getStackInSlot(BLADE_SLOT)
         val blade = TurbineBladeDescriptor.getDescriptor(bladeStack)
-        if (blade != null && bladeStack != null) {
+        if (blade != null && !bladeStack.isNothing()) {
             stream.writeFloat(blade.getCondition(bladeStack).toFloat())
             // Tier index so the client can pick the right tint color. -1 if the blade
             // isn't in the registered list (shouldn't happen, but safe to handle).
@@ -348,7 +349,7 @@ class TurbineElement(node: TransparentNode, desc_: TransparentNodeDescriptor) :
         val held = player.heldItemMainhand ?: return false
         if (Utils.getItemObject(held) !is TurbineBladeDescriptor) return false
         // Blade already installed, fall through so the GUI opens instead.
-        if (inventory.getStackInSlot(BLADE_SLOT) != null) return false
+        if (!inventory.getStackInSlot(BLADE_SLOT).isNothing()) return false
         // Slot is empty, insert the blade, keeping its condition NBT intact.
         if (Eln.config.getBooleanOrElse("gameplay.qol.creativeNoConsumeInsertedItems", false) && player is EntityPlayerMP && Utils.isCreative(player)) {
             val bladeCopy = held.copy()

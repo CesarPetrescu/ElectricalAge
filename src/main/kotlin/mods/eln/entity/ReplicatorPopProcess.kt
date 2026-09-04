@@ -8,6 +8,8 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.world.EnumDifficulty
 import net.minecraft.world.EnumSkyBlock
 import net.minecraftforge.fml.common.FMLCommonHandler
+import mods.eln.misc.isAirBlock
+import mods.eln.misc.isBlockLoaded
 
 /**
  * Spawns replicators near players during thunderstorms and culls the population above the
