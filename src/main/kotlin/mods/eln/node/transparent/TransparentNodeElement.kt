@@ -33,7 +33,7 @@ import net.minecraft.inventory.IInventory
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.world.World
-import net.minecraftforge.fluids.IFluidHandler
+import mods.eln.fluid.ISidedFluidHandler
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -186,7 +186,7 @@ abstract class TransparentNodeElement(@JvmField var node: TransparentNode?, @Jvm
         return null
     }
 
-    open fun getFluidHandler(): IFluidHandler? = null
+    open fun getFluidHandler(): ISidedFluidHandler? = null
 
     open fun onNeighborBlockChange() {
         checkCanStay(false)

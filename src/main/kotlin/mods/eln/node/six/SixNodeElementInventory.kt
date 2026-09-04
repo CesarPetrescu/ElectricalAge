@@ -8,6 +8,8 @@ import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.IInventory
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.util.text.ITextComponent
+import net.minecraft.util.text.TextComponentString
 
 class SixNodeElementInventory : IInventory, INBTTReady, IUtilityCableInventory {
     var sixNodeRender: SixNodeElementRender? = null
@@ -16,13 +18,13 @@ class SixNodeElementInventory : IInventory, INBTTReady, IUtilityCableInventory {
     override var requiredCableLength = IUtilityCableInventory.DEFAULT_REQUIRED_LENGTH
 
     constructor(size: Int, stackLimit: Int, sixNodeRender: SixNodeElementRender?) {
-        inv = arrayOfNulls(size)
+        inv = Array(size) { ItemStack.EMPTY }
         this.stackLimit = stackLimit
         this.sixNodeRender = sixNodeRender
     }
 
     constructor(size: Int, stackLimit: Int, sixNodeElement: SixNodeElement?) {
-        inv = arrayOfNulls(size)
+        inv = Array(size) { ItemStack.EMPTY }
         this.stackLimit = stackLimit
         this.sixNodeElement = sixNodeElement
     }
@@ -32,48 +34,51 @@ class SixNodeElementInventory : IInventory, INBTTReady, IUtilityCableInventory {
      * This is a separate constructor because Java sucks and does not allow for default values in constructors.
      */
     constructor(size: Int, stackLimit: Int, sixNodeElement: SixNodeElement?, requiredCableLength: Double) {
-        inv = arrayOfNulls(size)
+        inv = Array(size) { ItemStack.EMPTY }
         this.stackLimit = stackLimit
         this.sixNodeElement = sixNodeElement
         this.requiredCableLength = requiredCableLength
     }
 
-    private var inv: Array<ItemStack?>
+    private var inv: Array<ItemStack>
     override fun getSizeInventory(): Int {
         return inv.size
     }
 
-    override fun getStackInSlot(slot: Int): ItemStack? {
-        return if (slot >= inv.size) null else inv[slot]
+    override fun getStackInSlot(slot: Int): ItemStack {
+        return if (slot >= inv.size) ItemStack.EMPTY else inv[slot]
     }
 
-    override fun decrStackSize(slot: Int, amt: Int): ItemStack? {
+    override fun isEmpty(): Boolean = inv.all { it.isEmpty }
+
+    override fun decrStackSize(slot: Int, amt: Int): ItemStack {
         var stack = getStackInSlot(slot)
-        if (stack != null) {
+        if (!stack.isEmpty) {
             if (stack.count <= amt) {
-                setInventorySlotContents(slot, null)
+                setInventorySlotContents(slot, ItemStack.EMPTY)
             } else {
                 stack = stack.splitStack(amt)
                 if (stack.count == 0) {
-                    setInventorySlotContents(slot, null)
+                    setInventorySlotContents(slot, ItemStack.EMPTY)
                 }
             }
         }
         return stack
     }
 
-    override fun getStackInSlotOnClosing(slot: Int): ItemStack? {
+    /** 1.11 renamed getStackInSlotOnClosing; the semantics are unchanged. */
+    override fun removeStackFromSlot(slot: Int): ItemStack {
         val stack = getStackInSlot(slot)
-        if (stack != null) {
-            setInventorySlotContents(slot, null)
+        if (!stack.isEmpty) {
+            setInventorySlotContents(slot, ItemStack.EMPTY)
         }
         return stack
     }
 
-    override fun setInventorySlotContents(slot: Int, stack: ItemStack?) {
+    override fun setInventorySlotContents(slot: Int, stack: ItemStack) {
         try {
             inv[slot] = stack
-            if (stack != null && stack.count > inventoryStackLimit) {
+            if (!stack.isEmpty && stack.count > inventoryStackLimit) {
                 stack.count = inventoryStackLimit
             }
         } catch (e: Exception) {
@@ -81,7 +86,18 @@ class SixNodeElementInventory : IInventory, INBTTReady, IUtilityCableInventory {
         }
     }
 
-    override fun getInventoryName(): String {
+    override fun clear() {
+        for (i in inv.indices) inv[i] = ItemStack.EMPTY
+    }
+
+    override fun getField(id: Int): Int = 0
+    override fun setField(id: Int, value: Int) {}
+    override fun getFieldCount(): Int = 0
+
+    override fun getDisplayName(): ITextComponent = TextComponentString(name)
+
+    /** IInventory extends IWorldNameable on 1.11+. */
+    override fun getName(): String {
         return "tco.SixNodeInventory"
     }
 
@@ -93,8 +109,8 @@ class SixNodeElementInventory : IInventory, INBTTReady, IUtilityCableInventory {
         return true
     }
 
-    override fun openInventory() {}
-    override fun closeInventory() {}
+    override fun openInventory(player: EntityPlayer) {}
+    override fun closeInventory(player: EntityPlayer) {}
     override fun markDirty() {
         if (sixNodeElement != null && !sixNodeElement!!.sixNode!!.isDestructing) {
             sixNodeElement!!.inventoryChanged()
@@ -113,7 +129,7 @@ class SixNodeElementInventory : IInventory, INBTTReady, IUtilityCableInventory {
         return false
     }
 
-    override fun hasCustomInventoryName(): Boolean {
+    override fun hasCustomName(): Boolean {
         return false
     }
 }

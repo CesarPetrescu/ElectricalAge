@@ -8,6 +8,9 @@ import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.ISidedInventory
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.util.EnumFacing
+import net.minecraft.util.text.ITextComponent
+import net.minecraft.util.text.TextComponentString
 
 open class TransparentNodeElementInventory : ISidedInventory, INBTTReady, IUtilityCableInventory {
     @JvmField
@@ -18,13 +21,13 @@ open class TransparentNodeElementInventory : ISidedInventory, INBTTReady, IUtili
     override var requiredCableLength: Double = IUtilityCableInventory.DEFAULT_REQUIRED_LENGTH
 
     constructor(size: Int, stackLimit: Int, transparentNodeRender: TransparentNodeElementRender?) {
-        inv = arrayOfNulls(size)
+        inv = Array(size) { ItemStack.EMPTY }
         this.stackLimit = stackLimit
         this.transparentNodeRender = transparentNodeRender
     }
 
     constructor(size: Int, stackLimit: Int, transparentNodeElement: TransparentNodeElement?) {
-        inv = arrayOfNulls(size)
+        inv = Array(size) { ItemStack.EMPTY }
         this.stackLimit = stackLimit
         this.transparentNodeElement = transparentNodeElement
     }
@@ -34,54 +37,70 @@ open class TransparentNodeElementInventory : ISidedInventory, INBTTReady, IUtili
      * This is a separate constructor because Java sucks and does not allow for default values in constructors.
      */
     constructor(size: Int, stackLimit: Int, transparentNodeElement: TransparentNodeElement?, requiredCableLength: Double) {
-        inv = arrayOfNulls(size)
+        inv = Array(size) { ItemStack.EMPTY }
         this.stackLimit = stackLimit
         this.transparentNodeElement = transparentNodeElement
         this.requiredCableLength = requiredCableLength
     }
 
-    private var inv: Array<ItemStack?>
+    private var inv: Array<ItemStack>
     override fun getSizeInventory(): Int {
         return inv.size
     }
 
-    override fun getStackInSlot(slot: Int): ItemStack? {
+    override fun getStackInSlot(slot: Int): ItemStack {
         return inv[slot]
     }
 
-    override fun decrStackSize(slot: Int, amt: Int): ItemStack? {
+    /** 1.11+: an inventory is empty when every slot holds ItemStack.EMPTY. */
+    override fun isEmpty(): Boolean = inv.all { it.isEmpty }
+
+    override fun decrStackSize(slot: Int, amt: Int): ItemStack {
         var stack = getStackInSlot(slot)
-        if (stack != null) {
+        if (!stack.isEmpty) {
             if (stack.count <= amt) {
-                setInventorySlotContents(slot, null)
+                setInventorySlotContents(slot, ItemStack.EMPTY)
             } else {
                 stack = stack.splitStack(amt)
                 if (stack.count == 0) {
-                    setInventorySlotContents(slot, null)
+                    setInventorySlotContents(slot, ItemStack.EMPTY)
                 }
             }
         }
         return stack
     }
 
-    override fun getStackInSlotOnClosing(slot: Int): ItemStack? {
+    /** 1.11 renamed getStackInSlotOnClosing; the semantics (take the slot's contents) are unchanged. */
+    override fun removeStackFromSlot(slot: Int): ItemStack {
         val stack = getStackInSlot(slot)
-        if (stack != null) {
-            setInventorySlotContents(slot, null)
+        if (!stack.isEmpty) {
+            setInventorySlotContents(slot, ItemStack.EMPTY)
         }
         return stack
     }
 
-    override fun setInventorySlotContents(slot: Int, stack: ItemStack?) {
+    override fun setInventorySlotContents(slot: Int, stack: ItemStack) {
         inv[slot] = stack
-        if (stack != null && stack.count > inventoryStackLimit) {
+        if (!stack.isEmpty && stack.count > inventoryStackLimit) {
             stack.count = inventoryStackLimit
         }
     }
 
-    override fun getInventoryName(): String {
-        return "tco.TransparentNodeInventory"
+    override fun clear() {
+        for (i in inv.indices) inv[i] = ItemStack.EMPTY
     }
+
+    // The mod exposes no synced GUI fields; IInventory requires the accessors regardless.
+    override fun getField(id: Int): Int = 0
+    override fun setField(id: Int, value: Int) {}
+    override fun getFieldCount(): Int = 0
+
+    /** IInventory extends IWorldNameable on 1.11+, replacing getInventoryName/hasCustomInventoryName. */
+    override fun getName(): String = "tco.TransparentNodeInventory"
+
+    override fun hasCustomName(): Boolean = false
+
+    override fun getDisplayName(): ITextComponent = TextComponentString(name)
 
     override fun getInventoryStackLimit(): Int {
         return stackLimit
@@ -91,8 +110,8 @@ open class TransparentNodeElementInventory : ISidedInventory, INBTTReady, IUtili
         return true
     }
 
-    override fun openInventory() {}
-    override fun closeInventory() {}
+    override fun openInventory(player: EntityPlayer) {}
+    override fun closeInventory(player: EntityPlayer) {}
     override fun markDirty() {
         if (transparentNodeElement != null && !transparentNodeElement!!.node!!.isDestructing) {
             transparentNodeElement!!.inventoryChange(this)
@@ -119,19 +138,25 @@ open class TransparentNodeElementInventory : ISidedInventory, INBTTReady, IUtili
         return false
     }
 
-    override fun hasCustomInventoryName(): Boolean {
-        return false
-    }
+    // ---------------------------------------------------------------- sided access
+    //
+    // 1.8 changed ISidedInventory's side parameter from an int to EnumFacing. The mod's own
+    // inventories index by the 0..5 side value everywhere (it matches Direction), and
+    // EnumFacing.getIndex() preserves that ordering, so the interface methods adapt onto the
+    // int-sided ones that subclasses actually override.
 
-    override fun getAccessibleSlotsFromSide(side: Int): IntArray {
-        return intArrayOf()
-    }
+    final override fun getSlotsForFace(side: EnumFacing): IntArray =
+        getAccessibleSlotsFromSide(side.index)
 
-    override fun canInsertItem(slot: Int, stack: ItemStack?, side: Int): Boolean {
-        return false
-    }
+    final override fun canInsertItem(slot: Int, stack: ItemStack, side: EnumFacing): Boolean =
+        canInsertItem(slot, stack, side.index)
 
-    override fun canExtractItem(slot: Int, stack: ItemStack?, side: Int): Boolean {
-        return false
-    }
+    final override fun canExtractItem(slot: Int, stack: ItemStack, side: EnumFacing): Boolean =
+        canExtractItem(slot, stack, side.index)
+
+    open fun getAccessibleSlotsFromSide(side: Int): IntArray = intArrayOf()
+
+    open fun canInsertItem(slot: Int, stack: ItemStack?, side: Int): Boolean = false
+
+    open fun canExtractItem(slot: Int, stack: ItemStack?, side: Int): Boolean = false
 }

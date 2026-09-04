@@ -21,7 +21,7 @@ import net.minecraft.inventory.Container
 import net.minecraft.inventory.IInventory
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
-import net.minecraftforge.fluids.IFluidHandler
+import mods.eln.fluid.ISidedFluidHandler
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
@@ -120,7 +120,7 @@ class TransparentNode : Node() {
         return false
     }
 
-    val fluidHandler: IFluidHandler?
+    val fluidHandler: ISidedFluidHandler?
         get() = element!!.getFluidHandler()
 
     override fun publishSerialize(stream: DataOutputStream) {

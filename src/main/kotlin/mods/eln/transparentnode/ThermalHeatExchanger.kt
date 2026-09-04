@@ -31,7 +31,7 @@ import net.minecraft.util.EnumFacing
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.FluidTank
-import net.minecraftforge.fluids.IFluidHandler
+import mods.eln.fluid.ISidedFluidHandler
 import org.lwjgl.opengl.GL11
 import java.lang.Math.ceil
 import java.lang.Math.min
@@ -247,7 +247,7 @@ class ThermalHeatExchangerElement(
 
     override fun onBlockActivated(player: EntityPlayer, side: Direction, vx: Float, vy: Float, vz: Float) = false
 
-    override fun getFluidHandler(): IFluidHandler {
+    override fun getFluidHandler(): ISidedFluidHandler {
         return tank
     }
 }

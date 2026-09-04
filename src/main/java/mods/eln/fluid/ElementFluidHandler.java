@@ -10,7 +10,7 @@ import net.minecraftforge.fluids.*;
  * <p>
  * See the steam turbine for an example.
  */
-public class ElementFluidHandler implements IFluidHandler, INBTTReady {
+public class ElementFluidHandler implements ISidedFluidHandler, INBTTReady {
     private Fluid[] whitelist;
     private float fluid_heat_mb = 0;
     public FluidTank tank;

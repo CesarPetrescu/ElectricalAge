@@ -15,7 +15,10 @@ import net.minecraft.init.Blocks
 import net.minecraft.inventory.Container
 import net.minecraft.inventory.ISidedInventory
 import net.minecraft.item.ItemStack
+import net.minecraft.util.EnumFacing
+import net.minecraft.util.text.ITextComponent
 import net.minecraft.util.math.AxisAlignedBB
+import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
@@ -127,8 +130,9 @@ open class TransparentNodeEntity : NodeBlockEntity(), ISidedInventory {
             z = zCoord
         }
         if (desc == null) {
-            val bb = Blocks.STONE.getCollisionBoundingBoxFromPool(world, x, y, z)
-            if (par5AxisAlignedBB.intersectsWith(bb)) list.add(bb)
+            val pos = BlockPos(x, y, z)
+            val bb = Blocks.STONE.defaultState.getCollisionBoundingBox(world, pos)?.offset(pos)
+            if (bb != null && par5AxisAlignedBB.intersects(bb)) list.add(bb)
         } else {
             desc.addCollisionBoxesToList(par5AxisAlignedBB, list, world, x, y, z)
         }
@@ -181,29 +185,35 @@ open class TransparentNodeEntity : NodeBlockEntity(), ISidedInventory {
         return sidedInventory.sizeInventory
     }
 
-    override fun getStackInSlot(var1: Int): ItemStack? {
+    override fun getStackInSlot(var1: Int): ItemStack {
         return sidedInventory.getStackInSlot(var1)
     }
 
-    override fun decrStackSize(var1: Int, var2: Int): ItemStack? {
+    override fun isEmpty(): Boolean = sidedInventory.isEmpty
+
+    override fun decrStackSize(var1: Int, var2: Int): ItemStack {
         return sidedInventory.decrStackSize(var1, var2)
     }
 
-    override fun getStackInSlotOnClosing(var1: Int): ItemStack? {
-        return sidedInventory.getStackInSlotOnClosing(var1)
+    override fun removeStackFromSlot(var1: Int): ItemStack {
+        return sidedInventory.removeStackFromSlot(var1)
     }
 
-    override fun setInventorySlotContents(var1: Int, var2: ItemStack?) {
+    override fun setInventorySlotContents(var1: Int, var2: ItemStack) {
         sidedInventory.setInventorySlotContents(var1, var2)
     }
 
-    override fun getInventoryName(): String {
-        return sidedInventory.inventoryName
-    }
+    override fun clear() = sidedInventory.clear()
 
-    override fun hasCustomInventoryName(): Boolean {
-        return sidedInventory.hasCustomInventoryName()
-    }
+    override fun getField(id: Int): Int = sidedInventory.getField(id)
+    override fun setField(id: Int, value: Int) = sidedInventory.setField(id, value)
+    override fun getFieldCount(): Int = sidedInventory.fieldCount
+
+    override fun getName(): String = sidedInventory.name
+
+    override fun hasCustomName(): Boolean = sidedInventory.hasCustomName()
+
+    override fun getDisplayName(): ITextComponent = sidedInventory.displayName
 
     override fun getInventoryStackLimit(): Int {
         return sidedInventory.inventoryStackLimit
@@ -213,27 +223,24 @@ open class TransparentNodeEntity : NodeBlockEntity(), ISidedInventory {
         return sidedInventory.isUsableByPlayer(var1)
     }
 
-    override fun openInventory() {
-        sidedInventory.openInventory()
+    override fun openInventory(player: EntityPlayer) {
+        sidedInventory.openInventory(player)
     }
 
-    override fun closeInventory() {
-        sidedInventory.closeInventory()
+    override fun closeInventory(player: EntityPlayer) {
+        sidedInventory.closeInventory(player)
     }
 
     override fun isItemValidForSlot(var1: Int, var2: ItemStack): Boolean {
         return sidedInventory.isItemValidForSlot(var1, var2)
     }
 
-    override fun getAccessibleSlotsFromSide(var1: Int): IntArray {
-        return sidedInventory.getAccessibleSlotsFromSide(var1)
-    }
+    override fun getSlotsForFace(side: EnumFacing): IntArray =
+        sidedInventory.getSlotsForFace(side)
 
-    override fun canInsertItem(var1: Int, var2: ItemStack, var3: Int): Boolean {
-        return sidedInventory.canInsertItem(var1, var2, var3)
-    }
+    override fun canInsertItem(slot: Int, stack: ItemStack, side: EnumFacing): Boolean =
+        sidedInventory.canInsertItem(slot, stack, side)
 
-    override fun canExtractItem(var1: Int, var2: ItemStack, var3: Int): Boolean {
-        return sidedInventory.canExtractItem(var1, var2, var3)
-    }
+    override fun canExtractItem(slot: Int, stack: ItemStack, side: EnumFacing): Boolean =
+        sidedInventory.canExtractItem(slot, stack, side)
 }

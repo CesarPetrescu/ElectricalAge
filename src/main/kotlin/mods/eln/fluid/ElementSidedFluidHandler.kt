@@ -5,7 +5,7 @@ import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
 import net.minecraftforge.fluids.*
 
-open class ElementSidedFluidHandler: IFluidHandler, INBTTReady {
+open class ElementSidedFluidHandler: ISidedFluidHandler, INBTTReady {
 
     protected val tanks = mutableMapOf<EnumFacing, TankData>()
 
