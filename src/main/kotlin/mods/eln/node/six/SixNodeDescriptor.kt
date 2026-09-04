@@ -13,9 +13,9 @@ import mods.eln.misc.VoltageLevelColor
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.util.ResourceLocation
-import net.minecraftforge.client.IItemRenderer
-import net.minecraftforge.client.IItemRenderer.ItemRenderType
-import net.minecraftforge.client.IItemRenderer.ItemRendererHelper
+import mods.eln.client.itemrender.IItemRenderer
+import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
+import mods.eln.client.itemrender.IItemRenderer.ItemRendererHelper
 
 open class SixNodeDescriptor : GenericItemBlockUsingDamageDescriptor, IItemRenderer {
     @JvmField

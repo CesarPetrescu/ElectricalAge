@@ -99,14 +99,14 @@ class LampSocketElement(sixNode: SixNode, side: Direction, sixNodeDescriptor: Si
 
         var takeItem = false
 
-        when (val equippedItemDescriptor = getItemObject(entityPlayer.currentEquippedItem)) {
+        when (val equippedItemDescriptor = getItemObject(entityPlayer.heldItemMainhand)) {
             is BrushDescriptor -> {
                 // Ignore brush use on non-paintable sockets (e.g. Streetlight)
                 if (!descriptor.paintable) return false
 
-                val brushColor = equippedItemDescriptor.getColor(entityPlayer.currentEquippedItem)
+                val brushColor = equippedItemDescriptor.getColor(entityPlayer.heldItemMainhand)
 
-                if (brushColor != paintColor && equippedItemDescriptor.use(entityPlayer.currentEquippedItem, entityPlayer)) {
+                if (brushColor != paintColor && equippedItemDescriptor.use(entityPlayer.heldItemMainhand, entityPlayer)) {
                     paintColor = brushColor
                     needPublish()
                 }
@@ -131,7 +131,7 @@ class LampSocketElement(sixNode: SixNode, side: Direction, sixNodeDescriptor: Si
 
         return if (takeItem) {
             AutoAcceptInventoryProxy.creativeFreeInsert = Eln.config.getBooleanOrElse("gameplay.qol.creativeNoConsumeInsertedItems", false) && entityPlayer is EntityPlayerMP && isCreative(entityPlayer)
-            inventoryProxy.take(entityPlayer.currentEquippedItem, this, notifyInventoryChange = true).also { accepted ->
+            inventoryProxy.take(entityPlayer.heldItemMainhand, this, notifyInventoryChange = true).also { accepted ->
                 if (accepted && Eln.config.getBooleanOrElse("gameplay.qol.rememberLastLampSocketContents", false)) {
                     lastLampStack = inventory.getStackInSlot(LampSocketContainer.LAMP_SLOT_ID)?.copy()
                     lastCableStack = inventory.getStackInSlot(LampSocketContainer.CABLE_SLOT_ID)?.copy()

@@ -277,7 +277,7 @@ public class ElectricalDataLoggerElement extends SixNodeElement implements IConf
 
     @Override
     public boolean onBlockActivated(EntityPlayer entityPlayer, Direction side, float vx, float vy, float vz) {
-        ItemStack cur = entityPlayer.getCurrentEquippedItem();
+        ItemStack cur = entityPlayer.getHeldItemMainhand();
         if (cur != null) {
             GenericItemUsingDamageDescriptor desc = BrushDescriptor.getDescriptor(cur);
             if (desc != null && desc instanceof BrushDescriptor) {

@@ -6,6 +6,8 @@ import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemBlock
 import net.minecraft.item.ItemStack
 import net.minecraft.world.World
+import mods.eln.misc.getBlock
+import mods.eln.misc.setBlock
 
 class SimpleNodeItem(b: Block) : ItemBlock(b) {
     var block: SimpleNodeBlock

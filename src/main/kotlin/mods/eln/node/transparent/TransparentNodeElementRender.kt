@@ -28,6 +28,9 @@ import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
+import mods.eln.misc.xCoord
+import mods.eln.misc.yCoord
+import mods.eln.misc.zCoord
 
 abstract class TransparentNodeElementRender(var tileEntity: TransparentNodeEntity, var transparentNodeDescriptor: TransparentNodeDescriptor) {
     @JvmField

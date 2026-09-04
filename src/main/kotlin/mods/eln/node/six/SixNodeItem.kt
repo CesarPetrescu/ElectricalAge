@@ -15,10 +15,15 @@ import net.minecraft.entity.player.EntityPlayerMP
 import net.minecraft.init.Blocks
 import net.minecraft.item.ItemStack
 import net.minecraft.world.World
-import net.minecraftforge.client.IItemRenderer
-import net.minecraftforge.client.IItemRenderer.ItemRenderType
-import net.minecraftforge.client.IItemRenderer.ItemRendererHelper
+import mods.eln.client.itemrender.IItemRenderer
+import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
+import mods.eln.client.itemrender.IItemRenderer.ItemRendererHelper
 import org.lwjgl.opengl.GL11
+import mods.eln.misc.getBlock
+import mods.eln.misc.getBlockMetadata
+import mods.eln.misc.getTileEntity
+import mods.eln.misc.setBlock
+import mods.eln.misc.setBlockToAir
 
 class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b), IItemRenderer {
     private fun shouldConsumeUtilityCableLength(player: EntityPlayer): Boolean {
@@ -161,7 +166,7 @@ class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b
 
     override fun renderItem(type: ItemRenderType, item: ItemStack, vararg data: Any) {
         if (!isStackValidToPlace(item)) return
-        Minecraft.getMinecraft().mcProfiler.startSection("SixNodeItem")
+        Minecraft.getMinecraft().profiler.startSection("SixNodeItem")
         if (shouldUseRenderHelperEln(type, item, null)) {
             when (type) {
                 ItemRenderType.ENTITY -> GL11.glRotatef(90f, 0f, 0f, 1f)
@@ -190,11 +195,11 @@ class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b
         if (descriptor != null) {
             descriptor.renderItem(type, item, *data)
         }
-        Minecraft.getMinecraft().mcProfiler.endSection()
+        Minecraft.getMinecraft().profiler.endSection()
     }
 
     init {
         setHasSubtypes(true)
-        unlocalizedName = "SixNodeItem"
+        translationKey = "SixNodeItem"
     }
 }

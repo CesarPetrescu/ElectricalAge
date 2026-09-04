@@ -26,7 +26,7 @@ import net.minecraft.util.math.MathHelper
 import net.minecraft.util.ResourceLocation
 import net.minecraft.world.EnumSkyBlock
 import net.minecraft.world.World
-import net.minecraftforge.client.IItemRenderer.ItemRenderType
+import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
 import org.lwjgl.input.Keyboard
 import org.lwjgl.opengl.GL11
 import java.awt.Color
@@ -133,7 +133,7 @@ object UtilsClient {
     fun drawHaloNoLightSetup(halo: Obj3DPart?, r: Float, g: Float, b: Float, e: Entity, bilinear: Boolean) {
         if (halo == null) return
         withBilinearFilters(halo, bilinear) {
-            val light = getLight(e.world, MathHelper.floor_double(e.posX), MathHelper.floor_double(e.posY), MathHelper.floor_double(e.posZ))
+            val light = getLight(e.world, MathHelper.floor(e.posX), MathHelper.floor(e.posY), MathHelper.floor(e.posZ))
             GL11.glColor4f(r, g, b, 1f - light / 15f)
             halo.draw()
             GL11.glColor4f(1f, 1f, 1f, 1f)

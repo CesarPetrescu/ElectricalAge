@@ -18,7 +18,7 @@ class ElectricMinecartChargeReporter {
             PlayerInteractEvent.Action.RIGHT_CLICK_AIR,
             PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK -> {
                 val minecart = player.ridingEntity as? EntityElectricMinecart ?: return
-                val heldItem = player.currentEquippedItem ?: return
+                val heldItem = player.heldItemMainhand ?: return
                 val multiMeter = Eln.multiMeterElement
                 val allMeter = Eln.allMeterElement
                 val holdingMeter = (multiMeter != null && multiMeter.checkSameItemStack(heldItem)) ||

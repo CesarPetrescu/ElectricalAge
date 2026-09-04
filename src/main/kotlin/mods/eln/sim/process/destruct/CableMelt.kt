@@ -3,6 +3,7 @@ package mods.eln.sim.process.destruct
 import mods.eln.Eln
 import mods.eln.node.six.SixNodeElement
 import net.minecraft.init.Blocks
+import mods.eln.misc.setBlock
 
 class CableMelt(private val element: SixNodeElement) : IDestructible {
     override fun destructImpl() {

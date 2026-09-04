@@ -3,6 +3,9 @@ package mods.eln.entity
 import net.minecraft.entity.EntityCreature
 import net.minecraft.entity.ai.EntityAIBase
 import net.minecraft.entity.ai.RandomPositionGenerator
+import mods.eln.misc.xCoord
+import mods.eln.misc.yCoord
+import mods.eln.misc.zCoord
 
 class ConfigurableAiWander(
     private val entity: EntityCreature,

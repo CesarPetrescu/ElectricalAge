@@ -15,6 +15,9 @@ import net.minecraft.nbt.NBTTagCompound
 import org.lwjgl.opengl.GL11
 import java.io.DataInputStream
 import java.io.DataOutputStream
+import mods.eln.misc.xCoord
+import mods.eln.misc.yCoord
+import mods.eln.misc.zCoord
 
 class JointHubDescriptor(baseName: String, obj: Obj3D) : SimpleShaftDescriptor(baseName,
     JointHubElement::class, JointHubRender::class, EntityMetaTag.Basic) {

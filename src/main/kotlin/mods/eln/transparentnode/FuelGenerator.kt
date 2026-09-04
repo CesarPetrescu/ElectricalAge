@@ -22,7 +22,7 @@ import net.minecraft.client.audio.ISound
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
-import net.minecraftforge.client.IItemRenderer
+import mods.eln.client.itemrender.IItemRenderer
 import net.minecraftforge.fluids.FluidContainerRegistry
 import net.minecraftforge.fluids.FluidRegistry
 import org.lwjgl.opengl.GL11
@@ -169,7 +169,7 @@ class FuelGeneratorElement(transparentNode: TransparentNode, descriptor_: Transp
 
     override fun onBlockActivated(player: EntityPlayer, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
         if (player.world?.isRemote == false) {
-            val bucket = player.currentEquippedItem
+            val bucket = player.heldItemMainhand
             if (FluidContainerRegistry.isBucket(bucket) && FluidContainerRegistry.isFilledContainer(bucket)) {
                 val deltaLevel = 1.0 / FuelGeneratorDescriptor.TankCapacityInBuckets;
                 if (tankLevel <= 1.0 - deltaLevel) {
@@ -188,9 +188,9 @@ class FuelGeneratorElement(transparentNode: TransparentNode, descriptor_: Transp
                     }
                 }
             } else {
-                if (Eln.multiMeterElement.checkSameItemStack(player.currentEquippedItem) ||
-                    Eln.thermometerElement.checkSameItemStack(player.currentEquippedItem) ||
-                    Eln.allMeterElement.checkSameItemStack(player.currentEquippedItem)) {
+                if (Eln.multiMeterElement.checkSameItemStack(player.heldItemMainhand) ||
+                    Eln.thermometerElement.checkSameItemStack(player.heldItemMainhand) ||
+                    Eln.allMeterElement.checkSameItemStack(player.heldItemMainhand)) {
                     return false
                 }
 

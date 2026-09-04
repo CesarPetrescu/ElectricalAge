@@ -32,7 +32,7 @@ public class TutorialSignOverlay {
             oldRender = null;
         }
 
-        int px = MathHelper.floor_double(player.posX), py = MathHelper.floor_double(player.posY), pz = MathHelper.floor_double(player.posZ);
+        int px = MathHelper.floor(player.posX), py = MathHelper.floor(player.posY), pz = MathHelper.floor(player.posZ);
         int r = 1;
         World w = player.world;
 

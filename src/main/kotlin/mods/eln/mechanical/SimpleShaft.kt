@@ -11,12 +11,15 @@ import mods.eln.sim.process.destruct.WorldExplosion
 import mods.eln.sound.LoopedSound
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
-import net.minecraftforge.client.IItemRenderer
+import mods.eln.client.itemrender.IItemRenderer
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL12
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import kotlin.reflect.KClass
+import mods.eln.misc.xCoord
+import mods.eln.misc.yCoord
+import mods.eln.misc.zCoord
 
 abstract class SimpleShaftDescriptor(name: String, elm: KClass<out TransparentNodeElement>, render: KClass<out TransparentNodeElementRender>, tag: EntityMetaTag) :
     TransparentNodeDescriptor(name, elm.java, render.java, tag) {

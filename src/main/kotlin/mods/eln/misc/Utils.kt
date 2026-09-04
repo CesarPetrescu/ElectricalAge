@@ -10,7 +10,7 @@ import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.inventory.IInventory
 import net.minecraft.nbt.NBTTagList
 import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.network.play.server.S3FPacketCustomPayload
+import net.minecraft.network.play.server.SPacketCustomPayload
 import org.lwjgl.opengl.GL11
 import net.minecraft.world.World
 import net.minecraftforge.fml.common.FMLCommonHandler
@@ -140,7 +140,7 @@ object Utils {
     fun entityLivingViewDirection(entityLiving: EntityLivingBase): Direction {
         if (entityLiving.rotationPitch > 45) return Direction.YN
         if (entityLiving.rotationPitch < -45) return Direction.YP
-        val dirx = MathHelper.floor_double((entityLiving.rotationYaw * 4.0f / 360.0f).toDouble() + 0.5) and 3
+        val dirx = MathHelper.floor((entityLiving.rotationYaw * 4.0f / 360.0f).toDouble() + 0.5) and 3
         if (dirx == 3) return Direction.XP
         if (dirx == 0) return Direction.ZP
         return if (dirx == 1) Direction.XN else Direction.ZN
@@ -148,7 +148,7 @@ object Utils {
 
     @JvmStatic
     fun entityLivingHorizontalViewDirection(entityLiving: EntityLivingBase): Direction {
-        val dirx = MathHelper.floor_double((entityLiving.rotationYaw * 4.0f / 360.0f).toDouble() + 0.5) and 3
+        val dirx = MathHelper.floor((entityLiving.rotationYaw * 4.0f / 360.0f).toDouble() + 0.5) and 3
         if (dirx == 3) return Direction.XP
         if (dirx == 0) return Direction.ZP
         return if (dirx == 1) Direction.XN else Direction.ZN
@@ -381,7 +381,7 @@ object Utils {
 
     @JvmStatic
     fun sendPacketToClient(bos: ByteArrayOutputStream, player: EntityPlayerMP) {
-        val packet = S3FPacketCustomPayload(Eln.channelName, bos.toByteArray())
+        val packet = SPacketCustomPayload(Eln.channelName, bos.toByteArray())
         player.playerNetServerHandler.sendPacket(packet)
     }
 
@@ -485,7 +485,7 @@ object Utils {
             val var11 = (world.rand.nextFloat() * var6).toDouble() + (1.0f - var6).toDouble() * 0.5
             val var13 = EntityItem(world, x.toDouble() + var7, y.toDouble() + var9, z.toDouble() + var11, itemStack)
             var13.delayBeforeCanPickup = 10
-            world.spawnEntityInWorld(var13)
+            world.spawnEntity(var13)
         }
     }
 
@@ -702,7 +702,7 @@ object Utils {
 
     @JvmStatic
     fun playerHasMeter(entityPlayer: EntityPlayer): Boolean {
-        val cur = entityPlayer.currentEquippedItem
+        val cur = entityPlayer.heldItemMainhand
         return (Eln.multiMeterElement.checkSameItemStack(cur)
             || Eln.thermometerElement.checkSameItemStack(cur)
             || Eln.allMeterElement.checkSameItemStack(cur)
@@ -934,9 +934,9 @@ object Utils {
         var stackRed = 0f
         var d = 0f
         while (d < rangeMax) {
-            val xFloor = MathHelper.floor_float(x).toFloat()
-            val yFloor = MathHelper.floor_float(y).toFloat()
-            val zFloor = MathHelper.floor_float(z).toFloat()
+            val xFloor = MathHelper.floor(x).toFloat()
+            val yFloor = MathHelper.floor(y).toFloat()
+            val zFloor = MathHelper.floor(z).toFloat()
             var dx = x - xFloor
             var dy = y - yFloor
             var dz = z - zFloor
@@ -948,7 +948,7 @@ object Utils {
             val yInt = yFloor.toInt()
             val zInt = zFloor.toInt()
             var block = Blocks.AIR
-            if (w.blockExists(xInt + posXint, yInt + posYint, zInt + posZint)) block = w.getBlock(xInt + posXint, yInt + posYint, zInt + posZint)
+            if (w.isBlockLoaded(xInt + posXint, yInt + posYint, zInt + posZint)) block = w.getBlock(xInt + posXint, yInt + posYint, zInt + posZint)
             var dToStack: Float = if (d + dBest < rangeMax) dBest else {
                 rangeMax - d
             }
@@ -962,11 +962,11 @@ object Utils {
     }
 
     fun isBlockLoaded(world: World, x: Double, y: Double, z: Double): Boolean {
-        return world.blockExists(MathHelper.floor_double(x), MathHelper.floor_double(y), MathHelper.floor_double(z))
+        return world.isBlockLoaded(MathHelper.floor(x), MathHelper.floor(y), MathHelper.floor(z))
     }
 
     fun getBlock(world: World, x: Double, y: Double, z: Double): Block {
-        return world.getBlock(MathHelper.floor_double(x), MathHelper.floor_double(y), MathHelper.floor_double(z))
+        return world.getBlock(MathHelper.floor(x), MathHelper.floor(y), MathHelper.floor(z))
     }
 
     @JvmStatic

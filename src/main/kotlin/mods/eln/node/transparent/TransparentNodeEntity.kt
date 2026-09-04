@@ -22,6 +22,9 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
 import java.lang.reflect.InvocationTargetException
+import mods.eln.misc.xCoord
+import mods.eln.misc.yCoord
+import mods.eln.misc.zCoord
 
 open class TransparentNodeEntity : NodeBlockEntity(), ISidedInventory {
     var elementRender: TransparentNodeElementRender? = null

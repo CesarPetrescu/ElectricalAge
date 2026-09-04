@@ -10,6 +10,7 @@ import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.world.World
 import kotlin.math.floor
+import mods.eln.misc.getBlock
 
 class ThermometerDescriptor(name: String) : GenericItemUsingDamageDescriptor(name) {
     override fun onItemUse(

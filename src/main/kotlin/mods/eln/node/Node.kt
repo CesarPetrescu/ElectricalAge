@@ -6,6 +6,7 @@ import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.world.EnumSkyBlock
 import java.io.DataOutputStream
 import java.io.IOException
+import mods.eln.misc.getTileEntity
 
 abstract class Node : NodeBase() {
     private var lastLight = 0

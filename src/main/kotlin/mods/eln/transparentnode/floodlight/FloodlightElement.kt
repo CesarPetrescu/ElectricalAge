@@ -111,12 +111,12 @@ class FloodlightElement(transparentNode: TransparentNode, transparentNodeDescrip
             return true
         }
 
-        val currentEquippedItem = getItemObject(player.currentEquippedItem)
+        val heldItemMainhand = getItemObject(player.heldItemMainhand)
 
-        if (currentEquippedItem is LampDescriptor) {
-            if (currentEquippedItem.lampData.technology in descriptor.acceptedLampTypes) {
+        if (heldItemMainhand is LampDescriptor) {
+            if (heldItemMainhand.lampData.technology in descriptor.acceptedLampTypes) {
                 AutoAcceptInventoryProxy.creativeFreeInsert = Eln.config.getBooleanOrElse("gameplay.qol.creativeNoConsumeInsertedItems", false) && player is EntityPlayerMP && Utils.isCreative(player)
-                return inventoryProxy.take(player.currentEquippedItem, this, notifyInventoryChange = true).also {
+                return inventoryProxy.take(player.heldItemMainhand, this, notifyInventoryChange = true).also {
                     if (it && Eln.config.getBooleanOrElse("gameplay.qol.rememberLastFloodlightBulbs", false)) {
                         lastLamp1Stack = inventory.getStackInSlot(FloodlightContainer.LAMP_SLOT_1_ID)?.copy()
                         lastLamp2Stack = inventory.getStackInSlot(FloodlightContainer.LAMP_SLOT_2_ID)?.copy()

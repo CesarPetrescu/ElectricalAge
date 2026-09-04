@@ -9,6 +9,11 @@ import mods.eln.node.six.SixNodeElementRender
 import mods.eln.node.six.SixNodeEntity
 import net.minecraft.tileentity.TileEntity
 import org.lwjgl.opengl.GL11
+import mods.eln.misc.getBlock
+import mods.eln.misc.getTileEntity
+import mods.eln.misc.xCoord
+import mods.eln.misc.yCoord
+import mods.eln.misc.zCoord
 
 object CableRender {
     @JvmStatic

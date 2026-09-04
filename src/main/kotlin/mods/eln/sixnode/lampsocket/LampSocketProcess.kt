@@ -13,6 +13,9 @@ import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
 import java.io.IOException
 import kotlin.math.abs
+import mods.eln.misc.xCoord
+import mods.eln.misc.yCoord
+import mods.eln.misc.zCoord
 
 class LampSocketProcess(var element: LampSocketElement) : IProcess {
 

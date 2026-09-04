@@ -31,6 +31,13 @@ import net.minecraft.util.math.Vec3d
 import net.minecraft.world.IBlockAccess
 import net.minecraft.world.World
 import java.util.*
+import mods.eln.misc.getBlock
+import mods.eln.misc.getTileEntity
+import mods.eln.misc.isBlockLoaded
+import mods.eln.misc.setBlockToAir
+import mods.eln.misc.xCoord
+import mods.eln.misc.yCoord
+import mods.eln.misc.zCoord
 
 class SixNodeBlock  // public static ArrayList<Integer> repertoriedItemStackId = new ArrayList<Integer>();
 // private IIcon icon;
@@ -458,7 +465,7 @@ class SixNodeBlock  // public static ArrayList<Integer> repertoriedItemStackId =
         // During chunk load, neighboring chunks can still be unavailable. Treat that as
         // "unknown" instead of "air" so attached six-node parts do not self-delete
         // before their support block has actually loaded.
-        if (!world.blockExists(vect[0], vect[1], vect[2])) return true
+        if (!world.isBlockLoaded(vect[0], vect[1], vect[2])) return true
         val block = world.getBlock(vect[0], vect[1], vect[2])
         if (block === Blocks.AIR) return false
         return if (block.isOpaqueCube) true else false

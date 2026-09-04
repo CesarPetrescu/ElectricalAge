@@ -160,7 +160,7 @@ public class TurretElement extends TransparentNodeElement implements IConfigurab
     @Override
     public boolean onBlockActivated(EntityPlayer player, Direction side,
                                     float vx, float vy, float vz) {
-        return acceptingInventory.take(player.getCurrentEquippedItem());
+        return acceptingInventory.take(player.getHeldItemMainhand());
     }
 
     @Override

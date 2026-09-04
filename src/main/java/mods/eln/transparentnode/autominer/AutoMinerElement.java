@@ -140,7 +140,7 @@ public class AutoMinerElement extends TransparentNodeElement {
 
     @Override
     public boolean onBlockActivated(EntityPlayer player, Direction side, float vx, float vy, float vz) {
-        return inventory.take(player.getCurrentEquippedItem());
+        return inventory.take(player.getHeldItemMainhand());
     }
 
     @Override

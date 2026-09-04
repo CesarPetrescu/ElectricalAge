@@ -41,7 +41,7 @@ import net.minecraft.inventory.Slot
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
-import net.minecraftforge.client.IItemRenderer
+import mods.eln.client.itemrender.IItemRenderer
 import org.lwjgl.opengl.GL11
 import java.util.HashMap
 import kotlin.math.abs

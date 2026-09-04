@@ -26,7 +26,7 @@ import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.tileentity.TileEntity
-import net.minecraftforge.client.IItemRenderer
+import mods.eln.client.itemrender.IItemRenderer
 import org.lwjgl.opengl.GL11
 import org.lwjgl.util.Color
 import java.io.DataInputStream

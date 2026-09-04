@@ -15,6 +15,8 @@ import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.math.RayTraceResult
 import net.minecraft.world.World
+import mods.eln.misc.getBlock
+import mods.eln.misc.getTileEntity
 
 @Optional.Interface(iface = "mcp.mobius.waila.api.IWailaDataProvider", modid = "Waila")
 class GhostNodeWailaProvider(private val transparentNodeProvider: TransparentNodeWailaProvider,

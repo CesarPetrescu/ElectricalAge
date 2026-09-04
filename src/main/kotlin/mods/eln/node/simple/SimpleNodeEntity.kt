@@ -17,10 +17,15 @@ import net.minecraft.client.gui.GuiScreen
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.Container
 import net.minecraft.network.Packet
-import net.minecraft.network.play.server.S3FPacketCustomPayload
+import net.minecraft.network.play.server.SPacketCustomPayload
 import net.minecraft.tileentity.TileEntity
 import java.io.DataInputStream
 import java.io.IOException
+import mods.eln.misc.markBlockForUpdate
+import mods.eln.misc.setBlockToAir
+import mods.eln.misc.xCoord
+import mods.eln.misc.yCoord
+import mods.eln.misc.zCoord
 
 abstract class SimpleNodeEntity(override val nodeUuid: String) : TileEntity(), INodeEntity {
     open var node: SimpleNode? = null
@@ -119,7 +124,7 @@ abstract class SimpleNodeEntity(override val nodeUuid: String) : TileEntity(), I
             println("ASSERT NULL NODE public Packet getDescriptionPacket() nodeblock entity")
             return null
         }
-        return S3FPacketCustomPayload(Eln.channelName, node.publishPacket!!.toByteArray())
+        return SPacketCustomPayload(Eln.channelName, node.publishPacket!!.toByteArray())
     }
 
     open lateinit var sender: NodeEntityClientSender

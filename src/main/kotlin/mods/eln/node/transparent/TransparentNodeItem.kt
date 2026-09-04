@@ -12,10 +12,11 @@ import net.minecraft.client.Minecraft
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.world.World
-import net.minecraftforge.client.IItemRenderer
-import net.minecraftforge.client.IItemRenderer.ItemRenderType
-import net.minecraftforge.client.IItemRenderer.ItemRendererHelper
+import mods.eln.client.itemrender.IItemRenderer
+import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
+import mods.eln.client.itemrender.IItemRenderer.ItemRendererHelper
 import org.lwjgl.opengl.GL11
+import mods.eln.misc.setBlock
 
 class TransparentNodeItem(b: Block?) : GenericItemBlockUsingDamage<TransparentNodeDescriptor?>(b), IItemRenderer {
     override fun placeBlockAt(stack: ItemStack, player: EntityPlayer, world: World, x: Int, y: Int, z: Int, side: Int, hitX: Float, hitY: Float, hitZ: Float, metadata: Int): Boolean {
@@ -64,7 +65,7 @@ class TransparentNodeItem(b: Block?) : GenericItemBlockUsingDamage<TransparentNo
     }
 
     override fun renderItem(type: ItemRenderType, item: ItemStack, vararg data: Any) {
-        Minecraft.getMinecraft().mcProfiler.startSection("TransparentNodeItem")
+        Minecraft.getMinecraft().profiler.startSection("TransparentNodeItem")
         if (shouldUseRenderHelperEln(type, item, null)) {
             when (type) {
                 ItemRenderType.ENTITY -> GL11.glTranslatef(0.00f, 0.3f, 0.0f)
@@ -81,11 +82,11 @@ class TransparentNodeItem(b: Block?) : GenericItemBlockUsingDamage<TransparentNo
         if (descriptor != null) {
             descriptor.renderItem(type, item, *data)
         }
-        Minecraft.getMinecraft().mcProfiler.endSection()
+        Minecraft.getMinecraft().profiler.endSection()
     }
 
     init {
         setHasSubtypes(true)
-        unlocalizedName = "TransparentNodeItem"
+        translationKey = "TransparentNodeItem"
     }
 }

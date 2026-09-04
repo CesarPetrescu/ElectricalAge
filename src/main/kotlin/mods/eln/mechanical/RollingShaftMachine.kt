@@ -16,6 +16,9 @@ import net.minecraft.inventory.Container
 import net.minecraft.inventory.IInventory
 import net.minecraft.item.ItemStack
 import org.lwjgl.opengl.GL11
+import mods.eln.misc.xCoord
+import mods.eln.misc.yCoord
+import mods.eln.misc.zCoord
 
 class RollingShaftMachineDescriptor (name: String, override val obj: Obj3D) :
     SimpleShaftDescriptor(name, RollingShaftMachineElement::class, RollingShaftMachineRender::class, EntityMetaTag.Basic) {

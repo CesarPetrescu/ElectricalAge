@@ -9,6 +9,7 @@ import mods.eln.simplenode.energyconverter.EnergyConverterElnToOtherNode
 import net.minecraft.entity.Entity
 import net.minecraft.init.Blocks
 import java.lang.RuntimeException
+import mods.eln.misc.setBlock
 
 class WorldExplosion : IDestructible {
     private var origin: Any

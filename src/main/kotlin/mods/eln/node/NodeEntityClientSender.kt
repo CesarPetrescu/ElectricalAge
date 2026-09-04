@@ -6,6 +6,9 @@ import net.minecraft.tileentity.TileEntity
 import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
 import java.io.IOException
+import mods.eln.misc.xCoord
+import mods.eln.misc.yCoord
+import mods.eln.misc.zCoord
 
 class NodeEntityClientSender(private val e: TileEntity, private val nodeUuid: String) {
     fun preparePacketForServer(stream: DataOutputStream) {

@@ -42,6 +42,9 @@ import mods.eln.i18n.I18N.tr
 import java.util.concurrent.Executors
 import kotlin.math.abs
 import kotlin.math.floor
+import mods.eln.misc.getBlock
+import mods.eln.misc.getBlockMetadata
+import mods.eln.misc.getTileEntity
 
 object FalstadImporter {
     private const val DEFAULT_FALSTAD_CURRENT_SOURCE_AMPS = 0.01

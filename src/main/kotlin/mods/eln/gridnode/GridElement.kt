@@ -22,6 +22,9 @@ import java.io.IOException
 import java.util.HashMap
 import java.util.HashSet
 import java.util.UUID
+import mods.eln.misc.xCoord
+import mods.eln.misc.yCoord
+import mods.eln.misc.zCoord
 
 abstract class GridElement(transparentNode: TransparentNode, descriptor: TransparentNodeDescriptor, internal var connectRange: Int) : TransparentNodeElement(transparentNode, descriptor) {
     var gridLinkList = HashSet<GridLink>()
@@ -41,7 +44,7 @@ abstract class GridElement(transparentNode: TransparentNode, descriptor: Transpa
     /* Connect one GridNode to another. */
     override fun onBlockActivated(player: EntityPlayer, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
         // Check if user is holding an appropriate tool.
-        val stack = player.currentEquippedItem
+        val stack = player.heldItemMainhand
         val itemDesc = GenericItemBlockUsingDamageDescriptor.getDescriptor(stack)
         if (itemDesc is ElectricalCableDescriptor) {
             return onTryGridConnect(player, stack, itemDesc, side)

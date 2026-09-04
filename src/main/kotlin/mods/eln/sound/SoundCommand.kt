@@ -6,6 +6,9 @@ import net.minecraft.world.World
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
+import mods.eln.misc.xCoord
+import mods.eln.misc.yCoord
+import mods.eln.misc.zCoord
 
 class SoundCommand {
     @JvmField

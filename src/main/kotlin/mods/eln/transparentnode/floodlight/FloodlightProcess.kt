@@ -11,6 +11,9 @@ import mods.eln.sim.IProcess
 import net.minecraft.item.ItemStack
 import net.minecraft.util.math.Vec3d
 import kotlin.math.*
+import mods.eln.misc.xCoord
+import mods.eln.misc.yCoord
+import mods.eln.misc.zCoord
 
 class FloodlightProcess(val element: FloodlightElement) : IProcess {
 

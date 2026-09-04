@@ -131,7 +131,7 @@ class WindTurbineSlowProcess implements IProcess, INBTTReady {
                 for (int x = x1; x <= x2; x++) {
                     for (int y = y1; y <= y2; y++) {
                         for (int z = z1; z <= z2; z++) {
-                            if (!world.blockExists(x, y, z)) {
+                            if (!world.isBlockLoaded(x, y, z)) {
                                 notInCache = true;
                                 break;
                             }

@@ -8,7 +8,7 @@ import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor
 import mods.eln.wiki.Data
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
-import net.minecraftforge.client.IItemRenderer
+import mods.eln.client.itemrender.IItemRenderer
 import org.lwjgl.opengl.GL11
 
 class ElectricalFuseDescriptor(

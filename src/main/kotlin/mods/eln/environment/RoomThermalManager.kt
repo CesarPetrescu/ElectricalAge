@@ -16,6 +16,9 @@ import java.util.HashMap
 import java.util.HashSet
 import kotlin.math.abs
 import kotlin.math.floor
+import mods.eln.misc.getBlock
+import mods.eln.misc.getBlockMetadata
+import mods.eln.misc.isBlockLoaded
 
 object RoomThermalManager {
     private const val ROOM_SCAN_INTERVAL_TICKS = 40
@@ -326,7 +329,7 @@ object RoomThermalManager {
                         val z = baseZ + dz
 
                         if (!isValidY(y)) continue
-                        if (!world.blockExists(x, y, z)) continue
+                        if (!world.isBlockLoaded(x, y, z)) continue
 
                         val block = world.getBlock(x, y, z)
                         if (block.isAir(world, x, y, z)) {
@@ -365,7 +368,7 @@ object RoomThermalManager {
                 val nz = cell.z + deltaZ(direction)
 
                 if (!isValidY(ny)) return null
-                if (!world.blockExists(nx, ny, nz)) return null
+                if (!world.isBlockLoaded(nx, ny, nz)) return null
 
                 val neighbor = CellPos(nx, ny, nz)
                 if (visited.contains(neighbor)) continue
@@ -508,7 +511,7 @@ object RoomThermalManager {
                     z = cell.z + deltaZ(direction)
                 )
                 if (interiorCells.contains(neighbor)) continue
-                if (!world.blockExists(neighbor.x, neighbor.y, neighbor.z)) continue
+                if (!world.isBlockLoaded(neighbor.x, neighbor.y, neighbor.z)) continue
 
                 val block = world.getBlock(neighbor.x, neighbor.y, neighbor.z)
                 if (block !is BlockDoor) continue
@@ -523,18 +526,18 @@ object RoomThermalManager {
     }
 
     private fun toDoorBottomCell(world: World, cell: CellPos): CellPos? {
-        if (!world.blockExists(cell.x, cell.y, cell.z)) return null
+        if (!world.isBlockLoaded(cell.x, cell.y, cell.z)) return null
         val metadata = world.getBlockMetadata(cell.x, cell.y, cell.z)
         if ((metadata and 8) == 0) return cell
         if (cell.y <= 0) return null
         val bottom = CellPos(cell.x, cell.y - 1, cell.z)
-        if (!world.blockExists(bottom.x, bottom.y, bottom.z)) return null
+        if (!world.isBlockLoaded(bottom.x, bottom.y, bottom.z)) return null
         val bottomBlock = world.getBlock(bottom.x, bottom.y, bottom.z)
         return if (bottomBlock is BlockDoor) bottom else null
     }
 
     private fun isDoorOpen(world: World, doorBottomCell: CellPos): Boolean {
-        if (!world.blockExists(doorBottomCell.x, doorBottomCell.y, doorBottomCell.z)) return false
+        if (!world.isBlockLoaded(doorBottomCell.x, doorBottomCell.y, doorBottomCell.z)) return false
         val block = world.getBlock(doorBottomCell.x, doorBottomCell.y, doorBottomCell.z)
         if (block !is BlockDoor) return false
         val metadata = world.getBlockMetadata(doorBottomCell.x, doorBottomCell.y, doorBottomCell.z)

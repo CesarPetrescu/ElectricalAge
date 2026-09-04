@@ -11,6 +11,9 @@ import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.world.World
 import net.minecraft.world.WorldSavedData
 import java.util.*
+import mods.eln.misc.getBlock
+import mods.eln.misc.setBlock
+import mods.eln.misc.setBlockToAir
 
 class GhostManager(par1Str: String?) : WorldSavedData(par1Str) {
     var ghostTable: MutableMap<Coordinate?, GhostElement> = Hashtable()

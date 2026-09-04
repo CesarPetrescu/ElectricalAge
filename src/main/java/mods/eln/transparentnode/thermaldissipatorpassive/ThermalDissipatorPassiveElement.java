@@ -92,7 +92,7 @@ public class ThermalDissipatorPassiveElement extends TransparentNodeElement {
     @Override
     public boolean onBlockActivated(EntityPlayer player, Direction side,
                                     float vx, float vy, float vz) {
-        ItemStack stack = player.getCurrentEquippedItem();
+        ItemStack stack = player.getHeldItemMainhand();
         if (stack == null) return false;
         if (stack.getItem() == Items.WATER_BUCKET) {
             thermalLoad.temperatureCelsius *= 0.5;

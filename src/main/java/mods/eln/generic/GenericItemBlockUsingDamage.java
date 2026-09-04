@@ -104,11 +104,11 @@ public class GenericItemBlockUsingDamage<Descriptor extends GenericItemBlockUsin
 
 	@Override
 	public String getUnlocalizedNameInefficiently(ItemStack stack) {
-		return getUnlocalizedName(stack);
+		return getTranslationKey(stack);
 	}
 
     @Override
-    public String getUnlocalizedName(ItemStack par1ItemStack) {
+    public String getTranslationKey(ItemStack par1ItemStack) {
         Descriptor desc = getDescriptor(par1ItemStack);
         if (desc == null) {
             return this.getClass().getName();

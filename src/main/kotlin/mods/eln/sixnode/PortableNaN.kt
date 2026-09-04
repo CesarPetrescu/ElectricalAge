@@ -17,7 +17,7 @@ import net.minecraft.client.Minecraft
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.util.ResourceLocation
-import net.minecraftforge.client.IItemRenderer
+import mods.eln.client.itemrender.IItemRenderer
 import org.lwjgl.opengl.GL11
 import java.util.HashMap
 
@@ -139,13 +139,13 @@ class PortableNaNRender(tileEntity: SixNodeEntity, side: Direction, descriptor: 
     }
 
     override fun draw() {
-        Minecraft.getMinecraft().mcProfiler.startSection("ACable")
+        Minecraft.getMinecraft().profiler.startSection("ACable")
 
         UtilsClient.bindTexture(descriptor.render?.cableTexture)
         glListCall()
 
         GL11.glColor3f(1f, 1f, 1f)
-        Minecraft.getMinecraft().mcProfiler.endSection()
+        Minecraft.getMinecraft().profiler.endSection()
     }
 
     override fun glListDraw() {

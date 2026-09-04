@@ -232,7 +232,7 @@ open class CurrentCableElement(sixNode: SixNode?, side: Direction?, descriptor: 
         vy: Float,
         vz: Float
     ): Boolean {
-        val currentItemStack = entityPlayer.currentEquippedItem
+        val currentItemStack = entityPlayer.heldItemMainhand
         if (isPlayerUsingWrench(entityPlayer)) {
             colorCare = colorCare xor 1
             sendMessage(entityPlayer, "Wire color care $colorCare")
@@ -267,12 +267,12 @@ class CurrentCableRender(tileEntity: SixNodeEntity?, side: Direction?, descripto
     }
 
     override fun draw() {
-        Minecraft.getMinecraft().mcProfiler.startSection("ECable")
+        Minecraft.getMinecraft().profiler.startSection("ECable")
         setGlColorFromDye(color, 1.0f)
         bindTexture(descriptor.render.cableTexture)
         glListCall()
         GL11.glColor3f(1f, 1f, 1f)
-        Minecraft.getMinecraft().mcProfiler.endSection()
+        Minecraft.getMinecraft().profiler.endSection()
     }
 
     override fun glListDraw() {

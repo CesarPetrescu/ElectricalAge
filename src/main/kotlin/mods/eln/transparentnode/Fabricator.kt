@@ -23,7 +23,7 @@ import net.minecraft.inventory.IInventory
 import net.minecraft.inventory.Slot
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
-import net.minecraftforge.client.IItemRenderer
+import mods.eln.client.itemrender.IItemRenderer
 import org.lwjgl.opengl.GL11
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -208,8 +208,8 @@ class FabricatorProcess(val element: FabricatorElement): IProcess {
         val hasInputs = (
             siliconWaferSlot != null &&
             plateCopperSlot != null &&
-            siliconWaferSlot.unlocalizedName == siliconWaferName &&
-            plateCopperSlot.unlocalizedName == copperPlateName
+            siliconWaferSlot.translationKey == siliconWaferName &&
+            plateCopperSlot.translationKey == copperPlateName
         )
 
         if (canOutput && hasInputs && operation != null) {

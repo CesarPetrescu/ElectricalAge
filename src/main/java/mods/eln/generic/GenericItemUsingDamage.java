@@ -105,7 +105,7 @@ public class GenericItemUsingDamage<Descriptor extends GenericItemUsingDamageDes
 	*/
 
     @Override
-    public String getUnlocalizedName(ItemStack par1ItemStack) {
+    public String getTranslationKey(ItemStack par1ItemStack) {
         Descriptor desc = getDescriptor(par1ItemStack);
         if (desc != null) {
             return desc.name.replaceAll("\\s+", "_");
@@ -116,7 +116,7 @@ public class GenericItemUsingDamage<Descriptor extends GenericItemUsingDamageDes
 
     @Override
     public String getUnlocalizedNameInefficiently(ItemStack stack) {
-        return getUnlocalizedName(stack);
+        return getTranslationKey(stack);
     }
 
 	/*

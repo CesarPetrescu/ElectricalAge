@@ -161,7 +161,7 @@ class Coordinate : INBTTReady {
     val blockExist: Boolean
         get() {
             val w = DimensionManager.getWorld(dimension) ?: return false
-            return w.blockExists(x, y, z)
+            return w.isBlockLoaded(x, y, z)
         }
     val worldExist: Boolean
         get() = DimensionManager.getWorld(dimension) != null

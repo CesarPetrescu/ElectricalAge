@@ -14,6 +14,10 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import java.util.*
 import kotlin.collections.HashMap
+import mods.eln.misc.getBlock
+import mods.eln.misc.getBlockMetadata
+import mods.eln.misc.isBlockLoaded
+import mods.eln.misc.setBlockToAir
 
 
 class ElectricalAxe(name: String, strengthOn: Float, strengthOff: Float,
@@ -363,7 +367,7 @@ object TreeCapitation : IProcess {
      * The bits below, however, are from ToolCommons.java. Mostly. Maybe about half, by now.
      */
     fun removeBlockWithDrops(player: EntityPlayer, tool: ElectricalTool, stack: ItemStack, world: World, x: Int, y: Int, z: Int) {
-        if (world.isRemote || !world.blockExists(x, y, z))
+        if (world.isRemote || !world.isBlockLoaded(x, y, z))
             return
 
         val block = world.getBlock(x, y, z)

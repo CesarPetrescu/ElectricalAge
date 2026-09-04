@@ -43,6 +43,10 @@ import kotlin.math.hypot
 import kotlin.math.min
 import kotlin.math.max
 import kotlin.math.sin
+import mods.eln.misc.getBlock
+import mods.eln.misc.getBlockMetadata
+import mods.eln.misc.getTileEntity
+import mods.eln.misc.setBlockToAir
 
 private data class ZoneBounds(
     val minX: Int,
@@ -411,7 +415,7 @@ class ElnZoneDumpCommand : IConsoleCommand {
                 }
                 val actualBlock = world.getBlock(coord.x, coord.y, coord.z)
                 if (expectedBlock != null && actualBlock != expectedBlock) {
-                    warnings.add("Node ${coord} (${node.javaClass.simpleName}) expected ${expectedBlock.unlocalizedName} but found ${actualBlock.unlocalizedName}")
+                    warnings.add("Node ${coord} (${node.javaClass.simpleName}) expected ${expectedBlock.translationKey} but found ${actualBlock.translationKey}")
                 }
             }
         }
@@ -432,10 +436,10 @@ class ElnZoneDumpCommand : IConsoleCommand {
                     val block = world.getBlock(x, y, z)
                     val meta = world.getBlockMetadata(x, y, z)
                     val tile = world.getTileEntity(x, y, z)
-                    builder.append("  ($x,$y,$z): ${block.unlocalizedName} meta=$meta tile=${tile?.javaClass?.simpleName}\n")
+                    builder.append("  ($x,$y,$z): ${block.translationKey} meta=$meta tile=${tile?.javaClass?.simpleName}\n")
                     val coord = Coordinate(x, y, z, dim)
                     if ((block == Eln.sixNodeBlock || block == Eln.transparentNodeBlock) && !coordToNode.containsKey(coord)) {
-                        warnings.add("Block ${block.unlocalizedName} at $coord has no registered node")
+                        warnings.add("Block ${block.translationKey} at $coord has no registered node")
                     }
                     if (block == Eln.ghostBlock && !coordToNode.containsKey(coord) && Eln.ghostManager.getGhost(coord) == null) {
                         warnings.add("Ghost block at $coord has no registered node or ghost manager entry")

@@ -18,6 +18,8 @@ import net.minecraft.world.World
 import java.lang.RuntimeException
 import java.lang.reflect.InvocationTargetException
 import java.util.*
+import mods.eln.misc.getBlockMetadata
+import mods.eln.misc.getTileEntity
 
 class TransparentNodeBlock(material: Material?, tileEntityClass: Class<*>?) : NodeBlock(material, tileEntityClass!!, 0) {
 

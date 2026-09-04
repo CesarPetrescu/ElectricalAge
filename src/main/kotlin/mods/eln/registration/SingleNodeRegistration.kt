@@ -38,7 +38,7 @@ object SingleNodeRegistration {
 
 
             val conduitBlock = ConduitBlock()
-            conduitBlock.setCreativeTab(null).setBlockName(entityName)
+            conduitBlock.setCreativeTab(null).setTranslationKey(entityName)
             GameRegistry.registerBlock(conduitBlock, SimpleNodeItem::class.java, entityName)
         }
     }
@@ -60,7 +60,7 @@ object SingleNodeRegistration {
                     "EnergyConverterElnToOtherLVU", Eln.instance.ELN_CONVERTER_MAX_POWER
                 )
                 Eln.instance.elnToOtherBlockConverter = EnergyConverterElnToOtherBlock(desc)
-                Eln.instance.elnToOtherBlockConverter.setCreativeTab(Eln.creativeTabPowerElectronics).setBlockName(blockName)
+                Eln.instance.elnToOtherBlockConverter.setCreativeTab(Eln.creativeTabPowerElectronics).setTranslationKey(blockName)
                 GameRegistry.registerBlock(Eln.instance.elnToOtherBlockConverter, SimpleNodeItem::class.java, blockName)
             }
         }
@@ -75,7 +75,7 @@ object SingleNodeRegistration {
 
 
             Eln.instance.computerProbeBlock = ComputerProbeBlock()
-            Eln.instance.computerProbeBlock.setCreativeTab(Eln.creativeTabSignalProcessing).setBlockName(entityName)
+            Eln.instance.computerProbeBlock.setCreativeTab(Eln.creativeTabSignalProcessing).setTranslationKey(entityName)
             GameRegistry.registerBlock(Eln.instance.computerProbeBlock, SimpleNodeItem::class.java, entityName)
         }
         /*
@@ -84,7 +84,7 @@ object SingleNodeRegistration {
             TileEntity.addMapping(DeviceProbeEntity.class, name);
             NodeManager.registerUuid(DeviceProbeNode.Companion.getNodeUuidStatic(), DeviceProbeNode.class);
             DeviceProbeBlock deviceProbeBlock = new DeviceProbeBlock();
-            deviceProbeBlock.setCreativeTab(creativeTab).setBlockName(name);
+            deviceProbeBlock.setCreativeTab(creativeTab).setTranslationKey(name);
             GameRegistry.registerBlock(deviceProbeBlock, SimpleNodeItem.class, name);
         }
         */

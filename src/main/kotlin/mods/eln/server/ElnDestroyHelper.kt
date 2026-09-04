@@ -11,6 +11,8 @@ import mods.eln.node.transparent.TransparentNode
 import net.minecraft.entity.player.EntityPlayerMP
 import net.minecraft.inventory.IInventory
 import net.minecraft.world.World
+import mods.eln.misc.getBlock
+import mods.eln.misc.setBlockToAir
 
 data class ElnDestroySummary(
     val nodesDestroyed: Int,

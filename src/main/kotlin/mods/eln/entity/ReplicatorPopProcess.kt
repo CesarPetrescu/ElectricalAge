@@ -8,6 +8,8 @@ import net.minecraft.entity.player.EntityPlayerMP
 import net.minecraft.init.Blocks
 import net.minecraft.world.EnumDifficulty
 import net.minecraft.world.EnumSkyBlock
+import mods.eln.misc.getBlock
+import mods.eln.misc.isBlockLoaded
 
 class ReplicatorPopProcess : IProcess {
     override fun process(time: Double) {
@@ -37,7 +39,7 @@ class ReplicatorPopProcess : IProcess {
                     var y = 2
                     Utils.println("POP")
 
-                    if (!world.blockExists(x, y, z)) break
+                    if (!world.isBlockLoaded(x, y, z)) break
 
                     while (world.getBlock(x, y, z) != Blocks.AIR || Utils.getLight(world, EnumSkyBlock.Block, x, y, z) > 6) {
                         y++
@@ -47,7 +49,7 @@ class ReplicatorPopProcess : IProcess {
                     entityLiving.setLocationAndAngles(x + 0.5, y.toDouble(), z + 0.5, 0.0f, 0.0f)
                     entityLiving.rotationYawHead = entityLiving.rotationYaw
                     entityLiving.renderYawOffset = entityLiving.rotationYaw
-                    world.spawnEntityInWorld(entityLiving)
+                    world.spawnEntity(entityLiving)
                     entityLiving.playLivingSound()
                     entityLiving.isSpawnedFromWeather = true
                     Utils.println("Spawn Replicator at $x $y $z")

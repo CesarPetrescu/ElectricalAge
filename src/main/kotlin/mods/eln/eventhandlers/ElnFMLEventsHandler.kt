@@ -8,7 +8,7 @@ import mods.eln.packets.AchievePacket
 class ElnFMLEventsHandler {
     @SubscribeEvent
     fun onCraft(event: ItemCraftedEvent) {
-        if (event.crafting.unlocalizedName.lowercase() == "48v_macerator") {
+        if (event.crafting.translationKey.lowercase() == "48v_macerator") {
             Eln.elnNetwork.sendToServer(craft50VMaceratorPacket)
         }
     }

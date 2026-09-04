@@ -35,7 +35,7 @@ public class ThermalCableRender extends SixNodeElementRender {
 
     @Override
     public void draw() {
-        Minecraft.getMinecraft().mcProfiler.startSection("TCable");
+        Minecraft.getMinecraft().profiler.startSection("TCable");
 
         //ItemStack i = Minecraft.getMinecraft().player.inventory.armorInventory[3];
 
@@ -59,7 +59,7 @@ public class ThermalCableRender extends SixNodeElementRender {
         //GL11.glEnable(GL11.GL_LIGHTING);
         //GL11.glEnable(GL11.GL_TEXTURE_2D);
 
-        Minecraft.getMinecraft().mcProfiler.endSection();
+        Minecraft.getMinecraft().profiler.endSection();
     }
 
     @Override

@@ -6,6 +6,10 @@ import net.minecraft.entity.Entity
 import net.minecraft.item.ItemStack
 import net.minecraft.util.math.MathHelper
 import net.minecraft.world.World
+import mods.eln.misc.getBlock
+import mods.eln.misc.xCoord
+import mods.eln.misc.yCoord
+import mods.eln.misc.zCoord
 
 abstract class FlashlightItem(name: String?) : GenericItemUsingDamageDescriptor(name!!) {
     abstract fun getLightState(stack: ItemStack): Int
@@ -30,9 +34,9 @@ abstract class FlashlightItem(name: String?) : GenericItemUsingDamageDescriptor(
                 x += v.xCoord
                 y += v.yCoord
                 z += v.zCoord
-                val fx = MathHelper.floor_double(x)
-                val fy = MathHelper.floor_double(y)
-                val fz = MathHelper.floor_double(z)
+                val fx = MathHelper.floor(x)
+                val fy = MathHelper.floor(y)
+                val fz = MathHelper.floor(z)
                 val block = world.getBlock(fx, fy, fz)
                 if (!block.isAir(world, fx, fy, fz)) {
                     x -= v.xCoord
@@ -44,9 +48,9 @@ abstract class FlashlightItem(name: String?) : GenericItemUsingDamageDescriptor(
             }
             while (rCount > 0) {
                 var stride = 1
-                val fx = MathHelper.floor_double(x)
-                val fy = MathHelper.floor_double(y)
-                val fz = MathHelper.floor_double(z)
+                val fx = MathHelper.floor(x)
+                val fy = MathHelper.floor(y)
+                val fz = MathHelper.floor(z)
                 val block = world.getBlock(fx, fy, fz)
                 if (block.isAir(world, fx, fy, fz)) {
                     LightBlockEntity.addLight(world, fx, fy, fz, light, 5)

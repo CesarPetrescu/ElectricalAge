@@ -20,7 +20,7 @@ import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.Container
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.network.Packet
-import net.minecraft.network.play.server.S3FPacketCustomPayload
+import net.minecraft.network.play.server.SPacketCustomPayload
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.math.AxisAlignedBB
 import net.minecraft.world.EnumSkyBlock
@@ -30,6 +30,13 @@ import java.io.DataOutputStream
 import java.io.IOException
 import java.util.*
 import java.util.concurrent.LinkedBlockingQueue
+import mods.eln.misc.getBlock
+import mods.eln.misc.getTileEntity
+import mods.eln.misc.setBlock
+import mods.eln.misc.setBlockToAir
+import mods.eln.misc.xCoord
+import mods.eln.misc.yCoord
+import mods.eln.misc.zCoord
 
 abstract class NodeBlockEntity : TileEntity(), ITileEntitySpawnClient, INodeEntity {
     val block: NodeBlock
@@ -207,7 +214,7 @@ abstract class NodeBlockEntity : TileEntity(), ITileEntitySpawnClient, INodeEnti
             node!!.onBlockActivated(entityPlayer!!, side!!, vx, vy, vz)
             return true
         }
-        //if(entityPlayer.getCurrentEquippedItem().getItem() instanceof ItemBlock)
+        //if(entityPlayer.getHeldItemMainhand().getItem() instanceof ItemBlock)
         run { return true }
         //return true;
     }
@@ -225,7 +232,7 @@ abstract class NodeBlockEntity : TileEntity(), ITileEntitySpawnClient, INodeEnti
             println("ASSERT NULL NODE public Packet getDescriptionPacket() nodeblock entity")
             return null
         }
-        return S3FPacketCustomPayload(Eln.channelName, node.publishPacket!!.toByteArray())
+        return SPacketCustomPayload(Eln.channelName, node.publishPacket!!.toByteArray())
     }
 
     open fun preparePacketForServer(stream: DataOutputStream) {

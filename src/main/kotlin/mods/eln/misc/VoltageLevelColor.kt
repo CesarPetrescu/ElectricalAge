@@ -4,7 +4,7 @@ import mods.eln.Eln
 import mods.eln.sixnode.currentcable.CurrentCableDescriptor
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor
 import net.minecraft.util.ResourceLocation
-import net.minecraftforge.client.IItemRenderer.ItemRenderType
+import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
 import org.lwjgl.opengl.GL11
 
 enum class VoltageLevelColor(private val voltageLevel: String?) {

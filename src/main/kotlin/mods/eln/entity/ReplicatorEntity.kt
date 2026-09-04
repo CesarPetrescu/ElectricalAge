@@ -81,7 +81,7 @@ class ReplicatorEntity(world: World) : EntityMob(world) {
             entityLiving.setLocationAndAngles(posX, posY, posZ, 0.0f, 0.0f)
             entityLiving.rotationYawHead = entityLiving.rotationYaw
             entityLiving.renderYawOffset = entityLiving.rotationYaw
-            world.spawnEntityInWorld(entityLiving)
+            world.spawnEntity(entityLiving)
             entityLiving.playLivingSound()
             hunger = 0.0
         }

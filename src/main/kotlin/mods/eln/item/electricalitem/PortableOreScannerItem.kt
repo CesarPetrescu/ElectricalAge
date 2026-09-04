@@ -20,8 +20,8 @@ import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.math.MathHelper
 import net.minecraft.world.World
-import net.minecraftforge.client.IItemRenderer.ItemRenderType
-import net.minecraftforge.client.IItemRenderer.ItemRendererHelper
+import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
+import mods.eln.client.itemrender.IItemRenderer.ItemRendererHelper
 import org.lwjgl.opengl.GL11
 
 @ExperimentalUnsignedTypes
@@ -379,9 +379,9 @@ class PortableOreScannerItem(name: String?, private val obj: Obj3D,
                     var stackGreen = 0f
                     var d = 0f
                     while (d < viewRange) {
-                        val xFloor = MathHelper.floor_float(x).toFloat()
-                        val yFloor = MathHelper.floor_float(y).toFloat()
-                        val zFloor = MathHelper.floor_float(z).toFloat()
+                        val xFloor = MathHelper.floor(x).toFloat()
+                        val yFloor = MathHelper.floor(y).toFloat()
+                        val zFloor = MathHelper.floor(z).toFloat()
                         var dx = x - xFloor
                         var dy = y - yFloor
                         var dz = z - zFloor

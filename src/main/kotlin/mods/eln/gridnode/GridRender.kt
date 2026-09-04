@@ -13,6 +13,9 @@ import java.io.IOException
 import java.util.ArrayList
 
 import org.lwjgl.opengl.GL11.*
+import mods.eln.misc.xCoord
+import mods.eln.misc.yCoord
+import mods.eln.misc.zCoord
 
 abstract class GridRender(tileEntity: TransparentNodeEntity, descriptor: TransparentNodeDescriptor) : TransparentNodeElementRender(tileEntity, descriptor) {
     private val descriptor: GridDescriptor

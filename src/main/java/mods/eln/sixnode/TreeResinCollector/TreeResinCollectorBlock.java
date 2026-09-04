@@ -13,7 +13,7 @@ public class TreeResinCollectorBlock extends BlockContainer {
 
     public TreeResinCollectorBlock(int id) {
         super(Material.wood);
-        setBlockName("TreeResinCollector");
+        setTranslationKey("TreeResinCollector");
     }
 
     @Override

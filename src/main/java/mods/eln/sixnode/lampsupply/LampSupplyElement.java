@@ -274,7 +274,7 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
     public boolean onBlockActivated(EntityPlayer entityPlayer, Direction side, float vx, float vy, float vz) {
         if (onBlockActivatedRotate(entityPlayer)) return true;
 
-        ItemStack playerEquippedItem = entityPlayer.getCurrentEquippedItem();
+        ItemStack playerEquippedItem = entityPlayer.getHeldItemMainhand();
         GenericItemBlockUsingDamageDescriptor desc = GenericItemBlockUsingDamageDescriptor.getDescriptor(playerEquippedItem, GenericCableDescriptor.class);
         boolean takeItem = false;
 

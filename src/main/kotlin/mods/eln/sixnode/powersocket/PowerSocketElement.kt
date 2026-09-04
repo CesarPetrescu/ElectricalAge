@@ -151,7 +151,7 @@ class PowerSocketElement(sixNode: SixNode?, side: Direction?, descriptor: SixNod
         vy: Float,
         vz: Float
     ): Boolean {
-        val used = entityPlayer.currentEquippedItem
+        val used = entityPlayer.heldItemMainhand
         if (used != null) {
             val desc = getDescriptor(used)
             if (desc != null && desc is BrushDescriptor) {

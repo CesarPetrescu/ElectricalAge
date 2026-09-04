@@ -10,6 +10,7 @@ import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.world.IBlockAccess
 import net.minecraft.world.World
+import mods.eln.misc.getTileEntity
 
 abstract class NodeBlock(material: Material?, tileEntityClass: Class<*>, blockItemNbr: Int) : Block(material) {
 
@@ -102,7 +103,7 @@ abstract class NodeBlock(material: Material?, tileEntityClass: Class<*>, blockIt
     }
 
     init {
-        setBlockName("NodeBlock")
+        setTranslationKey("NodeBlock")
         this.tileEntityClass = tileEntityClass
         useNeighborBrightness = true
         this.blockItemNbr = blockItemNbr

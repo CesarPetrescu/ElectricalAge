@@ -41,6 +41,8 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.util.ArrayList
 import kotlin.experimental.or
+import mods.eln.misc.getBlock
+import mods.eln.misc.setBlockToAir
 
 abstract class NodeBase {
     var neighborOpaque: Byte = 0
@@ -147,8 +149,8 @@ abstract class NodeBase {
     }
 
     open fun onBlockActivated(entityPlayer: EntityPlayer, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
-        if (!entityPlayer.world.isRemote && entityPlayer.currentEquippedItem != null) {
-            val equipped = entityPlayer.currentEquippedItem
+        if (!entityPlayer.world.isRemote && entityPlayer.heldItemMainhand != null) {
+            val equipped = entityPlayer.heldItemMainhand
             if (Eln.multiMeterElement.checkSameItemStack(equipped)) {
                 val str = multiMeterString(side)
                 addMeterChatMessages(entityPlayer, str)
@@ -459,7 +461,7 @@ abstract class NodeBase {
             val var11 = (coordinate.world().rand.nextFloat() * var6).toDouble() + (1.0f - var6).toDouble() * 0.5
             val var13 = EntityItem(coordinate.world(), coordinate.x.toDouble() + var7, coordinate.y.toDouble() + var9, coordinate.z.toDouble() + var11, itemStack)
             var13.delayBeforeCanPickup = 10
-            coordinate.world().spawnEntityInWorld(var13)
+            coordinate.world().spawnEntity(var13)
         }
     }
 

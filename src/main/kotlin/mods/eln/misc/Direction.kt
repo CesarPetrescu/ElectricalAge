@@ -91,7 +91,7 @@ enum class Direction(var int: Int) {
         if (tileEntity == null) return null
         val coords = intArrayOf(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord)
         coords[int / 2] += sign
-        return if (tileEntity.world != null && tileEntity.world.blockExists(coords[0], coords[1], coords[2])) {
+        return if (tileEntity.world != null && tileEntity.world.isBlockLoaded(coords[0], coords[1], coords[2])) {
             tileEntity.world.getTileEntity(coords[0], coords[1], coords[2])
         } else {
             null

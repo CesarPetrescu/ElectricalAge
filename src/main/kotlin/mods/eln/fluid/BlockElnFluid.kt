@@ -26,7 +26,7 @@ class BlockElnFluid(
     var fluidIcon: Array<IIcon> = arrayOf()
 
     init {
-        setBlockName(internalName)
+        setTranslationKey(internalName)
         GameRegistry.registerBlock(this, ItemBlock::class.java, internalName)
         if (density <= FluidRegistry.WATER.density) {
             displacements[Blocks.WATER] = false

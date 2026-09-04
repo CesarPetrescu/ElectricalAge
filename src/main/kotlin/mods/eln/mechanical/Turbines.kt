@@ -33,6 +33,9 @@ import org.lwjgl.opengl.GL11
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.util.*
+import mods.eln.misc.xCoord
+import mods.eln.misc.yCoord
+import mods.eln.misc.zCoord
 
 abstract class TurbineDescriptor(baseName: String, obj: Obj3D) :
     SimpleShaftDescriptor(baseName, TurbineElement::class, TurbineRender::class, EntityMetaTag.Fluid) {
@@ -342,7 +345,7 @@ class TurbineElement(node: TransparentNode, desc_: TransparentNodeDescriptor) :
         TurbineContainer(node, player, inventory)
 
     override fun onBlockActivated(player: EntityPlayer, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
-        val held = player.currentEquippedItem ?: return false
+        val held = player.heldItemMainhand ?: return false
         if (Utils.getItemObject(held) !is TurbineBladeDescriptor) return false
         // Blade already installed, fall through so the GUI opens instead.
         if (inventory.getStackInSlot(BLADE_SLOT) != null) return false

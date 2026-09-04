@@ -84,12 +84,12 @@ class ConduitCableRender(
     }
 
     override fun draw() {
-        Minecraft.getMinecraft().mcProfiler.startSection("ECable")
+        Minecraft.getMinecraft().profiler.startSection("ECable")
         GL11.glColor3f(1f, 1f, 1f)
         UtilsClient.bindTexture(descriptor.render.cableTexture)
         glListCall()
         GL11.glColor3f(1f, 1f, 1f)
-        Minecraft.getMinecraft().mcProfiler.endSection()
+        Minecraft.getMinecraft().profiler.endSection()
     }
 
     override fun drawCableAuto() = false

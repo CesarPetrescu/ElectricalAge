@@ -10,6 +10,7 @@ import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidContainerRegistry
 import net.minecraftforge.fluids.FluidRegistry
+import mods.eln.misc.setBlock
 
 fun registerElnFluids() {
     ElnFluidRegistry.values().forEach {
@@ -20,14 +21,14 @@ fun registerElnFluids() {
         if (!fluid.canBePlacedInWorld()) {
             fluidBlock = BlockElnFluid(it.name, fluid, it.material, it.color)
             fluid.setBlock(fluidBlock)
-            fluid.setUnlocalizedName(fluidBlock.unlocalizedName.substring(5))
+            fluid.setTranslationKey(fluidBlock.translationKey.substring(5))
             fluids[ElnFluidRegistry.valueOf(it.name)] = fluid
             fluidBlocks[ElnFluidRegistry.valueOf(it.name)] = fluidBlock
             if (it.isBucketable) {
                 val fb = ItemBucket(fluidBlock)
                 val bucketName = "${it.name}_bucket"
                 val bucketTextureName = "$MODID:${it.name}_bucket"
-                fb.setUnlocalizedName(bucketName).setContainerItem(Items.BUCKET)
+                fb.setTranslationKey(bucketName).setContainerItem(Items.BUCKET)
                 fb.setTextureName(bucketTextureName)
                 GameRegistry.registerItem(fb, bucketName)
                 FluidContainerRegistry.registerFluidContainer(fluid, ItemStack(fb), ItemStack(Items.BUCKET))

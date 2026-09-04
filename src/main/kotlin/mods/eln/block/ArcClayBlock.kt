@@ -15,7 +15,7 @@ class ArcClayBlock : Block(Material.rock) {
     private var icon: IIcon? = null
 
     init {
-        setBlockName(TR_NAME(Type.TILE, "arc_clay_block"))
+        setTranslationKey(TR_NAME(Type.TILE, "arc_clay_block"))
         setBlockTextureName("eln:$name")
         setCreativeTab(Eln.creativeTabOresMaterials)
     }
@@ -39,7 +39,7 @@ class ArcMetalBlock : Block(Material.rock) {
     private var icon: IIcon? = null
 
     init {
-        setBlockName(TR_NAME(Type.TILE, "arc_metal_block"))
+        setTranslationKey(TR_NAME(Type.TILE, "arc_metal_block"))
         setBlockTextureName("eln:$name")
         setCreativeTab(Eln.creativeTabOresMaterials)
     }

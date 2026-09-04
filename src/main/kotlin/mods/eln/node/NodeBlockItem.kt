@@ -16,6 +16,6 @@ class NodeBlockItem(b: Block?) : ItemBlock(b) {
         get() = Block.getBlockFromItem(this) as NodeBlock
 
     init {
-        unlocalizedName = "NodeBlockItem"
+        translationKey = "NodeBlockItem"
     }
 }

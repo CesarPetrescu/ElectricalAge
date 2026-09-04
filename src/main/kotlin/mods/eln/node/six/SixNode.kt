@@ -429,7 +429,7 @@ class SixNode : Node() {
         return if (sixNodeCacheBlock !== Blocks.AIR) {
             false
         } else {
-            val stack = entityPlayer.currentEquippedItem
+            val stack = entityPlayer.heldItemMainhand
             var b = Blocks.AIR
             if (stack != null) b = Block.getBlockFromItem(stack.item)
             var isWrenchReplacingBlock = false

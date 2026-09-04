@@ -22,6 +22,10 @@ import mods.eln.railroad.PoweredMinecartSimulationSingleton.poweredMinecartSimul
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
+import mods.eln.misc.getBlock
+import mods.eln.misc.xCoord
+import mods.eln.misc.yCoord
+import mods.eln.misc.zCoord
 
 class OverheadLinesDescriptor(name: String, private val obj3D: Obj3D?): TransparentNodeDescriptor(name, OverheadLinesElement::class.java,
     OverheadLinesRender::class.java

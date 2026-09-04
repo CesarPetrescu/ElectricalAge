@@ -5,6 +5,7 @@ import net.minecraft.block.BlockRailBase
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.world.World
+import mods.eln.misc.getBlock
 
 class ElectricMinecartItem(name: String) : GenericItemUsingDamageDescriptor(name) {
     override fun onItemUse(
@@ -31,7 +32,7 @@ class ElectricMinecartItem(name: String) : GenericItemUsingDamageDescriptor(name
                 if (stack.hasDisplayName()) {
                     minecart.setMinecartName(stack.displayName)
                 }
-                world.spawnEntityInWorld(minecart)
+                world.spawnEntity(minecart)
             }
             --stack.stackSize
             true

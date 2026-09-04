@@ -128,7 +128,7 @@ public class ElectricalDigitalDisplayElement extends SixNodeElement implements I
 
     @Override
     public boolean onBlockActivated(EntityPlayer entityPlayer, Direction side, float vx, float vy, float vz) {
-        ItemStack stack = entityPlayer.getCurrentEquippedItem();
+        ItemStack stack = entityPlayer.getHeldItemMainhand();
         if(stack != null) {
             GenericItemUsingDamageDescriptor desc = BrushDescriptor.getDescriptor(stack);
             if(desc != null && desc instanceof BrushDescriptor) {

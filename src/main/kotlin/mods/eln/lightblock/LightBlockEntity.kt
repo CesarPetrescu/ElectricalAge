@@ -9,6 +9,14 @@ import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.world.EnumSkyBlock
 import net.minecraft.world.World
+import mods.eln.misc.getBlock
+import mods.eln.misc.getBlockMetadata
+import mods.eln.misc.getTileEntity
+import mods.eln.misc.setBlock
+import mods.eln.misc.setBlockToAir
+import mods.eln.misc.xCoord
+import mods.eln.misc.yCoord
+import mods.eln.misc.zCoord
 
 class LightBlockEntity : TileEntity() {
 

@@ -50,10 +50,27 @@ my @members = (
     ['addChatMessage'           => 'sendMessage'],
     ['getBiomeGenForCoords'     => 'getBiome'],
     ['fontRendererObj'          => 'fontRenderer'],
+    ['mcProfiler'               => 'profiler'],
+    ['currentEquippedItem'      => 'heldItemMainhand'],
+    ['getCurrentEquippedItem'   => 'getHeldItemMainhand'],
+    ['spawnEntityInWorld'       => 'spawnEntity'],
+    ['blockExists'              => 'isBlockLoaded'],
+    # stable_39 for 1.12.2 uses the modern names; verified against
+    # build/rfg/minecraft-src (Block.setTranslationKey, ResourceLocation.getPath).
+    ['setBlockName'             => 'setTranslationKey'],
+    ['setUnlocalizedName'       => 'setTranslationKey'],
+    ['getUnlocalizedName'       => 'getTranslationKey'],
+    ['unlocalizedName'          => 'translationKey'],
+    ['func_150939_a'            => 'block'],
 );
 
 # --- expression rewrites ----------------------------------------------------
 my @exprs = (
+    [qr/\bMathHelper\.floor_(double|float)\s*\(/     => 'MathHelper.floor('],
+    [qr/\bMathHelper\.ceiling_(double|float)_int\s*\(/ => 'MathHelper.ceil('],
+    [qr/\bEnumFacing\.VALID_DIRECTIONS\b/           => 'EnumFacing.VALUES'],
+    [qr/\bS3FPacketCustomPayload\b/                  => 'SPacketCustomPayload'],
+    [qr/net\.minecraft\.network\.play\.server\.SPacketCustomPayload/ => 'net.minecraft.network.play.server.SPacketCustomPayload'],
     [qr/\bVec3d\.createVectorHelper\s*\(/            => 'Vec3d('],
     [qr/\bVec3\.createVectorHelper\s*\(/             => 'Vec3d('],
     [qr/\bAxisAlignedBB\.getBoundingBox\s*\(/        => 'AxisAlignedBB('],

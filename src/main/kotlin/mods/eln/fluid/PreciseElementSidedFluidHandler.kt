@@ -18,18 +18,18 @@ class PreciseElementSidedFluidHandler: ElementSidedFluidHandler {
      */
     constructor(tankSizeMb: Int): super(tankSizeMb)
 
-    private var fixup = EnumFacing.VALID_DIRECTIONS.map {Pair(it, 0.0)}.toMap().toMutableMap()
+    private var fixup = EnumFacing.VALUES.map {Pair(it, 0.0)}.toMap().toMutableMap()
 
     override fun readFromNBT(nbt: NBTTagCompound, str: String) {
         super.readFromNBT(nbt, str)
-        EnumFacing.VALID_DIRECTIONS.forEach {
+        EnumFacing.VALUES.forEach {
             fixup[it] = nbt.getDouble(str + "fixup" + it.name)
         }
     }
 
     override fun writeToNBT(nbt: NBTTagCompound, str: String) {
         super.writeToNBT(nbt, str)
-        EnumFacing.VALID_DIRECTIONS.forEach {
+        EnumFacing.VALUES.forEach {
             nbt.setDouble(str + "fixup" + it.name, fixup[it]?: 0.0)
         }
     }

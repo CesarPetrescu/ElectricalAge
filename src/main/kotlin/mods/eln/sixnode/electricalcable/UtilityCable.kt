@@ -46,7 +46,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.DamageSource
 import net.minecraft.util.text.TextFormatting
-import net.minecraftforge.client.IItemRenderer.ItemRenderType
+import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
 import org.lwjgl.opengl.GL11
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -56,6 +56,9 @@ import java.util.ArrayDeque
 import java.util.IdentityHashMap
 import kotlin.math.abs
 import kotlin.math.floor
+import mods.eln.misc.xCoord
+import mods.eln.misc.yCoord
+import mods.eln.misc.zCoord
 
 enum class UtilityCableMaterial(val label: String, val meltingPointCelsius: Double) {
     COPPER("Copper", 1085.0),
@@ -566,7 +569,7 @@ class UtilityCableElement(
         }
 
         if (descriptor.actsAsSingleConductor && descriptor.insulated) {
-            val currentItemStack = entityPlayer.currentEquippedItem
+            val currentItemStack = entityPlayer.heldItemMainhand
             val gen = GenericItemUsingDamageDescriptor.getDescriptor(currentItemStack)
             if (gen is BrushDescriptor) {
                 val brushColor = gen.getColor(currentItemStack)
@@ -862,7 +865,7 @@ class UtilityCableRender(
     override fun drawCableAuto() = false
 
     override fun draw() {
-        Minecraft.getMinecraft().mcProfiler.startSection("UtilityCable")
+        Minecraft.getMinecraft().profiler.startSection("UtilityCable")
         if (descriptor.insulated && descriptor.flatStyle && !descriptor.actsAsSingleConductor) {
             val jacket = jacketColor()
             GL11.glColor3f(jacket[0], jacket[1], jacket[2])
@@ -885,7 +888,7 @@ class UtilityCableRender(
         }
         emitOverheatSmoke()
         GL11.glColor3f(1f, 1f, 1f)
-        Minecraft.getMinecraft().mcProfiler.endSection()
+        Minecraft.getMinecraft().profiler.endSection()
     }
 
     override fun glListDraw() {

@@ -45,6 +45,9 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
 import kotlin.math.abs
+import mods.eln.misc.xCoord
+import mods.eln.misc.yCoord
+import mods.eln.misc.zCoord
 
 enum class WireMachineKind(
     val displayName: String,
@@ -80,9 +83,9 @@ class WireMachineDescriptor(
         }
     }
 
-    override fun renderItem(type: net.minecraftforge.client.IItemRenderer.ItemRenderType, item: ItemStack, vararg data: Any) {
+    override fun renderItem(type: mods.eln.client.itemrender.IItemRenderer.ItemRenderType, item: ItemStack, vararg data: Any) {
         GL11.glPushMatrix()
-        if (type == net.minecraftforge.client.IItemRenderer.ItemRenderType.INVENTORY) {
+        if (type == mods.eln.client.itemrender.IItemRenderer.ItemRenderType.INVENTORY) {
             GL11.glRotatef(15f, 1f, 0f, 0f)
             GL11.glRotatef(225f, 0f, 1f, 0f)
             GL11.glScalef(0.95f, 0.95f, 0.95f)
@@ -102,9 +105,9 @@ class WireMachineDescriptor(
         GL11.glPopMatrix()
     }
 
-    override fun handleRenderType(item: ItemStack, type: net.minecraftforge.client.IItemRenderer.ItemRenderType): Boolean = true
-    override fun shouldUseRenderHelper(type: net.minecraftforge.client.IItemRenderer.ItemRenderType, item: ItemStack, helper: net.minecraftforge.client.IItemRenderer.ItemRendererHelper) =
-        type != net.minecraftforge.client.IItemRenderer.ItemRenderType.INVENTORY
+    override fun handleRenderType(item: ItemStack, type: mods.eln.client.itemrender.IItemRenderer.ItemRenderType): Boolean = true
+    override fun shouldUseRenderHelper(type: mods.eln.client.itemrender.IItemRenderer.ItemRenderType, item: ItemStack, helper: mods.eln.client.itemrender.IItemRenderer.ItemRendererHelper) =
+        type != mods.eln.client.itemrender.IItemRenderer.ItemRenderType.INVENTORY
 }
 
 private enum class WireMachineNetwork(val id: Byte) {

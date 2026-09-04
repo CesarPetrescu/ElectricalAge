@@ -27,7 +27,7 @@ open class ElementSidedFluidHandler: IFluidHandler, INBTTReady {
      */
     constructor(tankSizeMb: Int) {
         val tank = TankData(FluidTank(tankSizeMb), mutableListOf())
-        EnumFacing.VALID_DIRECTIONS.forEach {
+        EnumFacing.VALUES.forEach {
             tanks[it] = tank
         }
     }
@@ -151,7 +151,7 @@ open class ElementSidedFluidHandler: IFluidHandler, INBTTReady {
         //println("numTanks: $numTanks")
         //println("tankList $tankList")
         tanks.clear()
-        EnumFacing.VALID_DIRECTIONS.forEach {
+        EnumFacing.VALUES.forEach {
             val tankRef = nbt.getInteger("${str}${it.name}tankRef")
             if (tankRef != -1 && numTanks != 0) {
                 //println("$it: $tankRef")
@@ -173,7 +173,7 @@ open class ElementSidedFluidHandler: IFluidHandler, INBTTReady {
             idx: Int, tank: TankData ->
             tank.writeToNBT(nbt, "${str}tank$idx")
         }
-        EnumFacing.VALID_DIRECTIONS.forEach {
+        EnumFacing.VALUES.forEach {
             val tank = tanks[it]
             val tankRef = tanksList.indexOf(tank)
             nbt.setInteger("${str}${it.name}tankRef", tankRef)

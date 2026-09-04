@@ -20,6 +20,7 @@ import net.minecraft.util.math.Vec3d
 import net.minecraft.world.IBlockAccess
 import net.minecraft.world.World
 import java.util.*
+import mods.eln.misc.getBlockMetadata
 
 class GhostBlock : Block(Material.iron) {
 

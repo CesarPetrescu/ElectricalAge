@@ -5,7 +5,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
-import net.minecraftforge.client.IItemRenderer;
+import mods.eln.client.itemrender.IItemRenderer;
 import net.minecraftforge.common.ISpecialArmor;
 
 public class SharedItem extends GenericItemUsingDamage<GenericItemUsingDamageDescriptor> implements IItemRenderer, ISpecialArmor {
@@ -44,7 +44,7 @@ public class SharedItem extends GenericItemUsingDamage<GenericItemUsingDamageDes
 
     @Override
     public void renderItem(ItemRenderType type, ItemStack item, Object... data) {
-        Minecraft.getMinecraft().mcProfiler.startSection("SharedItem");
+        Minecraft.getMinecraft().profiler.startSection("SharedItem");
 
         switch (type) {
             case ENTITY:
@@ -75,7 +75,7 @@ public class SharedItem extends GenericItemUsingDamage<GenericItemUsingDamageDes
             d.renderItem(type, item, data);
         }
 
-        Minecraft.getMinecraft().mcProfiler.endSection();
+        Minecraft.getMinecraft().profiler.endSection();
     }
 
     @Override

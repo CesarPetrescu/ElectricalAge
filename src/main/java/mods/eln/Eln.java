@@ -364,7 +364,7 @@ public class Eln {
 
         NetworkRegistry.INSTANCE.registerGuiHandler(this, new GuiHandler());
 
-        Item itemCreativeTab = new Item().setUnlocalizedName("eln:elncreativetab").setTextureName("eln:elncreativetab");
+        Item itemCreativeTab = new Item().setTranslationKey("eln:elncreativetab").setTextureName("eln:elncreativetab");
         GameRegistry.registerItem(itemCreativeTab, "eln.itemCreativeTab");
 
         creativeTabPowerElectronics = new GenericCreativeTab("ElnPowerElectronics", Items.REDSTONE);
@@ -379,16 +379,16 @@ public class Eln {
         creativeTabOther = creativeTabOresMaterials;
         creativeTab = creativeTabOther;
 
-        oreBlock = (OreBlock) new OreBlock().setCreativeTab(creativeTabOresMaterials).setBlockName("OreEln");
+        oreBlock = (OreBlock) new OreBlock().setCreativeTab(creativeTabOresMaterials).setTranslationKey("OreEln");
 
         arcClayBlock = new ArcClayBlock();
         arcMetalBlock = new ArcMetalBlock();
 
         sharedItem =
-                (SharedItem) new SharedItem().setCreativeTab(creativeTabOther).setMaxStackSize(64).setUnlocalizedName("sharedItem");
+                (SharedItem) new SharedItem().setCreativeTab(creativeTabOther).setMaxStackSize(64).setTranslationKey("sharedItem");
 
         sharedItemStackOne =
-                (SharedItem) new SharedItem().setCreativeTab(creativeTabOther).setMaxStackSize(1).setUnlocalizedName(
+                (SharedItem) new SharedItem().setCreativeTab(creativeTabOther).setMaxStackSize(1).setTranslationKey(
                         "sharedItemStackOne");
 
         transparentNodeBlock = (TransparentNodeBlock) new TransparentNodeBlock(Material.iron,

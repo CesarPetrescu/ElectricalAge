@@ -5,8 +5,8 @@ import mods.eln.misc.UtilsClient;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.client.IItemRenderer.ItemRenderType;
-import net.minecraftforge.client.IItemRenderer.ItemRendererHelper;
+import mods.eln.client.itemrender.IItemRenderer.ItemRenderType;
+import mods.eln.client.itemrender.IItemRenderer.ItemRendererHelper;
 import org.lwjgl.opengl.GL11;
 
 public class DataLogsPrintDescriptor extends GenericItemUsingDamageDescriptor {

@@ -1885,7 +1885,7 @@ object ItemRegistration {
             Eln.helmetCopper = genericArmorItem(
                 ArmorMaterial.IRON, 2, ArmourType.Helmet, "eln:textures" +
                         "/armor/copper_layer_1.png", "eln:textures/armor/copper_layer_2.png"
-            ).setUnlocalizedName(name).setTextureName("eln:copper_helmet").setCreativeTab(Eln.creativeTabToolsArmor) as ItemArmor
+            ).setTranslationKey(name).setTextureName("eln:copper_helmet").setCreativeTab(Eln.creativeTabToolsArmor) as ItemArmor
             GameRegistry.registerItem(Eln.helmetCopper, "Eln.$name")
             GameRegistry.registerCustomItemStack(name, ItemStack(Eln.helmetCopper))
         }
@@ -1894,7 +1894,7 @@ object ItemRegistration {
             Eln.chestplateCopper = genericArmorItem(
                 ArmorMaterial.IRON, 2, ArmourType.Chestplate, "eln" +
                         ":textures/armor/copper_layer_1.png", "eln:textures/armor/copper_layer_2.png"
-            ).setUnlocalizedName(name).setTextureName("eln:copper_chestplate")
+            ).setTranslationKey(name).setTextureName("eln:copper_chestplate")
                 .setCreativeTab(Eln.creativeTabToolsArmor) as ItemArmor
             GameRegistry.registerItem(Eln.chestplateCopper, "Eln.$name")
             GameRegistry.registerCustomItemStack(name, ItemStack(Eln.chestplateCopper))
@@ -1904,7 +1904,7 @@ object ItemRegistration {
             Eln.legsCopper = genericArmorItem(
                 ArmorMaterial.IRON, 2, ArmourType.Leggings, "eln:textures" +
                         "/armor/copper_layer_1.png", "eln:textures/armor/copper_layer_2.png"
-            ).setUnlocalizedName(name).setTextureName("eln:copper_leggings")
+            ).setTranslationKey(name).setTextureName("eln:copper_leggings")
                 .setCreativeTab(Eln.creativeTabToolsArmor) as ItemArmor
             GameRegistry.registerItem(Eln.legsCopper, "Eln.$name")
             GameRegistry.registerCustomItemStack(name, ItemStack(Eln.legsCopper))
@@ -1914,7 +1914,7 @@ object ItemRegistration {
             Eln.bootsCopper = genericArmorItem(
                 ArmorMaterial.IRON, 2, ArmourType.Boots, "eln:textures" +
                         "/armor/copper_layer_1.png", "eln:textures/armor/copper_layer_2.png"
-            ).setUnlocalizedName(name).setTextureName("eln:copper_boots").setCreativeTab(Eln.creativeTabToolsArmor) as ItemArmor
+            ).setTranslationKey(name).setTextureName("eln:copper_boots").setCreativeTab(Eln.creativeTabToolsArmor) as ItemArmor
             GameRegistry.registerItem(Eln.bootsCopper, "Eln.$name")
             GameRegistry.registerCustomItemStack(name, ItemStack(Eln.bootsCopper))
         }
@@ -1932,7 +1932,7 @@ object ItemRegistration {
             Eln.helmetECoal = ElectricalArmor(
                 eCoalMaterial, 2, ArmourType.Helmet, t1, t2, 8000.0, 2000.0,
                 armor / 20.0, armor * energyPerDamage, energyPerDamage
-            ).setUnlocalizedName(name).setTextureName(
+            ).setTranslationKey(name).setTextureName(
                 "eln" +
                         ":ecoal_helmet"
             ).setCreativeTab(Eln.creativeTabToolsArmor) as ItemArmor
@@ -1945,7 +1945,7 @@ object ItemRegistration {
             Eln.plateECoal = ElectricalArmor(
                 eCoalMaterial, 2, ArmourType.Chestplate, t1, t2, 8000.0,
                 2000.0, armor / 20.0, armor * energyPerDamage, energyPerDamage
-            ).setUnlocalizedName(name).setTextureName("eln:ecoal_chestplate")
+            ).setTranslationKey(name).setTextureName("eln:ecoal_chestplate")
                 .setCreativeTab(Eln.creativeTabToolsArmor) as ItemArmor
             GameRegistry.registerItem(Eln.plateECoal, "Eln.$name")
             GameRegistry.registerCustomItemStack(name, ItemStack(Eln.plateECoal))
@@ -1956,7 +1956,7 @@ object ItemRegistration {
             Eln.legsECoal = ElectricalArmor(
                 eCoalMaterial, 2, ArmourType.Leggings, t1, t2, 8000.0, 2000.0,
                 armor / 20.0, armor * energyPerDamage, energyPerDamage
-            ).setUnlocalizedName(name).setTextureName(
+            ).setTranslationKey(name).setTextureName(
                 "eln" +
                         ":ecoal_leggings"
             ).setCreativeTab(Eln.creativeTabToolsArmor) as ItemArmor
@@ -1969,7 +1969,7 @@ object ItemRegistration {
             Eln.bootsECoal = ElectricalArmor(
                 eCoalMaterial, 2, ArmourType.Boots, t1, t2, 8000.0, 2000.0,
                 armor / 20.0, armor * energyPerDamage, energyPerDamage
-            ).setUnlocalizedName(name).setTextureName(
+            ).setTranslationKey(name).setTextureName(
                 "eln" +
                         ":ecoal_boots"
             ).setCreativeTab(Eln.creativeTabToolsArmor) as ItemArmor
@@ -1982,7 +1982,7 @@ object ItemRegistration {
         var name: String
         run {
             name = I18N.TR_NAME(I18N.Type.ITEM, "Copper Sword")
-            Eln.swordCopper = ItemSword(ToolMaterial.IRON).setUnlocalizedName(name).setTextureName(
+            Eln.swordCopper = ItemSword(ToolMaterial.IRON).setTranslationKey(name).setTextureName(
                 "eln" +
                         ":copper_sword"
             ).setCreativeTab(Eln.creativeTabToolsArmor)
@@ -1992,14 +1992,14 @@ object ItemRegistration {
         run {
             name = I18N.TR_NAME(I18N.Type.ITEM, "Copper Hoe")
             Eln.hoeCopper =
-                ItemHoe(ToolMaterial.IRON).setUnlocalizedName(name).setTextureName("eln:copper_hoe")
+                ItemHoe(ToolMaterial.IRON).setTranslationKey(name).setTextureName("eln:copper_hoe")
                     .setCreativeTab(Eln.creativeTabToolsArmor)
             GameRegistry.registerItem(Eln.hoeCopper, "Eln.$name")
             GameRegistry.registerCustomItemStack(name, ItemStack(Eln.hoeCopper))
         }
         run {
             name = I18N.TR_NAME(I18N.Type.ITEM, "Copper Shovel")
-            Eln.shovelCopper = ItemSpade(ToolMaterial.IRON).setUnlocalizedName(name).setTextureName(
+            Eln.shovelCopper = ItemSpade(ToolMaterial.IRON).setTranslationKey(name).setTextureName(
                 "eln" +
                         ":copper_shovel"
             ).setCreativeTab(Eln.creativeTabToolsArmor)
@@ -2008,7 +2008,7 @@ object ItemRegistration {
         }
         run {
             name = I18N.TR_NAME(I18N.Type.ITEM, "Copper Pickaxe")
-            Eln.pickaxeCopper = ItemPickaxeEln(ToolMaterial.IRON).setUnlocalizedName(name).setTextureName(
+            Eln.pickaxeCopper = ItemPickaxeEln(ToolMaterial.IRON).setTranslationKey(name).setTextureName(
                 "eln" +
                         ":copper_pickaxe"
             ).setCreativeTab(Eln.creativeTabToolsArmor)
@@ -2018,7 +2018,7 @@ object ItemRegistration {
         run {
             name = I18N.TR_NAME(I18N.Type.ITEM, "Copper Axe")
             Eln.axeCopper =
-                ItemAxeEln(ToolMaterial.IRON).setUnlocalizedName(name).setTextureName("eln:copper_axe")
+                ItemAxeEln(ToolMaterial.IRON).setTranslationKey(name).setTextureName("eln:copper_axe")
                     .setCreativeTab(Eln.creativeTabToolsArmor)
             GameRegistry.registerItem(Eln.axeCopper, "Eln.$name")
             GameRegistry.registerCustomItemStack(name, ItemStack(Eln.axeCopper))
