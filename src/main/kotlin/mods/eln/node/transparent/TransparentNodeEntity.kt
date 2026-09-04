@@ -1,5 +1,7 @@
 package mods.eln.node.transparent
 
+import cpw.mods.fml.relauncher.Side
+import cpw.mods.fml.relauncher.SideOnly
 import mods.eln.Eln
 import mods.eln.cable.CableRenderDescriptor
 import mods.eln.misc.Coordinate
@@ -87,6 +89,11 @@ open class TransparentNodeEntity : NodeBlockEntity(), ISidedInventory {
         return if (elementRender == null) super.cameraDrawOptimisation() else elementRender!!.cameraDrawOptimisation()
     }
 
+    @SideOnly(Side.CLIENT)
+    override fun unoptimizedRenderBoundingBox(): AxisAlignedBB {
+        return if (elementRender == null) super.unoptimizedRenderBoundingBox() else elementRender!!.unoptimizedRenderBoundingBox()
+    }
+
     @Suppress("UNUSED_PARAMETER") fun getDamageValue(world: World, x: Int, y: Int, z: Int): Int {
         return if (world.isRemote) {
             elementRenderId.toInt()
@@ -99,7 +106,7 @@ open class TransparentNodeEntity : NodeBlockEntity(), ISidedInventory {
 
     fun addCollisionBoxesToList(par5AxisAlignedBB: AxisAlignedBB, list: MutableList<AxisAlignedBB?>, blockCoord: Coordinate?) {
         val desc = if (worldObj.isRemote) {
-            if (elementRender == null) null else elementRender!!.transparentNodedescriptor
+            if (elementRender == null) null else elementRender!!.transparentNodeDescriptor
         } else {
             val node = node as TransparentNode?
             if (node == null) null else node.element!!.transparentNodeDescriptor

@@ -35,6 +35,8 @@ public class ElectricalEntitySensorElement extends SixNodeElement {
     public NbtElectricalGateOutputProcess outputGateProcess = new NbtElectricalGateOutputProcess("outputGateProcess", outputGate);
     public ElectricalEntitySensorSlowProcess slowProcess = new ElectricalEntitySensorSlowProcess(this);
 
+    // Java reports the Kotlin vararg of descriptor classes as an unchecked array creation here.
+    @SuppressWarnings("unchecked")
     private AutoAcceptInventoryProxy inventory = (new AutoAcceptInventoryProxy(new SixNodeElementInventory(1, 64, this)))
         .acceptAlways(0, 1, new AutoAcceptInventoryProxy.SimpleItemDropper(sixNode), EntitySensorFilterDescriptor.class);
 
@@ -79,7 +81,7 @@ public class ElectricalEntitySensorElement extends SixNodeElement {
     public Map<String, String> getWaila() {
         Map<String, String> info = new HashMap<String, String>();
         info.put(I18N.tr("Entity present"), slowProcess.state ? I18N.tr("Yes") : I18N.tr("No"));
-        if (Eln.wailaEasyMode) {
+        if (Eln.config.getBooleanOrElse("ui.waila.easyMode", false)) {
             info.put(I18N.tr("Output voltage"), Utils.plotVolt("", outputGate.getVoltage()));
         }
         return info;

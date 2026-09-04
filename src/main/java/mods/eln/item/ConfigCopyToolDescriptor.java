@@ -3,12 +3,19 @@ package mods.eln.item;
 import mods.eln.Eln;
 import mods.eln.generic.GenericItemBlockUsingDamageDescriptor;
 import mods.eln.generic.GenericItemUsingDamageDescriptor;
+import mods.eln.item.lampitem.BoilerplateLampData;
+import mods.eln.item.lampitem.LampDescriptor;
 import mods.eln.misc.Coordinate;
 import mods.eln.misc.Direction;
 import mods.eln.node.NodeBase;
 import mods.eln.node.NodeBlock;
 import mods.eln.node.NodeManager;
+import mods.eln.sixnode.currentcable.CurrentCableDescriptor;
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor;
+import mods.eln.sixnode.electricalcable.IUtilityCableInventory;
+import mods.eln.sixnode.electricalcable.UtilityCableDescriptor;
+import mods.eln.sixnode.electricalcable.UtilityCableItemMovingHelper;
+import mods.eln.sixnode.genericcable.GenericCableDescriptor;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
@@ -36,51 +43,89 @@ public class ConfigCopyToolDescriptor extends GenericItemUsingDamageDescriptor {
         return false;
     }
 
+    public static boolean readCableType(NBTTagCompound compound, IInventory inv, int slot, EntityPlayer invoker, boolean acceptSignalCable) {
+        String name = "cable";
+
+        if (compound.hasKey(name + "Type")) {
+            int type = compound.getInteger(name + "Type");
+            GenericItemBlockUsingDamageDescriptor desc = Eln.sixNodeItem.getDescriptor(type);
+            boolean readCable = false;
+
+            // ElectricalCableDescriptor here covers utility cables (utility cables are not signal cables)
+            if (desc instanceof ElectricalCableDescriptor) {
+                readCable = !(((ElectricalCableDescriptor) desc).signalWire && !acceptSignalCable);
+            } else if (desc instanceof CurrentCableDescriptor) {
+                readCable = true;
+            }
+
+            if (readCable) return readCableType(compound, inv, slot, invoker);
+        }
+
+        return false;
+    }
+
     public static boolean readCableType(NBTTagCompound compound, IInventory inv, int slot, EntityPlayer invoker) {
         return readCableType(compound, "cable", inv, slot, invoker);
     }
 
     public static boolean readCableType(NBTTagCompound compound, String name, IInventory inv, int slot, EntityPlayer invoker) {
-        if(compound.hasKey(name + "Type")) {
+        if (compound.hasKey(name + "Type")) {
             int amt = 1;
-            if(compound.hasKey(name + "Amt")) {
-                amt = compound.getInteger(name + "Amt");
-            }
+            if (compound.hasKey(name + "Amt")) amt = compound.getInteger(name + "Amt");
             int type = compound.getInteger(name + "Type");
             ItemStack stackInSlot = inv.getStackInSlot(slot);
-            if (stackInSlot != null) {
-                GenericItemBlockUsingDamageDescriptor thisCableDesc = GenericItemBlockUsingDamageDescriptor.getDescriptor(stackInSlot, ElectricalCableDescriptor.class);
-                if(thisCableDesc != null) {
-                    (new ItemMovingHelper() {
-                        @Override
-                        public boolean acceptsStack(ItemStack stack) {
-                            return thisCableDesc.checkSameItemStack(stack);
-                        }
 
-                        @Override
-                        public ItemStack newStackOfSize(int items) {
-                            return thisCableDesc.newItemStack(items);
-                        }
-                    }).move(invoker.inventory, inv, slot, 0);
+            // MOVE THE OLD ITEM OUT OF THE DESTINATION INVENTORY (INTO THE PLAYER INVENTORY)
+            if (stackInSlot != null) {
+                GenericItemBlockUsingDamageDescriptor thisCableDesc = GenericItemBlockUsingDamageDescriptor.getDescriptor(stackInSlot, GenericCableDescriptor.class);
+                if (thisCableDesc != null) {
+                    if (thisCableDesc instanceof UtilityCableDescriptor) {
+                        double cableLength = ((UtilityCableDescriptor) thisCableDesc).getRemainingLengthMeters(stackInSlot);
+                        UtilityCableItemMovingHelper itemMover = new UtilityCableItemMovingHelper((UtilityCableDescriptor) thisCableDesc, cableLength);
+                        itemMover.move(invoker.inventory, inv, slot, 0);
+                    } else {
+                        (new ItemMovingHelper() {
+                            @Override
+                            public boolean acceptsStack(ItemStack stack) {
+                                return thisCableDesc.checkSameItemStack(stack);
+                            }
+
+                            @Override
+                            public ItemStack newStackOfSize(int items) {
+                                return thisCableDesc.newItemStack(items);
+                            }
+                        }).move(invoker.inventory, inv, slot, 0);
+                    }
                 }
             }
-            if(type != -1) {
-                GenericItemBlockUsingDamageDescriptor cableDesc = Eln.sixNodeItem.getDescriptor(type);
-                (new ItemMovingHelper() {
-                    @Override
-                    public boolean acceptsStack(ItemStack stack) {
-                        return cableDesc.checkSameItemStack(stack);
-                    }
 
-                    @Override
-                    public ItemStack newStackOfSize(int items) {
-                        return cableDesc.newItemStack(items);
+            // MOVE THE NEW ITEM INTO THE DESTINATION INVENTORY (OUT OF THE PLAYER INVENTORY)
+            if (type != -1) {
+                GenericItemBlockUsingDamageDescriptor cableDesc = Eln.sixNodeItem.getDescriptor(type);
+                if (cableDesc != null) {
+                    if (cableDesc instanceof UtilityCableDescriptor) {
+                        double cableLength = IUtilityCableInventory.DEFAULT_REQUIRED_LENGTH;
+                        if (compound.hasKey(name + "Length")) cableLength = compound.getDouble(name + "Length");
+                        UtilityCableItemMovingHelper itemMover = new UtilityCableItemMovingHelper((UtilityCableDescriptor) cableDesc, cableLength);
+                        itemMover.move(invoker.inventory, inv, slot, amt);
+                    } else {
+                        (new ItemMovingHelper() {
+                            @Override
+                            public boolean acceptsStack(ItemStack stack) {
+                                return cableDesc.checkSameItemStack(stack);
+                            }
+
+                            @Override
+                            public ItemStack newStackOfSize(int items) {
+                                return cableDesc.newItemStack(items);
+                            }
+                        }).move(invoker.inventory, inv, slot, amt);
                     }
-                }).move(invoker.inventory, inv, slot, amt);
+                }
             }
+
             return true;
-        }
-        return false;
+        } else return false;
     }
 
     public static void writeCableType(NBTTagCompound compound, ItemStack stack) {
@@ -96,21 +141,41 @@ public class ConfigCopyToolDescriptor extends GenericItemUsingDamageDescriptor {
         if(desc != null) {
             Eln.logger.info("CCT Copy: " + name + "Type: " + desc.parentItemDamage);
             compound.setInteger(name + "Type", desc.parentItemDamage);
+            if (desc instanceof UtilityCableDescriptor) {
+                compound.setDouble(name + "Length", ((UtilityCableDescriptor) desc).getRemainingLengthMeters(stack));
+            }
         } else {
             Eln.logger.info("CCT Copy: " + name + "Type: -1");
             compound.setInteger(name + "Type", -1);
         }
     }
 
-    public static boolean readGenDescriptor(NBTTagCompound compound, String name, IInventory inv, int slot, EntityPlayer invoker) {
-        if(compound.hasKey(name)) {
-            int amt = 1;
-            if(compound.hasKey(name + "Amt")) {
-                amt = compound.getInteger(name + "Amt");
+    public static boolean readLampDescriptor(NBTTagCompound compound, String name, IInventory inv, int slot, EntityPlayer invoker, BoilerplateLampData[] acceptedLampTypes) {
+        if (compound.hasKey(name)) {
+            String type = compound.getString(name);
+            GenericItemUsingDamageDescriptor desc = GenericItemUsingDamageDescriptor.getByName(type);
+
+            if (desc instanceof LampDescriptor) {
+                for (BoilerplateLampData acceptedLampType : acceptedLampTypes) {
+                    if (((LampDescriptor) desc).getLampData().getTechnology() == acceptedLampType) {
+                        return readGenDescriptor(compound, name, inv, slot, invoker);
+                    }
+                }
             }
+        }
+
+        return false;
+    }
+
+    public static boolean readGenDescriptor(NBTTagCompound compound, String name, IInventory inv, int slot, EntityPlayer invoker) {
+        if (compound.hasKey(name)) {
+            int amt = 1;
+            if (compound.hasKey(name + "Amt")) amt = compound.getInteger(name + "Amt");
             String type = compound.getString(name);
             GenericItemUsingDamageDescriptor desc = GenericItemUsingDamageDescriptor.getDescriptor(inv.getStackInSlot(slot));
-            if(desc != null) {
+
+            // MOVE THE OLD ITEM OUT OF THE DESTINATION INVENTORY (INTO THE PLAYER INVENTORY)
+            if (desc != null) {
                 (new ItemMovingHelper() {
                     @Override
                     public boolean acceptsStack(ItemStack stack) {
@@ -123,23 +188,27 @@ public class ConfigCopyToolDescriptor extends GenericItemUsingDamageDescriptor {
                     }
                 }).move(invoker.inventory, inv, slot, 0);
             }
-            if(!type.equals(GenericItemUsingDamageDescriptor.INVALID_NAME)) {
-                GenericItemUsingDamageDescriptor newDesc = GenericItemUsingDamageDescriptor.getByName(type);
-                (new ItemMovingHelper() {
-                    @Override
-                    public boolean acceptsStack(ItemStack stack) {
-                        return newDesc.checkSameItemStack(stack);
-                    }
 
-                    @Override
-                    public ItemStack newStackOfSize(int items) {
-                        return newDesc.newItemStack(items);
-                    }
-                }).move(invoker.inventory, inv, slot, amt);
+            // MOVE THE NEW ITEM INTO THE DESTINATION INVENTORY (OUT OF THE PLAYER INVENTORY)
+            if (!type.equals(GenericItemUsingDamageDescriptor.INVALID_NAME)) {
+                GenericItemUsingDamageDescriptor newDesc = GenericItemUsingDamageDescriptor.getByName(type);
+                if (newDesc != null) {
+                    (new ItemMovingHelper() {
+                        @Override
+                        public boolean acceptsStack(ItemStack stack) {
+                            return newDesc.checkSameItemStack(stack);
+                        }
+
+                        @Override
+                        public ItemStack newStackOfSize(int items) {
+                            return newDesc.newItemStack(items);
+                        }
+                    }).move(invoker.inventory, inv, slot, amt);
+                }
             }
+
             return true;
-        }
-        return false;
+        } else return false;
     }
 
     public static void writeGenDescriptor(NBTTagCompound compound, String name, ItemStack stack) {

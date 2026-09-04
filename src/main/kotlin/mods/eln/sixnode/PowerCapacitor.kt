@@ -69,8 +69,8 @@ class PowerCapacitorSixDescriptor(name: String,
     fun getUNominalValue(inventory: IInventory): Double {
         val diel = inventory.getStackInSlot(PowerCapacitorSixContainer.dielectricId)
         return if (diel == null) 10000.0 else {
-            val desc = GenericItemUsingDamageDescriptor.getDescriptor(diel) as DielectricItem
-            desc.uNominal * diel.stackSize
+            val desc = GenericItemUsingDamageDescriptor.getDescriptor(diel, DielectricItem::class.java) as? DielectricItem
+            if (desc == null) 10000.0 else desc.uNominal * diel.stackSize
         }
     }
 
@@ -180,7 +180,7 @@ class PowerCapacitorSixElement(SixNode: SixNode, side: Direction, descriptor: Si
         val info: MutableMap<String, String> = HashMap()
         info[tr("Capacity")] = Utils.plotValue(capacitor.coulombs, "F")
         info[tr("Charge")] = Utils.plotEnergy("", capacitor.energy)
-        if (Eln.wailaEasyMode) {
+        if (Eln.config.getBooleanOrElse("ui.waila.easyMode", false)) {
             info[tr("Voltage drop")] = Utils.plotVolt("", Math.abs(capacitor.voltage))
             info[tr("Current")] = Utils.plotAmpere("", Math.abs(capacitor.current))
         }

@@ -40,10 +40,33 @@ class SixNodeBlock  // public static ArrayList<Integer> repertoriedItemStackId =
         if (entity != null) {
             val render = entity.elementRenderList[fromIntMinecraftSide(target.sideHit)!!.int]
             if (render != null) {
-                return render.sixNodeDescriptor.newItemStack()
+                findClosestMatchingHotbarStack(player, render.sixNodeDescriptor)?.let { return it.copy() }
+                return render.sixNodeDescriptor.newCreativeTabStack()
             }
         }
         return super.getPickBlock(target, world, x, y, z, player)
+    }
+
+    private fun findClosestMatchingHotbarStack(player: EntityPlayer, descriptor: SixNodeDescriptor): ItemStack? {
+        val inventory = player.inventory ?: return null
+        val currentSlot = inventory.currentItem
+        var bestStack: ItemStack? = null
+        var bestDistance = Int.MAX_VALUE
+        for (slot in 0 until 9) {
+            val stack = inventory.getStackInSlot(slot) ?: continue
+            if (!descriptor.checkSameItemStack(stack)) continue
+            val distance = hotbarDistance(currentSlot, slot)
+            if (distance < bestDistance) {
+                bestDistance = distance
+                bestStack = stack
+            }
+        }
+        return bestStack
+    }
+
+    private fun hotbarDistance(a: Int, b: Int): Int {
+        val direct = Math.abs(a - b)
+        return Math.min(direct, 9 - direct)
     }
 
     override fun registerBlockIcons(r: IIconRegister) {
@@ -82,7 +105,9 @@ class SixNodeBlock  // public static ArrayList<Integer> repertoriedItemStackId =
         /*
 		 * for (Integer id : repertoriedItemStackId) { subItems.add(new ItemStack(this, 1, id)); }
 		 */
-        Eln.sixNodeItem.getSubItems(par1, tab, subItems)
+        // Block#getSubBlocks exposes a raw list to Kotlin, but the item path consumes ItemStack entries.
+        @Suppress("UNCHECKED_CAST")
+        Eln.sixNodeItem.getSubItems(par1, tab, subItems as MutableList<ItemStack?>?)
     }
 
     override fun isOpaqueCube(): Boolean {
@@ -174,7 +199,6 @@ class SixNodeBlock  // public static ArrayList<Integer> repertoriedItemStackId =
     override fun removedByPlayer(world: World, entityPlayer: EntityPlayer, x: Int, y: Int, z: Int, willHarvest: Boolean): Boolean {
         if (world.isRemote) return false
         val tileEntity = world.getTileEntity(x, y, z) as SixNodeEntity
-        val MOP = collisionRayTrace(world, x, y, z, entityPlayer) ?: return false
         val sixNode = tileEntity.node as SixNode? ?: return true
         if (sixNode.sixNodeCacheBlock !== Blocks.air) {
             if (isCreative((entityPlayer as EntityPlayerMP)) == false) {
@@ -190,9 +214,9 @@ class SixNodeBlock  // public static ArrayList<Integer> repertoriedItemStackId =
             sixNode.needPublish = true
             return false
         }
-        if (false == sixNode.playerAskToBreakSubBlock(entityPlayer as EntityPlayerMP, fromIntMinecraftSide(MOP.sideHit)!!)) return false
-        @Suppress("DEPRECATION")
-        return if (sixNode.ifSideRemain) true else super.removedByPlayer(world, entityPlayer, x, y, z)
+        val breakDirection = resolveBreakDirection(world, x, y, z, entityPlayer, sixNode) ?: return false
+        if (!sixNode.playerAskToBreakSubBlock(entityPlayer as EntityPlayerMP, breakDirection)) return false
+        return if (sixNode.ifSideRemain) true else super.removedByPlayer(world, entityPlayer, x, y, z, willHarvest)
     }
 
     override fun breakBlock(par1World: World, x: Int, y: Int, z: Int, par5: Block, par6: Int) {
@@ -201,6 +225,7 @@ class SixNodeBlock  // public static ArrayList<Integer> repertoriedItemStackId =
             val sixNode = tileEntity.node as SixNode? ?: return
             for (direction in Direction.values()) {
                 if (sixNode.getSideEnable(direction)) {
+                    println("SixNodeBlock.breakBlock deleting side=$direction at $x,$y,$z block=${par5.javaClass.simpleName}")
                     sixNode.deleteSubBlock(null, direction)
                 }
             }
@@ -214,6 +239,7 @@ class SixNodeBlock  // public static ArrayList<Integer> repertoriedItemStackId =
         for (direction in Direction.values()) {
             if (sixNode.getSideEnable(direction)) {
                 if (!getIfOtherBlockIsSolid(world, x, y, z, direction)) {
+                    println("SixNodeBlock.onNeighborBlockChange deleting side=$direction at $x,$y,$z dueTo=${b.javaClass.simpleName}")
                     sixNode.deleteSubBlock(null, direction)
                 }
             }
@@ -352,12 +378,75 @@ class SixNodeBlock  // public static ArrayList<Integer> repertoriedItemStackId =
     fun collisionRayTrace(world: World, x: Int, y: Int, z: Int, entityLiving: EntityPlayer): MovingObjectPosition? {
 
         // double distanceMax = (double)Minecraft.getMinecraft().playerController.getBlockReachDistance();
-        val distanceMax = 5.0
+        // Server player state can lag a few ticks behind under low TPS; add margin so raytrace still resolves a side.
+        val distanceMax = 8.0
         val start = Vec3.createVectorHelper(entityLiving.posX, entityLiving.posY, entityLiving.posZ)
         if (!world.isRemote) start.yCoord += 1.62
         val var5 = entityLiving.getLook(0.5f)
         val end = start.addVector(var5.xCoord * distanceMax, var5.yCoord * distanceMax, var5.zCoord * distanceMax)
         return collisionRayTrace(world, x, y, z, start, end)
+    }
+
+    private fun resolveBreakDirection(world: World, x: Int, y: Int, z: Int, entityPlayer: EntityPlayer, sixNode: SixNode): Direction? {
+        val ray = collisionRayTrace(world, x, y, z, entityPlayer)
+        val rayDirection = ray?.let { fromIntMinecraftSide(it.sideHit) }
+        if (rayDirection != null && sixNode.getSideEnable(rayDirection)) {
+            return rayDirection
+        }
+
+        // Fallback: pick the enabled face most directly facing the player's look vector.
+        val look = entityPlayer.getLook(0.5f)
+        var bestDirection: Direction? = null
+        var bestScore = Double.NEGATIVE_INFINITY
+        for (direction in Direction.values()) {
+            if (!sixNode.getSideEnable(direction)) continue
+            val score = faceFacingPlayerScore(direction, look)
+            if (score > bestScore) {
+                bestScore = score
+                bestDirection = direction
+            }
+        }
+        return bestDirection
+    }
+
+    private fun faceFacingPlayerScore(direction: Direction, look: Vec3): Double {
+        val nx: Double
+        val ny: Double
+        val nz: Double
+        when (direction) {
+            Direction.XN -> {
+                nx = -1.0
+                ny = 0.0
+                nz = 0.0
+            }
+            Direction.XP -> {
+                nx = 1.0
+                ny = 0.0
+                nz = 0.0
+            }
+            Direction.YN -> {
+                nx = 0.0
+                ny = -1.0
+                nz = 0.0
+            }
+            Direction.YP -> {
+                nx = 0.0
+                ny = 1.0
+                nz = 0.0
+            }
+            Direction.ZN -> {
+                nx = 0.0
+                ny = 0.0
+                nz = -1.0
+            }
+            Direction.ZP -> {
+                nx = 0.0
+                ny = 0.0
+                nz = 1.0
+            }
+        }
+        // The clicked face points against the player look direction.
+        return -(look.xCoord * nx + look.yCoord * ny + look.zCoord * nz)
     }
 
     fun getIfOtherBlockIsSolid(world: World, x: Int, y: Int, z: Int, direction: Direction): Boolean {
@@ -366,6 +455,10 @@ class SixNodeBlock  // public static ArrayList<Integer> repertoriedItemStackId =
         vect[1] = y
         vect[2] = z
         direction.applyTo(vect, 1)
+        // During chunk load, neighboring chunks can still be unavailable. Treat that as
+        // "unknown" instead of "air" so attached six-node parts do not self-delete
+        // before their support block has actually loaded.
+        if (!world.blockExists(vect[0], vect[1], vect[2])) return true
         val block = world.getBlock(vect[0], vect[1], vect[2])
         if (block === Blocks.air) return false
         return if (block.isOpaqueCube) true else false
@@ -384,8 +477,7 @@ class SixNodeBlock  // public static ArrayList<Integer> repertoriedItemStackId =
     }
 
     override fun getLightOpacity(w: IBlockAccess, x: Int, y: Int, z: Int): Int {
-        val e = w.getTileEntity(x, y, z) ?: return 0
-        val sne = e as SixNodeEntity
+        val sne = w.getTileEntity(x, y, z) as? SixNodeEntity ?: return 0
         val b = sne.sixNodeCacheBlock
         return if (b === Blocks.air) 0 else try {
             b.lightOpacity

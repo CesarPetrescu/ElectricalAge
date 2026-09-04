@@ -12,7 +12,7 @@ import mods.eln.misc.Utils.fatal
 import mods.eln.misc.Utils.notifyNeighbor
 import mods.eln.misc.Utils.println
 import mods.eln.misc.UtilsClient
-import mods.eln.server.DelayedBlockRemove.Companion.add
+
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiScreen
 import net.minecraft.entity.EntityLivingBase
@@ -81,12 +81,8 @@ abstract class NodeBlockEntity : TileEntity(), ITileEntitySpawnClient, INodeEnti
                 val nodeFromCoordonate = NodeManager.instance!!.getNodeFromCoordonate(Coordinate(xCoord, yCoord, zCoord, worldObj))
                 if (nodeFromCoordonate is Node) {
                     internalNode = nodeFromCoordonate
-                } else {
-                    println("ASSERT WRONG TYPE public Node getNode " + Coordinate(xCoord, yCoord, zCoord, worldObj))
-                }
-                if (internalNode == null) {
-                    Utils.println("This is actually used?")
-                    add(Coordinate(xCoord, yCoord, zCoord, worldObj))
+                } else if (nodeFromCoordonate != null) {
+                    Utils.println("WARN: getNode found non-Node ${nodeFromCoordonate.javaClass.simpleName} at ${Coordinate(xCoord, yCoord, zCoord, worldObj)}")
                 }
             }
             return internalNode
@@ -104,15 +100,28 @@ abstract class NodeBlockEntity : TileEntity(), ITileEntitySpawnClient, INodeEnti
 
     @SideOnly(Side.CLIENT)
     override fun getRenderBoundingBox(): AxisAlignedBB {
-        return if (cameraDrawOptimisation()) {
-            AxisAlignedBB.getBoundingBox((xCoord - 1).toDouble(), (yCoord - 1).toDouble(), (zCoord - 1).toDouble(), (xCoord + 1).toDouble(), (yCoord + 1).toDouble(), (zCoord + 1).toDouble())
-        } else {
-            INFINITE_EXTENT_AABB
-        }
+        return if (cameraDrawOptimisation()) localRenderBoundingBox() else unoptimizedRenderBoundingBox()
     }
 
     open fun cameraDrawOptimisation(): Boolean {
         return true
+    }
+
+    @SideOnly(Side.CLIENT)
+    protected fun localRenderBoundingBox(): AxisAlignedBB {
+        return AxisAlignedBB.getBoundingBox(
+            (xCoord - 1).toDouble(),
+            (yCoord - 1).toDouble(),
+            (zCoord - 1).toDouble(),
+            (xCoord + 1).toDouble(),
+            (yCoord + 1).toDouble(),
+            (zCoord + 1).toDouble()
+        )
+    }
+
+    @SideOnly(Side.CLIENT)
+    open fun unoptimizedRenderBoundingBox(): AxisAlignedBB {
+        return localRenderBoundingBox()
     }
 
     val lightValue: Int
@@ -240,6 +249,47 @@ abstract class NodeBlockEntity : TileEntity(), ITileEntitySpawnClient, INodeEnti
         return null
     }
 
+    fun getAdjacentCableRender(side: Direction, lrdu: LRDU): CableRenderDescriptor? {
+        val lookupKey = CableRenderLookupKey(worldObj.provider.dimensionId, xCoord, yCoord, zCoord, side, lrdu)
+        val activeLookups = adjacentCableRenderLookups.get()
+        if (!activeLookups.add(lookupKey)) return null
+
+        try {
+            findWrappedAdjacentCableRender(side, lrdu)?.let { return it }
+            return findDirectAdjacentCableRender(side, lrdu)
+        } finally {
+            activeLookups.remove(lookupKey)
+            if (activeLookups.isEmpty()) {
+                adjacentCableRenderLookups.remove()
+            }
+        }
+    }
+
+    private fun findWrappedAdjacentCableRender(side: Direction, lrdu: LRDU): CableRenderDescriptor? {
+        val emptyBlockCoord = intArrayOf(xCoord, yCoord, zCoord)
+        side.applyTo(emptyBlockCoord, 1)
+        val block = worldObj.getBlock(emptyBlockCoord[0], emptyBlockCoord[1], emptyBlockCoord[2])
+        if (!NodeBase.isBlockWrappable(block, worldObj, xCoord, yCoord, zCoord)) return null
+
+        val elementSide = side.applyLRDU(lrdu)
+        val otherBlockCoord = intArrayOf(emptyBlockCoord[0], emptyBlockCoord[1], emptyBlockCoord[2])
+        elementSide.applyTo(otherBlockCoord, 1)
+
+        val tileEntity = worldObj.getTileEntity(otherBlockCoord[0], otherBlockCoord[1], otherBlockCoord[2]) as? NodeBlockEntity
+            ?: return null
+        val otherDirection = elementSide.inverse
+        val otherLRDU = otherDirection.getLRDUGoingTo(side)?.inverse() ?: return null
+        return tileEntity.getCableRender(otherDirection, otherLRDU)
+    }
+
+    private fun findDirectAdjacentCableRender(side: Direction, lrdu: LRDU): CableRenderDescriptor? {
+        val otherBlockCoord = intArrayOf(xCoord, yCoord, zCoord)
+        side.applyTo(otherBlockCoord, 1)
+        val tileEntity = worldObj.getTileEntity(otherBlockCoord[0], otherBlockCoord[1], otherBlockCoord[2]) as? NodeBlockEntity
+            ?: return null
+        return tileEntity.getCableRender(side.inverse, lrdu.inverseIfLR())
+    }
+
     open fun getCableDry(side: Direction?, lrdu: LRDU?): Int {
         return 0
     }
@@ -252,7 +302,20 @@ abstract class NodeBlockEntity : TileEntity(), ITileEntitySpawnClient, INodeEnti
 
     open fun clientRefresh(deltaT: Float) {}
 
+    private data class CableRenderLookupKey(
+        val dimension: Int,
+        val x: Int,
+        val y: Int,
+        val z: Int,
+        val side: Direction,
+        val lrdu: LRDU
+    )
+
     companion object {
+        private val adjacentCableRenderLookups = object : ThreadLocal<MutableSet<CableRenderLookupKey>>() {
+            override fun initialValue(): MutableSet<CableRenderLookupKey> = HashSet()
+        }
+
         @JvmField
         //val clientList = LinkedList<NodeBlockEntity>()
         val clientList = LinkedBlockingQueue<NodeBlockEntity>()

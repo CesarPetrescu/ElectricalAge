@@ -57,7 +57,8 @@ class PowerInductorSixDescriptor(name: String,
 
     fun getRsValue(inventory: IInventory): Double {
         val core = inventory.getStackInSlot(PowerInductorSixContainer.coreId) ?: return MnaConst.highImpedance
-        val coreDescriptor = GenericItemUsingDamageDescriptor.getDescriptor(core) as FerromagneticCoreDescriptor
+        val coreDescriptor = GenericItemUsingDamageDescriptor.getDescriptor(
+            core, FerromagneticCoreDescriptor::class.java) as? FerromagneticCoreDescriptor ?: return MnaConst.highImpedance
         val coreFactor = coreDescriptor.cableMultiplicator
         return Eln.instance.lowVoltageCableDescriptor.electricalRs * coreFactor
     }
@@ -154,7 +155,7 @@ class PowerInductorSixElement(SixNode: SixNode, side: Direction, descriptor: Six
         val info: MutableMap<String, String> = HashMap()
         info[tr("Inductance")] = Utils.plotValue(inductor.inductance, "H")
         info[tr("Charge")] = Utils.plotEnergy("", inductor.energy)
-        if (Eln.wailaEasyMode) {
+        if (Eln.config.getBooleanOrElse("ui.waila.easyMode", false)) {
             info[tr("Voltage drop")] = Utils.plotVolt("", abs(inductor.voltage))
             info[tr("Current")] = Utils.plotAmpere("", abs(inductor.current))
         }
@@ -305,7 +306,7 @@ class PowerInductorSixGui(player: EntityPlayer, inventory: IInventory, var rende
 
 
 class PowerInductorSixContainer(player: EntityPlayer, inventory: IInventory) : BasicContainer(player, inventory, arrayOf<Slot>(
-    GenericItemUsingDamageSlot(inventory, cableId, 132, 8, 19, CopperCableDescriptor::class.java,
+    GenericItemUsingDamageSlot(inventory, cableId, 132, 8, cableStackLimit, CopperCableDescriptor::class.java,
         ISlotSkin.SlotSkin.medium, arrayOf(tr("Copper cable slot"), tr("(Increases inductance)"))),
     GenericItemUsingDamageSlot(inventory, coreId, 132 + 20, 8, 1, FerromagneticCoreDescriptor::class.java,
         ISlotSkin.SlotSkin.medium, arrayOf(tr("Ferromagnetic core slot")))
@@ -313,5 +314,6 @@ class PowerInductorSixContainer(player: EntityPlayer, inventory: IInventory) : B
     companion object {
         const val cableId = 0
         const val coreId = 1
+        const val cableStackLimit = 19
     }
 }

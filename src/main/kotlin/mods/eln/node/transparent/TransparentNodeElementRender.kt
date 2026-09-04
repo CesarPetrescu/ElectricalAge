@@ -22,13 +22,14 @@ import net.minecraft.client.gui.GuiScreen
 import net.minecraft.entity.item.EntityItem
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.IInventory
+import net.minecraft.util.AxisAlignedBB
 import org.lwjgl.opengl.GL11
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
 
-abstract class TransparentNodeElementRender(var tileEntity: TransparentNodeEntity, var transparentNodedescriptor: TransparentNodeDescriptor) {
+abstract class TransparentNodeElementRender(var tileEntity: TransparentNodeEntity, var transparentNodeDescriptor: TransparentNodeDescriptor) {
     @JvmField
     var front: Direction? = null
     var grounded = false
@@ -127,6 +128,19 @@ abstract class TransparentNodeElementRender(var tileEntity: TransparentNodeEntit
         }
     }
 
+    fun clientSendDouble(id: Byte, str: Double) {
+        try {
+            val bos = ByteArrayOutputStream()
+            val stream = DataOutputStream(bos)
+            preparePacketForServer(stream)
+            stream.writeByte(id.toInt())
+            stream.writeDouble(str)
+            sendPacketToServer(bos)
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
+
     fun clientSendInt(id: Byte, str: Int) {
         try {
             val bos = ByteArrayOutputStream()
@@ -144,8 +158,68 @@ abstract class TransparentNodeElementRender(var tileEntity: TransparentNodeEntit
         return true
     }
 
+    open fun unoptimizedRenderBoundingBox(): AxisAlignedBB {
+        val base = AxisAlignedBB.getBoundingBox(
+            (tileEntity.xCoord - 1).toDouble(),
+            (tileEntity.yCoord - 1).toDouble(),
+            (tileEntity.zCoord - 1).toDouble(),
+            (tileEntity.xCoord + 1).toDouble(),
+            (tileEntity.yCoord + 1).toDouble(),
+            (tileEntity.zCoord + 1).toDouble()
+        )
+
+        var merged: AxisAlignedBB = base
+
+        val collisionQuery = AxisAlignedBB.getBoundingBox(
+            (tileEntity.xCoord - 64).toDouble(),
+            (tileEntity.yCoord - 64).toDouble(),
+            (tileEntity.zCoord - 64).toDouble(),
+            (tileEntity.xCoord + 64).toDouble(),
+            (tileEntity.yCoord + 64).toDouble(),
+            (tileEntity.zCoord + 64).toDouble()
+        )
+        val collisionBoxes = mutableListOf<AxisAlignedBB?>()
+        transparentNodeDescriptor.addCollisionBoxesToList(
+            collisionQuery,
+            collisionBoxes,
+            tileEntity.worldObj,
+            tileEntity.xCoord,
+            tileEntity.yCoord,
+            tileEntity.zCoord
+        )
+        for (box in collisionBoxes) {
+            if (box != null) {
+                merged = merged.func_111270_a(box)
+            }
+        }
+
+        val ghostGroup = transparentNodeDescriptor.getGhostGroupFront(front)
+        if (ghostGroup != null) {
+            for (element in ghostGroup.elementList) {
+                val x = tileEntity.xCoord + element.x
+                val y = tileEntity.yCoord + element.y
+                val z = tileEntity.zCoord + element.z
+                val blockBox = AxisAlignedBB.getBoundingBox(
+                    x.toDouble(),
+                    y.toDouble(),
+                    z.toDouble(),
+                    (x + 1).toDouble(),
+                    (y + 1).toDouble(),
+                    (z + 1).toDouble()
+                )
+                merged = merged.func_111270_a(blockBox)
+            }
+        }
+
+        return merged.expand(0.25, 0.25, 0.25)
+    }
+
     open fun getCableRenderSide(side: Direction, lrdu: LRDU): CableRenderDescriptor? {
         return null
+    }
+
+    fun getAdjacentCableRender(side: Direction, lrdu: LRDU): CableRenderDescriptor? {
+        return tileEntity.getAdjacentCableRender(side, lrdu)
     }
 
     fun drawCable(side: Direction, render: CableRenderDescriptor?, connection: LRDUMask, renderPreProcess: CableRenderType?): CableRenderType? {

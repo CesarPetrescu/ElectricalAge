@@ -38,13 +38,13 @@ object SingleNodeRegistration {
 
 
             val conduitBlock = ConduitBlock()
-            conduitBlock.setCreativeTab(Eln.creativeTab).setBlockName(entityName)
+            conduitBlock.setCreativeTab(null).setBlockName(entityName)
             GameRegistry.registerBlock(conduitBlock, SimpleNodeItem::class.java, entityName)
         }
     }
 
     private fun registerEnergyConverter() {
-        if (Eln.instance.ElnToOtherEnergyConverterEnable) {
+        if (Eln.config.getBooleanOrElse("integrations.energyExporter.enabled", true)) {
             val entityName = "eln.EnergyConverterElnToOtherEntity"
 
             TileEntity.addMapping(EnergyConverterElnToOtherEntity::class.java, entityName)
@@ -60,14 +60,14 @@ object SingleNodeRegistration {
                     "EnergyConverterElnToOtherLVU", Eln.instance.ELN_CONVERTER_MAX_POWER
                 )
                 Eln.instance.elnToOtherBlockConverter = EnergyConverterElnToOtherBlock(desc)
-                Eln.instance.elnToOtherBlockConverter.setCreativeTab(Eln.creativeTab).setBlockName(blockName)
+                Eln.instance.elnToOtherBlockConverter.setCreativeTab(Eln.creativeTabPowerElectronics).setBlockName(blockName)
                 GameRegistry.registerBlock(Eln.instance.elnToOtherBlockConverter, SimpleNodeItem::class.java, blockName)
             }
         }
     }
 
     private fun registerComputer() {
-        if (Eln.instance.ComputerProbeEnable) {
+        if (Eln.config.getBooleanOrElse("integrations.computerProbe.enabled", true)) {
             val entityName = I18N.TR_NAME(I18N.Type.TILE, "eln.ElnProbe")
 
             TileEntity.addMapping(ComputerProbeEntity::class.java, entityName)
@@ -75,7 +75,7 @@ object SingleNodeRegistration {
 
 
             Eln.instance.computerProbeBlock = ComputerProbeBlock()
-            Eln.instance.computerProbeBlock.setCreativeTab(Eln.creativeTab).setBlockName(entityName)
+            Eln.instance.computerProbeBlock.setCreativeTab(Eln.creativeTabSignalProcessing).setBlockName(entityName)
             GameRegistry.registerBlock(Eln.instance.computerProbeBlock, SimpleNodeItem::class.java, entityName)
         }
         /*

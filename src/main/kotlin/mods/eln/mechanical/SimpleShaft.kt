@@ -4,13 +4,16 @@ import mods.eln.cable.CableRender
 import mods.eln.cable.CableRenderDescriptor
 import mods.eln.cable.CableRenderType
 import mods.eln.misc.*
+import mods.eln.node.NodeManager
 import mods.eln.node.transparent.*
+import mods.eln.sim.IProcess
 import mods.eln.sim.process.destruct.WorldExplosion
 import mods.eln.sound.LoopedSound
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraftforge.client.IItemRenderer
 import org.lwjgl.opengl.GL11
+import org.lwjgl.opengl.GL12
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import kotlin.reflect.KClass
@@ -18,12 +21,22 @@ import kotlin.reflect.KClass
 abstract class SimpleShaftDescriptor(name: String, elm: KClass<out TransparentNodeElement>, render: KClass<out TransparentNodeElementRender>, tag: EntityMetaTag) :
     TransparentNodeDescriptor(name, elm.java, render.java, tag) {
 
+    data class ShaftGhostPort(val offset: Coordinate, val localFacing: Direction, val localOwnerSide: Direction)
+
+    internal val shaftGhostPorts = mutableListOf<ShaftGhostPort>()
+
     abstract val obj: Obj3D
     abstract val static: Array<out Obj3D.Obj3DPart>
     abstract val rotating: Array<out Obj3D.Obj3DPart>
     // If you set this you should also set volumeSetting in render.
     // (Otherwise it'll stick to 100% volume.)
     internal open val sound: String? = null
+    open var modelScale = 1f
+    open var modelTranslationX = 0f
+    open var modelTranslationY = 0f
+    open var modelTranslationZ = 0f
+    open var shaftMass = 5.0
+    open var disableCameraOptimization = false
 
     init {
         voltageLevelColor = VoltageLevelColor.Neutral
@@ -71,6 +84,10 @@ abstract class SimpleShaftDescriptor(name: String, elm: KClass<out TransparentNo
     override fun handleRenderType(item: ItemStack, type: IItemRenderer.ItemRenderType) = true
     override fun shouldUseRenderHelper(type: IItemRenderer.ItemRenderType, item: ItemStack, helper: IItemRenderer.ItemRendererHelper) =
         type != IItemRenderer.ItemRenderType.INVENTORY
+
+    fun addShaftGhostPort(offset: Coordinate, facing: Direction, ownerSide: Direction) {
+        shaftGhostPorts.add(ShaftGhostPort(offset, facing, ownerSide))
+    }
 }
 
 open class ShaftRender(entity: TransparentNodeEntity, desc: TransparentNodeDescriptor) : TransparentNodeElementRender(entity, desc) {
@@ -147,15 +164,38 @@ open class ShaftRender(entity: TransparentNodeEntity, desc: TransparentNodeDescr
     fun draw(extra: () -> Unit) {
         preserveMatrix {
             front!!.glRotateXnRef()
+            GL11.glColor4f(1f, 1f, 1f, 1f)
+            val scale = desc.modelScale
+            val rescaleNormals = scale != 1f
+            if (rescaleNormals) {
+                GL11.glEnable(GL12.GL_RESCALE_NORMAL)
+            }
+            if (scale != 1f) {
+                GL11.glTranslatef(0f, (scale - 1f) / 2f, 0f)
+            }
+            val offsetX = desc.modelTranslationX
+            val offsetY = desc.modelTranslationY
+            val offsetZ = desc.modelTranslationZ
+            if (offsetX != 0f || offsetY != 0f || offsetZ != 0f) {
+                GL11.glTranslatef(offsetX, offsetY, offsetZ)
+            }
+            if (scale != 1f) {
+                GL11.glScalef(scale, scale, scale)
+            }
             if (front == Direction.XP || front == Direction.ZP)
                 desc.draw(angle)
             else
                 desc.draw(-angle)
 
             extra()
+            GL11.glColor4f(1f, 1f, 1f, 1f)
+            if (rescaleNormals) {
+                GL11.glDisable(GL12.GL_RESCALE_NORMAL)
+            }
         }
 
         if (cableRender != null) {
+            val render = cableRender ?: return
             preserveMatrix {
                 if (cableRefresh) {
                     cableRefresh = false
@@ -163,17 +203,21 @@ open class ShaftRender(entity: TransparentNodeEntity, desc: TransparentNodeDescr
                 }
 
                 glCableTransform(front!!.down())
-                cableRender!!.bindCableTexture()
+                render.bindCableTexture()
 
                 for (lrdu in LRDU.values()) {
                     Utils.setGlColorFromDye(connectionType!!.otherdry[lrdu.toInt()])
                     if (!eConn.get(lrdu)) continue
                     if (lrdu != front!!.down().getLRDUGoingTo(front!!) && lrdu.inverse() != front!!.down().getLRDUGoingTo(front!!)) continue
                     mask.set(1.shl(lrdu.ordinal))
-                    CableRender.drawCable(cableRender, mask, connectionType!!)
+                    CableRender.drawCable(render, mask, connectionType!!)
                 }
             }
         }
+    }
+
+    override fun cameraDrawOptimisation(): Boolean {
+        return !desc.disableCameraOptimization
     }
 
     override fun refresh(deltaT: Float) {
@@ -193,17 +237,27 @@ open class ShaftRender(entity: TransparentNodeEntity, desc: TransparentNodeDescr
 
 abstract class SimpleShaftElement(node: TransparentNode, transparentNodeDescriptor: TransparentNodeDescriptor) :
     TransparentNodeElement(node, transparentNodeDescriptor), ShaftElement {
-    override val shaftMass = 5.0
+    override val shaftMass: Double
+        get() = (transparentNodeDescriptor as? SimpleShaftDescriptor)?.shaftMass ?: 5.0
     open var shaft: ShaftNetwork = ShaftNetwork()
     override fun getShaft(dir: Direction): ShaftNetwork? = shaft
     override fun setShaft(dir: Direction, net: ShaftNetwork?) {
         if(net != null) shaft = net
     }
     var destructing = false
-    override fun isDestructing() = destructing
+    override fun isShaftElementDestructing() = destructing
+    private val shaftGhostNodes = mutableListOf<GhostShaftNode>()
+    private var shaftDebugProcessInstalled = false
 
     override val shaftConnectivity: Array<Direction>
         get() = arrayOf(front.left(), front.right())
+
+    override fun linkedShaftParts(fromSide: Direction): Iterable<ShaftPart> {
+        return shaftGhostNodes
+            .filter { NodeManager.instance?.getNodeFromCoordonate(it.coordonate()) === it }
+            .filter { isInternallyConnected(fromSide, it.ownerConnectionSide) }
+            .map { ShaftPart(it, it.ghostConnectionSide) }
+    }
 
     override fun initialize() {
         reconnect()
@@ -217,14 +271,20 @@ abstract class SimpleShaftElement(node: TransparentNode, transparentNodeDescript
         }
         val exp = WorldExplosion(this as ShaftElement).machineExplosion()
         slowProcessList.add(createShaftWatchdog(this).setDestroys(exp))
+        // Temporary shaft topology logger. Re-enable when debugging network splits again.
+        // installShaftDebugProcess()
+
+        val desc = transparentNodeDescriptor as? SimpleShaftDescriptor
+        desc?.shaftGhostPorts?.forEach { port ->
+            spawnGhostShaft(Coordinate(port.offset), port.localFacing, Direction.rotateLocalDirection(front, port.localOwnerSide))
+        }
     }
 
     override fun onBreakElement() {
         super.onBreakElement()
         destructing = true
-        shaftConnectivity.forEach {
-            shaft.disconnectShaft(this)
-        }
+        clearGhostShafts()
+        shaft.disconnectShaft(this)
     }
 
     override fun networkSerialize(stream: DataOutputStream) {
@@ -247,5 +307,36 @@ abstract class SimpleShaftElement(node: TransparentNode, transparentNodeDescript
 
     override fun multiMeterString(side: Direction): String {
         return Utils.plotER(shaft.energy, shaft.rads)
+    }
+
+    /**
+     * Creates a ghost shaft node based on a coordinate offset (before rotation is applied),
+     * a local facing (relative to the unrotated block), and the owner's shaft side that it mirrors.
+     *
+     * The descriptor must already have plotted a ghost block at the computed world coordinate.
+     */
+    protected fun spawnGhostShaft(offset: Coordinate, localFacing: Direction, ownerSide: Direction): GhostShaftNode {
+        val ghost = GhostShaftNode(node!!.coordinate, front, offset, this, ownerSide, localFacing, transparentNodeDescriptor.ghostGroupUuid)
+        ghost.placeGhost()
+        ghost.attachToOwnerNetwork()
+        shaftGhostNodes.add(ghost)
+        return ghost
+    }
+
+    private fun clearGhostShafts() {
+        shaftGhostNodes.forEach {
+            if (NodeManager.instance?.getNodeFromCoordonate(it.coordonate()) === it) {
+                it.onBreakBlock()
+            }
+        }
+        shaftGhostNodes.clear()
+    }
+
+    protected fun installShaftDebugProcess() {
+        if (shaftDebugProcessInstalled) return
+        shaftDebugProcessInstalled = true
+        slowProcessList.add(IProcess {
+            ShaftDebugLogger.logElement(this)
+        })
     }
 }

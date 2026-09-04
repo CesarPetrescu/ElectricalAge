@@ -18,13 +18,17 @@ import mods.eln.block.ArcMetalItemBlock;
 import mods.eln.cable.CableRenderDescriptor;
 import mods.eln.client.ClientKeyHandler;
 import mods.eln.client.SoundLoader;
-import mods.eln.config.ConfigHandler;
+import mods.eln.config.JsonConfig;
 import mods.eln.craft.CraftingRecipes;
 import mods.eln.entity.ReplicatorPopProcess;
 import mods.eln.eventhandlers.ElnFMLEventsHandler;
 import mods.eln.eventhandlers.ElnForgeEventsHandler;
+import mods.eln.eventhandlers.RoomThermalBlockEventsHandler;
 import mods.eln.fluid.ElnFluidRegistry;
+import mods.eln.fluid.FuelRegistry;
+import mods.eln.fluid.ThermalRegistry;
 import mods.eln.fluid.FluidRegistrationKt;
+import mods.eln.environment.BiomeClimateService;
 import mods.eln.generic.GenericCreativeTab;
 import mods.eln.generic.GenericItemUsingDamageDescriptor;
 import mods.eln.generic.GenericItemUsingDamageDescriptorWithComment;
@@ -34,9 +38,12 @@ import mods.eln.ghost.GhostManager;
 import mods.eln.ghost.GhostManagerNbt;
 import mods.eln.item.*;
 import mods.eln.item.electricalinterface.ItemEnergyInventoryProcess;
-import mods.eln.item.electricalitem.OreColorMapping;
-import mods.eln.item.electricalitem.PortableOreScannerItem.RenderStorage.OreScannerConfigElement;
+import mods.eln.item.lampitem.LampLists;
+import mods.eln.lightblock.LightBlock;
+import mods.eln.lightblock.LightBlockEntity;
 import mods.eln.misc.*;
+import mods.eln.mqtt.MqttManager;
+import mods.eln.metrics.MetricsSubsystem;
 import mods.eln.node.NodeBlockEntity;
 import mods.eln.node.NodeManager;
 import mods.eln.node.NodeManagerNbt;
@@ -46,11 +53,13 @@ import mods.eln.node.transparent.*;
 import mods.eln.ore.OreBlock;
 import mods.eln.ore.OreDescriptor;
 import mods.eln.ore.OreItem;
+import mods.eln.ore.OreScannerManager;
 import mods.eln.packets.*;
 import mods.eln.registration.ItemRegistration;
 import mods.eln.registration.SingleNodeRegistration;
 import mods.eln.registration.SixNodeRegistration;
 import mods.eln.registration.TransparentNodeRegistration;
+import mods.eln.railroad.ElectricMinecartChargeReporter;
 import mods.eln.server.*;
 import mods.eln.server.console.ElnConsoleCommands;
 import mods.eln.sim.Simulator;
@@ -63,8 +72,6 @@ import mods.eln.sixnode.PortableNaNDescriptor;
 import mods.eln.sixnode.currentcable.CurrentCableDescriptor;
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor;
 import mods.eln.sixnode.electricaldatalogger.DataLogsPrintDescriptor;
-import mods.eln.sixnode.lampsocket.LightBlock;
-import mods.eln.sixnode.lampsocket.LightBlockEntity;
 import mods.eln.sixnode.lampsupply.LampSupplyElement;
 import mods.eln.sixnode.modbusrtu.ModbusTcpServer;
 import mods.eln.sixnode.tutorialsign.TutorialSignElement;
@@ -79,6 +86,7 @@ import net.minecraft.command.ICommandManager;
 import net.minecraft.command.ServerCommandManager;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
@@ -88,32 +96,40 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.oredict.OreDictionary;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.FileAppender;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.apache.logging.log4j.core.layout.PatternLayout;
 
+import java.io.File;
 import java.util.*;
 
 import static mods.eln.i18n.I18N.TR;
+import static mods.eln.i18n.I18N.TR_GROUP;
 import static mods.eln.i18n.I18N.tr;
 
-@Mod(modid = Eln.MODID, name = Eln.NAME, version = Tags.VERSION, dependencies = "after:CoFHCore;after:CoFHAPI;" +
-        "after:CoFHAPI|energy")
+@Mod(
+        modid = Eln.MODID,
+        name = Eln.NAME,
+        version = Tags.VERSION,
+        dependencies = "required-after:CoFHCore")
 public class Eln {
     @Instance("Eln")
     public static Eln instance;
     @SidedProxy(clientSide = "mods.eln.client.ClientProxy", serverSide = "mods.eln.CommonProxy")
     public static CommonProxy proxy;
-    public final static String MODID = Tags.MODID;
-    public final static String NAME = Tags.MODNAME;
-    public final static String MODDESC = "Electricity in your base!";
-    public final static String URL = "https://eln.ja13.org";
-    public final static String UPDATE_URL = "https://github.com/jrddunbr/ElectricalAge/releases";
-    public final static String SRC_URL = "https://github.com/jrddunbr/ElectricalAge";
+    public final static String MODID = "Eln";
+    public final static Logger LOGGER = LogManager.getLogger(MODID);
+    public final static String NAME = "Electrical Age - jrddunbr's build";
+    public final static String UPDATE_URL = "https://github.com/age-series/ElectricalAge/releases";
     public final static String[] AUTHORS = {"Dolu1990", "jrddunbr", "Baughn", "Grissess", "Caeleron", "Omega_Haxors",
-     "lambdaShade", "cm0x4D", "metc"};
+     "lambdaShade", "cm0x4D", "metc", "TheBuilderBoy76", "Justus0405"};
     public static final String channelName = "miaouMod";
     public static final double solarPanelBasePower = 65.0;
     public static final byte packetPlayerKey = 14;
@@ -125,8 +141,9 @@ public class Eln {
     public static final byte packetDestroyUuid = 20;
     public static final byte packetClientToServerConnection = 21;
     public static final byte packetServerToClientInfo = 22;
+    public static final byte packetFalstadImport = 23;
     public static final Obj3DFolder obj = new Obj3DFolder();
-    public static final ArrayList<OreScannerConfigElement> oreScannerConfig = new ArrayList<OreScannerConfigElement>();
+    public static final double gateInputCurrent = 0.00005;
     public static final double gateOutputCurrent = 0.100;
     public static final double LVU = 50;
     public static final double MVU = 200;
@@ -142,6 +159,7 @@ public class Eln {
      new ThermalLoadInitializer(cableWarmLimit, -100, cableHeatingTime, 1000);
     public static final HashMap<String, ItemStack> dictionnaryOreFromMod = new HashMap<>();
     public static Logger logger = LogManager.getLogger("ELN");
+    public static JsonConfig config = new JsonConfig(new File("config/Eln.cfg"));
     public static SimpleNetworkWrapper elnNetwork;
     public static PacketHandler packetHandler;
     public static LiveDataManager clientLiveDataManager;
@@ -155,6 +173,16 @@ public class Eln {
     public static DelayedTaskManager delayedTask;
     public static ItemEnergyInventoryProcess itemEnergyInventoryProcess;
     public static CreativeTabs creativeTab;
+    public static CreativeTabs creativeTabPowerElectronics;
+    public static CreativeTabs creativeTabSignalProcessing;
+    public static CreativeTabs creativeTabLighting;
+    public static CreativeTabs creativeTabCables;
+    public static CreativeTabs creativeTabPowerDistribution;
+    public static CreativeTabs creativeTabToolsArmor;
+    public static CreativeTabs creativeTabOresMaterials;
+    public static CreativeTabs creativeTabMachines;
+    public static CreativeTabs creativeTabCreative;
+    public static CreativeTabs creativeTabOther;
     public static Item swordCopper, hoeCopper, shovelCopper, pickaxeCopper, axeCopper;
     public static GenericItemUsingDamageDescriptorWithComment plateCopper;
     public static ItemArmor helmetCopper, chestplateCopper, legsCopper, bootsCopper;
@@ -172,36 +200,14 @@ public class Eln {
     public static SixNodeItem sixNodeItem;
     public static TransparentNodeItem transparentNodeItem;
     public static OreItem oreItem;
-    public static String analyticsURL = "";
-    public static boolean analyticsPlayerUUIDOptIn = false;
-
     public static PortableNaNDescriptor portableNaNDescriptor = null;
     public static CableRenderDescriptor stdPortableNaN = null;
-    public static boolean oredictTungsten, oredictChips;
-    public static boolean genCopper, genLead, genTungsten, genCinnabar;
-    public static String dictTungstenOre, dictTungstenDust, dictTungstenIngot;
-    public static String dictCheapChip, dictAdvancedChip;
-    public static boolean modbusEnable = false;
-    public static int modbusPort;
-    public static boolean explosionEnable;
-    public static boolean debugEnabled = false;  // Read from configuration file. Default is `false`.
-    public static boolean debugExplosions = false;
-    public static boolean versionCheckEnabled = true; // Read from configuration file. Default is `true`.
-    public static boolean analyticsEnabled = true; // Read from configuration file. Default is `true`.
-    public static String playerUUID = null; // Read from configuration file. Default is `null`.
-    public static boolean wailaEasyMode = false;
-    public static double shaftEnergyFactor = 0.05;
-    public static double fuelHeatValueFactor = 0.0000675;
-    public static boolean noSymbols = false;
-    public static boolean noVoltageBackground = false;
-    public static double maxSoundDistance = 16;
-    public static int soundChannels = 200;
-    public static double cablePowerFactor;
-    public static boolean allowSwingingLamps = true;
-    public static boolean enableFestivities = true;
-    public static boolean verticalIronCableCrafting = false;
-    public static Double flywheelMass = 0.0;
-    public static boolean directPoles = false;
+    public static boolean mqttEnabled = false;
+    public static boolean simMetricsEnabled = false;
+    public static String simMetricsMqttServer = "";
+    public static String simMetricsId = "server";
+    public static int simMetricsPublishIntervalTicks = 20;
+    public static boolean debugEnabled = false;
     public static SiliconWafer siliconWafer;
     public static Transistor transistor;
     public static Thermistor thermistor;
@@ -212,15 +218,13 @@ public class Eln {
     public static String dictThermistor;
     public static String dictNibbleMemory;
     public static String dictALU;
-    public static Configuration config;
     public static FMLEventChannel eventChannel;
-    public static Map<ElnFluidRegistry, Fluid> fluids = new EnumMap(ElnFluidRegistry.class);
-    public static Map<ElnFluidRegistry, Block> fluidBlocks = new EnumMap(ElnFluidRegistry.class);
+    public static Map<ElnFluidRegistry, Fluid> fluids = new EnumMap<ElnFluidRegistry, Fluid>(ElnFluidRegistry.class);
+    public static Map<ElnFluidRegistry, Block> fluidBlocks = new EnumMap<ElnFluidRegistry, Block>(ElnFluidRegistry.class);
     public static WindProcess wind;
-    public static int wirelessTxRange = 32;
-    public static boolean ledLampInfiniteLife = false;
     static public GenericItemUsingDamageDescriptor multiMeterElement, thermometerElement, allMeterElement;
     static public GenericItemUsingDamageDescriptor configCopyToolElement;
+    static public GenericItemUsingDamageDescriptor falstadImportToolElement;
     public static TreeResin treeResin;
     public static MiningPipeDescriptor miningPipeDescriptor;
     static NodeServer nodeServer;
@@ -228,9 +232,9 @@ public class Eln {
     public static OreDescriptor oreCopper;
     public static GenericItemUsingDamageDescriptorWithComment dustCopper;
     public ArrayList<IConfigSharing> configShared = new ArrayList<>();
-    public double electricalFrequency, thermalFrequency;
-    public int electricalInterSystemOverSampling;
     public CopperCableDescriptor copperCableDescriptor;
+    public WireScrapDescriptor wireScrapDescriptor;
+    public WoundWireBundleDescriptor woundWireBundleDescriptor;
     public ElectricalCableDescriptor creativeCableDescriptor;
     public ElectricalCableDescriptor veryHighVoltageCableDescriptor;
     public ElectricalCableDescriptor highVoltageCableDescriptor;
@@ -241,18 +245,6 @@ public class Eln {
     public CurrentCableDescriptor lowCurrentCableDescriptor;
     public CurrentCableDescriptor mediumCurrentCableDescriptor;
     public CurrentCableDescriptor highCurrentCableDescriptor;
-    public OreRegenerate oreRegenerate;
-    public boolean forceOreRegen;
-    public double heatTurbinePowerFactor = 1;
-    public double solarPanelPowerFactor = 1;
-    public double windTurbinePowerFactor = 1;
-    public double waterTurbinePowerFactor = 1;
-    public double fuelGeneratorPowerFactor = 1;
-    public double fuelHeatFurnacePowerFactor = 1;
-    public int autominerRange = 10;
-    public boolean killMonstersAroundLamps;
-    public int killMonstersAroundLampsRange;
-    public int maxReplicators = 100;
     public Double ELN_CONVERTER_MAX_POWER = 120_000.0;
     public ServerEventListener serverEventListener;
     public CableRenderDescriptor stdCableRenderSignal;
@@ -274,26 +266,14 @@ public class Eln {
     public RecipesList magnetiserRecipes = new RecipesList();
     public GenericItemUsingDamageDescriptorWithComment copperIngot, plumbIngot, tungstenIngot;
     public DataLogsPrintDescriptor dataLogsPrintDescriptor;
-    public float xRayScannerRange;
-    public boolean addOtherModOreToXRay;
-    public boolean xRayScannerCanBeCrafted = true;
-    public double stdBatteryHalfLife = 2 * Utils.minecraftDay;
-    public static final double SVU = 5, SVII = gateOutputCurrent / SVU, SVUinv = 1.0 / SVU;
-    public double batteryCapacityFactor = 1.;
-    public boolean replicatorPop;
-    public int plateConversionRatio;
-    public boolean ComputerProbeEnable;
-    public boolean ElnToOtherEnergyConverterEnable;
+    public static final double SVU = 5;
+    public static final double signalVoltageAcceptNegative = -0.5;
+    public static final double signalVoltageAcceptPositive = SVU + 0.5;
+    public static final double SVII = gateInputCurrent / SVU, SVUinv = 1.0 / SVU;
     public EnergyConverterElnToOtherBlock elnToOtherBlockConverter;
     public ComputerProbeBlock computerProbeBlock;
     public static final double SVP = gateOutputCurrent * SVU;
     public ElectricalFurnaceDescriptor electricalFurnace;
-    public double incandescentLampLife;
-    public double economicLampLife;
-    public double carbonLampLife;
-    public double ledLampLife;
-    public double fuelGeneratorTankCapacity = 20 * 60;
-    public int replicatorRegistrationId = -1;
 
     public static HashSet<String> oreNames = new HashSet<>();
 
@@ -324,6 +304,7 @@ public class Eln {
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
+        configureElnLogFile(event);
 
         elnNetwork = NetworkRegistry.INSTANCE.newSimpleChannel("electrical-age");
         elnNetwork.registerMessage(AchievePacketHandler.class, AchievePacket.class, 0, Side.SERVER);
@@ -346,7 +327,6 @@ public class Eln {
         meta.version = Version.INSTANCE.getSimpleVersionName();
         meta.name = NAME;
         meta.description = tr("mod.meta.desc");
-        meta.url = URL;
         meta.updateUrl = UPDATE_URL;
         meta.authorList = Arrays.asList(AUTHORS);
         meta.autogenerated = false; // Force to update from code
@@ -356,19 +336,26 @@ public class Eln {
         Side side = FMLCommonHandler.instance().getEffectiveSide();
         if (side == Side.CLIENT) MinecraftForge.EVENT_BUS.register(new SoundLoader());
 
-        config = new Configuration(event.getSuggestedConfigurationFile());
-
-        ConfigHandler.INSTANCE.loadConfig(this);
+        config = new JsonConfig(event.getSuggestedConfigurationFile());
+        config.loadConfig();
+        config.writeExampleFile();
+        FuelRegistry.init(event.getSuggestedConfigurationFile());
+        ThermalRegistry.init(event.getSuggestedConfigurationFile());
+        MqttManager.init();
+        MetricsSubsystem.refreshFromConfig();
 
         eventChannel = NetworkRegistry.INSTANCE.newEventDrivenChannel(channelName);
 
-        simulator = new Simulator(0.05, 1 / electricalFrequency, electricalInterSystemOverSampling,
-                1 / thermalFrequency);
+        simulator = new Simulator(
+            0.05,
+            1 / config.getDoubleOrElse("simulation.electrical.frequency", 20.0),
+            config.getIntOrElse("simulation.electrical.interSystemOverSampling", 50),
+            1 / config.getDoubleOrElse("simulation.thermal.frequency", 400.0)
+        );
         nodeManager = new NodeManager("caca");
         ghostManager = new GhostManager("caca2");
         delayedTask = new DelayedTaskManager();
 
-        oreRegenerate = new OreRegenerate();
         nodeServer = new NodeServer();
         clientLiveDataManager = new LiveDataManager();
 
@@ -379,24 +366,35 @@ public class Eln {
 
         Item itemCreativeTab = new Item().setUnlocalizedName("eln:elncreativetab").setTextureName("eln:elncreativetab");
         GameRegistry.registerItem(itemCreativeTab, "eln.itemCreativeTab");
-        creativeTab = new GenericCreativeTab("Eln", itemCreativeTab);
 
-        oreBlock = (OreBlock) new OreBlock().setCreativeTab(creativeTab).setBlockName("OreEln");
+        creativeTabPowerElectronics = new GenericCreativeTab("ElnPowerElectronics", Items.redstone);
+        creativeTabCables = new GenericCreativeTab("ElnCables", Items.string);
+        creativeTabPowerDistribution = new GenericCreativeTab("ElnPowerDistribution", Items.string);
+        creativeTabSignalProcessing = new GenericCreativeTab("ElnSignalProcessing", Items.comparator);
+        creativeTabLighting = new GenericCreativeTab("ElnLighting", Item.getItemFromBlock(Blocks.redstone_lamp));
+        creativeTabToolsArmor = new GenericCreativeTab("ElnToolsArmor", Items.iron_pickaxe);
+        creativeTabOresMaterials = new GenericCreativeTab("ElnOresMaterials", Items.iron_ingot);
+        creativeTabMachines = new GenericCreativeTab("ElnMachines", Item.getItemFromBlock(Blocks.dispenser));
+        creativeTabCreative = new GenericCreativeTab("ElnCreative", Items.nether_star);
+        creativeTabOther = creativeTabOresMaterials;
+        creativeTab = creativeTabOther;
+
+        oreBlock = (OreBlock) new OreBlock().setCreativeTab(creativeTabOresMaterials).setBlockName("OreEln");
 
         arcClayBlock = new ArcClayBlock();
         arcMetalBlock = new ArcMetalBlock();
 
         sharedItem =
-                (SharedItem) new SharedItem().setCreativeTab(creativeTab).setMaxStackSize(64).setUnlocalizedName("sharedItem");
+                (SharedItem) new SharedItem().setCreativeTab(creativeTabOther).setMaxStackSize(64).setUnlocalizedName("sharedItem");
 
         sharedItemStackOne =
-                (SharedItem) new SharedItem().setCreativeTab(creativeTab).setMaxStackSize(1).setUnlocalizedName(
+                (SharedItem) new SharedItem().setCreativeTab(creativeTabOther).setMaxStackSize(1).setUnlocalizedName(
                         "sharedItemStackOne");
 
         transparentNodeBlock = (TransparentNodeBlock) new TransparentNodeBlock(Material.iron,
-                TransparentNodeEntity.class).setCreativeTab(creativeTab).setBlockTextureName("iron_block");
+                TransparentNodeEntity.class).setCreativeTab(creativeTabOther).setBlockTextureName("iron_block");
         sixNodeBlock =
-                (SixNodeBlock) new SixNodeBlock(Material.plants, SixNodeEntity.class).setCreativeTab(creativeTab).setBlockTextureName("iron_block");
+                (SixNodeBlock) new SixNodeBlock(Material.plants, SixNodeEntity.class).setCreativeTab(creativeTabOther).setBlockTextureName("iron_block");
 
         ghostBlock = (GhostBlock) new GhostBlock().setBlockTextureName("iron_block");
         lightBlock = new LightBlock();
@@ -427,16 +425,63 @@ public class Eln {
 
         SixNode.sixNodeCacheList.add(new SixNodeCacheStd());
 
+        LampLists.translateLampTypes(); // This MUST be called before block/item registration!
+
         SingleNodeRegistration.INSTANCE.registerSingle();
         SixNodeRegistration.INSTANCE.registerSix();
         TransparentNodeRegistration.INSTANCE.registerTransparent();
         ItemRegistration.INSTANCE.registerItem();
+
+        updateCreativeTabIcons();
 
         OreDictionary.registerOre("blockAluminum", arcClayBlock);
         OreDictionary.registerOre("blockSteel", arcMetalBlock);
 
         AnalyticsHandler.INSTANCE.submitUpstreamAnalytics();
         AnalyticsHandler.INSTANCE.submitAgeSeriesAnalytics();
+    }
+
+    private void configureElnLogFile(FMLPreInitializationEvent event) {
+        File runtimeDir = event.getSuggestedConfigurationFile().getParentFile().getParentFile();
+        if (runtimeDir == null) return;
+
+        File logDir = new File(runtimeDir, "logs");
+        if (!logDir.exists() && !logDir.mkdirs()) return;
+
+        LoggerContext context = (LoggerContext) LogManager.getContext(false);
+        Configuration configuration = context.getConfiguration();
+        final String appenderName = "ELN_FILE";
+        if (configuration.getAppenders().containsKey(appenderName)) return;
+
+        PatternLayout layout = PatternLayout.createLayout(
+            "[%d{HH:mm:ss}] [%t/%level] [%logger]: %msg%n",
+            configuration,
+            null,
+            null,
+            null
+        );
+
+        FileAppender appender = FileAppender.createAppender(
+            new File(logDir, "eln.log").getAbsolutePath(),
+            "true",
+            "false",
+            appenderName,
+            "true",
+            "false",
+            "false",
+            layout,
+            null,
+            "false",
+            null,
+            configuration
+        );
+        if (appender == null) return;
+
+        appender.start();
+
+        LoggerConfig loggerConfig = configuration.getLoggerConfig("ELN");
+        loggerConfig.addAppender(appender, Level.INFO, null);
+        context.updateLoggers();
     }
 
     @EventHandler
@@ -458,12 +503,24 @@ public class Eln {
         final String[] names = OreDictionary.getOreNames();
         Collections.addAll(oreNames, names);
         proxy.registerRenderers();
-        TR("itemGroup.Eln");
+        TR_GROUP("Eln", "Electrical Age");
+        TR_GROUP("ElnPowerElectronics", "Electrical Age - Power Electronics");
+        TR_GROUP("ElnSignalProcessing", "Electrical Age - Signal Processing");
+        TR_GROUP("ElnLighting", "Electrical Age - Lighting");
+        TR_GROUP("ElnCables", "Electrical Age - Cables");
+        TR_GROUP("ElnPowerDistribution", "Electrical Age - Power Distribution");
+        TR_GROUP("ElnToolsArmor", "Electrical Age - Tools & Armor");
+        TR_GROUP("ElnOresMaterials", "Electrical Age - Ores & Materials");
+        TR_GROUP("ElnMachines", "Electrical Age - Machines");
+        TR_GROUP("ElnCreative", "Electrical Age - Creative");
+        TR_GROUP("ElnOther", "Electrical Age - Other");
         if (isDevelopmentRun()) {
             Achievements.init();
         }
         FluidRegistrationKt.registerElnFluids();
         MinecraftForge.EVENT_BUS.register(new ElnForgeEventsHandler());
+        MinecraftForge.EVENT_BUS.register(new RoomThermalBlockEventsHandler());
+        MinecraftForge.EVENT_BUS.register(new ElectricMinecartChargeReporter());
         FMLCommonHandler.instance().bus().register(new ElnFMLEventsHandler());
         MinecraftForge.EVENT_BUS.register(this);
         FMLInterModComms.sendMessage("Waila", "register", "mods.eln.integration.waila.WailaIntegration" +
@@ -492,7 +549,6 @@ public class Eln {
         ghostManager.clear();
         saveConfig = null;
         modbusServer = null;
-        oreRegenerate.clear();
         delayedTask.clear();
         DelayedBlockRemove.clear();
         serverEventListener.clear();
@@ -500,12 +556,13 @@ public class Eln {
         simulator.stop();
         LampSupplyElement.channelMap.clear();
         WirelessSignalTxElement.channelMap.clear();
-
+        MqttManager.shutdown();
+        MetricsSubsystem.shutdown();
     }
 
     @EventHandler
     public void onServerStart(FMLServerAboutToStartEvent ev) {
-        modbusServer = new ModbusTcpServer(modbusPort);
+        modbusServer = new ModbusTcpServer(config.getIntOrElse("integrations.modbus.port", 1502));
         TeleporterElement.teleporterList.clear();
         LightBlockEntity.observers.clear();
         WirelessSignalTxElement.channelMap.clear();
@@ -514,7 +571,7 @@ public class Eln {
         simulator.init();
         simulator.addSlowProcess(wind = new WindProcess());
 
-        if (replicatorPop) simulator.addSlowProcess(new ReplicatorPopProcess());
+        if (config.getBooleanOrElse("entities.replicator.enabled", false)) simulator.addSlowProcess(new ReplicatorPopProcess());
         simulator.addSlowProcess(itemEnergyInventoryProcess = new ItemEnergyInventoryProcess());
     }
 
@@ -546,62 +603,50 @@ public class Eln {
             ServerCommandManager manager = (ServerCommandManager) command;
             manager.registerCommand(new ElnConsoleCommands());
         }
-        regenOreScannerFactors();
+        OreScannerManager.regenOreScannerFactors();
+        BiomeClimateService.auditMissingBiomeProfilesAtStartup();
     }
 
     public double LVP() {
-        return 1000 * cablePowerFactor;
+        return 1000 * config.getDoubleOrElse("balance.cables.powerFactor", 1.0);
     }
     public double MVP() {
-        return 2000 * cablePowerFactor;
+        return 2000 * config.getDoubleOrElse("balance.cables.powerFactor", 1.0);
     }
     public double HVP() {
-        return 5000 * cablePowerFactor;
+        return 5000 * config.getDoubleOrElse("balance.cables.powerFactor", 1.0);
     }
     public double VVP() {
-        return 15000 * cablePowerFactor;
+        return 15000 * config.getDoubleOrElse("balance.cables.powerFactor", 1.0);
     }
 
-    public void regenOreScannerFactors() {
-        OreColorMapping.INSTANCE.updateColorMapping();
-
-        oreScannerConfig.clear();
-
-        if (addOtherModOreToXRay) {
-            for (String name : OreDictionary.getOreNames()) {
-                if (name == null) continue;
-                if (name.startsWith("ore")) {
-                    for (ItemStack stack : OreDictionary.getOres(name)) {
-                        int id = Utils.getItemId(stack) + 4096 * stack.getItem().getMetadata(stack.getItemDamage());
-                        boolean find = false;
-                        for (OreScannerConfigElement c : oreScannerConfig) {
-                            if (c.getBlockKey() == id) {
-                                find = true;
-                                break;
-                            }
-                        }
-
-                        if (!find) {
-                            Utils.println(id + " added to xRay (other mod)");
-                            oreScannerConfig.add(new OreScannerConfigElement(id, 0.15f));
-                        }
-                    }
-                }
-            }
+    private void updateCreativeTabIcons() {
+        setTabIcon(creativeTabPowerElectronics, stack(sixNodeItem, meta(33, 1)));
+        setTabIcon(creativeTabSignalProcessing, stack(sixNodeItem, meta(32, 0)));
+        setTabIcon(creativeTabLighting, stack(sharedItem, meta(4, 37)));
+        setTabIcon(creativeTabCables, stack(sixNodeItem, meta(34, 2)));
+        setTabIcon(creativeTabToolsArmor, stack(sharedItem, meta(14, 0)));
+        setTabIcon(creativeTabOresMaterials, stack(sharedItem, meta(8, 7)));
+        setTabIcon(creativeTabMachines, stack(transparentNodeItem, meta(33, 4)));
+        setTabIcon(creativeTabCreative, stack(sixNodeItem, meta(3, 0)));
+        if (creativeTabOther != creativeTabOresMaterials) {
+            setTabIcon(creativeTabOther, stack(sharedItem, meta(8, 0)));
         }
+    }
 
-        oreScannerConfig.add(new OreScannerConfigElement(Block.getIdFromBlock(Blocks.coal_ore), 5 / 100f));
-        oreScannerConfig.add(new OreScannerConfigElement(Block.getIdFromBlock(Blocks.iron_ore), 15 / 100f));
-        oreScannerConfig.add(new OreScannerConfigElement(Block.getIdFromBlock(Blocks.gold_ore), 40 / 100f));
-        oreScannerConfig.add(new OreScannerConfigElement(Block.getIdFromBlock(Blocks.lapis_ore), 40 / 100f));
-        oreScannerConfig.add(new OreScannerConfigElement(Block.getIdFromBlock(Blocks.redstone_ore), 40 / 100f));
-        oreScannerConfig.add(new OreScannerConfigElement(Block.getIdFromBlock(Blocks.diamond_ore), 100 / 100f));
-        oreScannerConfig.add(new OreScannerConfigElement(Block.getIdFromBlock(Blocks.emerald_ore), 40 / 100f));
+    private void setTabIcon(CreativeTabs tab, ItemStack stack) {
+        if (tab instanceof GenericCreativeTab && stack != null && stack.getItem() != null) {
+            ((GenericCreativeTab) tab).setIcon(stack);
+        }
+    }
 
-        oreScannerConfig.add(new OreScannerConfigElement(Block.getIdFromBlock(oreBlock) + (1 << 12), 10 / 100f));
-        oreScannerConfig.add(new OreScannerConfigElement(Block.getIdFromBlock(oreBlock) + (4 << 12), 20 / 100f));
-        oreScannerConfig.add(new OreScannerConfigElement(Block.getIdFromBlock(oreBlock) + (5 << 12), 20 / 100f));
-        oreScannerConfig.add(new OreScannerConfigElement(Block.getIdFromBlock(oreBlock) + (6 << 12), 20 / 100f));
+    private static ItemStack stack(Item item, int damage) {
+        if (item == null) return null;
+        return new ItemStack(item, 1, damage);
+    }
+
+    private static int meta(int group, int subId) {
+        return subId + (group << 6);
     }
 
     @SubscribeEvent

@@ -78,14 +78,14 @@ public class WaterTurbineElement extends TransparentNodeElement {
     @Override
     public String multiMeterString(@NotNull Direction side) {
 
-        return null;
+        return "";
     }
 
     @NotNull
     @Override
     public String thermoMeterString(@NotNull Direction side) {
 
-        return null;
+        return "";
     }
 
     Coordinate waterCoord;
@@ -155,7 +155,7 @@ public class WaterTurbineElement extends TransparentNodeElement {
         Map<String, String> wailaList = new HashMap<String, String>();
         wailaList.put(I18N.tr("Generating"), slowProcess.getWaterFactor() > 0 ? I18N.tr("Yes") : I18N.tr("No"));
         wailaList.put(I18N.tr("Produced power"), Utils.plotPower("", powerSource.getEffectivePower()));
-        if (Eln.wailaEasyMode) {
+        if (Eln.config.getBooleanOrElse("ui.waila.easyMode", false)) {
             wailaList.put(I18N.tr("Voltage"), Utils.plotVolt("", powerSource.getVoltage()));
         }
         return wailaList;

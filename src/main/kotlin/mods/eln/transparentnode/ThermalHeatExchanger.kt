@@ -3,6 +3,7 @@ package mods.eln.transparentnode.themralheatexchanger
 import mods.eln.Eln
 import mods.eln.fluid.ElementSidedFluidHandler
 import mods.eln.fluid.TankData
+import mods.eln.fluid.ThermalRegistry
 import mods.eln.i18n.I18N.tr
 import mods.eln.misc.Direction
 import mods.eln.misc.LRDU
@@ -28,7 +29,6 @@ import net.minecraft.nbt.NBTTagCompound
 import net.minecraftforge.client.IItemRenderer
 import net.minecraftforge.common.util.ForgeDirection
 import net.minecraftforge.fluids.Fluid
-import net.minecraftforge.fluids.FluidRegistry
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.FluidTank
 import net.minecraftforge.fluids.IFluidHandler
@@ -65,8 +65,9 @@ class ThermalHeatExchangerDescriptor(
 
     override fun addInformation(itemStack: ItemStack?, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
-        list.add(tr("Generates heat when supplied with ic2:hotcoolant"))
-        list.add(tr("Ejects out ic2:coolant"))
+        list.add(tr("Converts fluids between hot and cold states"))
+        list.add(tr("Cold -> Hot = consumes heat"))
+        list.add(tr("Hot -> Cold = generates heat"))
         list.add(Utils.plotCelsius(tr("  Max. temperature: "), thermal.maximumTemperature))
     }
 
@@ -84,16 +85,8 @@ class ThermalHeatExchangerElement(
 ): TransparentNodeElement(transparentNode, descriptor) {
 
     companion object {
-        val ic2hotcoolant: Fluid? = FluidRegistry.getFluid("ic2hotcoolant")
-        val ic2coolant: Fluid? = FluidRegistry.getFluid("ic2coolant")
-        val hotwater: Fluid? = FluidRegistry.getFluid("hot_water")
-        val coldwater: Fluid? = FluidRegistry.getFluid("cold_water")
-        val ic2hotwater: Fluid? = FluidRegistry.getFluid("ic2hotwater")
-        // Use 'steam' but fall back on 'ic2steam'. Or, just die.
-        val steam: Fluid? = FluidRegistry.getFluid("steam")?: FluidRegistry.getFluid("ic2steam")
         val INPUT_SIDE = ForgeDirection.DOWN
         val OUTPUT_SIDE = ForgeDirection.UP
-
     }
 
     val thermalPairs = mutableListOf<ThermalPairing>()
@@ -106,7 +99,7 @@ class ThermalHeatExchangerElement(
     private val thermalLoad = NbtThermalLoad("thermalLoad")
     val tankMap = mapOf(Pair(INPUT_SIDE, TankData(FluidTank(1000))), Pair(OUTPUT_SIDE, TankData(FluidTank(1000))))
     private val tank = ElementSidedFluidHandler(tankMap)
-    private val thermalWatchdog = ThermalLoadWatchDog(thermalLoad)
+    private val thermalWatchdog = ambientAwareThermalWatchdog(ThermalLoadWatchDog(thermalLoad))
     private val fluidRegulatorProcess = IProcess {
         val inputFluid = tank.getFluidType(INPUT_SIDE)
         var joulesPerMb = 0.0
@@ -165,7 +158,9 @@ class ThermalHeatExchangerElement(
 
     private val thermalRegulatorProcess = IProcess { time ->
         //Yes, it's magic number time. 1.25 is a rough estimate of the "what the fuck" measure I got from thermal power.
-        val heatPower = joulesPerTick / (Eln.instance.thermalFrequency / Eln.instance.electricalFrequency) * 1.25 / time
+        val thermalFrequency = Eln.config.getDoubleOrElse("simulation.thermal.frequency", 400.0)
+        val electricalFrequency = Eln.config.getDoubleOrElse("simulation.electrical.frequency", 20.0)
+        val heatPower = joulesPerTick / (thermalFrequency / electricalFrequency) * 1.25 / time
         thermalLoad.movePowerTo(heatPower)
         //thermalLoad.PcTemp += heatPower
     }
@@ -180,25 +175,16 @@ class ThermalHeatExchangerElement(
         thermalWatchdog.setTemperatureLimits((descriptor as ThermalHeatExchangerDescriptor).thermal)
             .setDestroys(WorldExplosion(this).machineExplosion())
 
-        if (ic2hotcoolant != null && ic2coolant != null) {
-            //println("IC2 Coolant Enabled in Thermal Heat Exchanger")
-            thermalPairs.add(ThermalPairing(ic2coolant, ic2hotcoolant, -1920.0 / 7.0, 9, 1.0, false, minTemp = 300.0))
-            thermalPairs.add(ThermalPairing(ic2hotcoolant, ic2coolant, 1920.0 / 7.0, 9, 1.0, false))
-        }
-
-        if (ic2hotwater != null) {
-            thermalPairs.add(ThermalPairing(ic2hotwater,FluidRegistry.WATER,
-                1 / 0.45 / 2, //Joules per mB
-                36, //max mB input rate
-                1.0, //ratio
-                false,//reversible?
-                minTemp = 26.85,
-                maxTemp = 76.85))
-        }
-
-        if (steam != null) {
-            //println("Steam Enabled in Thermal Heat Exchanger")
-            thermalPairs.add(ThermalPairing(FluidRegistry.WATER, steam, -1/0.45, 36,10.0, false, minTemp = 100.0))
+        for (config in ThermalRegistry.getThermalPairConfigs()) {
+            val inputFluid = ThermalRegistry.resolveFluid(config.inputFluid)
+            val outputFluid = ThermalRegistry.resolveFluid(config.outputFluid)
+            if (inputFluid != null && outputFluid != null) {
+                thermalPairs.add(ThermalPairing(inputFluid, outputFluid, config.joulesPerMb, config.maxMbInputPerTick, config.ratio, config.reversible, config.minTemp, config.maxTemp))
+            } else {
+                val missing = mutableListOf<String>()
+                if (inputFluid == null) missing.add(config.inputFluid)
+                if (outputFluid == null) missing.add(config.outputFluid)
+            }
         }
 
         thermalPairs.forEach {
@@ -224,7 +210,7 @@ class ThermalHeatExchangerElement(
     override fun getConnectionMask(side: Direction, lrdu: LRDU) = when (lrdu) {
         LRDU.Down -> when (side) {
             front.inverse -> NodeBase.maskThermal
-            front -> NodeBase.maskElectricalGate
+            front -> NodeBase.maskElectricalInputGate
             else -> 0
         }
         else -> 0
@@ -232,7 +218,7 @@ class ThermalHeatExchangerElement(
 
     // This would be thermalLoad.power but it's not accurate.
     override fun multiMeterString(side: Direction): String = Utils.plotPercent("Ctl:", electricalControlLoad.normalized)
-    override fun thermoMeterString(side: Direction): String = Utils.plotCelsius("T:", thermalLoad.temperatureCelsius) + " " + Utils.plotPower(joulesPerTick * 20)
+    override fun thermoMeterString(side: Direction): String = plotAmbientCelsius("T:", thermalLoad.temperatureCelsius) + " " + Utils.plotPower(joulesPerTick * 20)
 
     override fun getWaila(): Map<String, String> = mutableMapOf(
         Pair(tr("Control"), Utils.plotPercent("", electricalControlLoad.normalized)),
@@ -272,6 +258,6 @@ class ThermalHeatExchangerRender(
 ): TransparentNodeElementRender(tileEntity, descriptor) {
     override fun draw() {
         front!!.glRotateXnRef()
-        (transparentNodedescriptor as ThermalHeatExchangerDescriptor).draw()
+        (transparentNodeDescriptor as ThermalHeatExchangerDescriptor).draw()
     }
 }

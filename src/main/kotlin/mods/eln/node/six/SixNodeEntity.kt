@@ -15,6 +15,7 @@ import net.minecraft.client.gui.GuiScreen
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.init.Blocks
 import net.minecraft.inventory.Container
+import net.minecraft.util.AxisAlignedBB
 import net.minecraft.world.World
 import java.io.DataInputStream
 import java.io.IOException
@@ -111,15 +112,15 @@ class SixNodeEntity : NodeBlockEntity() {
     }
 
     override fun getCableRender(side: Direction, lrdu: LRDU): CableRenderDescriptor? {
-        var side = side
-        side = side.applyLRDU(lrdu)
-        return if (elementRenderList[side.int] == null) null else elementRenderList[side.int]!!.getCableRender(lrdu)
+        val elementSide = side.applyLRDU(lrdu)
+        val elementLrdu = elementSide.getLRDUGoingTo(side) ?: return null
+        return if (elementRenderList[elementSide.int] == null) null else elementRenderList[elementSide.int]!!.getCableRender(elementLrdu)
     }
 
     override fun getCableDry(side: Direction?, lrdu: LRDU?): Int {
-        var side = side
-        side = side!!.applyLRDU(lrdu!!)
-        return if (elementRenderList[side.int] == null) 0 else elementRenderList[side.int]!!.getCableDry(lrdu)
+        val elementSide = side!!.applyLRDU(lrdu!!)
+        val elementLrdu = elementSide.getLRDUGoingTo(side) ?: return 0
+        return if (elementRenderList[elementSide.int] == null) 0 else elementRenderList[elementSide.int]!!.getCableDry(elementLrdu)
     }
 
     override fun cameraDrawOptimisation(): Boolean {
@@ -127,6 +128,22 @@ class SixNodeEntity : NodeBlockEntity() {
             if (e != null && !e.cameraDrawOptimisation()) return false
         }
         return true
+    }
+
+    override fun unoptimizedRenderBoundingBox(): AxisAlignedBB {
+        var bb = localRenderBoundingBox()
+        for (render in elementRenderList) {
+            val custom = render?.getRenderBoundingBox(this) ?: continue
+            bb = AxisAlignedBB.getBoundingBox(
+                minOf(bb.minX, custom.minX),
+                minOf(bb.minY, custom.minY),
+                minOf(bb.minZ, custom.minZ),
+                maxOf(bb.maxX, custom.maxX),
+                maxOf(bb.maxY, custom.maxY),
+                maxOf(bb.maxZ, custom.maxZ)
+            )
+        }
+        return bb
     }
 
     override fun destructor() {

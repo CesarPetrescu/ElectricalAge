@@ -5,6 +5,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 import mods.eln.Eln;
 import mods.eln.misc.RealisticEnum;
 import net.minecraft.client.renderer.texture.IIconRegister;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -45,7 +46,7 @@ public class GenericItemBlockUsingDamageDescriptor {
     public void setDefaultIcon(String name) {
         String iconName = name.replaceAll(" ", "").toLowerCase();
         //Utils.println("Icon Name: " + iconName);
-        if (Eln.noSymbols &&
+        if (Eln.config.getBooleanOrElse("ui.icons.noSymbols", false) &&
             getClass().getClassLoader().getResource("assets/eln/textures/blocks/" + iconName + "-ni.png") != null) {
             this.iconName = iconName + "-ni";
         } else {
@@ -77,6 +78,8 @@ public class GenericItemBlockUsingDamageDescriptor {
         return name;
     }
 
+    private boolean hidden = false;
+
     public void setParent(Item item, int damage) {
         this.parentItem = item;
         this.parentItemDamage = damage;
@@ -88,6 +91,16 @@ public class GenericItemBlockUsingDamageDescriptor {
 
     public ItemStack newItemStack() {
         return new ItemStack(parentItem, 1, parentItemDamage);
+    }
+
+    public ItemStack newCreativeTabStack() {
+        ItemStack stack = new ItemStack(parentItem, 1, parentItemDamage);
+        stack.setTagCompound(getDefaultNBT());
+        return stack;
+    }
+
+    public int getItemStackLimit(ItemStack stack) {
+        return 64;
     }
 
     public boolean checkSameItemStack(ItemStack stack) {
@@ -104,10 +117,10 @@ public class GenericItemBlockUsingDamageDescriptor {
         return genItem.getDescriptor(stack);
     }
 
-    public static GenericItemBlockUsingDamageDescriptor getDescriptor(ItemStack stack, Class extendClass) {
+    public static GenericItemBlockUsingDamageDescriptor getDescriptor(ItemStack stack, Class<?> extendClass) {
         GenericItemBlockUsingDamageDescriptor desc = getDescriptor(stack);
         if (desc == null) return null;
-        if (extendClass.isAssignableFrom(desc.getClass()) == false) return null;
+        if (!extendClass.isAssignableFrom(desc.getClass())) return null;
         return desc;
     }
 
@@ -117,5 +130,25 @@ public class GenericItemBlockUsingDamageDescriptor {
 
     public boolean onItemUseFirst(ItemStack stack, EntityPlayer player) {
         return false;
+    }
+
+    private CreativeTabs creativeTab;
+
+    public GenericItemBlockUsingDamageDescriptor setCreativeTab(CreativeTabs creativeTab) {
+        this.creativeTab = creativeTab;
+        return this;
+    }
+
+    public CreativeTabs getCreativeTab() {
+        return creativeTab;
+    }
+
+    public GenericItemBlockUsingDamageDescriptor hideFromCreative() {
+        this.hidden = true;
+        return this;
+    }
+
+    public boolean isHidden() {
+        return hidden;
     }
 }

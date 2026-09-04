@@ -42,6 +42,8 @@ public class BatteryChargerElement extends SixNodeElement {
     public BatteryChargerSlowProcess slowProcess = new BatteryChargerSlowProcess();
     Resistor powerResistor = new Resistor(powerLoad, null);
 
+    // Java reports the Kotlin vararg of descriptor classes as an unchecked array creation here.
+    @SuppressWarnings("unchecked")
     AutoAcceptInventoryProxy inventory = (new AutoAcceptInventoryProxy(new SixNodeElementInventory(5, 64, this)))
         .acceptIfEmpty(0, IItemEnergyBattery.class)
         .acceptIfEmpty(1, IItemEnergyBattery.class)
@@ -115,7 +117,7 @@ public class BatteryChargerElement extends SixNodeElement {
     public Map<String, String> getWaila() {
         Map<String, String> info = new HashMap<String, String>();
         info.put(I18N.tr("Charge Current"), Utils.plotAmpere("", powerLoad.getCurrent()));
-        if (Eln.wailaEasyMode) {
+        if (Eln.config.getBooleanOrElse("ui.waila.easyMode", false)) {
             info.put(I18N.tr("Voltage"), Utils.plotVolt("", powerLoad.getVoltage()));
             info.put(I18N.tr("Power"), Utils.plotPower("", powerLoad.getCurrent() * powerLoad.getVoltage()));
         }
@@ -125,7 +127,7 @@ public class BatteryChargerElement extends SixNodeElement {
     @NotNull
     @Override
     public String thermoMeterString() {
-        return null;
+        return "";
     }
 
     @Override

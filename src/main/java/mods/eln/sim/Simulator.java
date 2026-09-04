@@ -4,6 +4,10 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent.Phase;
 import cpw.mods.fml.common.gameevent.TickEvent.ServerTickEvent;
+import mods.eln.Eln;
+import mods.eln.environment.RoomThermalManager;
+import mods.eln.item.lampitem.LampLists;
+import mods.eln.metrics.MetricsSubsystem;
 import mods.eln.misc.Utils;
 import mods.eln.sim.mna.RootSystem;
 import mods.eln.sim.mna.component.Component;
@@ -48,6 +52,7 @@ public class Simulator /* ,IPacketHandler */ {
     double thermalTimeout = 0;
 
     private int printTimeCounter = 0;
+    private int resetLampLifeTimeoutCounter = 0;
 
     public ArrayList<IProcess> getElectricalProcessList() {
         return electricalProcessList;
@@ -428,6 +433,11 @@ public class Simulator /* ,IPacketHandler */ {
             thermalFastNsStack /= 20;
             thermalSlowNsStack /= 20;
             slowNsStack /= 20;
+            double avgTickMicroseconds = avgTickTime;
+            double electricalMicroseconds = electricalNsStack / 1000.0;
+            double thermalFastMicroseconds = thermalFastNsStack / 1000.0;
+            double thermalSlowMicroseconds = thermalSlowNsStack / 1000.0;
+            double slowMicroseconds = slowNsStack / 1000.0;
 
             Utils.println("ticks " + new DecimalFormat("#").format((int) avgTickTime) + " us" + "  E " + electricalNsStack / 1000 + "  TF " + thermalFastNsStack / 1000 + "  TS " + thermalSlowNsStack / 1000 + "  S " + slowNsStack / 1000
 
@@ -441,6 +451,24 @@ public class Simulator /* ,IPacketHandler */ {
                 + "    " + thermalSlowProcessList.size() + " TSP"
                 + "    " + slowProcessList.size() + " SP"
             );
+            if (MetricsSubsystem.isSimulatorMetricsActive()) {
+                MetricsSubsystem.publishSimulatorRuntimeMetrics(
+                    avgTickMicroseconds,
+                    electricalMicroseconds,
+                    thermalFastMicroseconds,
+                    thermalSlowMicroseconds,
+                    slowMicroseconds,
+                    mna.getSubSystemCount(),
+                    electricalProcessList.size(),
+                    thermalFastLoadList.size(),
+                    thermalFastConnectionList.size(),
+                    thermalFastProcessList.size(),
+                    thermalSlowLoadList.size(),
+                    thermalSlowConnectionList.size(),
+                    thermalSlowProcessList.size(),
+                    slowProcessList.size()
+                );
+            }
 
             avgTickTime = 0;
 
@@ -448,6 +476,14 @@ public class Simulator /* ,IPacketHandler */ {
             thermalFastNsStack = 0;
             slowNsStack = 0;
             thermalSlowNsStack = 0;
+
+            if (LampLists.INSTANCE.getResetLampLifeFlag()) {
+                if (++resetLampLifeTimeoutCounter == 2) { // Ensure that all lamp sockets have time to react to the flag by waiting between 1 and 2 seconds to reset the flag
+                    LampLists.INSTANCE.setResetLampLifeFlag(false);
+                    Utils.println("Reset all lamp lives to nominal.");
+                    resetLampLifeTimeoutCounter = 0;
+                }
+            }
         }
 
         for(IProcess o : slowPostProcessList) {
@@ -475,8 +511,28 @@ public class Simulator /* ,IPacketHandler */ {
                 process.process(dt);
             }
         }
+
+        RoomThermalManager.INSTANCE.advanceRoomAmbientExchange(dt);
+
         for (ThermalLoad load : loadList) {
-            load.PcTemp -= load.temperatureCelsius / load.Rp;
+            Double roomPower = null;
+            if (load.hasSimCoordinate()) {
+                roomPower = RoomThermalManager.INSTANCE.exchangeLoadWithRoom(
+                    load.getSimDimension(),
+                    load.getSimX(),
+                    load.getSimY(),
+                    load.getSimZ(),
+                    load.temperatureCelsius,
+                    load.Rp,
+                    dt
+                );
+            }
+
+            if (roomPower != null) {
+                load.PcTemp -= roomPower;
+            } else {
+                load.PcTemp -= load.temperatureCelsius / load.Rp;
+            }
 
             load.temperatureCelsius += load.PcTemp * dt / load.heatCapacity;
 

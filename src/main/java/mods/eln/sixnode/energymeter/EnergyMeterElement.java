@@ -73,7 +73,6 @@ public class EnergyMeterElement extends SixNodeElement {
 
     public EnergyMeterElement(SixNode sixNode, Direction side, SixNodeDescriptor descriptor) {
         super(sixNode, side, descriptor);
-        shunt.mustUseUltraImpedance();
 
         voltageWatchDogA = new VoltageStateWatchDog(aLoad);
         voltageWatchDogB = new VoltageStateWatchDog(bLoad);
@@ -196,7 +195,8 @@ public class EnergyMeterElement extends SixNodeElement {
     public void computeElectricalLoad() {
         ItemStack cable = inventory.getStackInSlot(EnergyMeterContainer.cableSlotId);
 
-        cableDescriptor = (ElectricalCableDescriptor) Eln.sixNodeItem.getDescriptor(cable);
+        SixNodeDescriptor descriptor = Eln.sixNodeItem.getDescriptor(cable);
+        cableDescriptor = descriptor instanceof ElectricalCableDescriptor ? (ElectricalCableDescriptor) descriptor : null;
         if (cableDescriptor == null) {
             aLoad.highImpedance();
             bLoad.highImpedance();
@@ -316,7 +316,7 @@ public class EnergyMeterElement extends SixNodeElement {
                     break;
             }
 
-            if (highImp) shunt.ultraImpedance();
+            if (highImp) shunt.highImpedance();
             else Eln.applySmallRs(shunt);
 
             publishTimeout -= time;

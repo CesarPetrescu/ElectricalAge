@@ -2,15 +2,20 @@ package mods.eln.registration
 
 import mods.eln.Eln
 import mods.eln.cable.CableRenderDescriptor
+import mods.eln.generic.GenericCreativeTab
+import mods.eln.generic.GenericItemBlockUsingDamageDescriptor
 import mods.eln.ghost.GhostGroup
 import mods.eln.i18n.I18N
 import mods.eln.item.ElectricalFuseDescriptor
 import mods.eln.item.ElectricalFuseDescriptor.Companion.BlownFuse
+import mods.eln.item.lampitem.LampLists
 import mods.eln.misc.Direction
 import mods.eln.misc.FunctionTableYProtect
 import mods.eln.misc.IFunction
 import mods.eln.misc.SeriesFunction.Companion.newE12
 import mods.eln.misc.SeriesFunction.Companion.newE6
+import mods.eln.misc.NominalVoltage
+import mods.eln.node.six.SixNodeDescriptor
 import mods.eln.sixnode.signalinductor.SignalInductorDescriptor
 import mods.eln.sixnode.*
 import mods.eln.sixnode.TreeResinCollector.TreeResinCollectorDescriptor
@@ -22,12 +27,19 @@ import mods.eln.sixnode.electricalalarm.ElectricalAlarmDescriptor
 import mods.eln.sixnode.electricalbreaker.ElectricalBreakerDescriptor
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor
 import mods.eln.sixnode.electricalcable.ElectricalSignalBusCableElement
+import mods.eln.sixnode.electricalcable.MoltenMetalPileDescriptor
+import mods.eln.sixnode.electricalcable.UtilityCableDescriptor
+import mods.eln.sixnode.electricalcable.UtilityCableElement
+import mods.eln.sixnode.electricalcable.UtilityCableMaterial
+import mods.eln.sixnode.electricalcable.UtilityCablePalette
+import mods.eln.sixnode.electricalcable.UtilityCableRender
 import mods.eln.sixnode.electricaldatalogger.ElectricalDataLoggerDescriptor
 import mods.eln.sixnode.electricaldigitaldisplay.ElectricalDigitalDisplayDescriptor
 import mods.eln.sixnode.electricalentitysensor.ElectricalEntitySensorDescriptor
 import mods.eln.sixnode.electricalfiredetector.ElectricalFireDetectorDescriptor
 import mods.eln.sixnode.electricalgatesource.ElectricalGateSourceDescriptor
 import mods.eln.sixnode.electricalgatesource.ElectricalGateSourceRenderObj
+import mods.eln.sixnode.electricalhumiditysensor.ElectricalHumiditySensorDescriptor
 import mods.eln.sixnode.electricallightsensor.ElectricalLightSensorDescriptor
 import mods.eln.sixnode.electricalmath.ElectricalMathDescriptor
 import mods.eln.sixnode.electricalredstoneinput.ElectricalRedstoneInputDescriptor
@@ -41,12 +53,14 @@ import mods.eln.sixnode.electricalwatch.ElectricalWatchDescriptor
 import mods.eln.sixnode.electricalweathersensor.ElectricalWeatherSensorDescriptor
 import mods.eln.sixnode.electricalwindsensor.ElectricalWindSensorDescriptor
 import mods.eln.sixnode.energymeter.EnergyMeterDescriptor
+import mods.eln.sixnode.mqttmeter.MqttEnergyMeterElement
+import mods.eln.sixnode.mqttmeter.MqttEnergyMeterRender
+import mods.eln.sixnode.mqttsignal.MqttSignalControllerDescriptor
 import mods.eln.sixnode.groundcable.GroundCableDescriptor
 import mods.eln.sixnode.hub.HubDescriptor
 import mods.eln.sixnode.lampsocket.LampSocketDescriptor
-import mods.eln.sixnode.lampsocket.LampSocketStandardObjRender
-import mods.eln.sixnode.lampsocket.LampSocketSuspendedObjRender
-import mods.eln.sixnode.lampsocket.LampSocketType
+import mods.eln.sixnode.lampsocket.objrender.LampSocketStandardObjRender
+import mods.eln.sixnode.lampsocket.objrender.LampSocketSuspendedObjRender
 import mods.eln.sixnode.lampsupply.LampSupplyDescriptor
 import mods.eln.sixnode.logicgate.*
 import mods.eln.sixnode.modbusrtu.ModbusRtuDescriptor
@@ -54,20 +68,73 @@ import mods.eln.sixnode.powersocket.PowerSocketDescriptor
 import mods.eln.sixnode.resistor.ResistorDescriptor
 import mods.eln.sixnode.thermalcable.ThermalCableDescriptor
 import mods.eln.sixnode.thermalsensor.ThermalSensorDescriptor
+import mods.eln.sixnode.thermometersensor.ThermometerSensorDescriptor
 import mods.eln.sixnode.tutorialsign.TutorialSignDescriptor
 import mods.eln.sixnode.wirelesssignal.repeater.WirelessSignalRepeaterDescriptor
 import mods.eln.sixnode.wirelesssignal.rx.WirelessSignalRxDescriptor
 import mods.eln.sixnode.wirelesssignal.source.WirelessSignalSourceDescriptor
 import mods.eln.sixnode.wirelesssignal.tx.WirelessSignalTxDescriptor
+import java.util.Locale
+import net.minecraft.creativetab.CreativeTabs
 
 object SixNodeRegistration {
 
-    fun registerSix() {
+    private fun <T : GenericItemBlockUsingDamageDescriptor> T.inTab(tab: CreativeTabs) = apply {
+        setCreativeTab(tab)
+    }
 
+    private fun <T : GenericItemBlockUsingDamageDescriptor> T.power() = inTab(Eln.creativeTabPowerElectronics)
+    private fun <T : GenericItemBlockUsingDamageDescriptor> T.signal() = inTab(Eln.creativeTabSignalProcessing)
+    private fun <T : GenericItemBlockUsingDamageDescriptor> T.lighting() = inTab(Eln.creativeTabLighting)
+    private fun <T : GenericItemBlockUsingDamageDescriptor> T.cables() = inTab(Eln.creativeTabCables)
+    private fun <T : GenericItemBlockUsingDamageDescriptor> T.powerDistribution() = inTab(Eln.creativeTabPowerDistribution)
+    private fun <T : GenericItemBlockUsingDamageDescriptor> T.tools() = inTab(Eln.creativeTabToolsArmor)
+    private fun <T : GenericItemBlockUsingDamageDescriptor> T.materials() = inTab(Eln.creativeTabOresMaterials)
+    private fun <T : GenericItemBlockUsingDamageDescriptor> T.machines() = inTab(Eln.creativeTabMachines)
+    private fun <T : GenericItemBlockUsingDamageDescriptor> T.creative() = inTab(Eln.creativeTabCreative)
+    private fun <T : GenericItemBlockUsingDamageDescriptor> T.other() = inTab(Eln.creativeTabOther)
+
+    fun registerSix() {
+        Eln.sixNodeItem.setCreativeTabForGroup(2, Eln.creativeTabPowerElectronics)
+        Eln.sixNodeItem.setCreativeTabForGroup(3, Eln.creativeTabCreative)
+        Eln.sixNodeItem.setCreativeTabForGroup(5, Eln.creativeTabPowerElectronics)
+        Eln.sixNodeItem.setCreativeTabForGroup(32, Eln.creativeTabPowerElectronics)
+        Eln.sixNodeItem.setCreativeTabForGroup(33, Eln.creativeTabPowerElectronics)
+        Eln.sixNodeItem.setCreativeTabForGroup(34, Eln.creativeTabCables)
+        Eln.sixNodeItem.setCreativeTabForGroup(35, Eln.creativeTabCables)
+        Eln.sixNodeItem.setCreativeTabForGroup(36, Eln.creativeTabCables)
+        Eln.sixNodeItem.setCreativeTabForGroup(37, Eln.creativeTabCables)
+        Eln.sixNodeItem.setCreativeTabForGroup(48, Eln.creativeTabPowerElectronics)
+        Eln.sixNodeItem.setCreativeTabForGroup(126, Eln.creativeTabPowerElectronics)
+        Eln.sixNodeItem.setCreativeTabForGroup(127, Eln.creativeTabPowerElectronics)
+        Eln.sixNodeItem.setCreativeTabForGroup(64, Eln.creativeTabLighting)
+        Eln.sixNodeItem.setCreativeTabForGroup(67, Eln.creativeTabPowerElectronics)
+        Eln.sixNodeItem.setCreativeTabForGroup(65, Eln.creativeTabLighting)
+        Eln.sixNodeItem.setCreativeTabForGroup(92, Eln.creativeTabSignalProcessing)
+        Eln.sixNodeItem.setCreativeTabForGroup(93, Eln.creativeTabSignalProcessing)
+        Eln.sixNodeItem.setCreativeTabForGroup(94, Eln.creativeTabPowerElectronics)
+        Eln.sixNodeItem.setCreativeTabForGroup(95, Eln.creativeTabSignalProcessing)
+        Eln.sixNodeItem.setCreativeTabForGroup(96, Eln.creativeTabPowerElectronics)
+        Eln.sixNodeItem.setCreativeTabForGroup(97, Eln.creativeTabPowerElectronics)
+        Eln.sixNodeItem.setCreativeTabForGroup(98, Eln.creativeTabPowerElectronics)
+        Eln.sixNodeItem.setCreativeTabForGroup(100, Eln.creativeTabSignalProcessing)
+        Eln.sixNodeItem.setCreativeTabForGroup(101, Eln.creativeTabSignalProcessing)
+        Eln.sixNodeItem.setCreativeTabForGroup(102, Eln.creativeTabSignalProcessing)
+        Eln.sixNodeItem.setCreativeTabForGroup(103, Eln.creativeTabSignalProcessing)
+        Eln.sixNodeItem.setCreativeTabForGroup(104, Eln.creativeTabSignalProcessing)
+        Eln.sixNodeItem.setCreativeTabForGroup(108, Eln.creativeTabSignalProcessing)
+        Eln.sixNodeItem.setCreativeTabForGroup(109, Eln.creativeTabSignalProcessing)
+        Eln.sixNodeItem.setCreativeTabForGroup(117, Eln.creativeTabSignalProcessing)
+        Eln.sixNodeItem.setCreativeTabForGroup(118, Eln.creativeTabSignalProcessing)
+        Eln.sixNodeItem.setCreativeTabForGroup(124, Eln.creativeTabSignalProcessing)
+        Eln.sixNodeItem.setCreativeTabForGroup(66, Eln.creativeTabPowerElectronics)
+        Eln.sixNodeItem.setCreativeTabForGroup(116, Eln.creativeTabMachines)
+        Eln.sixNodeItem.setCreativeTabForGroup(125, Eln.creativeTabToolsArmor)
         registerGround(2)
         registerElectricalSource(3)
         registerElectricalCable(32)
         registerCurrentCables(33)
+        registerUtilityCables(34, 35, 36, 37)
         registerThermalCable(48)
         registerCurrentRelays(126)
         if (Eln.instance.isDevelopmentRun) {
@@ -102,44 +169,42 @@ object SixNodeRegistration {
 
     private fun registerGround(id: Int) {
         var subId: Int
-        var name = ""
 
         run {
             subId = 0
-            name = I18N.TR_NAME(I18N.Type.NONE, "Ground Cable")
-            val desc = GroundCableDescriptor(name, Eln.obj.getObj("groundcable"))
+            val name = I18N.TR_NAME(I18N.Type.NONE, "Ground Cable")
+            val desc = GroundCableDescriptor(name, Eln.obj.getObj("groundcable")).creative()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
         run {
             subId = 8
-            name = I18N.TR_NAME(I18N.Type.NONE, "Hub")
-            val desc = HubDescriptor(name, Eln.obj.getObj("hub"))
+            val name = I18N.TR_NAME(I18N.Type.NONE, "Hub")
+            val desc = HubDescriptor(name, Eln.obj.getObj("hub")).power()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
     }
 
     private fun registerElectricalSource(id: Int) {
         var subId: Int
-        var name = ""
 
         run {
             subId = 0
-            name = I18N.TR_NAME(I18N.Type.NONE, "Electrical Source")
-            val desc = ElectricalSourceDescriptor(name, Eln.obj.getObj("voltagesource"), false)
+            val name = I18N.TR_NAME(I18N.Type.NONE, "Electrical Source")
+            val desc = ElectricalSourceDescriptor(name, Eln.obj.getObj("voltagesource"), false).creative()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
 
         run {
             subId = 1
-            name = I18N.TR_NAME(I18N.Type.NONE, "Signal Source")
+            val name = I18N.TR_NAME(I18N.Type.NONE, "Signal Source")
             val desc =
-                ElectricalSourceDescriptor(name, Eln.obj.getObj("signalsource"), true)
+                ElectricalSourceDescriptor(name, Eln.obj.getObj("signalsource"), true).creative()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
         run {
             subId = 2
-            name = I18N.TR_NAME(I18N.Type.NONE, "Current Source")
-            val desc = CurrentSourceDescriptor(name, Eln.obj.getObj("currentsource"))
+            val name = I18N.TR_NAME(I18N.Type.NONE, "Current Source")
+            val desc = CurrentSourceDescriptor(name, Eln.obj.getObj("currentsource")).creative()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
     }
@@ -153,10 +218,11 @@ object SixNodeRegistration {
             subId = 0
             name = I18N.TR_NAME(I18N.Type.NONE, "Signal Cable")
             Eln.instance.stdCableRenderSignal = CableRenderDescriptor("eln", "sprites/cable.png", 0.95f, 0.95f)
-            desc = ElectricalCableDescriptor(name, Eln.instance.stdCableRenderSignal, "For signal transmission.", true)
+            desc = ElectricalCableDescriptor(name, Eln.instance.stdCableRenderSignal, "For signal transmission.", true).signal()
+            desc.hideFromCreative()
             Eln.instance.signalCableDescriptor = desc
             desc.setPhysicalConstantLikeNormalCable(
-                Eln.SVU, Eln.SVP, 0.02 / 50 * Eln.gateOutputCurrent / Eln.SVII, Eln.SVU * 1.3,
+                Eln.SVU, Eln.SVP, 0.02 / 50 * Eln.SVU, Eln.SVU * 1.3,
                 Eln.SVP * 1.2, 0.5, Eln.cableWarmLimit, -100.0, Eln.cableHeatingTime, 1.0
             )
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
@@ -166,16 +232,17 @@ object SixNodeRegistration {
             subId = 4
             name = I18N.TR_NAME(I18N.Type.NONE, "Low Voltage Cable")
             Eln.instance.stdCableRender50V = CableRenderDescriptor("eln", "sprites/cable.png", 1.95f, 0.95f)
-            desc = ElectricalCableDescriptor(name, Eln.instance.stdCableRender50V, "For low voltage with high current.", false)
+            desc = ElectricalCableDescriptor(name, Eln.instance.stdCableRender50V, "For low voltage with high current.", false).power()
             Eln.instance.lowVoltageCableDescriptor = desc
             desc.setPhysicalConstantLikeNormalCable(
-                Eln.LVU, Eln.instance.LVP(), 0.2 / 20, Eln.LVU * 1.3, Eln.instance.LVP() * 1.2, 20.0, Eln.cableWarmLimit,
+                Eln.LVU, Eln.instance.LVP(), 0.2 / 20 / 100, Eln.LVU * 1.3, Eln.instance.LVP() * 1.2, 20.0, Eln.cableWarmLimit,
                 -100.0, Eln.cableHeatingTime, Eln.cableThermalConductionTao
             )
+            desc.hideFromCreative()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
             desc = ElectricalCableDescriptor(name, Eln.instance.stdCableRender50V, "For low voltage with high current.", false)
             desc.setPhysicalConstantLikeNormalCable(
-                Eln.LVU, Eln.instance.LVP() / 4, 0.2 / 20, Eln.LVU * 1.3, Eln.instance.LVP() * 1.2, 20.0,
+                Eln.LVU, Eln.instance.LVP() / 4, 0.2 / 20 / 100, Eln.LVU * 1.3, Eln.instance.LVP() * 1.2, 20.0,
                 Eln.cableWarmLimit, -100.0, Eln.cableHeatingTime, Eln.cableThermalConductionTao
             )
         }
@@ -184,24 +251,26 @@ object SixNodeRegistration {
             subId = 8
             name = I18N.TR_NAME(I18N.Type.NONE, "Medium Voltage Cable")
             Eln.instance.stdCableRender200V = CableRenderDescriptor("eln", "sprites/cable.png", 2.95f, 0.95f)
-            desc = ElectricalCableDescriptor(name, Eln.instance.stdCableRender200V, "miaou", false)
+            desc = ElectricalCableDescriptor(name, Eln.instance.stdCableRender200V, "miaou", false).power()
             Eln.instance.meduimVoltageCableDescriptor = desc
             desc.setPhysicalConstantLikeNormalCable(
-                Eln.MVU, Eln.instance.MVP(), 0.10 / 20, Eln.MVU * 1.3, Eln.instance.MVP() * 1.2, 30.0, Eln.cableWarmLimit,
+                Eln.MVU, Eln.instance.MVP(), 0.10 / 20 / 100, Eln.MVU * 1.3, Eln.instance.MVP() * 1.2, 30.0, Eln.cableWarmLimit,
                 -100.0, Eln.cableHeatingTime, Eln.cableThermalConductionTao
             )
+            desc.hideFromCreative()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
         run {
             subId = 12
             name = I18N.TR_NAME(I18N.Type.NONE, "High Voltage Cable")
             Eln.instance.stdCableRender800V = CableRenderDescriptor("eln", "sprites/cable.png", 3.95f, 1.95f)
-            desc = ElectricalCableDescriptor(name, Eln.instance.stdCableRender800V, "miaou2", false)
+            desc = ElectricalCableDescriptor(name, Eln.instance.stdCableRender800V, "miaou2", false).power()
             Eln.instance.highVoltageCableDescriptor = desc
             desc.setPhysicalConstantLikeNormalCable(
-                Eln.HVU, Eln.instance.HVP(), 0.025 * 5 / 4 / 20, Eln.HVU * 1.3, Eln.instance.HVP() * 1.2, 40.0,
+                Eln.HVU, Eln.instance.HVP(), 0.025 * 5 / 4 / 20 / 100, Eln.HVU * 1.3, Eln.instance.HVP() * 1.2, 40.0,
                 Eln.cableWarmLimit, -100.0, Eln.cableHeatingTime, Eln.cableThermalConductionTao
             )
+            desc.hideFromCreative()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
 
@@ -210,12 +279,13 @@ object SixNodeRegistration {
             subId = 16
             name = I18N.TR_NAME(I18N.Type.NONE, "Very High Voltage Cable")
             Eln.instance.stdCableRender3200V = CableRenderDescriptor("eln", "sprites/cableVHV.png", 3.95f, 1.95f)
-            desc = ElectricalCableDescriptor(name, Eln.instance.stdCableRender3200V, "miaou2", false)
+            desc = ElectricalCableDescriptor(name, Eln.instance.stdCableRender3200V, "miaou2", false).power()
             Eln.instance.veryHighVoltageCableDescriptor = desc
             desc.setPhysicalConstantLikeNormalCable(
-                Eln.VVU, Eln.instance.VVP(), 0.025 * 5 / 4 / 20 / 8, Eln.VVU * 1.3, Eln.instance.VVP() * 1.2, 40.0,
+                Eln.VVU, Eln.instance.VVP(), 0.025 * 5 / 4 / 20 / 8 / 100, Eln.VVU * 1.3, Eln.instance.VVP() * 1.2, 40.0,
                 Eln.cableWarmLimit, -100.0, Eln.cableHeatingTime, Eln.cableThermalConductionTao
             )
+            desc.hideFromCreative()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
 
@@ -226,13 +296,14 @@ object SixNodeRegistration {
             desc = ElectricalCableDescriptor(
                 name, Eln.instance.stdCableRenderCreative, "Experience the power of " +
                         "Microresistance", false
-            )
+            ).creative()
             Eln.instance.creativeCableDescriptor = desc
             desc.setPhysicalConstantLikeNormalCable(
                 Eln.VVU * 16, Eln.VVU * 16 * Eln.instance.VVP(), 1e-9,  //what!?
                 Eln.VVU * 16 * 1.3, Eln.VVU * 16 * Eln.instance.VVP() * 1.2, 40.0, Eln.cableWarmLimit, -100.0, Eln.cableHeatingTime,
                 Eln.cableThermalConductionTao
             )
+            desc.hideFromCreative()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
 
@@ -240,13 +311,14 @@ object SixNodeRegistration {
             subId = 20
             name = I18N.TR_NAME(I18N.Type.NONE, "Signal Bus Cable")
             Eln.instance.stdCableRenderSignalBus = CableRenderDescriptor("eln", "sprites/cable.png", 3.95f, 3.95f)
-            desc = ElectricalCableDescriptor(name, Eln.instance.stdCableRenderSignalBus, "For transmitting many signals.", true)
+            desc = ElectricalCableDescriptor(name, Eln.instance.stdCableRenderSignalBus, "For transmitting many signals.", true).signal()
             Eln.instance.signalBusCableDescriptor = desc
             desc.setPhysicalConstantLikeNormalCable(
-                Eln.SVU, Eln.SVP, 0.02 / 50 * Eln.gateOutputCurrent / Eln.SVII, Eln.SVU * 1.3,
+                Eln.SVU, Eln.SVP, 0.02 / 50 * Eln.SVU, Eln.SVU * 1.3,
                 Eln.SVP * 1.2, 0.5, Eln.cableWarmLimit, -100.0, Eln.cableHeatingTime, 1.0
             )
             desc.ElementClass = ElectricalSignalBusCableElement::class.java
+            desc.hideFromCreative()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
     }
@@ -259,8 +331,9 @@ object SixNodeRegistration {
             subId = 0
             name = I18N.TR_NAME(I18N.Type.NONE, "Low Current Cable")
             Eln.instance.lowCurrentCableRender = CableRenderDescriptor("eln", "sprites/currentcable.png", 1.9f, 0.9f)
-            desc = CurrentCableDescriptor(name, Eln.instance.lowCurrentCableRender, "Current based electrical cable")
+            desc = CurrentCableDescriptor(name, Eln.instance.lowCurrentCableRender, "Current based electrical cable").power()
             desc.setPhysicalConstantLikeNormalCable(5.0)
+            desc.hideFromCreative()
             Eln.instance.lowCurrentCableDescriptor = desc
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
@@ -268,8 +341,9 @@ object SixNodeRegistration {
             subId = 1
             name = I18N.TR_NAME(I18N.Type.NONE, "Medium Current Cable")
             Eln.instance.mediumCurrentCableRender = CableRenderDescriptor("eln", "sprites/currentcable.png", 2.9f, 1.9f)
-            desc = CurrentCableDescriptor(name, Eln.instance.mediumCurrentCableRender, "Current based electrical cable")
+            desc = CurrentCableDescriptor(name, Eln.instance.mediumCurrentCableRender, "Current based electrical cable").power()
             desc.setPhysicalConstantLikeNormalCable(20.0)
+            desc.hideFromCreative()
             Eln.instance.mediumCurrentCableDescriptor = desc
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
@@ -277,10 +351,396 @@ object SixNodeRegistration {
             subId = 2
             name = I18N.TR_NAME(I18N.Type.NONE, "High Current Cable")
             Eln.instance.highCurrentCableRender = CableRenderDescriptor("eln", "sprites/currentcable.png", 3.9f, 1.9f)
-            desc = CurrentCableDescriptor(name, Eln.instance.highCurrentCableRender, "Current based electrical cable")
+            desc = CurrentCableDescriptor(name, Eln.instance.highCurrentCableRender, "Current based electrical cable").power()
             desc.setPhysicalConstantLikeNormalCable(100.0)
+            desc.hideFromCreative()
             Eln.instance.highCurrentCableDescriptor = desc
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
+        }
+    }
+
+    private data class UtilitySingleSpec(
+        val awgLabel: String,
+        val metricArea: Double,
+        val ampacity: Double,
+        val insulatedVoltage: Double,
+        val insulatedTemperature: Double,
+        val poleEligible: Boolean = false
+    )
+
+    private data class UtilityMultiSpec(
+        val label: String,
+        val metricArea: Double,
+        val conductorCount: Int,
+        val ampacity: Double,
+        val insulationVoltage: Double,
+        val maxTemperature: Double,
+        val flatStyle: Boolean,
+        val palettes: Array<UtilityCablePalette>,
+        val poleEligible: Boolean = false
+    )
+
+    private class UtilityDescriptorAllocator(private val groups: IntArray) {
+        private var groupIndex = 0
+        private var subId = 0
+
+        fun nextId(): Int {
+            check(groupIndex < groups.size) { "Out of six-node groups while registering utility cables" }
+            val id = subId + (groups[groupIndex] shl 6)
+            subId++
+            if (subId >= 64) {
+                groupIndex++
+                subId = 0
+            }
+            return id
+        }
+    }
+
+    private fun registerUtilityCables(vararg groups: Int) {
+        val allocator = UtilityDescriptorAllocator(groups)
+        val renderCache = linkedMapOf<String, CableRenderDescriptor>()
+        val signalCategoryAreaThresholdMm2 = 1.5
+        var distributionTabIconAssigned = false
+
+        fun <T : GenericItemBlockUsingDamageDescriptor> categoriseUtilityCable(desc: T, conductorAreaMm2: Double, poleEligible: Boolean): T {
+            return when {
+                poleEligible -> desc.powerDistribution()
+                conductorAreaMm2 < signalCategoryAreaThresholdMm2 -> desc.signal()
+                else -> desc.cables()
+            }
+        }
+
+        fun render(texture: String, width: Float, height: Float): CableRenderDescriptor {
+            val key = "$texture:$width:$height"
+            return renderCache.getOrPut(key) { CableRenderDescriptor("eln", texture, width, height) }
+        }
+
+        fun newMoltenPileDescriptor(material: UtilityCableMaterial): MoltenMetalPileDescriptor {
+            return MoltenMetalPileDescriptor(
+                "${material.label} Molten Metal Pile",
+                material,
+                render("sprites/cable_melted.png", 2.4f, 0.9f)
+            ).also { desc ->
+                desc.setDefaultIcon("arcmetalblock")
+                desc.hideFromCreative()
+            }
+        }
+
+        fun iconNameFor(spec: UtilitySingleSpec, insulated: Boolean): String {
+            return when {
+                !insulated -> "utilitybareicon"
+                spec.metricArea <= 0.5 -> "utilitysignalicon"
+                spec.metricArea <= 2.5 -> "utilityinsulatedsmallicon"
+                spec.metricArea <= 35.0 -> "utilityinsulatedmediumicon"
+                else -> "utilityinsulatedlargeicon"
+            }
+        }
+
+        fun renderWidth(metricArea: Double, conductorCount: Int, flatStyle: Boolean): Pair<Float, Float> {
+            val singleWidth = when {
+                metricArea <= 0.5 -> 0.65f
+                metricArea <= 2.5 -> 0.95f
+                metricArea <= 10.0 -> 1.25f
+                metricArea <= 35.0 -> 1.75f
+                metricArea <= 120.0 -> 2.35f
+                else -> 3.25f
+            }
+            if (flatStyle) {
+                val totalVolume = (singleWidth * singleWidth * conductorCount * 0.38f).coerceAtLeast(1.0f)
+                val width = (conductorCount * 0.92f + singleWidth * 0.35f).coerceAtLeast(2.2f)
+                val height = (totalVolume / width).coerceIn(0.95f, 2.2f)
+                return Pair(width, height)
+            }
+            return if (conductorCount <= 1) {
+                Pair(singleWidth, maxOf(0.65f, singleWidth - 0.3f))
+            } else {
+                val body = singleWidth + 0.75f + (conductorCount - 2) * 0.4f
+                Pair(body, body)
+            }
+        }
+
+        fun areaLabel(area: Double): String = String.format(Locale.ROOT, "%.2f", area)
+
+        fun nearestEuMetricLabel(area: Double): String {
+            val sizes = listOf(0.14, 0.25, 0.34, 0.5, 0.75, 1.5, 2.5, 4.0, 6.0, 10.0, 16.0, 25.0, 35.0, 50.0, 70.0, 120.0, 185.0, 240.0, 400.0, 500.0)
+            val nearest = sizes.minByOrNull { kotlin.math.abs(it - area) } ?: area
+            return if (nearest % 1.0 == 0.0) nearest.toInt().toString() else nearest.toString()
+        }
+
+        fun nearestEuStyleName(area: Double, conductorCount: Int, flatStyle: Boolean): String {
+            val metricLabel = nearestEuMetricLabel(area)
+            if (conductorCount <= 1) return "$metricLabel mm2 single"
+            return if (flatStyle) {
+                "${conductorCount - 1}G$metricLabel"
+            } else {
+                "${conductorCount}C $metricLabel mm2"
+            }
+        }
+
+        fun configureElectricalConstants(desc: UtilityCableDescriptor, area: Double, ampacity: Double, nominalVoltage: Double, maxTemperature: Double) {
+            val baseAreaMm2 = 0.14
+            val baseTotalResistanceOhms = 0.001
+            val minimumTotalResistanceOhms = 0.00001
+            val totalResistanceOhms = (baseTotalResistanceOhms * (baseAreaMm2 / area.coerceAtLeast(baseAreaMm2)))
+                .coerceAtLeast(minimumTotalResistanceOhms)
+            val dropFactor = (totalResistanceOhms * ampacity / nominalVoltage).coerceAtLeast(1.0e-6)
+            val nominalPower = nominalVoltage * ampacity
+            desc.setPhysicalConstantLikeNormalCable(
+                nominalVoltage,
+                nominalPower,
+                dropFactor,
+                maxOf(nominalVoltage * 1.5, desc.insulationVoltageRating),
+                nominalPower * 1.1,
+                20.0,
+                maxTemperature,
+                -100.0,
+                Eln.cableHeatingTime,
+                Eln.cableThermalConductionTao
+            )
+            desc.ElementClass = UtilityCableElement::class.java
+            desc.RenderClass = UtilityCableRender::class.java
+        }
+
+        fun newSingleDescriptor(spec: UtilitySingleSpec, material: UtilityCableMaterial, insulated: Boolean, melted: Boolean = false): UtilityCableDescriptor {
+            val insulationLabel = when {
+                melted -> "Melted"
+                insulated -> "${spec.insulatedVoltage.toInt()}V"
+                else -> "Bare"
+            }
+            val name = "${material.label} ${spec.awgLabel} Cable $insulationLabel"
+            val (width, height) = renderWidth(spec.metricArea, 1, false)
+            val texture = when {
+                melted -> "sprites/cable_melted.png"
+                insulated -> "sprites/cable.png"
+                else -> "sprites/currentcable.png"
+            }
+            return UtilityCableDescriptor(
+                name = name,
+                render = render(texture, width, height),
+                description = if (insulated) "Insulated single-conductor utility cable." else "Bare single-conductor utility cable.",
+                sizeLabel = spec.awgLabel,
+                metricSizeLabel = areaLabel(spec.metricArea),
+                nearestEuStyleName = nearestEuStyleName(spec.metricArea, 1, false),
+                material = material,
+                totalConductorAreaMm2 = spec.metricArea,
+                conductorCount = 1,
+                insulated = insulated && !melted,
+                insulationVoltageRating = if (insulated && !melted) spec.insulatedVoltage else 0.0,
+                melted = melted,
+                meltTemperatureCelsius = if (melted) spec.insulatedTemperature else if (insulated) spec.insulatedTemperature else 180.0,
+                flatStyle = false,
+                colorPalettes = arrayOf(UtilityCablePalette("single", "Single", intArrayOf(0))),
+                poleEligible = spec.poleEligible && !melted
+            ).also { desc ->
+                desc.setDefaultIcon(iconNameFor(spec, insulated))
+                configureElectricalConstants(desc, spec.metricArea, spec.ampacity, maxOf(50.0, spec.insulatedVoltage), if (insulated || melted) spec.insulatedTemperature else 180.0)
+                if (melted) {
+                    desc.hideFromCreative()
+                }
+            }
+        }
+
+        fun newMultiDescriptor(spec: UtilityMultiSpec, material: UtilityCableMaterial, melted: Boolean = false): UtilityCableDescriptor {
+            val name = "${material.label} ${spec.label} Cable ${if (melted) "Melted" else "${spec.insulationVoltage.toInt()}V"}"
+            val (width, height) = renderWidth(spec.metricArea, spec.conductorCount, spec.flatStyle)
+            val effectiveCount = if (melted) 1 else spec.conductorCount
+            val palettes = if (melted) arrayOf(UtilityCablePalette("melted", "Melted", intArrayOf(0))) else spec.palettes
+            return UtilityCableDescriptor(
+                name = name,
+                render = render(
+                    if (melted) "sprites/cable_melted_multi.png" else "sprites/cable.png",
+                    width,
+                    height
+                ),
+                description = "Insulated multi-conductor utility cable.",
+                sizeLabel = spec.label,
+                metricSizeLabel = areaLabel(spec.metricArea),
+                nearestEuStyleName = nearestEuStyleName(spec.metricArea, spec.conductorCount, spec.flatStyle),
+                material = material,
+                totalConductorAreaMm2 = spec.metricArea * spec.conductorCount,
+                conductorCount = effectiveCount,
+                insulated = !melted,
+                insulationVoltageRating = if (melted) 0.0 else spec.insulationVoltage,
+                melted = melted,
+                meltTemperatureCelsius = spec.maxTemperature,
+                flatStyle = spec.flatStyle,
+                colorPalettes = palettes,
+                poleEligible = spec.poleEligible && !melted
+            ).also { desc ->
+                desc.setDefaultIcon("utilityinsulatedlargeicon")
+                configureElectricalConstants(desc, spec.metricArea, spec.ampacity, spec.insulationVoltage, spec.maxTemperature)
+                if (melted) {
+                    desc.hideFromCreative()
+                }
+            }
+        }
+
+        val singles = listOf(
+            UtilitySingleSpec("26 AWG", 0.1288, 1.0, 300.0, 80.0),
+            UtilitySingleSpec("24 AWG", 0.2047, 2.0, 300.0, 80.0),
+            UtilitySingleSpec("22 AWG", 0.3255, 3.0, 300.0, 80.0),
+            UtilitySingleSpec("20 AWG", 0.5176, 5.0, 300.0, 80.0),
+            UtilitySingleSpec("18 AWG", 0.8230, 7.0, 300.0, 90.0),
+            UtilitySingleSpec("16 AWG", 1.309, 10.0, 300.0, 90.0),
+            UtilitySingleSpec("14 AWG", 2.081, 15.0, 600.0, 105.0),
+            UtilitySingleSpec("12 AWG", 3.309, 20.0, 600.0, 105.0),
+            UtilitySingleSpec("10 AWG", 5.261, 30.0, 600.0, 105.0),
+            UtilitySingleSpec("8 AWG", 8.366, 40.0, 600.0, 105.0),
+            UtilitySingleSpec("6 AWG", 13.302, 60.0, 600.0, 105.0),
+            UtilitySingleSpec("4 AWG", 21.151, 80.0, 600.0, 105.0),
+            UtilitySingleSpec("2 AWG", 33.631, 100.0, 600.0, 105.0, poleEligible = true),
+            UtilitySingleSpec("1/0 AWG", 53.475, 125.0, 1000.0, 110.0, poleEligible = true),
+            UtilitySingleSpec("2/0 AWG", 67.431, 175.0, 1000.0, 110.0, poleEligible = true),
+            UtilitySingleSpec("4/0 AWG", 107.219, 260.0, 1000.0, 110.0, poleEligible = true),
+            UtilitySingleSpec("250 kcmil", 126.677, 290.0, 1000.0, 110.0, poleEligible = true),
+            UtilitySingleSpec("350 kcmil", 177.348, 350.0, 1000.0, 110.0, poleEligible = true),
+            UtilitySingleSpec("500 kcmil", 253.354, 430.0, 1000.0, 110.0, poleEligible = true),
+            UtilitySingleSpec("750 kcmil", 380.031, 600.0, 1000.0, 110.0, poleEligible = true),
+            UtilitySingleSpec("1000 kcmil", 506.707, 750.0, 1000.0, 110.0, poleEligible = true)
+        )
+
+        val us2 = arrayOf(
+            UtilityCablePalette("us", "US", intArrayOf(0, 15, 2)),
+            UtilityCablePalette("eu", "EU", intArrayOf(12, 11, 5))
+        )
+        val us3 = arrayOf(
+            UtilityCablePalette("us", "US", intArrayOf(0, 1, 15, 2)),
+            UtilityCablePalette("eu", "EU", intArrayOf(12, 15, 11, 5))
+        )
+        val eu3g = arrayOf(UtilityCablePalette("eu", "EU", intArrayOf(12, 11, 5)), UtilityCablePalette("us", "US", intArrayOf(15, 0, 13)))
+        val eu5g = arrayOf(UtilityCablePalette("eu", "EU", intArrayOf(12, 15, 7, 11, 5)), UtilityCablePalette("us", "US", intArrayOf(15, 14, 11, 0, 13)))
+        val signal2 = arrayOf(
+            UtilityCablePalette("std", "Signal", intArrayOf(12, 0))
+        )
+        val signal3 = arrayOf(
+            UtilityCablePalette("std", "Signal", intArrayOf(12, 15, 0))
+        )
+        val signal4 = arrayOf(
+            UtilityCablePalette("std", "Signal", intArrayOf(12, 15, 2, 0))
+        )
+        val signal5 = arrayOf(
+            UtilityCablePalette("std", "Signal", intArrayOf(12, 15, 2, 1, 0))
+        )
+        val signal8 = arrayOf(
+            UtilityCablePalette("std", "Signal", intArrayOf(12, 15, 2, 1, 14, 4, 6, 0))
+        )
+        val triplex120240 = arrayOf(
+            UtilityCablePalette("us", "US Split-Phase", intArrayOf(0, 12, 7)),
+            UtilityCablePalette("eu", "EU", intArrayOf(4, 11, 7))
+        )
+        val quadruplex208480 = arrayOf(
+            UtilityCablePalette("us", "US 3P", intArrayOf(0, 12, 1, 7)),
+            UtilityCablePalette("eu", "EU 3P", intArrayOf(4, 11, 7, 3))
+        )
+
+        val multis = listOf(
+            UtilityMultiSpec("2C 18 AWG", 0.8230, 2, 7.0, 300.0, 90.0, false, signal2),
+            UtilityMultiSpec("3C 18 AWG", 0.8230, 3, 7.0, 300.0, 90.0, false, signal3),
+            UtilityMultiSpec("4C 18 AWG", 0.8230, 4, 7.0, 300.0, 90.0, false, signal4),
+            UtilityMultiSpec("5C 18 AWG", 0.8230, 5, 7.0, 300.0, 90.0, false, signal5),
+            UtilityMultiSpec("8C 18 AWG", 0.8230, 8, 7.0, 300.0, 90.0, false, signal8),
+            UtilityMultiSpec("2C 20 AWG", 0.5176, 2, 5.0, 300.0, 80.0, false, signal2),
+            UtilityMultiSpec("3C 20 AWG", 0.5176, 3, 5.0, 300.0, 80.0, false, signal3),
+            UtilityMultiSpec("4C 20 AWG", 0.5176, 4, 5.0, 300.0, 80.0, false, signal4),
+            UtilityMultiSpec("5C 20 AWG", 0.5176, 5, 5.0, 300.0, 80.0, false, signal5),
+            UtilityMultiSpec("8C 20 AWG", 0.5176, 8, 5.0, 300.0, 80.0, false, signal8),
+            UtilityMultiSpec("14/2", 2.081, 3, 15.0, 600.0, 105.0, true, us2),
+            UtilityMultiSpec("14/3", 2.081, 4, 15.0, 600.0, 105.0, true, us3),
+            UtilityMultiSpec("12/2", 3.309, 3, 20.0, 600.0, 105.0, true, us2),
+            UtilityMultiSpec("12/3", 3.309, 4, 20.0, 600.0, 105.0, true, us3),
+            UtilityMultiSpec("10/2", 5.261, 3, 30.0, 600.0, 105.0, true, us2),
+            UtilityMultiSpec("10/3", 5.261, 4, 30.0, 600.0, 105.0, true, us3),
+            UtilityMultiSpec("8/2", 8.366, 3, 40.0, 600.0, 105.0, true, us2),
+            UtilityMultiSpec("8/3", 8.366, 4, 40.0, 600.0, 105.0, true, us3),
+            UtilityMultiSpec("6/2", 13.302, 3, 60.0, 600.0, 105.0, true, us2),
+            UtilityMultiSpec("6/3", 13.302, 4, 60.0, 600.0, 105.0, true, us3),
+            UtilityMultiSpec("4/2", 21.151, 3, 80.0, 600.0, 105.0, true, us2),
+            UtilityMultiSpec("4/3", 21.151, 4, 80.0, 600.0, 105.0, true, us3),
+            UtilityMultiSpec("Triplex 1/0", 53.475, 3, 150.0, 600.0, 105.0, false, triplex120240, poleEligible = true),
+            UtilityMultiSpec("Triplex 4/0", 107.219, 3, 260.0, 600.0, 105.0, false, triplex120240, poleEligible = true),
+            UtilityMultiSpec("Quadruplex 1/0", 53.475, 4, 125.0, 600.0, 105.0, false, quadruplex208480, poleEligible = true),
+            UtilityMultiSpec("Quadruplex 4/0", 107.219, 4, 260.0, 600.0, 105.0, false, quadruplex208480, poleEligible = true)
+        )
+
+        val moltenPileByMaterial = UtilityCableMaterial.values().associateWith { material ->
+            newMoltenPileDescriptor(material).also { desc ->
+                Eln.sixNodeItem.addDescriptor(allocator.nextId(), desc.power())
+            }
+        }
+
+        I18N.TR_EXPAND(I18N.Type.NONE, "%s Molten Metal Pile",
+            arrayOf("Copper", "Aluminum")
+        )
+
+        I18N.TR_EXPAND(I18N.Type.NONE, "%s %s Cable %s",
+            arrayOf("Copper", "Aluminum"),
+            arrayOf("26 AWG", "24 AWG", "22 AWG", "20 AWG", "18 AWG", "16 AWG"),
+            arrayOf("Bare", "300V", "Melted")
+        )
+        I18N.TR_EXPAND(I18N.Type.NONE, "%s %s Cable %s",
+            arrayOf("Copper", "Aluminum"),
+            arrayOf("14 AWG", "12 AWG", "10 AWG", "8 AWG", "6 AWG", "4 AWG", "2 AWG"),
+            arrayOf("Bare", "600V", "Melted")
+        )
+        I18N.TR_EXPAND(I18N.Type.NONE, "%s %s Cable %s",
+            arrayOf("Copper", "Aluminum"),
+            arrayOf("1/0 AWG", "2/0 AWG", "4/0 AWG",
+                "250 kcmil", "350 kcmil", "500 kcmil", "750 kcmil", "1000 kcmil"),
+            arrayOf("Bare", "1000V", "Melted")
+        )
+
+        I18N.TR_EXPAND(I18N.Type.NONE, "%s %s Cable %s",
+            arrayOf("Copper", "Aluminum"),
+            arrayOf(
+                "2C 18 AWG", "3C 18 AWG", "4C 18 AWG", "5C 18 AWG", "8C 18 AWG",
+                "2C 20 AWG", "3C 20 AWG", "4C 20 AWG", "5C 20 AWG", "8C 20 AWG"
+            ),
+            arrayOf("300V", "Melted")
+        )
+        I18N.TR_EXPAND(I18N.Type.NONE, "%s %s Cable %s",
+            arrayOf("Copper", "Aluminum"),
+            arrayOf(
+                "14/2", "14/3", "12/2", "12/3", "10/2", "10/3", "8/2", "8/3",
+                "6/2", "6/3", "4/2", "4/3",
+                "Triplex 1/0", "Triplex 4/0", "Quadruplex 1/0", "Quadruplex 4/0"
+            ),
+            arrayOf("600V", "Melted")
+        )
+
+        for (material in UtilityCableMaterial.values()) {
+            for (spec in singles) {
+                if (material == UtilityCableMaterial.ALUMINUM && !spec.poleEligible) continue
+
+                val bare = newSingleDescriptor(spec, material, insulated = false)
+                bare.moltenPileDescriptor = moltenPileByMaterial[material]
+                Eln.sixNodeItem.addDescriptor(allocator.nextId(), categoriseUtilityCable(bare, spec.metricArea, bare.poleEligible))
+                if (!distributionTabIconAssigned && material == UtilityCableMaterial.ALUMINUM && bare.poleEligible) {
+                    (Eln.creativeTabPowerDistribution as? GenericCreativeTab)?.setIcon(bare.newCreativeTabStack())
+                    distributionTabIconAssigned = true
+                }
+
+                val insulated = newSingleDescriptor(spec, material, insulated = true)
+                val melted = newSingleDescriptor(spec, material, insulated = true, melted = true)
+                insulated.meltedDescriptor = melted
+                insulated.moltenPileDescriptor = moltenPileByMaterial[material]
+                melted.moltenPileDescriptor = moltenPileByMaterial[material]
+                Eln.sixNodeItem.addDescriptor(allocator.nextId(), categoriseUtilityCable(insulated, spec.metricArea, insulated.poleEligible))
+                Eln.sixNodeItem.addDescriptor(allocator.nextId(), categoriseUtilityCable(melted, spec.metricArea, melted.poleEligible))
+            }
+        }
+
+        for (material in UtilityCableMaterial.values()) {
+            for (spec in multis) {
+                if (material == UtilityCableMaterial.ALUMINUM && !spec.poleEligible) continue
+
+                val multi = newMultiDescriptor(spec, material)
+                val melted = newMultiDescriptor(spec, material, melted = true)
+                multi.meltedDescriptor = melted
+                multi.moltenPileDescriptor = moltenPileByMaterial[material]
+                melted.moltenPileDescriptor = moltenPileByMaterial[material]
+                Eln.sixNodeItem.addDescriptor(allocator.nextId(), categoriseUtilityCable(multi, spec.metricArea, multi.poleEligible))
+                Eln.sixNodeItem.addDescriptor(allocator.nextId(), categoriseUtilityCable(melted, spec.metricArea, melted.poleEligible))
+            }
         }
     }
 
@@ -291,22 +751,25 @@ object SixNodeRegistration {
         run {
             subId = 0
             name = I18N.TR_NAME(I18N.Type.NONE, "Low Current Relay")
-            desc = CurrentRelayDescriptor(name, Eln.obj.getObj("RelayBig"), Eln.instance.lowCurrentCableDescriptor)
+            desc = CurrentRelayDescriptor(name, Eln.obj.getObj("RelayBig"), Eln.instance.lowCurrentCableDescriptor).power()
             desc.setPhysicalConstantLikeNormalCable(5.0)
+            desc.hideFromCreative()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
         run {
             subId = 1
             name = I18N.TR_NAME(I18N.Type.NONE, "Medium Current Relay")
-            desc = CurrentRelayDescriptor(name, Eln.obj.getObj("relay800"), Eln.instance.mediumCurrentCableDescriptor)
+            desc = CurrentRelayDescriptor(name, Eln.obj.getObj("relay800"), Eln.instance.mediumCurrentCableDescriptor).power()
             desc.setPhysicalConstantLikeNormalCable(20.0)
+            desc.hideFromCreative()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
         run {
             subId = 2
             name = I18N.TR_NAME(I18N.Type.NONE, "High Current Relay")
-            desc = CurrentRelayDescriptor(name, Eln.obj.getObj("relay800"), Eln.instance.highCurrentCableDescriptor)
+            desc = CurrentRelayDescriptor(name, Eln.obj.getObj("relay800"), Eln.instance.highCurrentCableDescriptor).power()
             desc.setPhysicalConstantLikeNormalCable(100.0)
+            desc.hideFromCreative()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
     }
@@ -314,7 +777,8 @@ object SixNodeRegistration {
     private fun registerConduit(id: Int) {
         val subId = 0
         val name = I18N.TR_NAME(I18N.Type.NONE, "Conduit")
-        val desc = ConduitCableDescriptor(name, CableRenderDescriptor("eln", "sprites/conduit.png", 4f, 4f))
+        val desc = ConduitCableDescriptor(name, CableRenderDescriptor("eln", "sprites/conduit.png", 4f, 4f)).power()
+        desc.hideFromCreative()
         Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
     }
 
@@ -340,235 +804,310 @@ object SixNodeRegistration {
             val desc = ThermalCableDescriptor(
                 name, (1000 - 20).toDouble(), -200.0, 500.0, 2000.0, 2.0, 10.0, 0.1,
                 CableRenderDescriptor("eln", "sprites/tex_thermalcablebase.png", 4f, 4f), "Miaou !"
-            )
+            ).power()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
     }
 
+    /**
+     * The run{} blocks in this function are not called in order of subId. This is done to organize the creative menu
+     * in a more logical way. Thus, take care when adding new lamp socket types. Current subId associations:
+     * - 0: Classic Lamp Socket
+     * - 1: Spot Lamp Socket
+     * - (2-3):
+     * - 4: Robust Lamp Socket
+     * - 5: Flat Lamp Socket
+     * - 6: Simple Lamp Socket
+     * - 7: Fluorescent Lamp Socket
+     * - 8: Streetlight
+     * - 9: Sconce Lamp Socket
+     * - (10-11):
+     * - 12: Suspended Lamp Socket
+     * - 13: Long Suspended Lamp Socket
+     * - (14):
+     * - 15: 120V Emergency Lamp
+     * - 16: 240V Emergency Lamp
+     * - 17: Suspended Lamp Socket (No Swing)
+     * - 18: Long Suspended Lamp Socket (No Swing)
+     */
     private fun registerLampSocket(id: Int) {
         var subId: Int
-        var name: String?
+        var completeId: Int
+        var descriptor: SixNodeDescriptor
+
+        val streetlightGhostGroup = GhostGroup()
+        streetlightGhostGroup.addElement(1, 0, 0)
+        streetlightGhostGroup.addElement(2, 0, 0)
 
         run {
             subId = 0
-            name = I18N.TR_NAME(I18N.Type.NONE, "Lamp Socket A")
-            val desc = LampSocketDescriptor(
-                name, LampSocketStandardObjRender(
-                    Eln.obj.getObj(
-                        "ClassicLampSocket"
-                    ), false
-                ), LampSocketType.Douille, false, 4, 0f, 0f, 0f
+            completeId = subId + (id shl 6)
+            descriptor = LampSocketDescriptor(
+                I18N.TR_NAME(I18N.Type.NONE, "Classic Lamp Socket"),
+                LampSocketStandardObjRender(Eln.obj.getObj("ClassicLampSocket"), false),
+                4,
+                arrayOf(
+                    LampLists.getLampData("incandescent")!!,
+                    LampLists.getLampData("carbon")!!,
+                    LampLists.getLampData("farming")!!,
+                    LampLists.getLampData("led")!!
+                )
             )
-            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
+            Eln.sixNodeItem.addDescriptor(completeId, descriptor)
         }
+
         run {
             subId = 1
-            name = I18N.TR_NAME(I18N.Type.NONE, "Lamp Socket B Projector")
-            val desc = LampSocketDescriptor(
-                name, LampSocketStandardObjRender(
-                    Eln.obj.getObj(
-                        "ClassicLampSocket"
-                    ), false
-                ), LampSocketType.Douille, false, 10, -90f, 90f, 0f
+            completeId = subId + (id shl 6)
+            descriptor = LampSocketDescriptor(
+                I18N.TR_NAME(I18N.Type.NONE, "Spot Lamp Socket"),
+                LampSocketStandardObjRender(Eln.obj.getObj("ClassicLampSocket"), false),
+                10,
+                arrayOf(
+                    LampLists.getLampData("incandescent")!!,
+                    LampLists.getLampData("carbon")!!,
+                    LampLists.getLampData("farming")!!,
+                    LampLists.getLampData("led")!!
+                )
             )
-            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
+            descriptor.enableProjectionRotation = true
+            Eln.sixNodeItem.addDescriptor(completeId, descriptor)
         }
 
         run {
             subId = 4
-            name = I18N.TR_NAME(I18N.Type.NONE, "Robust Lamp Socket")
-            val desc = LampSocketDescriptor(
-                name, LampSocketStandardObjRender(
-                    Eln.obj.getObj(
-                        "RobustLamp"
-                    ), true
-                ), LampSocketType.Douille, false, 3, 0f, 0f, 0f
-            )
-            desc.setInitialOrientation(-90f)
-            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
-        }
-        run {
-            subId = 5
-            name = I18N.TR_NAME(I18N.Type.NONE, "Flat Lamp Socket")
-            val desc = LampSocketDescriptor(
-                name, LampSocketStandardObjRender(
-                    Eln.obj.getObj(
-                        "FlatLamp"
-                    ), true
-                ), LampSocketType.Douille, false, 3, 0f, 0f, 0f
-            )
-            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
-        }
-        run {
-            subId = 6
-            name = I18N.TR_NAME(I18N.Type.NONE, "Simple Lamp Socket")
-            val desc = LampSocketDescriptor(
-                name, LampSocketStandardObjRender(
-                    Eln.obj.getObj(
-                        "SimpleLamp"
-                    ), true
-                ), LampSocketType.Douille, false, 3, 0f, 0f, 0f
-            )
-            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
-        }
-        run {
-            subId = 7
-            name = I18N.TR_NAME(I18N.Type.NONE, "Fluorescent Lamp Socket")
-            val desc = LampSocketDescriptor(
-                name, LampSocketStandardObjRender(
-                    Eln.obj.getObj(
-                        "FluorescentLamp"
-                    ), true
-                ), LampSocketType.Douille, false, 4, 0f, 0f, 0f
-            )
-            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
-            desc.cableLeft = false
-            desc.cableRight = false
-        }
-        run {
-            subId = 8
-            name = I18N.TR_NAME(I18N.Type.NONE, "Street Light")
-            val desc = LampSocketDescriptor(
-                name, LampSocketStandardObjRender(
-                    Eln.obj.getObj(
-                        "StreetLight"
-                    ), true
-                ), LampSocketType.Douille, false, 0, 0f, 0f, 0f
-            )
-            desc.setPlaceDirection(Direction.YN)
-            val g = GhostGroup()
-            g.addElement(1, 0, 0)
-            g.addElement(2, 0, 0)
-            desc.ghostGroup = g
-            desc.renderIconInHand = true
-            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
-            desc.cameraOpt = false
-        }
-        run {
-            subId = 9
-            name = I18N.TR_NAME(I18N.Type.NONE, "Sconce Lamp Socket")
-            val desc = LampSocketDescriptor(
-                name, LampSocketStandardObjRender(
-                    Eln.obj.getObj(
-                        "SconceLamp"
-                    ), true
-                ), LampSocketType.Douille, true, 3, 0f, 0f, 0f
-            )
-            desc.setPlaceDirection(
+            completeId = subId + (id shl 6)
+            descriptor = LampSocketDescriptor(
+                I18N.TR_NAME(I18N.Type.NONE, "Robust Lamp Socket"),
+                LampSocketStandardObjRender(Eln.obj.getObj("RobustLamp"), true),
+                3,
                 arrayOf(
-                    Direction.XP,
-                    Direction.XN,
-                    Direction.ZP,
-                    Direction.ZN
+                    LampLists.getLampData("incandescent")!!,
+                    LampLists.getLampData("carbon")!!,
+                    LampLists.getLampData("farming")!!,
+                    LampLists.getLampData("led")!!
                 )
             )
-            desc.setInitialOrientation(-90f)
-            desc.setUserRotationLibertyDegrees(true)
-            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
+            descriptor.initialRenderAngleOffset = -90.0
+            Eln.sixNodeItem.addDescriptor(completeId, descriptor)
         }
+
+        run {
+            subId = 5
+            completeId = subId + (id shl 6)
+            descriptor = LampSocketDescriptor(
+                I18N.TR_NAME(I18N.Type.NONE, "Flat Lamp Socket"),
+                LampSocketStandardObjRender(Eln.obj.getObj("FlatLamp"), true),
+                3,
+                arrayOf(
+                    LampLists.getLampData("fluorescent")!!,
+                    LampLists.getLampData("led")!!
+                )
+            )
+            Eln.sixNodeItem.addDescriptor(completeId, descriptor)
+        }
+
+        run {
+            subId = 6
+            completeId = subId + (id shl 6)
+            descriptor = LampSocketDescriptor(
+                I18N.TR_NAME(I18N.Type.NONE, "Simple Lamp Socket"),
+                LampSocketStandardObjRender(Eln.obj.getObj("SimpleLamp"), true),
+                3,
+                arrayOf(
+                    LampLists.getLampData("incandescent")!!,
+                    LampLists.getLampData("carbon")!!,
+                    LampLists.getLampData("farming")!!,
+                    LampLists.getLampData("led")!!
+                )
+            )
+            Eln.sixNodeItem.addDescriptor(completeId, descriptor)
+        }
+
+        run {
+            subId = 7
+            completeId = subId + (id shl 6)
+            descriptor = LampSocketDescriptor(
+                I18N.TR_NAME(I18N.Type.NONE, "Fluorescent Lamp Socket"),
+                LampSocketStandardObjRender(Eln.obj.getObj("FluorescentLamp"), true),
+                4,
+                arrayOf(
+                    LampLists.getLampData("fluorescent")!!,
+                    LampLists.getLampData("led")!!
+                )
+            )
+            descriptor.renderSideCables = false
+            Eln.sixNodeItem.addDescriptor(completeId, descriptor)
+        }
+
+        run {
+            subId = 9
+            completeId = subId + (id shl 6)
+            descriptor = LampSocketDescriptor(
+                I18N.TR_NAME(I18N.Type.NONE, "Sconce Lamp Socket"),
+                LampSocketStandardObjRender(Eln.obj.getObj("SconceLamp"), true),
+                3,
+                arrayOf(
+                    LampLists.getLampData("incandescent")!!,
+                    LampLists.getLampData("carbon")!!,
+                    LampLists.getLampData("farming")!!,
+                    LampLists.getLampData("led")!!
+                )
+            )
+            descriptor.paintable = true
+            descriptor.initialRenderAngleOffset = -90.0
+            Eln.sixNodeItem.addDescriptor(completeId, descriptor)
+        }
+
         run {
             subId = 12
-            name = I18N.TR_NAME(I18N.Type.NONE, "Suspended Lamp Socket")
-            val desc = LampSocketDescriptor(
-                name, LampSocketSuspendedObjRender(
-                    Eln.obj.getObj(
-                        "RobustLampSuspended"
-                    ), true, 3
-                ), LampSocketType.Douille,  // LampSocketType
-                false, 3, 0f, 0f, 0f
+            completeId = subId + (id shl 6)
+            descriptor = LampSocketDescriptor(
+                I18N.TR_NAME(I18N.Type.NONE, "Suspended Lamp Socket"),
+                LampSocketSuspendedObjRender(Eln.obj.getObj("RobustLampSuspended"), true, 3, true),
+                3,
+                arrayOf(
+                    LampLists.getLampData("incandescent")!!,
+                    LampLists.getLampData("carbon")!!,
+                    LampLists.getLampData("farming")!!,
+                    LampLists.getLampData("led")!!
+                )
             )
-            desc.setPlaceDirection(Direction.YP)
-            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
-            desc.cameraOpt = false
+            descriptor.setPlaceDirection(Direction.YP)
+            Eln.sixNodeItem.addDescriptor(completeId, descriptor)
         }
+
         run {
             subId = 13
-            name = I18N.TR_NAME(I18N.Type.NONE, "Long Suspended Lamp Socket")
-            val desc = LampSocketDescriptor(
-                name, LampSocketSuspendedObjRender(
-                    Eln.obj.getObj(
-                        "RobustLampSuspended"
-                    ), true, 7
-                ), LampSocketType.Douille, false, 4, 0f, 0f, 0f
+            completeId = subId + (id shl 6)
+            descriptor = LampSocketDescriptor(
+                I18N.TR_NAME(I18N.Type.NONE, "Long Suspended Lamp Socket"),
+                LampSocketSuspendedObjRender(Eln.obj.getObj("RobustLampSuspended"), true, 7, true),
+                4,
+                arrayOf(
+                    LampLists.getLampData("incandescent")!!,
+                    LampLists.getLampData("carbon")!!,
+                    LampLists.getLampData("farming")!!,
+                    LampLists.getLampData("led")!!
+                )
             )
-            desc.setPlaceDirection(Direction.YP)
-            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
-            desc.cameraOpt = false
+            descriptor.setPlaceDirection(Direction.YP)
+            Eln.sixNodeItem.addDescriptor(completeId, descriptor)
         }
-        Eln.sixNodeItem.addDescriptor(
-            15 + (id shl 6), EmergencyLampDescriptor(
-                I18N.TR_NAME(
-                    I18N.Type.NONE,
-                    "50V Emergency Lamp"
-                ), Eln.instance.lowVoltageCableDescriptor, (10 * 60 * 10).toDouble(), 10.0, 5.0, 6,
+
+        run {
+            subId = 17
+            completeId = subId + (id shl 6)
+            descriptor = LampSocketDescriptor(
+                I18N.TR_NAME(I18N.Type.NONE, "Suspended Lamp Socket (No Swing)"),
+                LampSocketSuspendedObjRender(Eln.obj.getObj("RobustLampSuspended"), true, 3, false),
+                3,
+                arrayOf(
+                    LampLists.getLampData("incandescent")!!,
+                    LampLists.getLampData("carbon")!!,
+                    LampLists.getLampData("farming")!!,
+                    LampLists.getLampData("led")!!
+                )
+            )
+            descriptor.setPlaceDirection(Direction.YP)
+            Eln.sixNodeItem.addDescriptor(completeId, descriptor)
+        }
+
+        run {
+            subId = 18
+            completeId = subId + (id shl 6)
+            descriptor = LampSocketDescriptor(
+                I18N.TR_NAME(I18N.Type.NONE, "Long Suspended Lamp Socket (No Swing)"),
+                LampSocketSuspendedObjRender(Eln.obj.getObj("RobustLampSuspended"), true, 7, false),
+                4,
+                arrayOf(
+                    LampLists.getLampData("incandescent")!!,
+                    LampLists.getLampData("carbon")!!,
+                    LampLists.getLampData("farming")!!,
+                    LampLists.getLampData("led")!!
+                )
+            )
+            descriptor.setPlaceDirection(Direction.YP)
+            Eln.sixNodeItem.addDescriptor(completeId, descriptor)
+        }
+
+        run {
+            subId = 8
+            completeId = subId + (id shl 6)
+            descriptor = LampSocketDescriptor(
+                I18N.TR_NAME(I18N.Type.NONE, "Streetlight"),
+                LampSocketStandardObjRender(Eln.obj.getObj("StreetLight"), true),
+                0,
+                arrayOf(
+                    LampLists.getLampData("incandescent")!!,
+                    LampLists.getLampData("carbon")!!,
+                    LampLists.getLampData("farming")!!,
+                    LampLists.getLampData("led")!!
+                )
+            )
+            descriptor.extendedRenderBounds = true
+            descriptor.ghostGroup = streetlightGhostGroup
+            descriptor.setPlaceDirection(Direction.YN)
+            Eln.sixNodeItem.addDescriptor(completeId, descriptor)
+        }
+
+        run {
+            subId = 15
+            completeId = subId + (id shl 6)
+            descriptor = EmergencyLampDescriptor(
+                I18N.TR_NAME(I18N.Type.NONE, "120V Emergency Lamp"),
+                Eln.instance.lowVoltageCableDescriptor,
+                (10 * 60 * 10).toDouble(),
+                NominalVoltage.V120,
+                10.0,
+                5.0,
+                6,
                 Eln.obj.getObj("EmergencyExitLighting")
             )
-        )
-        Eln.sixNodeItem.addDescriptor(
-            16 + (id shl 6), EmergencyLampDescriptor(
-                I18N.TR_NAME(
-                    I18N.Type.NONE, "200V Emergency " +
-                            "Lamp"
-                ),
+            Eln.sixNodeItem.addDescriptor(completeId, descriptor)
+        }
+
+        run {
+            subId = 16
+            completeId = subId + (id shl 6)
+            descriptor = EmergencyLampDescriptor(
+                I18N.TR_NAME(I18N.Type.NONE, "240V Emergency Lamp"),
                 Eln.instance.meduimVoltageCableDescriptor,
                 (10 * 60 * 20).toDouble(),
+                NominalVoltage.V240,
                 25.0,
                 10.0,
                 8,
                 Eln.obj.getObj("EmergencyExitLighting")
             )
-        )
-
-        run {
-            subId = 17
-            name = I18N.TR_NAME(I18N.Type.NONE, "Suspended Lamp Socket (No Swing)")
-            val desc = LampSocketDescriptor(
-                name, LampSocketSuspendedObjRender(
-                    Eln.obj.getObj(
-                        "RobustLampSuspended"
-                    ), true, 3, false
-                ), LampSocketType.Douille, false, 3, 0f, 0f, 0f
-            )
-            desc.setPlaceDirection(Direction.YP)
-            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
-            desc.cameraOpt = false
-        }
-        run {
-            subId = 18
-            name = I18N.TR_NAME(I18N.Type.NONE, "Long Suspended Lamp Socket (No Swing)")
-            val desc = LampSocketDescriptor(
-                name, LampSocketSuspendedObjRender(
-                    Eln.obj.getObj(
-                        "RobustLampSuspended"
-                    ), true, 7, false
-                ), LampSocketType.Douille, false, 4, 0f, 0f, 0f
-            )
-            desc.setPlaceDirection(Direction.YP)
-            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
-            desc.cameraOpt = false
+            Eln.sixNodeItem.addDescriptor(completeId, descriptor)
         }
     }
 
     private fun registerLampSupply(id: Int) {
         var subId: Int
-        var name = ""
 
         run {
             subId = 0
-            name = I18N.TR_NAME(I18N.Type.NONE, "Lamp Supply")
-            val desc = LampSupplyDescriptor(name, Eln.obj.getObj("DistributionBoard"), 32)
+            val name = I18N.TR_NAME(I18N.Type.NONE, "120V Lamp Supply")
+            val desc = LampSupplyDescriptor(name, Eln.obj.getObj("DistributionBoard"), 32, NominalVoltage.V120).lighting()
+            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
+        }
+        run {
+            subId = 1
+            val name = I18N.TR_NAME(I18N.Type.NONE, "240V Lamp Supply")
+            val desc = LampSupplyDescriptor(name, Eln.obj.getObj("DistributionBoard"), 32, NominalVoltage.V240).lighting()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
     }
 
     private fun registerPowerSocket(id: Int) {
         var subId: Int
-        var name = ""
         var desc: PowerSocketDescriptor
         run {
             subId = 1
-            name = I18N.TR_NAME(I18N.Type.NONE, "Type J Socket")
-            desc = PowerSocketDescriptor(subId, name, Eln.obj.getObj("PowerSocket"))
+            val name = I18N.TR_NAME(I18N.Type.NONE, "240V Type J Socket")
+            desc = PowerSocketDescriptor(subId, name, Eln.obj.getObj("PowerSocket")).power()
             desc.setPlaceDirection(
                 arrayOf(
                     Direction.XP,
@@ -581,8 +1120,8 @@ object SixNodeRegistration {
         }
         run {
             subId = 2
-            name = I18N.TR_NAME(I18N.Type.NONE, "Type E Socket")
-            desc = PowerSocketDescriptor(subId, name, Eln.obj.getObj("PowerSocket"))
+            val name = I18N.TR_NAME(I18N.Type.NONE, "240V Type E Socket")
+            desc = PowerSocketDescriptor(subId, name, Eln.obj.getObj("PowerSocket")).power()
             desc.setPlaceDirection(
                 arrayOf(
                     Direction.XP,
@@ -597,7 +1136,7 @@ object SixNodeRegistration {
 
     private fun registerPassiveComponent(id: Int) {
         var subId: Int
-        var name = ""
+        var name: String
         var function: IFunction
         val baseFunction = FunctionTableYProtect(
             doubleArrayOf(
@@ -619,7 +1158,7 @@ object SixNodeRegistration {
                 Eln.sixNodeThermalLoadInitializer.copy(),
                 Eln.instance.lowVoltageCableDescriptor,
                 Eln.obj.getObj("PowerElectricPrimitives")
-            )
+            ).power()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
 
@@ -639,7 +1178,7 @@ object SixNodeRegistration {
                 Eln.sixNodeThermalLoadInitializer.copy(),
                 Eln.instance.lowVoltageCableDescriptor,
                 Eln.obj.getObj("PowerElectricPrimitives")
-            )
+            ).power()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
 
@@ -656,14 +1195,14 @@ object SixNodeRegistration {
                 Eln.sixNodeThermalLoadInitializer.copy(),
                 Eln.instance.signalCableDescriptor,
                 Eln.obj.getObj("PowerElectricPrimitives")
-            )
+            ).signal()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
 
         run {
             subId = 16
             name = I18N.TR_NAME(I18N.Type.NONE, "Signal 20H inductor")
-            val desc = SignalInductorDescriptor(name, 20.0, Eln.instance.lowVoltageCableDescriptor)
+            val desc = SignalInductorDescriptor(name, 20.0, Eln.instance.lowVoltageCableDescriptor).signal()
             desc.setDefaultIcon("empty-texture")
             Eln.sixNodeItem.addWithoutRegistry(subId + (id shl 6), desc)
         }
@@ -675,7 +1214,7 @@ object SixNodeRegistration {
                 name, Eln.obj.getObj(
                     "PowerElectricPrimitives"
                 ), newE6(-1.0), (60 * 2000).toDouble()
-            )
+            ).power()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
 
@@ -686,7 +1225,19 @@ object SixNodeRegistration {
                 name, Eln.obj.getObj(
                     "PowerElectricPrimitives"
                 ), newE6(-1.0)
-            )
+            ).power()
+            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
+        }
+
+        run {
+            subId = 35
+            name = I18N.TR_NAME(I18N.Type.NONE, "Variable inductor")
+            val desc = VariableInductorSixDescriptor(
+                name,
+                Eln.obj.getObj("PowerElectricPrimitives"),
+                newE6(-1.0),
+                PowerInductorSixContainer.cableStackLimit
+            ).power()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
 
@@ -696,7 +1247,7 @@ object SixNodeRegistration {
             val desc = ResistorDescriptor(
                 name, Eln.obj.getObj("PowerElectricPrimitives"),
                 newE12(-2.0), 0.0, false
-            )
+            ).power()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
 
@@ -706,7 +1257,7 @@ object SixNodeRegistration {
             val desc = ResistorDescriptor(
                 name, Eln.obj.getObj("PowerElectricPrimitives"),
                 newE12(-2.0), 0.0, true
-            )
+            ).power()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
 
@@ -716,7 +1267,31 @@ object SixNodeRegistration {
             val desc = ResistorDescriptor(
                 name, Eln.obj.getObj("PowerElectricPrimitives"),
                 newE12(-2.0), -0.01, false
-            )
+            ).power()
+            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
+        }
+
+        run {
+            subId = 39
+            name = I18N.TR_NAME(I18N.Type.NONE, "Creative Power Capacitor")
+            val desc = CreativePowerCapacitorDescriptor(name, Eln.obj.getObj("PowerElectricPrimitives")).creative()
+            desc.setDefaultIcon("powercapacitor")
+            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
+        }
+
+        run {
+            subId = 40
+            name = I18N.TR_NAME(I18N.Type.NONE, "Creative Power Inductor")
+            val desc = CreativePowerInductorDescriptor(name, Eln.obj.getObj("PowerElectricPrimitives")).creative()
+            desc.setDefaultIcon("powerinductor")
+            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
+        }
+
+        run {
+            subId = 41
+            name = I18N.TR_NAME(I18N.Type.NONE, "Creative Power Resistor")
+            val desc = CreativePowerResistorDescriptor(name, Eln.obj.getObj("PowerElectricPrimitives")).creative()
+            desc.setDefaultIcon("powerresistor")
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
     }
@@ -729,13 +1304,55 @@ object SixNodeRegistration {
         var desc: ElectricalSwitchDescriptor
 
         run {
+            subId = 5
+            name = I18N.TR_NAME(I18N.Type.NONE, "5A Switch")
+            desc = ElectricalSwitchDescriptor(
+                name, Eln.instance.stdCableRender50V, Eln.obj.getObj("LowVoltageSwitch"), 300.0,
+                300.0 * 5.0, 0.04, 300.0, 300.0 * 5.0, Eln.cableThermalLoadInitializer.copy(), false
+            ).power()
+            desc.setDefaultIcon("switch")
+            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
+        }
+        run {
+            subId = 6
+            name = I18N.TR_NAME(I18N.Type.NONE, "20A Switch")
+            desc = ElectricalSwitchDescriptor(
+                name, Eln.instance.stdCableRender200V, Eln.obj.getObj("LowVoltageSwitch"), 600.0,
+                600.0 * 20.0, 0.01, 600.0, 600.0 * 20.0, Eln.cableThermalLoadInitializer.copy(), false
+            ).power()
+            desc.setDefaultIcon("switch")
+            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
+        }
+        run {
+            subId = 7
+            name = I18N.TR_NAME(I18N.Type.NONE, "50A Switch")
+            desc = ElectricalSwitchDescriptor(
+                name, Eln.instance.stdCableRender800V, Eln.obj.getObj("HighVoltageSwitch"), 600.0,
+                600.0 * 50.0, 0.005, 600.0, 600.0 * 50.0, Eln.cableThermalLoadInitializer.copy(), false
+            ).power()
+            desc.setDefaultIcon("switch")
+            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
+        }
+        run {
+            subId = 9
+            name = I18N.TR_NAME(I18N.Type.NONE, "100A Switch")
+            desc = ElectricalSwitchDescriptor(
+                name, Eln.instance.stdCableRender3200V, Eln.obj.getObj("HighVoltageSwitch"), 600.0,
+                600.0 * 100.0, 0.0025, 600.0, 600.0 * 100.0, Eln.cableThermalLoadInitializer.copy(), false
+            ).power()
+            desc.setDefaultIcon("switch")
+            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
+        }
+
+        run {
             subId = 4
             name = I18N.TR_NAME(I18N.Type.NONE, "Very High Voltage Switch")
             desc = ElectricalSwitchDescriptor(
                 name, Eln.instance.stdCableRender3200V, Eln.obj.getObj("HighVoltageSwitch"), Eln.VVU,
                 Eln.instance.VVP(), Eln.instance.veryHighVoltageCableDescriptor.electricalRs * 2, Eln.VVU * 1.5, Eln.instance.VVP() * 1.2,
                 Eln.cableThermalLoadInitializer.copy(), false
-            )
+            ).power()
+            desc.hideFromCreative()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
 
@@ -746,7 +1363,8 @@ object SixNodeRegistration {
                 name, Eln.instance.stdCableRender800V, Eln.obj.getObj("HighVoltageSwitch"), Eln.HVU,
                 Eln.instance.HVP(), Eln.instance.highVoltageCableDescriptor.electricalRs * 2, Eln.HVU * 1.5, Eln.instance.HVP() * 1.2,
                 Eln.cableThermalLoadInitializer.copy(), false
-            )
+            ).power()
+            desc.hideFromCreative()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
         run {
@@ -763,7 +1381,8 @@ object SixNodeRegistration {
                 Eln.instance.LVP() * 1.2,
                 Eln.cableThermalLoadInitializer.copy(),
                 false
-            )
+            ).power()
+            desc.hideFromCreative()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
         run {
@@ -773,7 +1392,8 @@ object SixNodeRegistration {
                 name, Eln.instance.stdCableRender200V, Eln.obj.getObj("LowVoltageSwitch"), Eln.MVU,
                 Eln.instance.MVP(), Eln.instance.meduimVoltageCableDescriptor.electricalRs * 2, Eln.MVU * 1.5, Eln.instance.MVP() * 1.2,
                 Eln.cableThermalLoadInitializer.copy(), false
-            )
+            ).power()
+            desc.hideFromCreative()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
         run {
@@ -782,7 +1402,8 @@ object SixNodeRegistration {
             desc = ElectricalSwitchDescriptor(
                 name, Eln.instance.stdCableRenderSignal, Eln.obj.getObj("LowVoltageSwitch"), Eln.SVU,
                 Eln.SVP, 0.02, Eln.SVU * 1.5, Eln.SVP * 1.2, Eln.cableThermalLoadInitializer.copy(), true
-            )
+            ).signal()
+            desc.hideFromCreative()
             Eln.sixNodeItem.addWithoutRegistry(subId + (id shl 6), desc)
         }
         // 4 taken
@@ -792,14 +1413,15 @@ object SixNodeRegistration {
             desc = ElectricalSwitchDescriptor(
                 name, Eln.instance.stdCableRenderSignal, Eln.obj.getObj("ledswitch"), Eln.SVU, Eln.SVP, 0.02,
                 Eln.SVU * 1.5, Eln.SVP * 1.2, Eln.cableThermalLoadInitializer.copy(), true
-            )
+            ).signal()
+            desc.hideFromCreative()
             Eln.sixNodeItem.addWithoutRegistry(subId + (id shl 6), desc)
         }
     }
 
     private fun registerSixNodeMisc(id: Int) {
         var subId: Int
-        var name = ""
+        var name: String
         run {
             subId = 0
             name = I18N.TR_NAME(I18N.Type.NONE, "Modbus RTU")
@@ -807,7 +1429,7 @@ object SixNodeRegistration {
                 name, Eln.obj.getObj("RTU")
 
             )
-            if (Eln.modbusEnable) {
+            if (Eln.config.getBooleanOrElse("integrations.modbus.enabled", false)) {
                 Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
             } else {
                 Eln.sixNodeItem.addWithoutRegistry(subId + (id shl 6), desc)
@@ -820,7 +1442,7 @@ object SixNodeRegistration {
             val desc = ElectricalWatchDescriptor(
                 name, Eln.obj.getObj("WallClock"),
                 20000.0 / (3600 * 40)
-            )
+            ).signal()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
 
@@ -830,7 +1452,7 @@ object SixNodeRegistration {
             val desc = ElectricalWatchDescriptor(
                 name, Eln.obj.getObj("DigitalWallClock"),
                 20000.0 / (3600 * 15)
-            )
+            ).signal()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
 
@@ -841,7 +1463,7 @@ object SixNodeRegistration {
                 name, Eln.obj.getObj(
                     "DigitalDisplay"
                 )
-            )
+            ).signal()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
 
@@ -850,19 +1472,98 @@ object SixNodeRegistration {
         run {
             subId = 8
             name = I18N.TR_NAME(I18N.Type.NONE, "Tutorial Sign")
-            val desc = TutorialSignDescriptor(name, Eln.obj.getObj("TutoPlate"))
+            val desc = TutorialSignDescriptor(name, Eln.obj.getObj("TutoPlate")).other()
+            desc.hideFromCreative()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
     }
 
     private fun registerElectricalManager(id: Int) {
         var subId: Int
-        var name = ""
+        var name: String
 
         run {
             subId = 0
-            name = I18N.TR_NAME(I18N.Type.NONE, "Electrical Breaker")
-            val desc = ElectricalBreakerDescriptor(name, Eln.obj.getObj("ElectricalBreaker"))
+            name = I18N.TR_NAME(I18N.Type.NONE, "5A Electrical Breaker")
+            val desc = ElectricalBreakerDescriptor(name, Eln.obj.getObj("ElectricalBreaker"), 5.0)
+            desc.setDefaultIcon("electricalbreaker")
+            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
+        }
+        run {
+            subId = 1
+            name = I18N.TR_NAME(I18N.Type.NONE, "10A Electrical Breaker")
+            val desc = ElectricalBreakerDescriptor(name, Eln.obj.getObj("ElectricalBreaker"), 10.0)
+            desc.setDefaultIcon("electricalbreaker")
+            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
+        }
+        run {
+            subId = 2
+            name = I18N.TR_NAME(I18N.Type.NONE, "15A Electrical Breaker")
+            val desc = ElectricalBreakerDescriptor(name, Eln.obj.getObj("ElectricalBreaker"), 15.0)
+            desc.setDefaultIcon("electricalbreaker")
+            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
+        }
+        run {
+            subId = 3
+            name = I18N.TR_NAME(I18N.Type.NONE, "20A Electrical Breaker")
+            val desc = ElectricalBreakerDescriptor(name, Eln.obj.getObj("ElectricalBreaker"), 20.0)
+            desc.setDefaultIcon("electricalbreaker")
+            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
+        }
+        run {
+            subId = 7
+            name = I18N.TR_NAME(I18N.Type.NONE, "30A Electrical Breaker")
+            val desc = ElectricalBreakerDescriptor(name, Eln.obj.getObj("ElectricalBreaker"), 30.0)
+            desc.setDefaultIcon("electricalbreaker")
+            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
+        }
+        run {
+            subId = 8
+            name = I18N.TR_NAME(I18N.Type.NONE, "40A Electrical Breaker")
+            val desc = ElectricalBreakerDescriptor(name, Eln.obj.getObj("ElectricalBreaker"), 40.0)
+            desc.setDefaultIcon("electricalbreaker")
+            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
+        }
+        run {
+            subId = 9
+            name = I18N.TR_NAME(I18N.Type.NONE, "50A Electrical Breaker")
+            val desc = ElectricalBreakerDescriptor(name, Eln.obj.getObj("ElectricalBreaker"), 50.0)
+            desc.setDefaultIcon("electricalbreaker")
+            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
+        }
+        run {
+            subId = 10
+            name = I18N.TR_NAME(I18N.Type.NONE, "60A Electrical Breaker")
+            val desc = ElectricalBreakerDescriptor(name, Eln.obj.getObj("ElectricalBreaker"), 60.0)
+            desc.setDefaultIcon("electricalbreaker")
+            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
+        }
+        run {
+            subId = 11
+            name = I18N.TR_NAME(I18N.Type.NONE, "100A Electrical Breaker")
+            val desc = ElectricalBreakerDescriptor(name, Eln.obj.getObj("ElectricalBreaker"), 100.0)
+            desc.setDefaultIcon("electricalbreaker")
+            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
+        }
+        run {
+            subId = 13
+            name = I18N.TR_NAME(I18N.Type.NONE, "125A Electrical Breaker")
+            val desc = ElectricalBreakerDescriptor(name, Eln.obj.getObj("ElectricalBreaker"), 125.0)
+            desc.setDefaultIcon("electricalbreaker")
+            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
+        }
+        run {
+            subId = 14
+            name = I18N.TR_NAME(I18N.Type.NONE, "200A Electrical Breaker")
+            val desc = ElectricalBreakerDescriptor(name, Eln.obj.getObj("ElectricalBreaker"), 200.0)
+            desc.setDefaultIcon("electricalbreaker")
+            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
+        }
+        run {
+            subId = 15
+            name = I18N.TR_NAME(I18N.Type.NONE, "400A Electrical Breaker")
+            val desc = ElectricalBreakerDescriptor(name, Eln.obj.getObj("ElectricalBreaker"), 400.0)
+            desc.setDefaultIcon("electricalbreaker")
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
         run {
@@ -878,6 +1579,19 @@ object SixNodeRegistration {
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
         run {
+            subId = 12
+            name = I18N.TR_NAME(I18N.Type.NONE, "MQTT Energy Meter")
+            val desc = EnergyMeterDescriptor(
+                name,
+                Eln.obj.getObj("MqttEnergyMeter"),
+                8,
+                0,
+                MqttEnergyMeterElement::class.java,
+                MqttEnergyMeterRender::class.java
+            )
+            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
+        }
+        run {
             subId = 6
             name = I18N.TR_NAME(I18N.Type.NONE, "Electrical Fuse Holder")
             val desc = ElectricalFuseHolderDescriptor(
@@ -888,6 +1602,48 @@ object SixNodeRegistration {
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
         run {
+            subId = 16
+            name = I18N.TR_NAME(I18N.Type.NONE, "5A Lead Fuse")
+            val desc = ElectricalFuseDescriptor(name, null, Eln.obj.getObj("ElectricalFuse"), 5.0)
+            desc.creativeTab = Eln.creativeTabPowerElectronics
+            Eln.sharedItem.addElement(subId + (id shl 6), desc)
+        }
+        run {
+            subId = 17
+            name = I18N.TR_NAME(I18N.Type.NONE, "10A Lead Fuse")
+            val desc = ElectricalFuseDescriptor(name, null, Eln.obj.getObj("ElectricalFuse"), 10.0)
+            desc.creativeTab = Eln.creativeTabPowerElectronics
+            Eln.sharedItem.addElement(subId + (id shl 6), desc)
+        }
+        run {
+            subId = 18
+            name = I18N.TR_NAME(I18N.Type.NONE, "15A Lead Fuse")
+            val desc = ElectricalFuseDescriptor(name, null, Eln.obj.getObj("ElectricalFuse"), 15.0)
+            desc.creativeTab = Eln.creativeTabPowerElectronics
+            Eln.sharedItem.addElement(subId + (id shl 6), desc)
+        }
+        run {
+            subId = 19
+            name = I18N.TR_NAME(I18N.Type.NONE, "20A Lead Fuse")
+            val desc = ElectricalFuseDescriptor(name, null, Eln.obj.getObj("ElectricalFuse"), 20.0)
+            desc.creativeTab = Eln.creativeTabPowerElectronics
+            Eln.sharedItem.addElement(subId + (id shl 6), desc)
+        }
+        run {
+            subId = 20
+            name = I18N.TR_NAME(I18N.Type.NONE, "30A Lead Fuse")
+            val desc = ElectricalFuseDescriptor(name, null, Eln.obj.getObj("ElectricalFuse"), 30.0)
+            desc.creativeTab = Eln.creativeTabPowerElectronics
+            Eln.sharedItem.addElement(subId + (id shl 6), desc)
+        }
+        run {
+            subId = 21
+            name = I18N.TR_NAME(I18N.Type.NONE, "50A Lead Fuse")
+            val desc = ElectricalFuseDescriptor(name, null, Eln.obj.getObj("ElectricalFuse"), 50.0)
+            desc.creativeTab = Eln.creativeTabPowerElectronics
+            Eln.sharedItem.addElement(subId + (id shl 6), desc)
+        }
+        run {
             subId = 7
             name = I18N.TR_NAME(I18N.Type.NONE, "Lead Fuse for low voltage cables")
             val desc = ElectricalFuseDescriptor(
@@ -895,6 +1651,7 @@ object SixNodeRegistration {
                     "ElectricalFuse"
                 )
             )
+            desc.hideFromCreative()
             Eln.sharedItem.addElement(subId + (id shl 6), desc)
         }
         run {
@@ -904,6 +1661,7 @@ object SixNodeRegistration {
                 name, Eln.instance.meduimVoltageCableDescriptor,
                 Eln.obj.getObj("ElectricalFuse")
             )
+            desc.hideFromCreative()
             Eln.sharedItem.addElement(subId + (id shl 6), desc)
         }
         run {
@@ -913,6 +1671,7 @@ object SixNodeRegistration {
                 name, Eln.instance.highVoltageCableDescriptor,
                 Eln.obj.getObj("ElectricalFuse")
             )
+            desc.hideFromCreative()
             Eln.sharedItem.addElement(subId + (id shl 6), desc)
         }
         run {
@@ -922,6 +1681,7 @@ object SixNodeRegistration {
                 name, Eln.instance.veryHighVoltageCableDescriptor,
                 Eln.obj.getObj("ElectricalFuse")
             )
+            desc.hideFromCreative()
             Eln.sharedItem.addElement(subId + (id shl 6), desc)
         }
         run {
@@ -973,7 +1733,7 @@ object SixNodeRegistration {
 
     private fun registerElectricalVuMeter(id: Int) {
         var subId: Int
-        var name = ""
+        var name: String
         var desc: ElectricalVuMeterDescriptor
         run {
             subId = 0
@@ -1002,7 +1762,7 @@ object SixNodeRegistration {
         run {
             subId = 0
             name = I18N.TR_NAME(I18N.Type.NONE, "Nuclear Alarm")
-            desc = ElectricalAlarmDescriptor(name, Eln.obj.getObj("alarmmedium"), 7, "eln:alarma", 11.0, 1f)
+            desc = ElectricalAlarmDescriptor(name, Eln.obj.getObj("alarmmedium"), 7, "eln:alarma", 11.0, 1f, NominalVoltage.V12)
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
         run {
@@ -1010,7 +1770,7 @@ object SixNodeRegistration {
             name = I18N.TR_NAME(I18N.Type.NONE, "Standard Alarm")
             desc = ElectricalAlarmDescriptor(
                 name, Eln.obj.getObj("alarmmedium"), 7, "eln:smallalarm_critical", 1.2,
-                2f
+                2f, NominalVoltage.V12
             )
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
@@ -1018,7 +1778,7 @@ object SixNodeRegistration {
 
     private fun registerElectricalEnvironmentalSensor(id: Int) {
         var subId: Int
-        var name = ""
+        var name: String
         run {
             var desc: ElectricalLightSensorDescriptor
             run {
@@ -1040,6 +1800,24 @@ object SixNodeRegistration {
                 subId = 4
                 name = I18N.TR_NAME(I18N.Type.NONE, "Electrical Weather Sensor")
                 desc = ElectricalWeatherSensorDescriptor(name, Eln.obj.getObj("electricalweathersensor"))
+                Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
+            }
+        }
+        run {
+            var desc: ElectricalHumiditySensorDescriptor
+            run {
+                subId = 5
+                name = I18N.TR_NAME(I18N.Type.NONE, "Humidity Sensor")
+                desc = ElectricalHumiditySensorDescriptor(name, Eln.obj.getObj("electricalweathersensor"))
+                Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
+            }
+        }
+        run {
+            var desc: ThermometerSensorDescriptor
+            run {
+                subId = 6
+                name = I18N.TR_NAME(I18N.Type.NONE, "Thermometer Sensor")
+                desc = ThermometerSensorDescriptor(name, Eln.obj.getObj("electricalweathersensor"))
                 Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
             }
         }
@@ -1124,6 +1902,12 @@ object SixNodeRegistration {
             val desc = ElectricalMathDescriptor(name, Eln.obj.getObj("PLC"))
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
+        run {
+            subId = 5
+            name = I18N.TR_NAME(I18N.Type.NONE, "MQTT Signal Controller")
+            val desc = MqttSignalControllerDescriptor(name, Eln.obj.getObj("MqttSignalController"))
+            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
+        }
     }
 
     private fun registerWirelessSignal(id: Int) {
@@ -1141,7 +1925,7 @@ object SixNodeRegistration {
             subId = 8
             name = I18N.TR_NAME(I18N.Type.NONE, "Wireless Signal Transmitter")
             val desc =
-                WirelessSignalTxDescriptor(name, Eln.obj.getObj("wirelesssignaltx"), Eln.wirelessTxRange)
+                WirelessSignalTxDescriptor(name, Eln.obj.getObj("wirelesssignaltx"), Eln.config.getIntOrElse("wireless.transmitter.maxRangeBlocks", 32))
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
 
@@ -1149,7 +1933,7 @@ object SixNodeRegistration {
             subId = 16
             name = I18N.TR_NAME(I18N.Type.NONE, "Wireless Signal Repeater")
             val desc =
-                WirelessSignalRepeaterDescriptor(name, Eln.obj.getObj("wirelesssignalrepeater"), Eln.wirelessTxRange)
+                WirelessSignalRepeaterDescriptor(name, Eln.obj.getObj("wirelesssignalrepeater"), Eln.config.getIntOrElse("wireless.transmitter.maxRangeBlocks", 32))
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
     }
@@ -1188,27 +1972,60 @@ object SixNodeRegistration {
         var desc: ElectricalRelayDescriptor
 
         run {
+            subId = 5
+            name = I18N.TR_NAME(I18N.Type.NONE, "5V Control Relay 10A")
+            desc = ElectricalRelayDescriptor(name, Eln.obj.getObj("RelaySmall"), NominalVoltage.V120, 10.0, 0.04, NominalVoltage.V5)
+            desc.setDefaultIcon("lowvoltagerelay")
+            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
+        }
+        run {
+            subId = 6
+            name = I18N.TR_NAME(I18N.Type.NONE, "12V Control Relay 20A")
+            desc = ElectricalRelayDescriptor(name, Eln.obj.getObj("RelayBig"), 600.0, 20.0, 0.01, NominalVoltage.V12)
+            desc.setDefaultIcon("mediumvoltagerelay")
+            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
+        }
+        run {
+            subId = 7
+            name = I18N.TR_NAME(I18N.Type.NONE, "12V Control Relay 50A")
+            desc = ElectricalRelayDescriptor(name, Eln.obj.getObj("relay800"), 600.0, 50.0, 0.005, NominalVoltage.V12)
+            desc.setDefaultIcon("highvoltagerelay")
+            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
+        }
+        run {
+            subId = 8
+            name = I18N.TR_NAME(I18N.Type.NONE, "12V Control Relay 100A")
+            desc = ElectricalRelayDescriptor(name, Eln.obj.getObj("relay800"), 600.0, 100.0, 0.0025, NominalVoltage.V12)
+            desc.setDefaultIcon("veryhighvoltagerelay")
+            Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
+        }
+
+        run {
             subId = 0
             name = I18N.TR_NAME(I18N.Type.NONE, "Low Voltage Relay")
             desc = ElectricalRelayDescriptor(name, Eln.obj.getObj("RelayBig"), Eln.instance.lowVoltageCableDescriptor)
+            desc.hideFromCreative()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
         run {
             subId = 1
             name = I18N.TR_NAME(I18N.Type.NONE, "Medium Voltage Relay")
             desc = ElectricalRelayDescriptor(name, Eln.obj.getObj("RelayBig"), Eln.instance.meduimVoltageCableDescriptor)
+            desc.hideFromCreative()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
         run {
             subId = 2
             name = I18N.TR_NAME(I18N.Type.NONE, "High Voltage Relay")
             desc = ElectricalRelayDescriptor(name, Eln.obj.getObj("relay800"), Eln.instance.highVoltageCableDescriptor)
+            desc.hideFromCreative()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
         run {
             subId = 3
             name = I18N.TR_NAME(I18N.Type.NONE, "Very High Voltage Relay")
             desc = ElectricalRelayDescriptor(name, Eln.obj.getObj("relay800"), Eln.instance.veryHighVoltageCableDescriptor)
+            desc.hideFromCreative()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
 
@@ -1216,6 +2033,7 @@ object SixNodeRegistration {
             subId = 4
             name = I18N.TR_NAME(I18N.Type.NONE, "Signal Relay")
             desc = ElectricalRelayDescriptor(name, Eln.obj.getObj("RelaySmall"), Eln.instance.signalCableDescriptor)
+            desc.hideFromCreative()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
     }
@@ -1245,7 +2063,7 @@ object SixNodeRegistration {
             name = I18N.TR_NAME(I18N.Type.NONE, "Signal Switch")
             val desc = ElectricalGateSourceDescriptor(
                 name, ledswitch, true,
-                if (Eln.noSymbols) "signalswitch" else "switch"
+                if (Eln.config.getBooleanOrElse("ui.icons.noSymbols", false)) "signalswitch" else "switch"
             )
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
@@ -1260,7 +2078,7 @@ object SixNodeRegistration {
             subId = 12
             name = I18N.TR_NAME(I18N.Type.NONE, "Wireless Button")
             val desc = WirelessSignalSourceDescriptor(
-                name, ledswitch, Eln.wirelessTxRange,
+                name, ledswitch, Eln.config.getIntOrElse("wireless.transmitter.maxRangeBlocks", 32),
                 true
             )
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
@@ -1269,7 +2087,7 @@ object SixNodeRegistration {
             subId = 16
             name = I18N.TR_NAME(I18N.Type.NONE, "Wireless Switch")
             val desc = WirelessSignalSourceDescriptor(
-                name, ledswitch, Eln.wirelessTxRange,
+                name, ledswitch, Eln.config.getIntOrElse("wireless.transmitter.maxRangeBlocks", 32),
                 false
             )
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
@@ -1355,22 +2173,61 @@ object SixNodeRegistration {
                 model, "JKFF", JKFlipFlop::class.java
             )
         )
+
+        Eln.sixNodeItem.addDescriptor(
+            0 + (REGULATOR_CHIPS_GROUP shl 6), RegulatorChipDescriptor(
+                I18N.TR_NAME(I18N.Type.NONE, "3.3V LDO Regulator Chip"),
+                model, "LDO33", "regulator_ldo_3v3", RegulatorChipMode.LDO, 3.3, 0.25
+            )
+        )
+
+        Eln.sixNodeItem.addDescriptor(
+            1 + (REGULATOR_CHIPS_GROUP shl 6), RegulatorChipDescriptor(
+                I18N.TR_NAME(I18N.Type.NONE, "5V LDO Regulator Chip"),
+                model, "LDO50", "regulator_ldo_5v", RegulatorChipMode.LDO, 5.0, 0.25
+            )
+        )
+
+        Eln.sixNodeItem.addDescriptor(
+            2 + (REGULATOR_CHIPS_GROUP shl 6), RegulatorChipDescriptor(
+                I18N.TR_NAME(I18N.Type.NONE, "12V LDO Regulator Chip"),
+                model, "LDO120", "regulator_ldo_12v", RegulatorChipMode.LDO, 12.0, 0.25
+            )
+        )
+
+        Eln.sixNodeItem.addDescriptor(
+            3 + (REGULATOR_CHIPS_GROUP shl 6), RegulatorChipDescriptor(
+                I18N.TR_NAME(I18N.Type.NONE, "3.3V Boost Regulator Chip"),
+                model, "BOOST33", "regulator_boost_3v3", RegulatorChipMode.BOOST, 3.3, 0.5,
+                minimumInputVoltage = 2.0
+            )
+        )
+
+        Eln.sixNodeItem.addDescriptor(
+            4 + (REGULATOR_CHIPS_GROUP shl 6), RegulatorChipDescriptor(
+                I18N.TR_NAME(I18N.Type.NONE, "5V Boost Regulator Chip"),
+                model, "BOOST50", "regulator_boost_5v", RegulatorChipMode.BOOST, 5.0, 0.5,
+                minimumInputVoltage = 2.0
+            )
+        )
     }
 
+    private const val REGULATOR_CHIPS_GROUP = 5
+
     private fun registerAnalogChips(id: Int) {
-        var id = id
-        id = id shl 6
+        val baseId = id shl 6
+        // TODO: Breaking change! These should be using a subId; the numbers here are not being shifted properly and might overlap.
 
         val model = Eln.obj.getObj("AnalogChips")
         Eln.sixNodeItem.addDescriptor(
-            id + 0, AnalogChipDescriptor(
+            baseId + 0, AnalogChipDescriptor(
                 I18N.TR_NAME(I18N.Type.NONE, "OpAmp"), model, "OP",
                 OpAmp::class.java
             )
         )
 
         Eln.sixNodeItem.addDescriptor(
-            id + 1, AnalogChipDescriptor(
+            baseId + 1, AnalogChipDescriptor(
                 I18N.TR_NAME(I18N.Type.NONE, "PID Regulator"), model, "PID",
                 PIDRegulator::class.java,
                 PIDRegulatorElement::class.java,
@@ -1379,7 +2236,7 @@ object SixNodeRegistration {
         )
 
         Eln.sixNodeItem.addDescriptor(
-            id + 2, AnalogChipDescriptor(
+            baseId + 2, AnalogChipDescriptor(
                 I18N.TR_NAME(
                     I18N.Type.NONE, "Voltage controlled sawtooth " +
                             "oscillator"
@@ -1388,7 +2245,7 @@ object SixNodeRegistration {
         )
 
         Eln.sixNodeItem.addDescriptor(
-            id + 3, AnalogChipDescriptor(
+            baseId + 3, AnalogChipDescriptor(
                 I18N.TR_NAME(
                     I18N.Type.NONE, "Voltage controlled sine " +
                             "oscillator"
@@ -1397,7 +2254,7 @@ object SixNodeRegistration {
         )
 
         Eln.sixNodeItem.addDescriptor(
-            id + 4, AnalogChipDescriptor(
+            baseId + 4, AnalogChipDescriptor(
                 I18N.TR_NAME(I18N.Type.NONE, "Amplifier"), model, "AMP",
                 Amplifier::class.java,
                 AmplifierElement::class.java,
@@ -1406,28 +2263,28 @@ object SixNodeRegistration {
         )
 
         Eln.sixNodeItem.addDescriptor(
-            id + 5, AnalogChipDescriptor(
+            baseId + 5, AnalogChipDescriptor(
                 I18N.TR_NAME(I18N.Type.NONE, "Voltage controlled amplifier"),
                 model, "VCA", VoltageControlledAmplifier::class.java
             )
         )
 
         Eln.sixNodeItem.addDescriptor(
-            id + 6, AnalogChipDescriptor(
+            baseId + 6, AnalogChipDescriptor(
                 I18N.TR_NAME(I18N.Type.NONE, "Configurable summing unit"),
                 model, "SUM", SummingUnit::class.java, SummingUnitElement::class.java, SummingUnitRender::class.java
             )
         )
 
         Eln.sixNodeItem.addDescriptor(
-            id + 7, AnalogChipDescriptor(
+            baseId + 7, AnalogChipDescriptor(
                 I18N.TR_NAME(I18N.Type.NONE, "Sample and hold"), model, "SAH",
                 SampleAndHold::class.java
             )
         )
 
         Eln.sixNodeItem.addDescriptor(
-            id + 8, AnalogChipDescriptor(
+            baseId + 8, AnalogChipDescriptor(
                 I18N.TR_NAME(I18N.Type.NONE, "Lowpass filter"), model, "LPF",
                 Filter::class.java,
                 FilterElement::class.java,
@@ -1445,30 +2302,30 @@ object SixNodeRegistration {
         run {
             subId = 0
             completId = subId + (id shl 6)
-            name = I18N.TR_NAME(I18N.Type.NONE, "Weak 50V Battery Charger")
+            name = I18N.TR_NAME(I18N.Type.NONE, "120V Battery Charger")
             descriptor = BatteryChargerDescriptor(
-                name, Eln.obj.getObj("batterychargera"), Eln.instance.lowVoltageCableDescriptor,
-                Eln.LVU, 200.0
+                name, Eln.obj.getObj("batterychargera"), Eln.instance.meduimVoltageCableDescriptor,
+                NominalVoltage.V120, 200.0
             )
             Eln.sixNodeItem.addDescriptor(completId, descriptor)
         }
         run {
             subId = 1
             completId = subId + (id shl 6)
-            name = I18N.TR_NAME(I18N.Type.NONE, "50V Battery Charger")
+            name = I18N.TR_NAME(I18N.Type.NONE, "120V Fast Battery Charger")
             descriptor = BatteryChargerDescriptor(
-                name, Eln.obj.getObj("batterychargera"), Eln.instance.lowVoltageCableDescriptor,
-                Eln.LVU, 400.0
+                name, Eln.obj.getObj("batterychargera"), Eln.instance.meduimVoltageCableDescriptor,
+                NominalVoltage.V120, 400.0
             )
             Eln.sixNodeItem.addDescriptor(completId, descriptor)
         }
         run {
             subId = 4
             completId = subId + (id shl 6)
-            name = I18N.TR_NAME(I18N.Type.NONE, "200V Battery Charger")
+            name = I18N.TR_NAME(I18N.Type.NONE, "240V Battery Charger")
             descriptor = BatteryChargerDescriptor(
                 name, Eln.obj.getObj("batterychargera"),
-                Eln.instance.meduimVoltageCableDescriptor, Eln.MVU, 1000.0
+                Eln.instance.highVoltageCableDescriptor, NominalVoltage.V240, 1000.0
             )
             Eln.sixNodeItem.addDescriptor(completId, descriptor)
         }
@@ -1484,7 +2341,7 @@ object SixNodeRegistration {
             subId = 0
             completId = subId + (id shl 6)
             name = I18N.TR_NAME(I18N.Type.NONE, "Tree Resin Collector")
-            descriptor = TreeResinCollectorDescriptor(name, Eln.obj.getObj("treeresincolector"))
+            descriptor = TreeResinCollectorDescriptor(name, Eln.obj.getObj("treeresincolector")).machines()
             Eln.sixNodeItem.addDescriptor(completId, descriptor)
         }
     }
@@ -1497,7 +2354,7 @@ object SixNodeRegistration {
             subId = 0
             name = I18N.TR_NAME(I18N.Type.NONE, "Portable NaN")
             Eln.stdPortableNaN = CableRenderDescriptor("eln", "sprites/nan.png", 3.95f, 0.95f)
-            Eln.portableNaNDescriptor = PortableNaNDescriptor(name, Eln.stdPortableNaN)
+            Eln.portableNaNDescriptor = PortableNaNDescriptor(name, Eln.stdPortableNaN).creative()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), Eln.portableNaNDescriptor)
         }
     }

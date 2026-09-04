@@ -2,6 +2,7 @@ package mods.eln.node.transparent
 
 import mods.eln.Eln
 import mods.eln.ghost.GhostObserver
+import mods.eln.integration.waila.TransparentNodeWailaEntry
 import mods.eln.misc.Coordinate
 import mods.eln.misc.Direction
 import mods.eln.misc.Direction.Companion.fromInt
@@ -10,14 +11,18 @@ import mods.eln.misc.LRDU
 import mods.eln.misc.Utils
 import mods.eln.misc.Utils.readFromNBT
 import mods.eln.misc.Utils.writeToNBT
+import mods.eln.environment.BiomeClimateService
 import mods.eln.node.INodeElement
+import mods.eln.node.NodeConnectionEndpoint
 import mods.eln.sim.ElectricalLoad
 import mods.eln.sim.IProcess
+import mods.eln.sim.SignalLoadSupport
 import mods.eln.sim.ThermalConnection
 import mods.eln.sim.ThermalLoad
 import mods.eln.sim.mna.component.Component
 import mods.eln.sim.mna.state.State
 import mods.eln.sim.nbt.NbtThermalLoad
+import mods.eln.sim.process.destruct.ThermalLoadWatchDog
 import mods.eln.sound.IPlayer
 import mods.eln.sound.SoundCommand
 import net.minecraft.entity.EntityLivingBase
@@ -44,6 +49,7 @@ abstract class TransparentNodeElement(@JvmField var node: TransparentNode?, @Jvm
     var electricalProcessList = ArrayList<IProcess>(4)
     @JvmField
     var electricalComponentList = ArrayList<Component>(4)
+    private var signalReadComponentList = ArrayList<Component>(0)
     @JvmField
     var electricalLoadList = ArrayList<State>(4)
     @JvmField
@@ -59,13 +65,29 @@ abstract class TransparentNodeElement(@JvmField var node: TransparentNode?, @Jvm
         Utils.serialiseItemStack(stream!!, stack)
     }
 
+    protected fun describeSimOwner(): String {
+        val coord = node?.coordinate
+        val coordStr = coord?.toString() ?: "unknown"
+        return "${javaClass.simpleName}@$coordStr"
+    }
+
     open fun connectJob() {
         // If we are about to destruct ourselves, do not add any elements to the simulation anymore.
         if (node != null && node!!.isDestructing) return
+        val ownerTag = describeSimOwner()
+        electricalComponentList.forEach { it.setOwner(ownerTag) }
+        signalReadComponentList = SignalLoadSupport.createReadComponents(electricalLoadList)
+        signalReadComponentList.forEach { it.setOwner(ownerTag) }
+        electricalLoadList.forEach { it.setOwner(ownerTag) }
+        val coord = node?.coordinate
+        if (coord != null) {
+            thermalLoadList.forEach { it.setSimCoordinate(coord.dimension, coord.x, coord.y, coord.z) }
+        }
         Eln.simulator.addAllSlowProcess(slowProcessList)
         for (p in slowPreProcessList) Eln.simulator.addSlowPreProcess(p)
         for (p in slowPostProcessList) Eln.simulator.addSlowPostProcess(p)
         Eln.simulator.addAllElectricalComponent(electricalComponentList)
+        Eln.simulator.addAllElectricalComponent(signalReadComponentList)
         for (load in electricalLoadList) Eln.simulator.addElectricalLoad(load)
         Eln.simulator.addAllElectricalProcess(electricalProcessList)
         Eln.simulator.addAllThermalConnection(thermalConnectionList)
@@ -74,10 +96,13 @@ abstract class TransparentNodeElement(@JvmField var node: TransparentNode?, @Jvm
     }
 
     open fun disconnectJob() {
+        for (load in thermalLoadList) load.clearSimCoordinate()
         Eln.simulator.removeAllSlowProcess(slowProcessList)
         for (p in slowPreProcessList) Eln.simulator.removeSlowPreProcess(p)
         for (p in slowPostProcessList) Eln.simulator.removeSlowPostProcess(p)
         Eln.simulator.removeAllElectricalComponent(electricalComponentList)
+        Eln.simulator.removeAllElectricalComponent(signalReadComponentList)
+        signalReadComponentList.clear()
         for (load in electricalLoadList) Eln.simulator.removeElectricalLoad(load)
         Eln.simulator.removeAllElectricalProcess(electricalProcessList)
         Eln.simulator.removeAllThermalConnection(thermalConnectionList)
@@ -225,10 +250,41 @@ abstract class TransparentNodeElement(@JvmField var node: TransparentNode?, @Jvm
         }
 
     open fun getElectricalLoad(side: Direction, lrdu: LRDU): ElectricalLoad? = null
+    open fun getElectricalLoad(side: Direction, lrdu: LRDU, remoteEndpoint: NodeConnectionEndpoint): ElectricalLoad? {
+        return getElectricalLoad(side, lrdu)
+    }
     open fun getThermalLoad(side: Direction, lrdu: LRDU): ThermalLoad? = null
     open fun getConnectionMask(side: Direction, lrdu: LRDU): Int = 0
+
+    fun getAdjacentConnectionEndpoint(side: Direction, lrdu: LRDU): NodeConnectionEndpoint? {
+        return node?.findAdjacentConnectionEndpoint(side, lrdu)
+    }
+
+    fun getAdjacentConnectionElement(side: Direction, lrdu: LRDU): Any? {
+        return getAdjacentConnectionEndpoint(side, lrdu)?.element
+    }
+
     open fun multiMeterString(side: Direction): String = ""
     open fun thermoMeterString(side: Direction): String = ""
+
+    fun getAmbientTemperatureCelsius(): Double {
+        val coord = node?.coordinate
+            ?: throw IllegalStateException("Missing coordinate for ${javaClass.name} while sampling ambient temperature.")
+        if (!coord.worldExist) {
+            throw IllegalStateException("World not loaded for coordinate $coord in ${javaClass.name} while sampling ambient temperature.")
+        }
+        val world = coord.world()
+        return BiomeClimateService.sample(world, coord.x, coord.y, coord.z).temperatureCelsius
+    }
+
+    fun plotAmbientCelsius(header: String, thermalDeltaCelsius: Double): String {
+        return Utils.plotCelsius(header, thermalDeltaCelsius + getAmbientTemperatureCelsius())
+    }
+
+    fun ambientAwareThermalWatchdog(watchdog: ThermalLoadWatchDog): ThermalLoadWatchDog {
+        return watchdog.setAmbientTemperatureProvider { getAmbientTemperatureCelsius() }
+    }
+
     open fun networkSerialize(stream: DataOutputStream) {
         try {
             stream.writeByte(front.int + if (grounded) 8 else 0)
@@ -353,10 +409,10 @@ abstract class TransparentNodeElement(@JvmField var node: TransparentNode?, @Jvm
         return uuid != 0
     }
 
-    override fun play(s: SoundCommand) {
-        s.addUuid(getUuid())
-        s.set(node!!.coordinate)
-        s.play()
+    override fun play(cmd: SoundCommand) {
+        cmd.addUuid(getUuid())
+        cmd.set(node!!.coordinate)
+        cmd.play()
     }
 
     open fun unload() {}
@@ -365,6 +421,10 @@ abstract class TransparentNodeElement(@JvmField var node: TransparentNode?, @Jvm
         val wailaList: MutableMap<String, String> = HashMap()
         wailaList["Info"] = multiMeterString(front)
         return wailaList
+    }
+
+    open fun getWailaEntries(): List<TransparentNodeWailaEntry> = getWaila().map { (label, value) ->
+        TransparentNodeWailaEntry(label, value.split('\n'))
     }
 
     companion object {

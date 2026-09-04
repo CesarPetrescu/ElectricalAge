@@ -15,11 +15,14 @@ import mods.eln.misc.Utils.updateAllLightTypes
 import mods.eln.misc.Utils.updateSkylight
 import mods.eln.node.ISixNodeCache
 import mods.eln.node.Node
+import mods.eln.node.NodeConnectionEndpoint
 import mods.eln.node.NodeConnection
 import mods.eln.sim.ElectricalConnection
 import mods.eln.sim.ElectricalLoad
 import mods.eln.sim.ThermalConnection
 import mods.eln.sim.ThermalLoad
+import mods.eln.sixnode.lampsocket.LampSocketDescriptor
+import mods.eln.sixnode.lampsocket.LampSocketElement
 import net.minecraft.block.Block
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
@@ -78,6 +81,9 @@ class SixNode : Node() {
         try {
             sideElementIdList[direction.int] = itemStack.itemDamage //Je sais c'est moche !
             sideElementList[direction.int] = descriptor!!.ElementClass.getConstructor(SixNode::class.java, Direction::class.java, SixNodeDescriptor::class.java).newInstance(this, direction, descriptor) as SixNodeElement
+            if (descriptor is LampSocketDescriptor) {
+                LampSocketElement.placingPlayerIsCreative = player is EntityPlayerMP && isCreative(player)
+            }
             sideElementIdList[direction.int] = 0
             disconnect()
             sideElementList[direction.int]!!.front = descriptor.getFrontFromPlace(direction, player!!)!!
@@ -203,6 +209,12 @@ class SixNode : Node() {
         return element.getElectricalLoad(elementSide.getLRDUGoingTo(side)!!, mask)
     }
 
+    override fun getElectricalLoad(side: Direction, lrdu: LRDU, mask: Int, remoteEndpoint: NodeConnectionEndpoint): ElectricalLoad? {
+        val elementSide = side.applyLRDU(lrdu)
+        val element = sideElementList[elementSide.int] ?: return null
+        return element.getElectricalLoad(elementSide.getLRDUGoingTo(side)!!, mask, remoteEndpoint)
+    }
+
     override fun getThermalLoad(side: Direction, lrdu: LRDU, mask: Int): ThermalLoad? {
         val elementSide = side.applyLRDU(lrdu)
         val element = sideElementList[elementSide.int] ?: return null
@@ -213,6 +225,13 @@ class SixNode : Node() {
         val elementSide = side.applyLRDU(lrdu)
         val element = sideElementList[elementSide.int] ?: return 0
         return element.getConnectionMask(elementSide.getLRDUGoingTo(side)!!)
+    }
+
+    override fun getConnectionEndpoint(side: Direction, lrdu: LRDU): NodeConnectionEndpoint {
+        val elementSide = side.applyLRDU(lrdu)
+        val elementLrdu = elementSide.getLRDUGoingTo(side)
+        val element = sideElementList[elementSide.int]
+        return NodeConnectionEndpoint(this, side, lrdu, element, elementSide, elementLrdu)
     }
 
     override fun multiMeterString(side: Direction): String {
@@ -361,8 +380,8 @@ class SixNode : Node() {
             element.newConnectionAt(nodeConnection, false)
             otherElement.newConnectionAt(nodeConnection, true)
             var eLoad: ElectricalLoad?
-            if (element.getElectricalLoad(lrdu, mskOther).also { eLoad = it } != null) {
-                val otherELoad = otherElement.getElectricalLoad(otherLRDU, mskThis)
+            if (element.getElectricalLoad(lrdu, mskOther, nodeConnection.endpoint(false)).also { eLoad = it } != null) {
+                val otherELoad = otherElement.getElectricalLoad(otherLRDU, mskThis, nodeConnection.endpoint(true))
                 if (otherELoad != null) {
                     val eCon = ElectricalConnection(eLoad, otherELoad)
                     Eln.simulator.addElectricalComponent(eCon)

@@ -39,9 +39,13 @@ public class GuiHelper {
     }
 
     GuiTextFieldEln newGuiTextField(int x, int y, int width) {
+        return newGuiTextField(x, y, width, 150);
+    }
+
+    GuiTextFieldEln newGuiTextField(int x, int y, int width, int maxLength) {
         GuiTextFieldEln o;
         o = new GuiTextFieldEln(Minecraft.getMinecraft().fontRenderer,
-            screen.width / 2 - xSize / 2 + x, screen.height / 2 - ySize / 2 + y, width, 12, this);
+            screen.width / 2 - xSize / 2 + x, screen.height / 2 - ySize / 2 + y, width, 12, this, maxLength);
         objectList.add(o);
         return o;
     }
@@ -50,6 +54,13 @@ public class GuiHelper {
         GuiButtonEln o;
         o = new GuiButtonEln(screen.width / 2 - xSize / 2 + x, screen.height / 2 - ySize / 2 + y, width, 20, name);
         o.setHelper(this);
+        objectList.add(o);
+        return o;
+    }
+
+    GuiHorizontalTrackBar newGuiHorizontalTrackBar(int x, int y, int width, int height) {
+        GuiHorizontalTrackBar o;
+        o = new GuiHorizontalTrackBar(screen.width / 2 - xSize / 2 + x, screen.height / 2 - ySize / 2 + y, width, height, this);
         objectList.add(o);
         return o;
     }

@@ -2,12 +2,13 @@ package mods.eln.sixnode.lampsupply;
 
 import mods.eln.cable.CableRenderDescriptor;
 import mods.eln.cable.CableRenderType;
+import mods.eln.generic.GenericItemBlockUsingDamageDescriptor;
 import mods.eln.misc.*;
 import mods.eln.node.six.SixNodeDescriptor;
 import mods.eln.node.six.SixNodeElementInventory;
 import mods.eln.node.six.SixNodeElementRender;
 import mods.eln.node.six.SixNodeEntity;
-import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor;
+import mods.eln.sixnode.genericcable.GenericCableDescriptor;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -92,8 +93,8 @@ public class LampSupplyRender extends SixNodeElementRender {
 
             ItemStack cableStack = Utils.unserialiseItemStack(stream);
             if (cableStack != null) {
-                ElectricalCableDescriptor desc = (ElectricalCableDescriptor) ElectricalCableDescriptor.getDescriptor(cableStack);
-                cableRender = desc.render;
+                GenericItemBlockUsingDamageDescriptor desc = GenericItemBlockUsingDamageDescriptor.getDescriptor(cableStack, GenericCableDescriptor.class);
+                if (desc instanceof GenericCableDescriptor) cableRender = ((GenericCableDescriptor) desc).render;
             } else {
                 cableRender = null;
             }

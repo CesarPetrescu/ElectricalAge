@@ -7,9 +7,11 @@ import mods.eln.misc.Coordinate
 import mods.eln.misc.Direction.Companion.fromIntMinecraftSide
 import mods.eln.misc.LRDU
 import mods.eln.misc.Utils.addChatMessage
+import mods.eln.sixnode.electricalcable.UtilityCableDescriptor
 import net.minecraft.block.Block
 import net.minecraft.client.Minecraft
 import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.entity.player.EntityPlayerMP
 import net.minecraft.init.Blocks
 import net.minecraft.item.ItemStack
 import net.minecraft.world.World
@@ -19,6 +21,11 @@ import net.minecraftforge.client.IItemRenderer.ItemRendererHelper
 import org.lwjgl.opengl.GL11
 
 class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b), IItemRenderer {
+    private fun shouldConsumeUtilityCableLength(player: EntityPlayer): Boolean {
+        val creativeFreeLength = Eln.config.getBooleanOrElse("gameplay.cables.creativeFreeLength", true)
+        return !(creativeFreeLength && player is EntityPlayerMP && mods.eln.misc.Utils.isCreative(player))
+    }
+
     override fun getMetadata(damageValue: Int): Int {
         return damageValue
     }
@@ -43,13 +50,27 @@ class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b
             if (side == 5) x++
         }
         if (stack.stackSize == 0) return false
+        val descriptor = getDescriptor(stack)
+        if (descriptor is UtilityCableDescriptor && !descriptor.hasLengthForPlacement(stack)) {
+            addChatMessage(player, "Not enough wire length remaining to place another segment")
+            return false
+        }
         if (!player.canPlayerEdit(x, y, z, side, stack)) return false
         if (y == 255 && field_150939_a.material.isSolid) return false
         val i1 = getMetadata(stack.itemDamage)
         val metadata = field_150939_a.onBlockPlaced(world, x, y, z, side, hitX, hitY, hitZ, i1)
         if (placeBlockAt(stack, player, world, x, y, z, side, hitX, hitY, hitZ, metadata)) {
             world.playSoundEffect((x + 0.5f).toDouble(), (y + 0.5f).toDouble(), (z + 0.5f).toDouble(), field_150939_a.stepSound.func_150496_b(), (field_150939_a.stepSound.getVolume() + 1.0f) / 2.0f, field_150939_a.stepSound.pitch * 0.8f)
-            stack.stackSize -= 1
+            if (descriptor is UtilityCableDescriptor) {
+                if (shouldConsumeUtilityCableLength(player)) {
+                    descriptor.consumeLengthForPlacement(stack)
+                    if (!descriptor.hasLengthForPlacement(stack)) {
+                        stack.stackSize -= 1
+                    }
+                }
+            } else {
+                stack.stackSize -= 1
+            }
         }
         return true
     }
@@ -122,15 +143,20 @@ class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b
     }
 
     override fun handleRenderType(item: ItemStack, type: ItemRenderType): Boolean {
-        return if (getDescriptor(item) == null) false else getDescriptor(item)!!.handleRenderType(item, type)
+        val descriptor = getDescriptor(item) ?: return false
+        return descriptor.handleRenderType(item, type)
     }
 
     override fun shouldUseRenderHelper(type: ItemRenderType, item: ItemStack, helper: ItemRendererHelper): Boolean {
-        return if (!isStackValidToPlace(item)) false else getDescriptor(item)!!.shouldUseRenderHelper(type, item, helper)
+        if (!isStackValidToPlace(item)) return false
+        val descriptor = getDescriptor(item) ?: return false
+        return descriptor.shouldUseRenderHelper(type, item, helper)
     }
 
     fun shouldUseRenderHelperEln(type: ItemRenderType?, item: ItemStack?, helper: ItemRendererHelper?): Boolean {
-        return if (!isStackValidToPlace(item)) false else getDescriptor(item)!!.shouldUseRenderHelperEln(type, item, helper)
+        if (!isStackValidToPlace(item)) return false
+        val descriptor = getDescriptor(item) ?: return false
+        return descriptor.shouldUseRenderHelperEln(type, item, helper)
     }
 
     override fun renderItem(type: ItemRenderType, item: ItemStack, vararg data: Any) {
@@ -160,7 +186,10 @@ class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b
                 }
             }
         }
-        getDescriptor(item)!!.renderItem(type, item, *data)
+        val descriptor = getDescriptor(item)
+        if (descriptor != null) {
+            descriptor.renderItem(type, item, *data)
+        }
         Minecraft.getMinecraft().mcProfiler.endSection()
     }
 

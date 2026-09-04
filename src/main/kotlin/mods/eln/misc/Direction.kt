@@ -496,6 +496,17 @@ enum class Direction(var int: Int) {
         }
     }
 
+    fun toHybridNodeDirection(): HybridNodeDirection {
+        return when (this) {
+            XN -> HybridNodeDirection.XN
+            XP -> HybridNodeDirection.XP
+            YN -> HybridNodeDirection.YN
+            YP -> HybridNodeDirection.YP
+            ZN -> HybridNodeDirection.ZN
+            ZP -> HybridNodeDirection.ZP
+        }
+    }
+
     companion object {
         val intToDir = arrayOf(XN, XP, YN, YP, ZN, ZP)
         val all = arrayOf(XN, XP, YN, YP, ZN, ZP)
@@ -543,6 +554,34 @@ enum class Direction(var int: Int) {
                 ForgeDirection.UP -> YP
                 ForgeDirection.WEST -> XN
                 else -> YN
+            }
+        }
+
+        fun rotateLocalDirection(front: Direction, local: Direction): Direction {
+            val vec = directionToVector(local)
+            front.rotateFromXN(vec)
+            return fromVector(vec)
+        }
+
+        private fun directionToVector(direction: Direction): IntArray {
+            return when (direction) {
+                XN -> intArrayOf(-1, 0, 0)
+                XP -> intArrayOf(1, 0, 0)
+                YN -> intArrayOf(0, -1, 0)
+                YP -> intArrayOf(0, 1, 0)
+                ZN -> intArrayOf(0, 0, -1)
+                ZP -> intArrayOf(0, 0, 1)
+            }
+        }
+
+        private fun fromVector(vec: IntArray): Direction {
+            return when {
+                vec[0] > 0 -> XP
+                vec[0] < 0 -> XN
+                vec[1] > 0 -> YP
+                vec[1] < 0 -> YN
+                vec[2] > 0 -> ZP
+                else -> ZN
             }
         }
     }

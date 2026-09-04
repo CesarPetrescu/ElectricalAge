@@ -52,6 +52,8 @@ public class ElectricalSensorElement extends SixNodeElement implements IConfigur
 
     public Resistor resistor;
 
+    // Java reports the Kotlin vararg of descriptor classes as an unchecked array creation here.
+    @SuppressWarnings("unchecked")
     private AutoAcceptInventoryProxy inventory = (new AutoAcceptInventoryProxy(new SixNodeElementInventory(1, 64, this)))
         .acceptIfEmpty(0, ElectricalCableDescriptor.class, CurrentCableDescriptor.class);
 
@@ -64,6 +66,16 @@ public class ElectricalSensorElement extends SixNodeElement implements IConfigur
     public static final byte setTypeOfSensorId = 1;
     public static final byte setValueId = 2;
     public static final byte setDirType = 3;
+
+    private int sanitizeSensorType(int requestedType) {
+        if (descriptor != null && descriptor.voltageOnly) {
+            return voltageType;
+        }
+        if (requestedType < powerType || requestedType > voltageType) {
+            return voltageType;
+        }
+        return requestedType;
+    }
 
     public ElectricalSensorElement(SixNode sixNode, Direction side, SixNodeDescriptor descriptor) {
         super(sixNode, side, descriptor);
@@ -110,7 +122,7 @@ public class ElectricalSensorElement extends SixNodeElement implements IConfigur
         super.readFromNBT(nbt);
         byte value = nbt.getByte("front");
         front = LRDU.fromInt((value >> 0) & 0x3);
-        typeOfSensor = nbt.getByte("typeOfSensor");
+        typeOfSensor = sanitizeSensorType(nbt.getByte("typeOfSensor"));
         lowValue = nbt.getFloat("lowValue");
         highValue = nbt.getFloat("highValue");
         dirType = nbt.getByte("dirType");
@@ -172,7 +184,7 @@ public class ElectricalSensorElement extends SixNodeElement implements IConfigur
     public Map<String, String> getWaila() {
         Map<String, String> info = new HashMap<String, String>();
         info.put(I18N.tr("Output voltage"), Utils.plotVolt("", outputGate.getVoltage()));
-        if (Eln.wailaEasyMode) {
+        if (Eln.config.getBooleanOrElse("ui.waila.easyMode", false)) {
             switch (typeOfSensor) {
                 case voltageType:
                     info.put(I18N.tr("Measured voltage"), Utils.plotVolt("", aLoad.getVoltage()));
@@ -228,7 +240,9 @@ public class ElectricalSensorElement extends SixNodeElement implements IConfigur
         //if (!descriptor.voltageOnly)
         {
             ItemStack cable = getInventory().getStackInSlot(ElectricalSensorContainer.cableSlotId);
-            GenericCableDescriptor cableDescriptor = (GenericCableDescriptor) Eln.sixNodeItem.getDescriptor(cable);
+            SixNodeDescriptor descriptor = Eln.sixNodeItem.getDescriptor(cable);
+            GenericCableDescriptor cableDescriptor = descriptor instanceof GenericCableDescriptor ?
+                (GenericCableDescriptor) descriptor : null;
 
             if (cableDescriptor == null) {
                 if (resistor != null) resistor.highImpedance();
@@ -254,7 +268,7 @@ public class ElectricalSensorElement extends SixNodeElement implements IConfigur
         try {
             switch (stream.readByte()) {
                 case setTypeOfSensorId:
-                    typeOfSensor = stream.readByte();
+                    typeOfSensor = sanitizeSensorType(stream.readByte());
                     needPublish();
                     break;
                 case setValueId:
@@ -264,8 +278,11 @@ public class ElectricalSensorElement extends SixNodeElement implements IConfigur
                     needPublish();
                     break;
                 case setDirType:
-                    dirType = stream.readByte();
-                    needPublish();
+                    byte requestedDir = stream.readByte();
+                    if (!descriptor.voltageOnly) {
+                        dirType = requestedDir;
+                        needPublish();
+                    }
                     break;
             }
         } catch (IOException e) {
@@ -304,6 +321,7 @@ public class ElectricalSensorElement extends SixNodeElement implements IConfigur
                     break;
             }
         }
+        typeOfSensor = sanitizeSensorType(typeOfSensor);
         if(compound.hasKey("dir") && !descriptor.voltageOnly)
             dirType = compound.getByte("dir");
         ConfigCopyToolDescriptor.readCableType(compound, getInventory(), 0, invoker);

@@ -35,8 +35,11 @@
  */
 dependencies {
     shadowImplementation 'org.apache.commons:commons-math3:3.6.1'
+    shadowImplementation 'org.apache.commons:commons-numbers-core:1.2'
     shadowImplementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     shadowImplementation "org.semver4j:semver4j:4.3.0" // Can be removed and replaced with Runtime.Version if java9+ is required
+    testImplementation "junit:junit:4.13.2"
+    testImplementation "org.jetbrains.kotlin:kotlin-test-junit"
     implementation "cofh:CoFHCore:1.7.10R3.0.4:dev"
     implementation "cofh:CoFHLib:1.7.10R3.0.3:dev"
     compileOnly "mcp.mobius.waila:Waila:1.5.11-RC2-NONEI_1.7.10:dev"
@@ -44,4 +47,7 @@ dependencies {
     compileOnly "ic2:IC2Classic:1.2.1.8:dev"
     compileOnly "li.cil.oc:OpenComputers:MC1.7.10-1.7.2.1204:dev"
     compileOnly "dan200.computercraft:ComputerCraft:1.75"
+    // i18n AST string extraction (build-time only, not in published jar)
+    devOnlyNonPublishable "com.github.javaparser:javaparser-core:3.26.3"
+    devOnlyNonPublishable "org.jetbrains.kotlin:kotlin-compiler-embeddable:2.2.21"
 }

@@ -34,6 +34,7 @@ public class ElectricalCableDescriptor extends GenericCableDescriptor {
     public double dielectricBreakOhmMin = Double.POSITIVE_INFINITY;
 
     String description = "todo cable";
+    public double thermalNominalHeatTime = Eln.cableHeatingTime;
 
     public ElectricalCableDescriptor(String name, CableRenderDescriptor render, String description, boolean signalWire) {
         super(name, ElectricalCableElement.class, ElectricalCableRender.class);
@@ -70,8 +71,14 @@ public class ElectricalCableDescriptor extends GenericCableDescriptor {
         electricalNominalPower = electricalMaximalPower / electricalNominalVoltage;
         double thermalMaximalPowerDissipated = electricalNominalPower * electricalNominalPower * electricalRs * 2;
         thermalC = thermalMaximalPowerDissipated * thermalNominalHeatTime / (thermalWarmLimit);
+        this.thermalNominalHeatTime = thermalNominalHeatTime;
         thermalRp = thermalWarmLimit / thermalMaximalPowerDissipated;
         thermalRs = thermalConductivityTao / thermalC / 2;
+        if (Eln.config.getBooleanOrElse("simulation.thermal.cableSpikeLimiter.enabled", true) && thermalNominalHeatTime > 0) {
+            thermalSelfHeatingRateLimit = thermalWarmLimit / thermalNominalHeatTime * Eln.config.getDoubleOrElse("simulation.thermal.cableSpikeLimiter.factor", 20.0);
+        } else {
+            thermalSelfHeatingRateLimit = Double.POSITIVE_INFINITY;
+        }
 
         Eln.simulator.checkThermalLoad(thermalRs, thermalRp, thermalC);
 
@@ -114,7 +121,7 @@ public class ElectricalCableDescriptor extends GenericCableDescriptor {
     }
 
     @Override
-    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List list, boolean par4) {
+    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List<String> list, boolean par4) {
         super.addInformation(itemStack, entityPlayer, list, par4);
         if (signalWire) {
             Collections.addAll(list, tr("Cable is adapted to conduct\nelectrical signals.").split("\n"));
@@ -141,7 +148,7 @@ public class ElectricalCableDescriptor extends GenericCableDescriptor {
     }
 
     @Override
-    public RealisticEnum addRealismContext(List list) {
+    public RealisticEnum addRealismContext(List<String> list) {
         list.add(tr("Has some caveats:"));
         list.add(tr("  * Wire resistance is much higher than normal"));
         list.add(tr("  * Wire resistance is not impacted by temperature"));

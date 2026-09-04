@@ -59,8 +59,11 @@ public class ElectricalMachineElement extends TransparentNodeElement implements 
         inSlotId += this.descriptor.outStackCount;
         boosterSlotId += this.descriptor.outStackCount;
         inventory = new ElectricalMachineInventory(2 + this.descriptor.outStackCount, 64, this);
-        booterAccepter = new AutoAcceptInventoryProxy(inventory)
+        // Java reports the Kotlin vararg of descriptor classes as an unchecked array creation here.
+        @SuppressWarnings("unchecked")
+        AutoAcceptInventoryProxy configuredBooterAccepter = new AutoAcceptInventoryProxy(inventory)
             .acceptIfIncrement(this.descriptor.outStackCount + 1, 5, MachineBoosterDescriptor.class);
+        booterAccepter = configuredBooterAccepter;
 
         slowRefreshProcess = new ElectricalStackMachineProcess(
             inventory, inSlotId, outSlotId, this.descriptor.outStackCount,
@@ -120,7 +123,7 @@ public class ElectricalMachineElement extends TransparentNodeElement implements 
     @NotNull
     @Override
     public String thermoMeterString(@NotNull Direction side) {
-        return null;//Utils.plotCelsius("T", thermalLoad.Tc);
+        return "";
     }
 
     @Override
@@ -200,7 +203,7 @@ public class ElectricalMachineElement extends TransparentNodeElement implements 
         Map<String, String> info = new HashMap<String, String>();
         info.put(I18N.tr("Power consumption"), Utils.plotPower("", slowRefreshProcess.getPower()));
         info.put(I18N.tr("Voltage"), Utils.plotVolt("", electricalLoad.getVoltage()));
-        if (Eln.wailaEasyMode) {
+        if (Eln.config.getBooleanOrElse("ui.waila.easyMode", false)) {
             info.put(I18N.tr("Power provided"), Utils.plotPower("", electricalLoad.getCurrent() * electricalLoad.getVoltage()));
         }
         return info;

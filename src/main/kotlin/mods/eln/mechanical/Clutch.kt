@@ -36,6 +36,10 @@ class ClutchPlateItem(
     val maxDTF: Float, val minDTF: Float,
     val wearSpeed: Float, public val explodes: Boolean
 ) : GenericItemUsingDamageDescriptor(name) {
+    companion object {
+        var infiniteLifeEnabled: Boolean = false
+    }
+
     override fun getDefaultNBT() = NBTTagCompound()
 
     fun setWear(stack: ItemStack, wear: Double) {
@@ -77,6 +81,10 @@ class ClutchPlateItem(
 }
 
 class ClutchPinItem(name: String) : GenericItemUsingDamageDescriptorWithComment(name, tr("Prevents clutches from slipping\nagain after they stop.").split("\n").toTypedArray())
+
+internal fun canClutchStopSlipping(leftShaft: ShaftNetwork, rightShaft: ShaftNetwork): Boolean {
+    return leftShaft !is StaticShaftNetwork && rightShaft !is StaticShaftNetwork
+}
 
 class ClutchDescriptor(name: String, override val obj: Obj3D) : SimpleShaftDescriptor(name, ClutchElement::class, ClutchRender::class, EntityMetaTag.Basic) {
     companion object {
@@ -134,6 +142,8 @@ class ClutchElement(node: TransparentNode, desc_: TransparentNodeDescriptor) : S
             Utils.println("CE.init ERROR: getShaft(left) != leftShaft")
         if(getShaft(front.right()) != rightShaft)
             Utils.println("CE.init ERROR: getShaft(right) != rightShaft")
+        // Temporary shaft topology logger. Re-enable when debugging network splits again.
+        // installShaftDebugProcess()
         // Utils.println(String.format("CE.i: new left %s r=%f, right %s r=%f", leftShaft, leftShaft.rads, rightShaft, rightShaft.rads))
     }
 
@@ -143,7 +153,7 @@ class ClutchElement(node: TransparentNode, desc_: TransparentNodeDescriptor) : S
         super.onBreakElement()
     }
 
-    override fun isDestructing() = destructing
+    override fun isShaftElementDestructing() = destructing
 
     override fun getShaft(dir: Direction) = when(dir) {
         front.left() -> leftShaft
@@ -179,7 +189,7 @@ class ClutchElement(node: TransparentNode, desc_: TransparentNodeDescriptor) : S
     val clutchPlateDescriptor: ClutchPlateItem?
         get() {
             val stack = clutchPlateStack ?: return null
-            return (stack.item!! as GenericItemUsingDamage<GenericItemUsingDamageDescriptor>).getDescriptor(stack) as ClutchPlateItem
+            return GenericItemUsingDamageDescriptor.getDescriptor(stack, ClutchPlateItem::class.java) as? ClutchPlateItem
         }
     val clutchPinStack: ItemStack?
         get() {
@@ -283,6 +293,11 @@ class ClutchElement(node: TransparentNode, desc_: TransparentNodeDescriptor) : S
                 //if (slower.rads >= faster.rads - margin)
                 if (Math.signum(rightShaft.rads - leftShaft.rads) != Math.signum(preRads[RIGHT] - preRads[LEFT]))
                 {
+                    if (!canClutchStopSlipping(leftShaft, rightShaft)) {
+                        if (!ClutchPlateItem.infiniteLifeEnabled) clutchPlateDescriptor!!.setWear(clutchPlateStack!!, wear + clutching * slipWearF.getValue(Math.abs(deltaR)))
+                        slipping = false
+                        return
+                    }
                     // Sign change
                     //Utils.println("CPP.p: Sign change")
                     val dWFast = faster.rads - preRads[fasterIdx]
@@ -303,7 +318,7 @@ class ClutchElement(node: TransparentNode, desc_: TransparentNodeDescriptor) : S
                         slower.rads = finalW
                     }
                 } else {
-                    clutchPlateDescriptor!!.setWear(clutchPlateStack!!, wear + clutching * slipWearF.getValue(Math.abs(deltaR)))
+                    if (!ClutchPlateItem.infiniteLifeEnabled) clutchPlateDescriptor!!.setWear(clutchPlateStack!!, wear + clutching * slipWearF.getValue(Math.abs(deltaR)))
                 }
             } else {
                 val maxE = clutching * maxStaticEnergyF.getValue(wear)
@@ -319,8 +334,8 @@ class ClutchElement(node: TransparentNode, desc_: TransparentNodeDescriptor) : S
                     slipping = true
                     needPublish()
                 } else {
-                    leftShaft.rads = Math.sqrt(2 * leftEnergy / (mass * Eln.shaftEnergyFactor))
-                    rightShaft.rads = Math.sqrt(2 * rightEnergy / (mass * Eln.shaftEnergyFactor))
+                    leftShaft.rads = Math.sqrt(2 * leftEnergy / (mass * Eln.config.getDoubleOrElse("balance.mechanics.shaftEnergyFactor", 0.05)))
+                    rightShaft.rads = Math.sqrt(2 * rightEnergy / (mass * Eln.config.getDoubleOrElse("balance.mechanics.shaftEnergyFactor", 0.05)))
                 }
             }
         }
@@ -413,7 +428,7 @@ class ClutchElement(node: TransparentNode, desc_: TransparentNodeDescriptor) : S
         info.put(tr("Energies"), entries.map {
             Utils.plotEnergy("", it.value.energy)
         }.joinToString(", "))
-        if(Eln.wailaEasyMode) {
+        if(Eln.config.getBooleanOrElse("ui.waila.easyMode", false)) {
             info.put("Masses", entries.map {
                 Utils.plotValue(it.value.mass * 1000, "g")
             }.joinToString(", "))
@@ -423,7 +438,7 @@ class ClutchElement(node: TransparentNode, desc_: TransparentNodeDescriptor) : S
                 info.put("Wear", String.format("%.6f", desc.getWear(stack)))
         }
         info.put(tr("Clutching"), Utils.plotVolt(inputGate.signalVoltage))
-        if(Eln.wailaEasyMode) {
+        if(Eln.config.getBooleanOrElse("ui.waila.easyMode", false)) {
             info.put("Slipping", if (slipping) {
                 "YES"
             } else {

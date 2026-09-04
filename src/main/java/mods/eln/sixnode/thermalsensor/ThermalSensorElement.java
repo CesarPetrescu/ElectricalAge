@@ -64,11 +64,17 @@ public class ThermalSensorElement extends SixNodeElement implements IConfigurabl
         this.descriptor = (ThermalSensorDescriptor) descriptor;
 
         if (this.descriptor.temperatureOnly) {
-            inventory = (new AutoAcceptInventoryProxy(new SixNodeElementInventory(1, 64, this)))
+            // Java reports the Kotlin vararg of descriptor classes as an unchecked array creation here.
+            @SuppressWarnings("unchecked")
+            AutoAcceptInventoryProxy configuredInventory = (new AutoAcceptInventoryProxy(new SixNodeElementInventory(1, 64, this)))
                 .acceptIfEmpty(0, ThermalCableDescriptor.class, ElectricalCableDescriptor.class, CurrentCableDescriptor.class);
+            inventory = configuredInventory;
         } else {
-            inventory = (new AutoAcceptInventoryProxy(new SixNodeElementInventory(1, 64, this)))
+            // Java reports the Kotlin vararg of descriptor classes as an unchecked array creation here.
+            @SuppressWarnings("unchecked")
+            AutoAcceptInventoryProxy configuredInventory = (new AutoAcceptInventoryProxy(new SixNodeElementInventory(1, 64, this)))
                 .acceptIfEmpty(0, ThermalCableDescriptor.class);
+            inventory = configuredInventory;
         }
     }
 
@@ -152,10 +158,10 @@ public class ThermalSensorElement extends SixNodeElement implements IConfigurabl
     public Map<String, String> getWaila() {
         Map<String, String> info = new HashMap<String, String>();
         info.put(I18N.tr("Output voltage"), Utils.plotVolt("", outputGate.getVoltage()));
-        if (Eln.wailaEasyMode) {
+        if (Eln.config.getBooleanOrElse("ui.waila.easyMode", false)) {
             switch (typeOfSensor) {
                 case temperatureType:
-                    info.put(I18N.tr("Measured temperature"), Utils.plotCelsius("", thermalLoad.getTemperature()));
+                    info.put(I18N.tr("Measured temperature"), plotAmbientCelsius("", thermalLoad.getTemperature()));
                     break;
 
                 case powerType:
@@ -169,7 +175,7 @@ public class ThermalSensorElement extends SixNodeElement implements IConfigurabl
     @NotNull
     @Override
     public String thermoMeterString() {
-        return Utils.plotCelsius("T :", thermalLoad.temperatureCelsius);
+        return plotAmbientCelsius("T :", thermalLoad.temperatureCelsius);
     }
 
     @Override
@@ -203,17 +209,17 @@ public class ThermalSensorElement extends SixNodeElement implements IConfigurabl
 
         SixNodeDescriptor descriptor = Eln.sixNodeItem.getDescriptor(cable);
         if (descriptor == null) return;
-        if (descriptor.getClass() == ThermalCableDescriptor.class) {
-            ThermalCableDescriptor cableDescriptor = (ThermalCableDescriptor) Eln.sixNodeItem.getDescriptor(cable);
+        if (descriptor instanceof ThermalCableDescriptor) {
+            ThermalCableDescriptor cableDescriptor = (ThermalCableDescriptor) descriptor;
             cableDescriptor.setThermalLoad(thermalLoad);
             thermalLoad.setAsFast();
-        } else if (descriptor.getClass() == ElectricalCableDescriptor.class) {
-            ElectricalCableDescriptor cableDescriptor = (ElectricalCableDescriptor) Eln.sixNodeItem.getDescriptor(cable);
+        } else if (descriptor instanceof ElectricalCableDescriptor) {
+            ElectricalCableDescriptor cableDescriptor = (ElectricalCableDescriptor) descriptor;
             cableDescriptor.applyTo(thermalLoad);
             thermalLoad.Rp = 1000000000.0;
             thermalLoad.setAsSlow();
-        } else if (descriptor.getClass() == CurrentCableDescriptor.class) {
-            CurrentCableDescriptor cableDescriptor = (CurrentCableDescriptor) Eln.sixNodeItem.getDescriptor(cable);
+        } else if (descriptor instanceof CurrentCableDescriptor) {
+            CurrentCableDescriptor cableDescriptor = (CurrentCableDescriptor) descriptor;
             cableDescriptor.applyTo(thermalLoad);
             thermalLoad.Rp = 1000000000.0;
             thermalLoad.setAsSlow();
@@ -224,12 +230,12 @@ public class ThermalSensorElement extends SixNodeElement implements IConfigurabl
 
     boolean isItemThermalCable() {
         SixNodeDescriptor descriptor = Eln.sixNodeItem.getDescriptor(getInventory().getStackInSlot(ThermalSensorContainer.cableSlotId));
-        return descriptor != null && descriptor.getClass() == ThermalCableDescriptor.class;
+        return descriptor instanceof ThermalCableDescriptor;
     }
 
     boolean isItemElectricalCable() {
         SixNodeDescriptor descriptor = Eln.sixNodeItem.getDescriptor(getInventory().getStackInSlot(ThermalSensorContainer.cableSlotId));
-        return descriptor != null && (descriptor.getClass() == ElectricalCableDescriptor.class || descriptor.getClass() == CurrentCableDescriptor.class);
+        return descriptor instanceof ElectricalCableDescriptor || descriptor instanceof CurrentCableDescriptor;
     }
 
     @Override

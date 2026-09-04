@@ -30,6 +30,7 @@ public class ElectricalDataLoggerDescriptor extends SixNodeDescriptor {
     float cr, cg, cb;
 
     float reflc;
+    private final String modelTextureName;
 
     public boolean onFloor;
     public String textColor;
@@ -41,6 +42,15 @@ public class ElectricalDataLoggerDescriptor extends SixNodeDescriptor {
         this.cg = cg;
         this.onFloor = onFloor;
         this.textColor = textColor;
+        if ("DataloggerCRTFloor".equals(objName)) {
+            modelTextureName = "CRTDisplay.png";
+        } else if ("FlatScreenMonitor".equals(objName)) {
+            modelTextureName = "FlatScreenMonitor.png";
+        } else if ("IndustrialPanel".equals(objName)) {
+            modelTextureName = "IndustrialPanel.png";
+        } else {
+            modelTextureName = null;
+        }
         obj = Eln.obj.getObj(objName);
         if (obj != null) {
             main = obj.getPart("main");
@@ -76,7 +86,12 @@ public class ElectricalDataLoggerDescriptor extends SixNodeDescriptor {
         //GL11.glDisable(GL11.GL_TEXTURE_2D);
         if (main != null) {
             Utils.setGlColorFromDye(color);
-            main.draw();
+            if (modelTextureName != null) {
+                obj.bindTexture(modelTextureName);
+                main.drawNoBind();
+            } else {
+                main.draw();
+            }
             GL11.glColor3f(1f, 1f, 1f);
         }
         //GL11.glEnable(GL11.GL_TEXTURE_2D);
@@ -96,7 +111,14 @@ public class ElectricalDataLoggerDescriptor extends SixNodeDescriptor {
             UtilsClient.disableLight();
             // GL11.glPushMatrix();
             UtilsClient.ledOnOffColor(true);
-            if (led != null) led.draw();
+            if (led != null) {
+                if (modelTextureName != null) {
+                    obj.bindTexture(modelTextureName);
+                    led.drawNoBind();
+                } else {
+                    led.draw();
+                }
+            }
 
             UtilsClient.glDefaultColor();
 
@@ -148,7 +170,7 @@ public class ElectricalDataLoggerDescriptor extends SixNodeDescriptor {
     }
 
     @Override
-    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List list, boolean par4) {
+    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List<String> list, boolean par4) {
         super.addInformation(itemStack, entityPlayer, list, par4);
         Collections.addAll(list, tr("Measures the voltage of an\nelectrical signal and plots\nthe data in real time.").split("\n"));
         list.add(tr("It can store up to 256 points."));

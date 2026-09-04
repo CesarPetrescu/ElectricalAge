@@ -226,13 +226,12 @@ object CableRender {
 
     @JvmStatic
     fun drawCable(
-        cable: CableRenderDescriptor?,
+        cable: CableRenderDescriptor,
         connection: LRDUMask,
         connectionType: CableRenderType,
-        deltaStart: Float = cable!!.widthDiv2 / 2f,
+        deltaStart: Float = cable.widthDiv2 / 2f,
         drawBottom: Boolean = false
     ) {
-        if (cable == null) return
         var endLeft = -deltaStart
         var endRight = deltaStart
         var endUp = deltaStart
@@ -453,7 +452,7 @@ object CableRender {
     }
 
     @JvmStatic
-    fun drawNode(cable: CableRenderDescriptor, connection: LRDUMask, connectionType: CableRenderType?) {
+    fun drawNode(cable: CableRenderDescriptor, connection: LRDUMask, @Suppress("UNUSED_PARAMETER") connectionType: CableRenderType?) {
         if (connection.mask == 0 || (connection[LRDU.Left] || connection[LRDU.Right]) && (connection[LRDU.Down] || connection[LRDU.Up]) || connection.mask == 1 || connection.mask == 2 || connection.mask == 4 || connection.mask == 8) {
             val widthDiv2 = cable.widthDiv2 + 1.0f / 16.0f
             val height = cable.height + 1.0f / 16.0f

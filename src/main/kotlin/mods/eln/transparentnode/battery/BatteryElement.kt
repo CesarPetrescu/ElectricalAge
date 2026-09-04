@@ -35,7 +35,7 @@ class BatteryElement(transparentNode: TransparentNode, descriptor: TransparentNo
     var voltageSource = VoltageSource("volSrc", positiveLoad, negativeLoad)
     var thermalLoad = NbtThermalLoad("thermalLoad")
     var negativeETProcess = ElectricalLoadHeatThermalLoad(negativeLoad, thermalLoad)
-    var thermalWatchdog = ThermalLoadWatchDog(thermalLoad)
+    var thermalWatchdog = ambientAwareThermalWatchdog(ThermalLoadWatchDog(thermalLoad))
     var batteryProcess = NbtBatteryProcess(positiveLoad, negativeLoad, this.descriptor.UfCharge, 0.0, voltageSource, thermalLoad)
     var dischargeResistor = Resistor(positiveLoad, negativeLoad)
     var batterySlowProcess = NbtBatterySlowProcess(node!!, batteryProcess, thermalLoad)
@@ -71,7 +71,7 @@ class BatteryElement(transparentNode: TransparentNode, descriptor: TransparentNo
     }
 
     override fun thermoMeterString(side: Direction): String {
-        return Utils.plotCelsius("Tbat:", thermalLoad.temperatureCelsius)
+        return plotAmbientCelsius("Tbat:", thermalLoad.temperatureCelsius)
     }
 
     override fun networkSerialize(stream: DataOutputStream) {
@@ -134,10 +134,10 @@ class BatteryElement(transparentNode: TransparentNode, descriptor: TransparentNo
         info[tr("Charge")] = Utils.plotPercent("", batteryProcess.charge)
         info[tr("Energy")] = Utils.plotEnergy("", batteryProcess.energy)
         info[tr("Life")] = Utils.plotPercent("", batteryProcess.life)
-        if (Eln.wailaEasyMode) {
+        if (Eln.config.getBooleanOrElse("ui.waila.easyMode", false)) {
             info[tr("Voltage")] = Utils.plotVolt("", batteryProcess.u)
             info[tr("Current")] = Utils.plotAmpere("", batteryProcess.dischargeCurrent)
-            info[tr("Temperature")] = Utils.plotCelsius("", thermalLoad.temperatureCelsius)
+            info[tr("Temperature")] = plotAmbientCelsius("", thermalLoad.temperatureCelsius)
         }
         info[tr("Subsystem Matrix Size")] = Utils.renderSubSystemWaila(positiveLoad.subSystem)
         return info

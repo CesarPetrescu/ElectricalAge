@@ -9,6 +9,7 @@ import mods.eln.misc.LRDU;
 import mods.eln.misc.Utils;
 import mods.eln.node.AutoAcceptInventoryProxy;
 import mods.eln.node.NodeBase;
+import mods.eln.generic.GenericItemBlockUsingDamageDescriptor;
 import mods.eln.node.six.SixNode;
 import mods.eln.node.six.SixNodeDescriptor;
 import mods.eln.node.six.SixNodeElement;
@@ -21,7 +22,9 @@ import mods.eln.sim.mna.misc.MnaConst;
 import mods.eln.sim.nbt.NbtElectricalLoad;
 import mods.eln.sim.process.destruct.VoltageStateWatchDog;
 import mods.eln.sim.process.destruct.WorldExplosion;
+import mods.eln.sixnode.currentcable.CurrentCableDescriptor;
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor;
+import mods.eln.sixnode.genericcable.GenericCableDescriptor;
 import mods.eln.sixnode.wirelesssignal.IWirelessSignalSpot;
 import mods.eln.sixnode.wirelesssignal.IWirelessSignalTx;
 import mods.eln.sixnode.wirelesssignal.WirelessUtils;
@@ -63,9 +66,13 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
     public Resistor loadResistor;
     public IProcess lampSupplySlowProcess = new LampSupplySlowProcess();
 
-    private AutoAcceptInventoryProxy inventory = (new AutoAcceptInventoryProxy(new SixNodeElementInventory(1, 64, this)))
-        .acceptIfIncrement(0, 64, ElectricalCableDescriptor.class);
+    private final IInventory inventory = new SixNodeElementInventory(1, 64, this, LampSupplyContainer.requiredCableLength);
 
+    // ElectricalCableDescriptor here covers utility cables
+    // Java reports the Kotlin vararg of descriptor classes as an unchecked array creation here.
+    @SuppressWarnings("unchecked")
+    private final AutoAcceptInventoryProxy inventoryProxy = (new AutoAcceptInventoryProxy(inventory))
+        .acceptIfEmpty(0, ElectricalCableDescriptor.class, CurrentCableDescriptor.class);
 
     static class Entry {
         Entry(String powerChannel, String wirelessChannel, int aggregator) {
@@ -93,8 +100,8 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
 
     @Override
     public IInventory getInventory() {
-        if (inventory != null)
-            return inventory.getInventory();
+        if (inventoryProxy != null)
+            return inventoryProxy.getInventory();
         else
             return null;
     }
@@ -102,7 +109,7 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
     @Nullable
     @Override
     public Container newContainer(@NotNull Direction side, @NotNull EntityPlayer player) {
-        return new LampSupplyContainer(player, inventory.getInventory());
+        return new LampSupplyContainer(player, inventoryProxy.getInventory());
     }
 
     public LampSupplyElement(SixNode sixNode, Direction side, SixNodeDescriptor descriptor) {
@@ -228,7 +235,7 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
     @NotNull
     @Override
     public Map<String, String> getWaila() {
-        Map<String, String> info = new HashMap<String, String>();
+        Map<String, String> info = new LinkedHashMap<String, String>();
         for (int i = 0; i < 3; ++i) {
             Entry e = entries.get(i);
             if (!e.powerChannel.isEmpty()) {
@@ -237,7 +244,7 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
             }
         }
         info.put(I18N.tr("Total power"), Utils.plotPower("", powerLoad.getVoltage() * powerLoad.getCurrent()));
-        if (Eln.wailaEasyMode) {
+        if (Eln.config.getBooleanOrElse("ui.waila.easyMode", false)) {
             info.put(I18N.tr("Voltage"), Utils.plotVolt("", powerLoad.getVoltage()));
         }
         return info;
@@ -246,7 +253,7 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
     @NotNull
     @Override
     public String thermoMeterString() {
-        return null;
+        return "";
     }
 
     @Override
@@ -267,7 +274,21 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
     public boolean onBlockActivated(EntityPlayer entityPlayer, Direction side, float vx, float vy, float vz) {
         if (onBlockActivatedRotate(entityPlayer)) return true;
 
-        return inventory.take(entityPlayer.getCurrentEquippedItem(), this, false, true);
+        ItemStack playerEquippedItem = entityPlayer.getCurrentEquippedItem();
+        GenericItemBlockUsingDamageDescriptor desc = GenericItemBlockUsingDamageDescriptor.getDescriptor(playerEquippedItem, GenericCableDescriptor.class);
+        boolean takeItem = false;
+
+        // ElectricalCableDescriptor here covers utility cables (utility cables are not signal cables)
+        // Spool length check and trimming are handled in AutoAcceptInventoryProxy
+        if (desc instanceof ElectricalCableDescriptor) {
+            takeItem = !((ElectricalCableDescriptor) desc).signalWire;
+        } else if (desc instanceof CurrentCableDescriptor) {
+            takeItem = true;
+        }
+
+        if (takeItem) {
+            return inventoryProxy.take(playerEquippedItem, this, false, true);
+        } else return false;
     }
 
     @Override
@@ -337,9 +358,14 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
     void setupFromInventory() {
         ItemStack cableStack = getInventory().getStackInSlot(LampSupplyContainer.cableSlotId);
         if (cableStack != null) {
-            ElectricalCableDescriptor desc = (ElectricalCableDescriptor) ElectricalCableDescriptor.getDescriptor(cableStack);
-            desc.applyTo(powerLoad);
-            voltageWatchdog.setNominalVoltage(desc.electricalNominalVoltage);
+            GenericItemBlockUsingDamageDescriptor desc = GenericItemBlockUsingDamageDescriptor.getDescriptor(cableStack, GenericCableDescriptor.class);
+            if (desc instanceof GenericCableDescriptor) {
+                ((GenericCableDescriptor) desc).applyTo(powerLoad);
+                voltageWatchdog.setNominalVoltage(((GenericCableDescriptor) desc).electricalNominalVoltage);
+            } else {
+                voltageWatchdog.setNominalVoltage(10000);
+                powerLoad.highImpedance();
+            }
         } else {
             voltageWatchdog.setNominalVoltage(10000);
             powerLoad.highImpedance();
@@ -410,7 +436,7 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
     }
 
     public int getRange() {
-        return getRange(descriptor, inventory.getInventory());
+        return getRange(descriptor, inventoryProxy.getInventory());
     }
 
     private int getRange(LampSupplyDescriptor desc, IInventory inventory2) {
@@ -422,7 +448,7 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
     @Override
     public void readConfigTool(NBTTagCompound compound, EntityPlayer invoker) {
         if(compound.hasKey("powerChannels")) {
-            NBTTagList list = compound.getTagList("powerChannel", 8);
+            NBTTagList list = compound.getTagList("powerChannels", 8);
             for(int idx = 0; idx < descriptor.channelCount && idx < list.tagCount(); idx++) {
                 channelRemove(this, idx, entries.get(idx).powerChannel);
                 entries.get(idx).powerChannel = list.getStringTagAt(idx);
@@ -431,7 +457,7 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
             needPublish();
         }
         if(compound.hasKey("wirelessChannels")) {
-            NBTTagList list = compound.getTagList("wirelessChannel", 8);
+            NBTTagList list = compound.getTagList("wirelessChannels", 8);
             for(int idx = 0; idx < descriptor.channelCount && idx < list.tagCount(); idx++) {
                 channelRemove(this, idx, entries.get(idx).wirelessChannel);
                 entries.get(idx).wirelessChannel = list.getStringTagAt(idx);
@@ -446,7 +472,7 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
             }
             needPublish();
         }
-        if(ConfigCopyToolDescriptor.readCableType(compound, getInventory(), 0, invoker))
+        if(ConfigCopyToolDescriptor.readCableType(compound, getInventory(), 0, invoker, false))
             needPublish();
     }
 

@@ -14,6 +14,7 @@ import mods.eln.sim.mna.component.Resistor
 import mods.eln.sim.nbt.NbtElectricalLoad
 import mods.eln.wiki.Data
 import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.entity.player.EntityPlayerMP
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
@@ -63,7 +64,7 @@ class ElectricalFuseHolderDescriptor(name: String, obj: Obj3D) :
             VoltageLevelColor.fromCable(installedFuse.cableDescriptor).setGLColor()
             fuseType?.draw()
             GL11.glColor3f(1f, 1f, 1f)
-            if (installedFuse.cableDescriptor != null) {
+            if (installedFuse.isUsable()) {
                 fuseOk?.draw()
             }
             fuse?.draw()
@@ -99,15 +100,15 @@ class ElectricalFuseHolderElement(sixNode: SixNode, side: Direction, descriptor:
 
     private val fuseProcess = IProcess { time ->
         val I = aLoad.current
-        val cable = installedFuse?.cableDescriptor
-        if (cable == null) {
+        val fuse = installedFuse
+        if (fuse == null || !fuse.isUsable()) {
             T = 0.0
         } else {
-            val P = I * I * cable.electricalRs * 2.0 - T / cable.thermalRp * 0.9
+            val P = I * I * fuse.resistanceOhms() - T / fuse.thermalRp() * 0.9
 
-            T += P / cable.thermalC * time
+            T += P / fuse.thermalC() * time
         }
-        if (T > cable?.thermalWarmLimit ?: 0.0 * 0.8) {
+        if (T > ((fuse?.warmLimitCelsius() ?: 0.0) * 0.8)) {
             installedFuse = ElectricalFuseDescriptor.BlownFuse
         }
     }
@@ -179,7 +180,12 @@ class ElectricalFuseHolderElement(sixNode: SixNode, side: Direction, descriptor:
     }
 
     fun refreshSwitchResistor() {
-        installedFuse?.cableDescriptor?.applyTo(fuseResistor) ?: fuseResistor.ultraImpedance()
+        val fuse = installedFuse
+        if (fuse != null && fuse.isUsable()) {
+            fuseResistor.resistance = fuse.resistanceOhms()
+        } else {
+            fuseResistor.highImpedance()
+        }
     }
 
     override fun initialize() {
@@ -201,7 +207,7 @@ class ElectricalFuseHolderElement(sixNode: SixNode, side: Direction, descriptor:
         if (itemStack != null) {
             if (fuseDescriptor != null && itemStack.stackSize > 0) {
                 // The player puts in a new lead fuse.
-                itemStack.stackSize--
+                if (!(Eln.config.getBooleanOrElse("gameplay.qol.creativeNoConsumeInsertedItems", false) && entityPlayer is EntityPlayerMP && Utils.isCreative(entityPlayer))) itemStack.stackSize--
                 takenOutFuse = installedFuse
                 installedFuse = fuseDescriptor
             }

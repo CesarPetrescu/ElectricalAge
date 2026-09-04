@@ -54,7 +54,7 @@ public class ResistorElement extends SixNodeElement {
         super(SixNode, side, descriptor);
         this.descriptor = (ResistorDescriptor) descriptor;
 
-        thermalWatchdog = new ThermalLoadWatchDog(thermalLoad);
+        thermalWatchdog = ambientAwareThermalWatchdog(new ThermalLoadWatchDog(thermalLoad).asResistorHeatWatchdog());
 
         electricalLoadList.add(aLoad);
         electricalLoadList.add(bLoad);
@@ -130,7 +130,7 @@ public class ResistorElement extends SixNodeElement {
         Map<String, String> info = new HashMap<String, String>();
         info.put(I18N.tr("Resistance"), Utils.plotValue(r.getResistance(), "\u2126"));
         info.put(I18N.tr("Voltage drop"), Utils.plotVolt("", Math.abs(r.getVoltage())));
-        if (Eln.wailaEasyMode) {
+        if (Eln.config.getBooleanOrElse("ui.waila.easyMode", false)) {
             info.put(I18N.tr("Current"), Utils.plotAmpere("", Math.abs(r.getCurrent())));
 
         }
@@ -140,7 +140,7 @@ public class ResistorElement extends SixNodeElement {
     @NotNull
     @Override
     public String thermoMeterString() {
-        return Utils.plotCelsius("T", thermalLoad.temperatureCelsius);
+        return plotAmbientCelsius("T", thermalLoad.temperatureCelsius);
     }
 
     @Override

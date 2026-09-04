@@ -1,15 +1,16 @@
 package mods.eln.transparentnode.autominer;
 
 import mods.eln.Eln;
+import mods.eln.generic.GenericItemUsingDamageDescriptor;
 import mods.eln.item.ElectricalDrillDescriptor;
 import mods.eln.item.MiningPipeDescriptor;
-import mods.eln.item.electricalitem.OreColorMapping;
+import mods.eln.lightblock.LightBlockEntity;
 import mods.eln.misc.Coordinate;
 import mods.eln.misc.INBTTReady;
 import mods.eln.misc.Utils;
 import mods.eln.ore.OreBlock;
+import mods.eln.ore.OreColorMapping;
 import mods.eln.sim.IProcess;
-import mods.eln.sixnode.lampsocket.LightBlockEntity;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockChest;
 import net.minecraft.block.BlockOre;
@@ -53,7 +54,8 @@ public class AutoMinerSlowProcess implements IProcess, INBTTReady {
     }
 
     private boolean isReadyToDrill() {
-        ElectricalDrillDescriptor drill = (ElectricalDrillDescriptor) ElectricalDrillDescriptor.getDescriptor(miner.getInventory().getStackInSlot(AutoMinerContainer.electricalDrillSlotId));
+        ElectricalDrillDescriptor drill = (ElectricalDrillDescriptor) GenericItemUsingDamageDescriptor.getDescriptor(
+            miner.getInventory().getStackInSlot(AutoMinerContainer.electricalDrillSlotId), ElectricalDrillDescriptor.class);
         if (drill == null) return false;
         return isStorageReady();
     }
@@ -70,7 +72,8 @@ public class AutoMinerSlowProcess implements IProcess, INBTTReady {
 
     @Override
     public void process(double time) {
-        ElectricalDrillDescriptor drill = (ElectricalDrillDescriptor) ElectricalDrillDescriptor.getDescriptor(miner.getInventory().getStackInSlot(AutoMinerContainer.electricalDrillSlotId));
+        ElectricalDrillDescriptor drill = (ElectricalDrillDescriptor) GenericItemUsingDamageDescriptor.getDescriptor(
+            miner.getInventory().getStackInSlot(AutoMinerContainer.electricalDrillSlotId), ElectricalDrillDescriptor.class);
 
         if (++blinkCounter >= 9) {
             blinkCounter = 0;
@@ -131,6 +134,7 @@ public class AutoMinerSlowProcess implements IProcess, INBTTReady {
                         Eln.ghostManager.removeGhostAndBlock(jobCoord);
                         if (miner.getInventory().getStackInSlot(AutoMinerContainer.MiningPipeSlotId) == null) {
                             miner.getInventory().setInventorySlotContents(AutoMinerContainer.MiningPipeSlotId, Eln.miningPipeDescriptor.newItemStack(1));
+                            miner.getInventory().markDirty();
                         } else {
                             miner.getInventory().decrStackSize(AutoMinerContainer.MiningPipeSlotId, -1);
                         }
@@ -233,11 +237,13 @@ public class AutoMinerSlowProcess implements IProcess, INBTTReady {
     }
 
     private void setupJob() {
-        ElectricalDrillDescriptor drill = (ElectricalDrillDescriptor) ElectricalDrillDescriptor.getDescriptor(miner.getInventory().getStackInSlot(AutoMinerContainer.electricalDrillSlotId));
+        ElectricalDrillDescriptor drill = (ElectricalDrillDescriptor) GenericItemUsingDamageDescriptor.getDescriptor(
+            miner.getInventory().getStackInSlot(AutoMinerContainer.electricalDrillSlotId), ElectricalDrillDescriptor.class);
         // OreScanner scanner = (OreScanner) ElectricalDrillDescriptor.getDescriptor(miner.inventory.getStackInSlot(AutoMinerContainer.OreScannerSlotId));
-        MiningPipeDescriptor pipe = (MiningPipeDescriptor) ElectricalDrillDescriptor.getDescriptor(miner.getInventory().getStackInSlot(AutoMinerContainer.MiningPipeSlotId));
+        MiningPipeDescriptor pipe = (MiningPipeDescriptor) GenericItemUsingDamageDescriptor.getDescriptor(
+            miner.getInventory().getStackInSlot(AutoMinerContainer.MiningPipeSlotId), MiningPipeDescriptor.class);
 
-        int scannerRadius = Eln.instance.autominerRange;
+        int scannerRadius = Eln.config.getIntOrElse("machines.autominer.maxRangeBlocks", 10);
         double scannerEnergy = 0;
 
         jobCoord.dimension = miner.node.coordinate.dimension;
@@ -356,7 +362,7 @@ public class AutoMinerSlowProcess implements IProcess, INBTTReady {
         if (block instanceof BlockOre) return true;
         if (block instanceof OreBlock) return true;
         if (block instanceof BlockRedstoneOre) return true;
-        return OreColorMapping.INSTANCE.getMap()[Block.getIdFromBlock(block) + (coordinate.world().getBlockMetadata(coordinate.x, coordinate.y, coordinate.z) << 12)] != 0;
+        return OreColorMapping.getMap()[Block.getIdFromBlock(block) + (coordinate.world().getBlockMetadata(coordinate.x, coordinate.y, coordinate.z) << 12)] != 0;
     }
 
     public void onBreakElement() {

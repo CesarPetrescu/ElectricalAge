@@ -1,6 +1,6 @@
 package mods.eln.transparentnode.electricalfurnace;
 
-import mods.eln.generic.GenericItemUsingDamage;
+import mods.eln.generic.GenericItemUsingDamageDescriptor;
 import mods.eln.item.ThermalIsolatorElement;
 import mods.eln.node.transparent.TransparentNodeElementInventory;
 import mods.eln.sim.IProcess;
@@ -32,12 +32,12 @@ public class ElectricalFurnaceProcess implements IProcess {
         if (itemStack == null) {
             furnace.descriptor.refreshTo(furnace.thermalLoad, 1);
         } else {
-            ThermalIsolatorElement element = ((GenericItemUsingDamage<ThermalIsolatorElement>) itemStack.getItem()).getDescriptor(itemStack);
-            furnace.descriptor.refreshTo(furnace.thermalLoad, element.getConductionFactor());
+            ThermalIsolatorElement element = (ThermalIsolatorElement) GenericItemUsingDamageDescriptor.getDescriptor(
+                itemStack, ThermalIsolatorElement.class);
+            furnace.descriptor.refreshTo(furnace.thermalLoad, element == null ? 1 : element.getConductionFactor());
         }
 
         ItemStack itemStackIn = inventory.getStackInSlot(ElectricalFurnaceElement.inSlotId);
-        ItemStack itemStackOut = inventory.getStackInSlot(ElectricalFurnaceElement.outSlotId);
         if (itemStackInOld != itemStackIn || (!smeltCan()) || !smeltInProcess) {
             smeltInit();
             itemStackInOld = itemStackIn;
@@ -68,9 +68,6 @@ public class ElectricalFurnaceProcess implements IProcess {
                 furnace.setPowerOn(false);
             }
         }
-        int i = 0;
-        i++;
-        //Utils.println("FT : " + furnace.thermalLoad.Tc);
     }
 
     double getPower() {
@@ -80,11 +77,9 @@ public class ElectricalFurnaceProcess implements IProcess {
     public void smeltInit() {
         smeltInProcess = smeltCan();
         if (!smeltInProcess) {
-            smeltInProcess = false;
             energyNeeded = 1.0;
             energyCounter = 0.0;
         } else {
-            smeltInProcess = true;
             energyNeeded = energyNeededPerSmelt;
             energyCounter = 0.0;
         }
@@ -102,8 +97,6 @@ public class ElectricalFurnaceProcess implements IProcess {
             if (inventory.getStackInSlot(ElectricalFurnaceElement.outSlotId) == null) return true;
             if (!inventory.getStackInSlot(ElectricalFurnaceElement.outSlotId).isItemEqual(var1)) return false;
             int result = inventory.getStackInSlot(ElectricalFurnaceElement.outSlotId).stackSize + var1.stackSize;
-
-            //energyNeeded = 1000.0;
             return (result <= inventory.getInventoryStackLimit() && result <= var1.getMaxStackSize());
         }
     }
@@ -116,21 +109,17 @@ public class ElectricalFurnaceProcess implements IProcess {
      * Turn one item from the furnace source stack into the appropriate smelted item in the furnace result stack
      */
     public void smeltItem() {
-        if (this.smeltCan()) {
+        if (smeltCan()) {
             ItemStack var1 = getSmeltResult();
 
             if (inventory.getStackInSlot(ElectricalFurnaceElement.outSlotId) == null) {
-                inventory.setInventorySlotContents(1, var1.copy());
+                inventory.setInventorySlotContents(ElectricalFurnaceElement.outSlotId, var1.copy());
             } else if (inventory.getStackInSlot(ElectricalFurnaceElement.outSlotId).isItemEqual(var1)) {
                 inventory.decrStackSize(ElectricalFurnaceElement.outSlotId, -var1.stackSize);
             }
 
-            /*--this.furnaceItemStacks[0].stackSize;
-
-            if (this.furnaceItemStacks[0].stackSize <= 0) {
-                this.furnaceItemStacks[0] = null;
-            }*/
             inventory.decrStackSize(ElectricalFurnaceElement.inSlotId, 1);
+            inventory.markDirty();
         }
     }
 

@@ -23,6 +23,7 @@ import mods.eln.sound.SoundCommand
 import net.minecraft.client.gui.GuiScreen
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.IInventory
+import net.minecraft.util.AxisAlignedBB
 import org.lwjgl.opengl.GL11
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
@@ -196,6 +197,19 @@ abstract class SixNodeElementRender(open var tileEntity: SixNodeEntity, @JvmFiel
         return null
     }
 
+    fun getAdjacentCableRender(lrdu: LRDU): CableRenderDescriptor? {
+        getInternalAdjacentCableRender(lrdu)?.let { return it }
+        val nodeSide = side.applyLRDU(lrdu)
+        val nodeLrdu = nodeSide.getLRDUGoingTo(side) ?: return null
+        return tileEntity.getAdjacentCableRender(nodeSide, nodeLrdu)
+    }
+
+    private fun getInternalAdjacentCableRender(lrdu: LRDU): CableRenderDescriptor? {
+        val adjacentSide = side.applyLRDU(lrdu)
+        val adjacentLrdu = adjacentSide.getLRDUGoingTo(side) ?: return null
+        return tileEntity.elementRenderList[adjacentSide.int]?.getCableRender(adjacentLrdu)
+    }
+
     open fun getCableDry(lrdu: LRDU?): Int {
         return 0
     }
@@ -293,6 +307,10 @@ abstract class SixNodeElementRender(open var tileEntity: SixNodeEntity, @JvmFiel
 
     open fun cameraDrawOptimisation(): Boolean {
         return true
+    }
+
+    open fun getRenderBoundingBox(@Suppress("UNUSED_PARAMETER") tileEntity: SixNodeEntity): AxisAlignedBB? {
+        return null
     }
 
     @Throws(IOException::class)

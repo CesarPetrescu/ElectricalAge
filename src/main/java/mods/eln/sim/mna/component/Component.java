@@ -6,11 +6,12 @@ import mods.eln.sim.mna.state.State;
 
 public abstract class Component {
 
-    SubSystem subSystem;
+    private SubSystem subSystem;
 
     public IAbstractor abstractedBy;
 
     public Component() {}
+    private String owner;
 
     public void addToSubsystem(SubSystem s) {
         this.subSystem = s;
@@ -18,6 +19,10 @@ public abstract class Component {
 
     public SubSystem getSubSystem() {
         if (isAbstracted()) return abstractedBy.getAbstractorSubSystem();
+        return subSystem;
+    }
+
+    protected SubSystem getLocalSubSystem() {
         return subSystem;
     }
 
@@ -58,5 +63,14 @@ public abstract class Component {
 
     public String toString() {
         return "(" + this.getClass().getSimpleName() + ")";
+    }
+
+    public Component setOwner(String owner) {
+        this.owner = owner;
+        return this;
+    }
+
+    public String getOwner() {
+        return owner;
     }
 }

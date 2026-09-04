@@ -57,10 +57,8 @@ class CurrentCableDescriptor(
         thermalC = 1.0
         this.description = description
         this.render = render
-        thermalWarmLimit = 100.0
-        thermalCoolLimit = -100.0
         thermalWarmLimit = Eln.cableWarmLimit
-        thermalCoolLimit = -10.0
+        thermalCoolLimit = -40.0
         Eln.simulator.checkThermalLoad(thermalRs, thermalRp, thermalC)
     }
 
@@ -74,6 +72,11 @@ class CurrentCableDescriptor(
         thermalC = thermalMaximalPowerDissipated * Eln.cableHeatingTime / thermalWarmLimit
         thermalRp = thermalWarmLimit / thermalMaximalPowerDissipated
         thermalRs = 0.5 / thermalC / 2
+        thermalSelfHeatingRateLimit =
+            if (Eln.config.getBooleanOrElse("simulation.thermal.cableSpikeLimiter.enabled", true) && Eln.cableHeatingTime > 0)
+                thermalWarmLimit / Eln.cableHeatingTime * Eln.config.getDoubleOrElse("simulation.thermal.cableSpikeLimiter.factor", 20.0)
+            else
+                Double.POSITIVE_INFINITY
         voltageLevelColor = VoltageLevelColor.Neutral
     }
 
@@ -101,6 +104,7 @@ class CurrentCableDescriptor(
 
     override fun addInformation(itemStack: ItemStack, entityPlayer: EntityPlayer, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
+        list.add(tr("Deprecated legacy cable. Prefer AWG/mm utility cables for new builds."))
         list.add(tr("Nominal Ratings:"))
         list.add("  " + tr("Voltage: %1\$V", plotValue(electricalNominalVoltage)))
         list.add("  " + tr("Current: %1\$A", plotValue(electricalNominalPower / electricalNominalVoltage)))
@@ -109,6 +113,7 @@ class CurrentCableDescriptor(
     }
 
     override fun addRealismContext(list: MutableList<String>): RealisticEnum? {
+        list.add(tr("This current-tier cable family is deprecated in the rebalance."))
         list.add(tr("Has some caveats:"))
         list.add(tr("  * Wire resistance is much higher than normal"))
         list.add(tr("  * Wire resistance is not impacted by temperature"))
@@ -132,13 +137,14 @@ open class CurrentCableElement(sixNode: SixNode?, side: Direction?, descriptor: 
     var electricalLoad = NbtElectricalLoad("electricalLoad")
     var thermalLoad = NbtThermalLoad("thermalLoad")
     var heater = ElectricalLoadHeatThermalLoad(electricalLoad, thermalLoad)
-    var thermalWatchdog = ThermalLoadWatchDog(thermalLoad)
+    var thermalWatchdog = ambientAwareThermalWatchdog(ThermalLoadWatchDog(thermalLoad))
     var voltageWatchdog = VoltageStateWatchDog(electricalLoad)
     var color: Int
     var colorCare: Int
 
     init {
         this.descriptor = descriptor as CurrentCableDescriptor
+        heater.limitTemperatureRate(this.descriptor.thermalSelfHeatingRateLimit)
         color = 0
         colorCare = 1
         electricalLoad.setCanBeSimplifiedByLine(true)
@@ -193,8 +199,8 @@ open class CurrentCableElement(sixNode: SixNode?, side: Direction?, descriptor: 
     override fun getWaila(): Map<String, String> {
         val info: MutableMap<String, String> = HashMap()
         info[tr("Current")] = plotAmpere("", electricalLoad.current)
-        info[tr("Temperature")] = plotCelsius("", thermalLoad.temperature)
-        if (Eln.wailaEasyMode) {
+        info[tr("Temperature")] = plotAmbientCelsius("", thermalLoad.temperature)
+        if (Eln.config.getBooleanOrElse("ui.waila.easyMode", false)) {
             info[tr("Voltage")] = plotVolt("", electricalLoad.voltage)
         }
         info[tr("Subsystem Matrix Size")] = renderSubSystemWaila(electricalLoad.subSystem)
@@ -202,7 +208,7 @@ open class CurrentCableElement(sixNode: SixNode?, side: Direction?, descriptor: 
     }
 
     override fun thermoMeterString(): String {
-        return plotCelsius("T", thermalLoad.temperatureCelsius)
+        return plotAmbientCelsius("T", thermalLoad.temperatureCelsius)
     }
 
     override fun networkSerialize(stream: DataOutputStream) {

@@ -3,6 +3,7 @@ package mods.eln.sixnode.electricalswitch;
 import mods.eln.Eln;
 import mods.eln.i18n.I18N;
 import mods.eln.misc.Direction;
+import mods.eln.misc.ElectricalSafety;
 import mods.eln.misc.LRDU;
 import mods.eln.misc.Utils;
 import mods.eln.node.NodeBase;
@@ -13,7 +14,10 @@ import mods.eln.sim.ElectricalLoad;
 import mods.eln.sim.ThermalLoad;
 import mods.eln.sim.mna.component.Resistor;
 import mods.eln.sim.mna.component.ResistorSwitch;
+import mods.eln.sim.mna.misc.MnaConst;
 import mods.eln.sim.nbt.NbtElectricalLoad;
+import mods.eln.sim.process.destruct.CableMelt;
+import mods.eln.sim.process.destruct.ResistorCurrentWatchdog;
 import mods.eln.sim.process.destruct.VoltageStateWatchDog;
 import mods.eln.sim.process.destruct.WorldExplosion;
 import mods.eln.sound.SoundCommand;
@@ -34,6 +38,7 @@ public class ElectricalSwitchElement extends SixNodeElement {
     public NbtElectricalLoad aLoad = new NbtElectricalLoad("aLoad");
     public NbtElectricalLoad bLoad = new NbtElectricalLoad("bLoad");
     public ResistorSwitch switchResistor = new ResistorSwitch("switchRes", aLoad, bLoad);
+    public ResistorCurrentWatchdog currentWatchdog;
 
     VoltageStateWatchDog voltageWatchDogA = new VoltageStateWatchDog(aLoad);
     VoltageStateWatchDog voltageWatchDogB = new VoltageStateWatchDog(bLoad);
@@ -44,10 +49,13 @@ public class ElectricalSwitchElement extends SixNodeElement {
     public ElectricalSwitchElement(SixNode sixNode, Direction side, SixNodeDescriptor descriptor) {
         super(sixNode, side, descriptor);
 
-        switchResistor.mustUseUltraImpedance();
         electricalLoadList.add(aLoad);
         electricalLoadList.add(bLoad);
         electricalComponentList.add(switchResistor);
+        currentWatchdog = new ResistorCurrentWatchdog(switchResistor).setMaximumCurrent(
+            ((ElectricalSwitchDescriptor) descriptor).getDamageCurrentLimit(),
+            ElectricalSafety.SHORT_OVERLOAD_GRACE_SECONDS
+        );
         electricalComponentList.add(new Resistor(bLoad, null).pullDown());
         electricalComponentList.add(new Resistor(aLoad, null).pullDown());
 
@@ -55,11 +63,12 @@ public class ElectricalSwitchElement extends SixNodeElement {
 
         WorldExplosion exp = new WorldExplosion(this).cableExplosion();
 
-        //	slowProcessList.add(currentWatchDog);
+        slowProcessList.add(currentWatchdog);
         slowProcessList.add(voltageWatchDogA);
         slowProcessList.add(voltageWatchDogB);
 
         //currentWatchDog.set(switchResistor).setIAbsMax(this.descriptor.maximalPower/this.descriptor.nominalVoltage).set(exp);
+        currentWatchdog.setDestroys(new CableMelt(this));
         voltageWatchDogA.setNominalVoltage(this.descriptor.nominalVoltage).setDestroys(exp);
         voltageWatchDogB.setNominalVoltage(this.descriptor.nominalVoltage).setDestroys(exp);
     }
@@ -116,7 +125,7 @@ public class ElectricalSwitchElement extends SixNodeElement {
         Map<String, String> info = new HashMap<String, String>();
         info.put(I18N.tr("Position"), switchState ? I18N.tr("Closed") : I18N.tr("Open"));
         info.put(I18N.tr("Current"), Utils.plotAmpere("", aLoad.getCurrent()));
-        if (Eln.wailaEasyMode) {
+        if (Eln.config.getBooleanOrElse("ui.waila.easyMode", false)) {
             info.put(I18N.tr("Voltages"), Utils.plotVolt("", aLoad.getVoltage()) + Utils.plotVolt(" ", bLoad.getVoltage()));
         }
         info.put(I18N.tr("Subsystem Matrix Size"), Utils.renderSubSystemWaila(switchResistor.getSubSystem()));
@@ -152,6 +161,10 @@ public class ElectricalSwitchElement extends SixNodeElement {
         needPublish();
     }
 
+    public boolean getSwitchState() {
+        return switchState;
+    }
+
     @Override
     public void initialize() {
         //descriptor.thermal.applyTo(thermalLoad);
@@ -160,6 +173,7 @@ public class ElectricalSwitchElement extends SixNodeElement {
         descriptor.applyTo(bLoad);
 
         switchResistor.setResistance(descriptor.electricalRs);
+        if (descriptor.signalSwitch) switchResistor.setOffResistance(MnaConst.ultraImpedance);
 
         setSwitchState(switchState);
     }

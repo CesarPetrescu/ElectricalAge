@@ -152,7 +152,7 @@ class RadialMotorElement(node: TransparentNode, transparentNodeDescriptor: Trans
     override fun getElectricalLoad(side: Direction, lrdu: LRDU) = throttle
     override fun getThermalLoad(side: Direction, lrdu: LRDU) = null
     override fun getConnectionMask(side: Direction, lrdu: LRDU): Int {
-        return NodeBase.maskElectricalGate
+        return NodeBase.maskElectricalInputGate
     }
 
     override fun thermoMeterString(side: Direction): String = Utils.plotPercent(" Eff:", efficiency.toDouble()) + fluidRate.toString() + "mB/s"
@@ -173,7 +173,7 @@ class RadialMotorElement(node: TransparentNode, transparentNodeDescriptor: Trans
         val info = mutableMapOf<String, String>()
         info[tr("Speed")] = Utils.plotRads("", shaft.rads)
         info[tr("Energy")] = Utils.plotEnergy("", shaft.energy)
-        if (Eln.wailaEasyMode) {
+        if (Eln.config.getBooleanOrElse("ui.waila.easyMode", false)) {
             info[tr("Efficiency")] = Utils.plotPercent("", efficiency.toDouble())
             info[tr("Fuel usage")] = Utils.plotBuckets("", fluidRate / 1000.0) + "/s"
         }

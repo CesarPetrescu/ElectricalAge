@@ -12,15 +12,19 @@ import mods.eln.misc.Utils.isPlayerUsingWrench
 import mods.eln.misc.Utils.mustDropItem
 import mods.eln.misc.Utils.readFromNBT
 import mods.eln.misc.Utils.writeToNBT
+import mods.eln.environment.BiomeClimateService
 import mods.eln.node.INodeElement
+import mods.eln.node.NodeConnectionEndpoint
 import mods.eln.node.NodeConnection
 import mods.eln.sim.ElectricalLoad
 import mods.eln.sim.IProcess
+import mods.eln.sim.SignalLoadSupport
 import mods.eln.sim.ThermalConnection
 import mods.eln.sim.ThermalLoad
 import mods.eln.sim.mna.component.Component
 import mods.eln.sim.nbt.NbtElectricalLoad
 import mods.eln.sim.nbt.NbtThermalLoad
+import mods.eln.sim.process.destruct.ThermalLoadWatchDog
 import mods.eln.sound.IPlayer
 import mods.eln.sound.SoundCommand
 import net.minecraft.entity.player.EntityPlayer
@@ -42,6 +46,7 @@ abstract class SixNodeElement(sixNode: SixNode, @JvmField var side: Direction, d
     var electricalProcessList = ArrayList<IProcess>(4)
     @JvmField
     var electricalComponentList = ArrayList<Component>(4)
+    private var signalReadComponentList = ArrayList<Component>(0)
     @JvmField
     var electricalLoadList = ArrayList<NbtElectricalLoad>(4)
     @JvmField
@@ -65,10 +70,10 @@ abstract class SixNodeElement(sixNode: SixNode, @JvmField var side: Direction, d
 
     open fun inventoryChanged() {}
 
-    override fun play(s: SoundCommand) {
-        s.addUuid(getUuid())
-        s.set(sixNode!!.coordinate)
-        s.play()
+    override fun play(cmd: SoundCommand) {
+        cmd.addUuid(getUuid())
+        cmd.set(sixNode!!.coordinate)
+        cmd.play()
     }
 
     open val coordinate: Coordinate?
@@ -99,6 +104,12 @@ abstract class SixNodeElement(sixNode: SixNode, @JvmField var side: Direction, d
         sixNode!!.sendPacketToClient(bos, player)
     }
 
+    protected fun describeSimOwner(): String {
+        val coord = sixNode?.coordinate
+        val coordStr = coord?.toString() ?: "unknown"
+        return "${javaClass.simpleName}@$coordStr"
+    }
+
     fun notifyNeighbor() {
         sixNode!!.notifyNeighbor()
     }
@@ -106,7 +117,17 @@ abstract class SixNodeElement(sixNode: SixNode, @JvmField var side: Direction, d
     open fun connectJob() {
         // If we are about to destruct ourselves, do not add any elements to the simulation anymore.
         if (sixNode != null && sixNode!!.isDestructing) return
+        val ownerTag = describeSimOwner()
+        electricalComponentList.forEach { it.setOwner(ownerTag) }
+        signalReadComponentList = SignalLoadSupport.createReadComponents(electricalLoadList)
+        signalReadComponentList.forEach { it.setOwner(ownerTag) }
+        electricalLoadList.forEach { it.setOwner(ownerTag) }
+        val coord = coordinate
+        if (coord != null) {
+            thermalLoadList.forEach { it.setSimCoordinate(coord.dimension, coord.x, coord.y, coord.z) }
+        }
         Eln.simulator.addAllElectricalComponent(electricalComponentList)
+        Eln.simulator.addAllElectricalComponent(signalReadComponentList)
         Eln.simulator.addAllThermalConnection(thermalConnectionList)
         for (load in electricalLoadList) Eln.simulator.addElectricalLoad(load)
         for (load in thermalLoadList) Eln.simulator.addThermalLoad(load)
@@ -140,12 +161,52 @@ abstract class SixNodeElement(sixNode: SixNode, @JvmField var side: Direction, d
     }
 
     open fun getElectricalLoad(lrdu: LRDU, mask: Int): ElectricalLoad? = null
+    open fun getElectricalLoad(lrdu: LRDU, mask: Int, remoteEndpoint: NodeConnectionEndpoint): ElectricalLoad? {
+        return getElectricalLoad(lrdu, mask)
+    }
     open fun getThermalLoad(lrdu: LRDU, mask: Int): ThermalLoad? = null
     open fun getConnectionMask(lrdu: LRDU): Int = 0
+
+    fun getAdjacentConnectionEndpoint(lrdu: LRDU): NodeConnectionEndpoint? {
+        getInternalAdjacentConnectionEndpoint(lrdu)?.let { return it }
+        val nodeSide = side.applyLRDU(lrdu)
+        val nodeLrdu = nodeSide.getLRDUGoingTo(side) ?: return null
+        return sixNode?.findAdjacentConnectionEndpoint(nodeSide, nodeLrdu)
+    }
+
+    private fun getInternalAdjacentConnectionEndpoint(lrdu: LRDU): NodeConnectionEndpoint? {
+        val adjacentSide = side.applyLRDU(lrdu)
+        val adjacentElement = sixNode?.getElement(adjacentSide) ?: return null
+        val adjacentLrdu = adjacentSide.getLRDUGoingTo(side) ?: return null
+        return NodeConnectionEndpoint(sixNode!!, adjacentSide, adjacentLrdu, adjacentElement, adjacentSide, adjacentLrdu)
+    }
+
+    fun getAdjacentConnectionElement(lrdu: LRDU): Any? {
+        return getAdjacentConnectionEndpoint(lrdu)?.element
+    }
+
     // reason to believe NodeConnection can be non-null asserted
     open fun newConnectionAt(connection: NodeConnection?, isA: Boolean) {}
     open fun multiMeterString(): String = ""
     open fun thermoMeterString(): String = ""
+
+    fun getAmbientTemperatureCelsius(): Double {
+        val coord = coordinate
+            ?: throw IllegalStateException("Missing coordinate for ${javaClass.name} while sampling ambient temperature.")
+        if (!coord.worldExist) {
+            throw IllegalStateException("World not loaded for coordinate $coord in ${javaClass.name} while sampling ambient temperature.")
+        }
+        val world = coord.world()
+        return BiomeClimateService.sample(world, coord.x, coord.y, coord.z).temperatureCelsius
+    }
+
+    fun plotAmbientCelsius(header: String, thermalDeltaCelsius: Double): String {
+        return Utils.plotCelsius(header, thermalDeltaCelsius + getAmbientTemperatureCelsius())
+    }
+
+    fun ambientAwareThermalWatchdog(watchdog: ThermalLoadWatchDog): ThermalLoadWatchDog {
+        return watchdog.setAmbientTemperatureProvider { getAmbientTemperatureCelsius() }
+    }
 
     @JvmField
     var front = LRDU.Up
@@ -262,7 +323,10 @@ abstract class SixNodeElement(sixNode: SixNode, @JvmField var side: Direction, d
     }
 
     open fun disconnectJob() {
+        for (load in thermalLoadList) load.clearSimCoordinate()
         Eln.simulator.removeAllElectricalComponent(electricalComponentList)
+        Eln.simulator.removeAllElectricalComponent(signalReadComponentList)
+        signalReadComponentList.clear()
         Eln.simulator.removeAllThermalConnection(thermalConnectionList)
         for (load in electricalLoadList) Eln.simulator.removeElectricalLoad(load)
         for (load in thermalLoadList) Eln.simulator.removeThermalLoad(load)
@@ -284,12 +348,16 @@ abstract class SixNodeElement(sixNode: SixNode, @JvmField var side: Direction, d
 
     override fun ghostBlockActivated(UUID: Int, entityPlayer: EntityPlayer, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
         if (UUID == sixNodeElementDescriptor.ghostGroupUuid) {
+            // A click inside a ghost volume should never leak through to normal item use,
+            // otherwise players can place/paint blocks "inside" multiblock bounds.
             sixNode!!.onBlockActivated(entityPlayer, this.side, vx, vy, vz)
+            return true
         }
         return false
     }
 
     private fun selfDestroy() {
+        println("SixNodeElement.selfDestroy deleting side=$side at ${sixNode!!.coordinate}")
         sixNode!!.deleteSubBlock(null, side)
     }
 

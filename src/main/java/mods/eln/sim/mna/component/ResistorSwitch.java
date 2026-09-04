@@ -7,12 +7,13 @@ import net.minecraft.nbt.NBTTagCompound;
 
 public class ResistorSwitch extends Resistor implements INBTTReady {
 
-    boolean ultraImpedance = false;
     String name;
 
-    boolean state = false;
+    private boolean state = false;
 
     protected double baseResistance = 1;
+
+    protected double offResistance = MnaConst.highImpedance;
 
     public ResistorSwitch(String name, State aPin, State bPin) {
         super(aPin, bPin);
@@ -21,13 +22,23 @@ public class ResistorSwitch extends Resistor implements INBTTReady {
 
     public void setState(boolean state) {
         this.state = state;
-        setResistance(baseResistance);
+        super.setResistance(state ? baseResistance : offResistance);
+    }
+
+    public void setOffResistance(double resistance) {
+        offResistance = resistance;
+        super.setResistance(state ? baseResistance : offResistance);
+    }
+
+    @Override
+    public void highImpedance() {
+        super.setResistance(offResistance);
     }
 
     @Override
     public Resistor setResistance(double resistance) {
         baseResistance = resistance;
-        return super.setResistance(state ? resistance : (ultraImpedance ? MnaConst.ultraImpedance : MnaConst.highImpedance));
+        return super.setResistance(state ? resistance : offResistance);
     }
 
     public boolean getState() {
@@ -37,12 +48,14 @@ public class ResistorSwitch extends Resistor implements INBTTReady {
     @Override
     public void readFromNBT(NBTTagCompound nbt, String str) {
         str += name;
-        setResistance(nbt.getDouble(str + "R"));
-        if (Double.isNaN(baseResistance) || baseResistance == 0) {
-            if (ultraImpedance) ultraImpedance();
-            else highImpedance();
+        double resistance = nbt.getDouble(str + "R");
+        if (!Double.isFinite(resistance) || resistance == 0) {
+            baseResistance = offResistance;
+        } else {
+            baseResistance = resistance;
         }
-        setState(nbt.getBoolean(str + "State"));
+        state = nbt.getBoolean(str + "State");
+        super.setResistance(state ? baseResistance : offResistance);
     }
 
     @Override
@@ -50,9 +63,5 @@ public class ResistorSwitch extends Resistor implements INBTTReady {
         str += name;
         nbt.setDouble(str + "R", baseResistance);
         nbt.setBoolean(str + "State", getState());
-    }
-
-    public void mustUseUltraImpedance() {
-        ultraImpedance = true;
     }
 }

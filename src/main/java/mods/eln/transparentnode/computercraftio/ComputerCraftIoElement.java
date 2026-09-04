@@ -58,7 +58,7 @@ public class ComputerCraftIoElement extends TransparentNodeElement implements IP
     @Override
     public int getConnectionMask(Direction side, LRDU lrdu) {
         if (lrdu == lrdu.Down && side.isNotY()) {
-            return NodeBase.maskElectricalGate;
+            return NodeBase.maskElectricalAll;
         }
         return 0;
     }
@@ -66,14 +66,13 @@ public class ComputerCraftIoElement extends TransparentNodeElement implements IP
     @NotNull
     @Override
     public String multiMeterString(@NotNull Direction side) {
-        return null;
-        //Utils.plotUIP(powerLoad.Uc, powerLoad.getCurrent());
+        return "";
     }
 
     @NotNull
     @Override
     public String thermoMeterString(@NotNull Direction side) {
-        return null;
+        return "";
     }
 
     @Override

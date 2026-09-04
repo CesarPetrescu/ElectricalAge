@@ -1,10 +1,10 @@
 package mods.eln.transparentnode.heatfurnace;
 
-import mods.eln.generic.GenericItemUsingDamage;
+import mods.eln.Eln;
+import mods.eln.generic.GenericItemUsingDamageDescriptor;
 import mods.eln.item.ThermalIsolatorElement;
 import mods.eln.misc.INBTTReady;
 import mods.eln.misc.Utils;
-import mods.eln.server.SaveConfig;
 import mods.eln.sim.IProcess;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
@@ -28,10 +28,13 @@ public class HeatFurnaceInventoryProcess implements IProcess, INBTTReady {
 
         double isolationFactor = 1;
         if (isolatorChamberStack != null) {
-            if (furnace.thermalLoad.temperatureCelsius > ((ThermalIsolatorElement)ThermalIsolatorElement.getDescriptor(isolatorChamberStack)).getTmax()) {
+            ThermalIsolatorElement iso = (ThermalIsolatorElement) GenericItemUsingDamageDescriptor.getDescriptor(
+                isolatorChamberStack, ThermalIsolatorElement.class);
+            if (iso == null) {
+                isolationFactor = 1;
+            } else if (furnace.thermalLoad.temperatureCelsius > iso.getTmax()) {
                 furnace.inventory.decrStackSize(HeatFurnaceContainer.isolatorId, 1);
             } else {
-                ThermalIsolatorElement iso = (ThermalIsolatorElement) ((GenericItemUsingDamage) isolatorChamberStack.getItem()).getDescriptor(isolatorChamberStack);
                 isolationFactor = iso.getConductionFactor();
             }
         }
@@ -43,8 +46,8 @@ public class HeatFurnaceInventoryProcess implements IProcess, INBTTReady {
         }
         furnace.furnaceProcess.nominalPower = furnace.descriptor.nominalPower + furnace.descriptor.combustionChamberPower * combustionChamberNbr;
 
-        if (furnace.getTakeFuel() && SaveConfig.instance != null) {
-            if (!SaveConfig.instance.heatFurnaceFuel) {
+        if (furnace.getTakeFuel()) {
+            if (Eln.config.getBooleanOrElse("machines.heatFurnace.consumeFuel", false)) {
                 combustibleBuffer = furnace.furnaceProcess.nominalCombustibleEnergy;
             } else if (combustibleStack != null) {
                 double itemEnergy = Utils.getItemEnergie(combustibleStack);
@@ -55,6 +58,7 @@ public class HeatFurnaceInventoryProcess implements IProcess, INBTTReady {
                         furnace.inventory.decrStackSize(HeatFurnaceContainer.combustibleId, 1);
                         if (combustibleStack.getItem().getUnlocalizedName().toLowerCase().contains("bucket")) {
                             furnace.inventory.setInventorySlotContents(HeatFurnaceContainer.combustibleId, new ItemStack(Items.bucket));
+                            furnace.inventory.markDirty();
                         }
                     }
                 }
