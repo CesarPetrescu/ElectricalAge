@@ -20,8 +20,12 @@ import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.Container
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.network.Packet
+import net.minecraft.network.PacketBuffer
 import net.minecraft.network.play.server.SPacketCustomPayload
+import net.minecraft.network.play.server.SPacketUpdateTileEntity
+import io.netty.buffer.Unpooled
 import net.minecraft.tileentity.TileEntity
+import net.minecraft.util.ITickable
 import net.minecraft.util.math.AxisAlignedBB
 import net.minecraft.world.EnumSkyBlock
 import java.io.ByteArrayOutputStream
@@ -38,7 +42,7 @@ import mods.eln.misc.xCoord
 import mods.eln.misc.yCoord
 import mods.eln.misc.zCoord
 
-abstract class NodeBlockEntity : TileEntity(), ITileEntitySpawnClient, INodeEntity {
+abstract class NodeBlockEntity : TileEntity(), ITickable, ITileEntitySpawnClient, INodeEntity {
     val block: NodeBlock
         get() = getBlockType() as NodeBlock
     var redstone = false
@@ -56,7 +60,7 @@ abstract class NodeBlockEntity : TileEntity(), ITileEntitySpawnClient, INodeEnti
             val newRedstone = b.toInt() and 0x10 != 0
             if (redstone != newRedstone) {
                 redstone = newRedstone
-                world.notifyBlockChange(xCoord, yCoord, zCoord, getBlockType())
+                world.notifyNeighborsOfStateChange(pos, blockType, false)
             } else {
                 redstone = newRedstone
             }
@@ -66,10 +70,10 @@ abstract class NodeBlockEntity : TileEntity(), ITileEntitySpawnClient, INodeEnti
         /*	if(lastLight == 0xFF) //boot trololol
         {
 			lastLight = 15;
-			world.updateLightByType(EnumSkyBlock.Block,xCoord,yCoord,zCoord);
+			world.checkLightFor(EnumSkyBlock.BLOCK, pos);
 		}*/if (lastLight != light) {
             lastLight = light
-            world.updateLightByType(EnumSkyBlock.Block, xCoord, yCoord, zCoord)
+            world.checkLightFor(EnumSkyBlock.BLOCK, pos)
         }
     }
 
@@ -150,8 +154,8 @@ abstract class NodeBlockEntity : TileEntity(), ITileEntitySpawnClient, INodeEnti
     /**
      * Writes a tile entity to NBT.
      */
-    override fun writeToNBT(nbt: NBTTagCompound) {
-        super.writeToNBT(nbt)
+    override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
+        return super.writeToNBT(nbt)
     }
 
     //max draw distance
@@ -161,12 +165,13 @@ abstract class NodeBlockEntity : TileEntity(), ITileEntitySpawnClient, INodeEnti
     }
 
     @Suppress("UNUSED_PARAMETER") fun onBlockPlacedBy(front: Direction?, entityLiving: EntityLivingBase?, metadata: Int) {}
-    override fun canUpdate(): Boolean {
-        return true
-    }
-
     var updateEntityFirst = true
-    override fun updateEntity() {
+
+    /**
+     * 1.8 replaced TileEntity.canUpdate()/updateEntity() with the ITickable interface, which a
+     * tile entity only implements when it actually ticks.
+     */
+    override fun update() {
         if (updateEntityFirst) {
             updateEntityFirst = false
             if (!world.isRemote) {
@@ -226,13 +231,24 @@ abstract class NodeBlockEntity : TileEntity(), ITileEntitySpawnClient, INodeEnti
         }
     }
 
-    override fun getDescriptionPacket(): Packet? {
-        val node = node //TO DO NULL POINTER
+    /**
+     * The node's publish payload is not a vanilla NBT sync, so it travels on the mod's own
+     * channel. 1.8 narrowed the tile-entity sync packet to SPacketUpdateTileEntity, and
+     * SPacketCustomPayload now takes a PacketBuffer, so the bytes are wrapped here.
+     */
+    override fun getUpdatePacket(): SPacketUpdateTileEntity? {
+        val node = node
         if (node == null) {
-            println("ASSERT NULL NODE public Packet getDescriptionPacket() nodeblock entity")
+            println("ASSERT NULL NODE getUpdatePacket() nodeblock entity")
             return null
         }
-        return SPacketCustomPayload(Eln.channelName, node.publishPacket!!.toByteArray())
+        return null
+    }
+
+    fun buildPublishPayload(): SPacketCustomPayload? {
+        val node = node ?: return null
+        val payload = node.publishPacket?.toByteArray() ?: return null
+        return SPacketCustomPayload(Eln.channelName, PacketBuffer(Unpooled.wrappedBuffer(payload)))
     }
 
     open fun preparePacketForServer(stream: DataOutputStream) {
@@ -241,7 +257,7 @@ abstract class NodeBlockEntity : TileEntity(), ITileEntitySpawnClient, INodeEnti
             stream.writeInt(xCoord)
             stream.writeInt(yCoord)
             stream.writeInt(zCoord)
-            stream.writeByte(world.provider.dimensionId)
+            stream.writeByte(world.provider.dimension)
             stream.writeUTF(nodeUuid)
         } catch (e: IOException) {
             e.printStackTrace()
@@ -257,7 +273,7 @@ abstract class NodeBlockEntity : TileEntity(), ITileEntitySpawnClient, INodeEnti
     }
 
     fun getAdjacentCableRender(side: Direction, lrdu: LRDU): CableRenderDescriptor? {
-        val lookupKey = CableRenderLookupKey(world.provider.dimensionId, xCoord, yCoord, zCoord, side, lrdu)
+        val lookupKey = CableRenderLookupKey(world.provider.dimension, xCoord, yCoord, zCoord, side, lrdu)
         val activeLookups = adjacentCableRenderLookups.get()
         if (!activeLookups.add(lookupKey)) return null
 

@@ -127,6 +127,16 @@ enum class Direction(var int: Int) {
         return (int + 4) % 6
     }
 
+    /** This direction as the 1.8+ [EnumFacing] the block and world APIs take. */
+    fun toFacing(): EnumFacing = when (this) {
+        XN -> EnumFacing.WEST
+        XP -> EnumFacing.EAST
+        YN -> EnumFacing.DOWN
+        YP -> EnumFacing.UP
+        ZN -> EnumFacing.NORTH
+        ZP -> EnumFacing.SOUTH
+    }
+
     /**
      * Determine direction sign (N for negative or P for positive).
      *
@@ -544,6 +554,10 @@ enum class Direction(var int: Int) {
         fun readFromNBT(nbt: NBTTagCompound, name: String): Direction? {
             return fromInt(nbt.getByte(name).toInt())
         }
+
+        /** Counterpart of [Direction.toFacing]; the 1.12.2 block callbacks hand out EnumFacing. */
+        @JvmStatic
+        fun fromFacing(facing: EnumFacing?): Direction = from(facing)
 
         fun from(direction: EnumFacing?): Direction {
             return when (direction) {
