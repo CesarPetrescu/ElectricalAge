@@ -11,9 +11,9 @@ class AchievePacketHandler : IMessageHandler<AchievePacket?, IMessage?> {
         if (message == null || ctx == null) return null
         //System.out.println("Got message: " + message.text);
         if (message.text == "openWiki") {
-            ctx.serverHandler.playerEntity.triggerAchievement(Achievements.openGuide)
+            Achievements.grant(ctx.serverHandler.player, Achievements.openGuide)
         } else if (message.text == "craft50VMacerator") {
-            ctx.serverHandler.playerEntity.triggerAchievement(Achievements.craft50VMacerator)
+            Achievements.grant(ctx.serverHandler.player, Achievements.craft50VMacerator)
         } else {
             println("[ELN]: ELN Wiki Achievement Handler has received an invalid message/packet: " + message.text)
         }

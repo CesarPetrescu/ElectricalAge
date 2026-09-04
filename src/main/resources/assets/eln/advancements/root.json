@@ -1,0 +1,14 @@
+{
+  "display": {
+    "icon": { "item": "minecraft:book" },
+    "title": { "translate": "achievement.open_guide" },
+    "description": { "translate": "achievement.open_guide.desc" },
+    "background": "minecraft:textures/blocks/stone.png",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "trigger": { "trigger": "minecraft:impossible" }
+  }
+}

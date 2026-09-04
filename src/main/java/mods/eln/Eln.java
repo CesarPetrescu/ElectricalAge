@@ -516,9 +516,6 @@ public class Eln {
         TR_GROUP("ElnMachines", "Electrical Age - Machines");
         TR_GROUP("ElnCreative", "Electrical Age - Creative");
         TR_GROUP("ElnOther", "Electrical Age - Other");
-        if (isDevelopmentRun()) {
-            Achievements.init();
-        }
         FluidRegistrationKt.registerElnFluids();
         MinecraftForge.EVENT_BUS.register(new ElnForgeEventsHandler());
         MinecraftForge.EVENT_BUS.register(new RoomThermalBlockEventsHandler());

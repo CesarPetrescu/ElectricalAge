@@ -1,39 +1,26 @@
 package mods.eln
 
-import mods.eln.i18n.I18N
-import mods.eln.i18n.I18N.tr
-import net.minecraft.init.Items
-import net.minecraft.stats.Achievement
-import net.minecraftforge.common.AchievementPage
+import net.minecraft.entity.player.EntityPlayerMP
+import net.minecraft.util.ResourceLocation
 
+/**
+ * 1.12.2 replaced achievements with data-driven advancements. The two Eln achievements live in
+ * assets/eln/advancements/ with an `impossible` criterion, so they are only ever granted from here
+ * (the same server-side triggers as before, via [mods.eln.packets.AchievePacketHandler]).
+ */
 object Achievements {
     @JvmField
-    var openGuide: Achievement? = null
+    val openGuide = ResourceLocation(Eln.MODID, "root")
     @JvmField
-    var craft50VMacerator: Achievement? = null
-    var achievementPageEln: AchievementPage? = null
+    val craft50VMacerator = ResourceLocation(Eln.MODID, "craft_50v_macerator")
 
     @JvmStatic
-    fun init() {
-        openGuide = Achievement(
-            tr("achievement.open_guide"),
-            "open_guide", 0, 0, Items.BOOK, null
-        ).registerStat()
-
-        I18N.TR_DESC(I18N.Type.ACHIEVEMENT, "open_guide")
-
-        craft50VMacerator = Achievement(
-            tr("achievement.craft_50v_macerator"),
-            "craft_50v_macerator", 0, 2, Eln.findItemStack("48V Macerator", 0), openGuide
-        ).registerStat()
-
-        I18N.TR_DESC(I18N.Type.ACHIEVEMENT, "craft_50v_macerator")
-
-        achievementPageEln = AchievementPage(
-            tr("Electrical Age [WIP]"),
-            openGuide, craft50VMacerator
-        )
-
-        AchievementPage.registerAchievementPage(achievementPageEln)
+    fun grant(player: EntityPlayerMP, id: ResourceLocation) {
+        val advancement = player.server.advancementManager.getAdvancement(id) ?: return
+        val progress = player.advancements.getProgress(advancement)
+        if (progress.isDone) return
+        for (criterion in progress.remaningCriteria.toList()) {
+            player.advancements.grantCriterion(advancement, criterion)
+        }
     }
 }

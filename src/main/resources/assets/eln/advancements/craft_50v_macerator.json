@@ -1,0 +1,14 @@
+{
+  "parent": "eln:root",
+  "display": {
+    "icon": { "item": "eln:transparentnode", "data": 2112 },
+    "title": { "translate": "achievement.craft_50v_macerator" },
+    "description": { "translate": "achievement.craft_50v_macerator.desc" },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "trigger": { "trigger": "minecraft:impossible" }
+  }
+}
