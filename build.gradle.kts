@@ -61,6 +61,15 @@ minecraft {
     injectedTags.put("VERSION", project.version)
     extraRunJvmArguments.add("-ea:${project.group}")
     if (project.hasProperty("traceClasses")) extraRunJvmArguments.add("-verbose:class")
+    if (project.hasProperty("dumpRegistry")) extraRunJvmArguments.add("-Deln.dumpRegistry=true")
+}
+
+// The Gradle daemon is usually started without DISPLAY, and JavaExec inherits the daemon's
+// environment - so a headless X server has to be handed to the run tasks explicitly.
+System.getenv("DISPLAY")?.let { display ->
+    listOf("runClient", "runObfClient").forEach { n ->
+        tasks.matching { it.name == n }.configureEach { (this as JavaExec).environment("DISPLAY", display) }
+    }
 }
 
 tasks.injectTags.configure {

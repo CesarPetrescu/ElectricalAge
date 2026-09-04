@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "normal": {
+      "model": "eln:arc_metal_block"
+    }
+  }
+}

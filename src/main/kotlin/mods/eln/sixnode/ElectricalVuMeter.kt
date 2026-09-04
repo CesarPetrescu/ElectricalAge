@@ -100,7 +100,7 @@ class ElectricalVuMeterDescriptor(name: String, objName: String, var onOffOnly: 
         }
     }
 
-    override fun addInformation(itemStack: ItemStack, entityPlayer: EntityPlayer, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         if (isRGB)
             list.add(tr("Displays a color based on the value of a signal"))

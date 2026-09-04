@@ -104,7 +104,7 @@ abstract class TurbineDescriptor(baseName: String, obj: Obj3D) :
         obj.getPart("Fan")
     )
 
-    override fun addInformation(stack: ItemStack, player: EntityPlayer, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(stack: ItemStack, player: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
         list.add(tr("Converts %1$ into mechanical energy.",fluidDescription))
         list.add(tr("Requires a turbine blade to operate."))
         list.add(tr("Nominal usage ->"))

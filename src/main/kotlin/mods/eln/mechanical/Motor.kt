@@ -98,7 +98,7 @@ class MotorDescriptor(
         voltageLevelColor = VoltageLevelColor.VeryHighVoltage
     }
 
-    override fun addInformation(stack: ItemStack, player: EntityPlayer, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(stack: ItemStack, player: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
         list.add(tr("Converts electricity into mechanical energy, or (badly) vice versa."))
         list.add(tr("Integrated drive: soft-starts to nominal speed."))
         list.add(tr("Nominal usage ->"))

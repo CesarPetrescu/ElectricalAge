@@ -1,0 +1,52 @@
+{
+  "variants": {
+    "light=0": {
+      "model": "eln:invisible"
+    },
+    "light=1": {
+      "model": "eln:invisible"
+    },
+    "light=2": {
+      "model": "eln:invisible"
+    },
+    "light=3": {
+      "model": "eln:invisible"
+    },
+    "light=4": {
+      "model": "eln:invisible"
+    },
+    "light=5": {
+      "model": "eln:invisible"
+    },
+    "light=6": {
+      "model": "eln:invisible"
+    },
+    "light=7": {
+      "model": "eln:invisible"
+    },
+    "light=8": {
+      "model": "eln:invisible"
+    },
+    "light=9": {
+      "model": "eln:invisible"
+    },
+    "light=10": {
+      "model": "eln:invisible"
+    },
+    "light=11": {
+      "model": "eln:invisible"
+    },
+    "light=12": {
+      "model": "eln:invisible"
+    },
+    "light=13": {
+      "model": "eln:invisible"
+    },
+    "light=14": {
+      "model": "eln:invisible"
+    },
+    "light=15": {
+      "model": "eln:invisible"
+    }
+  }
+}

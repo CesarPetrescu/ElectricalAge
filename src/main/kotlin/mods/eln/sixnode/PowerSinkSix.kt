@@ -41,7 +41,7 @@ class PowerSinkDescriptor(name: String, obj: Obj3D) : SixNodeDescriptor(name, Po
         main.draw()
     }
 
-    override fun addInformation(itemStack: ItemStack, entityPlayer: EntityPlayer, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         Collections.addAll<String>(list, *tr("Provides an ideal power sink\nwithout energy or power limitation.").split("\n").toTypedArray())
         list.add("")

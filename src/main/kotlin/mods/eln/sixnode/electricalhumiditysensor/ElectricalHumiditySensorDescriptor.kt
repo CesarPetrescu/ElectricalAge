@@ -39,7 +39,7 @@ class ElectricalHumiditySensorDescriptor(name: String, private val obj: Obj3D?) 
         Data.addSignal(newItemStack())
     }
 
-    override fun addInformation(itemStack: ItemStack, entityPlayer: EntityPlayer, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         list.addAll(tr("Provides an electrical signal\nfor biome relative humidity.").split("\n"))
         list.addAll(tr("Humidity follows day/night\nand rises during rain or snow.").split("\n"))

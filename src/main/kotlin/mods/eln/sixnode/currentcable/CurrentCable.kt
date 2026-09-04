@@ -103,7 +103,7 @@ class CurrentCableDescriptor(
         thermalLoad.Rp = thermalRp
     }
 
-    override fun addInformation(itemStack: ItemStack, entityPlayer: EntityPlayer, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         list.add(tr("Deprecated legacy cable. Prefer AWG/mm utility cables for new builds."))
         list.add(tr("Nominal Ratings:"))

@@ -6,6 +6,10 @@ public class CommonProxy {
     public static final String THERMALCABLE_PNG = "/mods/eln/sprites/TEX_THERMALCABLEBASE.PNG";
 
     // Client stuff
+    /** 1.8+: entity renderer factories must be registered before the RenderManager exists, i.e. in preInit. */
+    public void preInit() {
+    }
+
     public void registerRenderers() {
         // Nothing here as the server doesn't render graphics!
     }

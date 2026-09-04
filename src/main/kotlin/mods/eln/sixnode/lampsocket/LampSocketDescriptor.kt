@@ -70,7 +70,7 @@ class LampSocketDescriptor(itemName: String, val renderType: ILampSocketObjRende
         return hasGhostGroup()
     }
 
-    override fun addInformation(itemStack: ItemStack, entityPlayer: EntityPlayer, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
 
         if (range != 0) list.add(I18N.tr("Spot range: %1$ blocks", range))

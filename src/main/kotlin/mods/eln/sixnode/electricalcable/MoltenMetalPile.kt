@@ -26,7 +26,7 @@ class MoltenMetalPileDescriptor(
     @JvmField val render: CableRenderDescriptor
 ) : SixNodeDescriptor(name, MoltenMetalPileElement::class.java, MoltenMetalPileRender::class.java) {
 
-    override fun addInformation(itemStack: ItemStack, entityPlayer: EntityPlayer, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         list.add(tr("A puddle of molten %1$ from an overheated cable.", material.label.lowercase()))
     }

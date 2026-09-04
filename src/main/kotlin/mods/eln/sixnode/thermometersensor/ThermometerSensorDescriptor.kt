@@ -39,7 +39,7 @@ class ThermometerSensorDescriptor(name: String, private val obj: Obj3D?) : SixNo
         Data.addSignal(newItemStack())
     }
 
-    override fun addInformation(itemStack: ItemStack, entityPlayer: EntityPlayer, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         list.addAll(tr("Provides an electrical signal\nfor biome temperature.").split("\n"))
         list.addAll(tr("Set min/max values in GUI\nto map temperature to output.").split("\n"))

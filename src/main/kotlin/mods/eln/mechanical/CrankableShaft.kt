@@ -17,7 +17,7 @@ class CrankableShaftDescriptor(name: String, override val obj: Obj3D, private va
     override val static = arrayOf(obj.getPart("Stand"), obj.getPart("Cowl"))
     override val rotating = arrayOf(obj.getPart("Shaft"))
 
-    override fun addInformation(stack: ItemStack, player: EntityPlayer, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(stack: ItemStack, player: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
         list.add(tr("Player crankable shaft"))
         list.add(tr("Can rotate slowly"))
         list.add(Utils.plotRads(tr("Max rads:  "), nominalRads.toDouble()))

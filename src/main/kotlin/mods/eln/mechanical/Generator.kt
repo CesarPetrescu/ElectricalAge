@@ -86,7 +86,7 @@ class GeneratorDescriptor(
         obj.getPart("LED_6")
     ).requireNoNulls()
 
-    override fun addInformation(stack: ItemStack, player: EntityPlayer, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(stack: ItemStack, player: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
         list.add(tr("Converts mechanical energy into electricity, or (badly) vice versa."))
         list.add(tr("Integrated regulator: ramps field and limits output current."))
         list.add(tr("Nominal usage ->"))

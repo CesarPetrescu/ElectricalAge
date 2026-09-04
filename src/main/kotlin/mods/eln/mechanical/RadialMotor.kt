@@ -70,7 +70,7 @@ class RadialMotorDescriptor(baseName: String, obj: Obj3D) :
     @Suppress("CanBePrimaryConstructorProperty") // If you do that, it changes the constructor and BLAMO, Crash!
     override val obj: Obj3D = obj
 
-    override fun addInformation(stack: ItemStack, player: EntityPlayer, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(stack: ItemStack, player: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
         list.add(tr("Converts %1$ into mechanical energy.",fluidDescription))
         list.add(tr("Nominal usage ->"))
         list.add("  "+ tr("%1$ input: %2$ mB/s",fluidDescription.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() },fluidConsumption))

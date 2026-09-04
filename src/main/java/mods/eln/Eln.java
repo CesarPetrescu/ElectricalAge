@@ -317,6 +317,7 @@ public class Eln {
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         configureElnLogFile(event);
+        proxy.preInit();
 
         elnNetwork = NetworkRegistry.INSTANCE.newSimpleChannel("electrical-age");
         elnNetwork.registerMessage(AchievePacketHandler.class, AchievePacket.class, 0, Side.SERVER);

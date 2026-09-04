@@ -122,6 +122,10 @@ object ElnRegistry {
     @SubscribeEvent
     fun onRegisterItems(event: RegistryEvent.Register<Item>) {
         pendingItems.forEach(event.registry::register)
+        if (System.getProperty("eln.dumpRegistry") != null) {
+            pendingBlocks.forEach { Eln.logger.info("REGDUMP block {} {}", it.registryName, it.blockState.validStates.map { s -> it.getMetaFromState(s) }.distinct().size) }
+            pendingItems.forEach { Eln.logger.info("REGDUMP item {}", it.registryName) }
+        }
         // Ore dictionary entries need registered items ("broken ore dictionary registration"
         // otherwise); everything queued during preInit lands here, right after the items.
         pendingOres.forEach { (name, stack) -> OreDictionary.registerOre(name, stack) }

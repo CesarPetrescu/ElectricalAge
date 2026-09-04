@@ -42,7 +42,7 @@ class FloodlightDescriptor(val itemName: String, val obj: Obj3D, val motorized: 
         }
     }
 
-    override fun addInformation(itemStack: ItemStack, entityPlayer: EntityPlayer, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
 
         Collections.addAll(list, *I18N.tr(

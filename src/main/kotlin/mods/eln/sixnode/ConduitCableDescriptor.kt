@@ -16,7 +16,7 @@ class ConduitCableDescriptor(
     val render: CableRenderDescriptor
 ): SixNodeDescriptor(name, ConduitCableElement::class.java, ConduitCableRender::class.java) {
 
-    override fun addInformation(itemStack: ItemStack, entityPlayer: EntityPlayer, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         list.add(tr("A conduit to run your cables through"))
     }
