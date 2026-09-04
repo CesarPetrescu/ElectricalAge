@@ -9,22 +9,25 @@ import mods.eln.misc.Obj3D.Obj3DPart
 import mods.eln.node.six.SixNodeEntity
 import mods.eln.node.transparent.TransparentNodeEntity
 import net.minecraft.client.Minecraft
-import net.minecraft.client.entity.EntityClientPlayerMP
+import net.minecraft.client.entity.EntityPlayerSP
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.gui.GuiScreen
 import net.minecraft.client.renderer.OpenGlHelper
 import net.minecraft.client.renderer.RenderHelper
 import net.minecraft.client.renderer.entity.Render
-import net.minecraft.client.renderer.entity.RenderItem
+import net.minecraft.client.renderer.RenderItem
 import net.minecraft.client.renderer.entity.RenderManager
 import net.minecraft.entity.Entity
 import net.minecraft.entity.item.EntityItem
 import net.minecraft.item.ItemStack
-import net.minecraft.network.play.client.C17PacketCustomPayload
+import net.minecraft.network.PacketBuffer
+import net.minecraft.network.play.client.CPacketCustomPayload
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.math.MathHelper
 import net.minecraft.util.ResourceLocation
 import net.minecraft.world.EnumSkyBlock
+import io.netty.buffer.Unpooled
+import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
 import org.lwjgl.input.Keyboard
@@ -38,7 +41,6 @@ object UtilsClient {
     @JvmField
     var guiLastOpen: GuiScreen? = null
     var lightmapTexUnitTextureEnable = false
-    internal var itemRenderer: RenderItem? = null
     @JvmStatic
     var uuid = Int.MIN_VALUE
         get() {
@@ -58,7 +60,7 @@ object UtilsClient {
         return distanceFromClientPlayer(tileEntity.world, tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord)
     }
 
-    val clientPlayer: EntityClientPlayerMP
+    val clientPlayer: EntityPlayerSP
         get() = Minecraft.getMinecraft().player
 
     fun drawHaloNoLightSetup(halo: Obj3DPart?, r: Float, g: Float, b: Float, w: World, x: Int, y: Int, z: Int, bilinear: Boolean) {
@@ -77,7 +79,7 @@ object UtilsClient {
     fun clientOpenGui(gui: GuiScreen?) {
         guiLastOpen = gui
         val clientPlayer = clientPlayer
-        clientPlayer.openGui(Eln.instance, GuiHandler.genericOpen, clientPlayer.world, 0, 0, 0)
+        clientPlayer.openGui(Eln.instance, GuiHandler.genericOpen, clientPlayer.entityWorld, 0, 0, 0)
     }
 
     @JvmStatic
@@ -420,12 +422,12 @@ object UtilsClient {
         entityItem.motionX = 0.0
         entityItem.motionY = 0.0
         entityItem.motionZ = 0.0
-        val var10: Render = RenderManager.instance.getEntityRenderObject(entityItem)
+        val var10 = Minecraft.getMinecraft().renderManager.getEntityRenderObject<Entity>(entityItem)
         GL11.glPushMatrix()
         GL11.glTranslatef(x.toFloat(), y.toFloat(), z.toFloat())
         GL11.glRotatef(roty, 0f, 1f, 0f)
         GL11.glScalef(scale, scale, scale)
-        var10.doRender(entityItem, 0.0, 0.0, 0.0, 0f, 0f)
+        var10?.doRender(entityItem, 0.0, 0.0, 0.0, 0f, 0f)
         GL11.glPopMatrix()
     }
 
@@ -492,11 +494,9 @@ object UtilsClient {
         enableTexture()
     }
 
-    val itemRender: RenderItem?
-        get() {
-            if (itemRenderer == null) itemRenderer = RenderItem()
-            return itemRenderer
-        }
+    /** RenderItem is owned by Minecraft on 1.8+; constructing one would miss the model manager. */
+    val itemRender: RenderItem
+        get() = Minecraft.getMinecraft().renderItem
 
     fun mc(): Minecraft {
         return Minecraft.getMinecraft()
@@ -520,27 +520,24 @@ object UtilsClient {
         }
         // GL11.glTranslatef(0.0F, 0.0F, 32.0F);
         // ForgeHooksClient.renderInventoryItem(new RenderBlocks(),Minecraft.getMinecraft().getTextureManager(),par1ItemStack,false,0,x,y);
-        itemRenderer!!.zLevel = 400.0f
+        itemRenderer.zLevel = 400.0f
         // ForgeHooksClient.renderInventoryItem(renderBlocks, engine, item, inColor, zLevel, x, y)
-        var font: FontRenderer? = null
-        if (par1ItemStack != null) {
-            val i = par1ItemStack.item ?: return
-            font = i.getFontRenderer(par1ItemStack)
-        }
-        if (font == null) font = mc().fontRenderer
-        itemRenderer.renderItemAndEffectIntoGUI(font, mc().textureManager, par1ItemStack, x, y)
+        if (par1ItemStack == null || par1ItemStack.isEmpty) return
+        // 1.8 dropped the font/texture-manager arguments: RenderItem resolves the baked model
+        // and the atlas itself.
+        itemRenderer.renderItemAndEffectIntoGUI(par1ItemStack, x, y)
         // itemRenderer.renderItemOverlayIntoGUI(font, mc().getTextureManager(), par1ItemStack, x, y, par4Str);
         itemRenderer.zLevel = 0.0f
         if (gui) {
             RenderHelper.disableStandardItemLighting()
             GL11.glDisable(32826)
         }
-        if (par1ItemStack!!.count > 1) {
+        if (par1ItemStack.count > 1) {
             disableDepthTest()
             // GL11.glPushMatrix();
             // GL
             // GL11.glScalef(0.5f, 0.5f, 0.5f);
-            Minecraft.getMinecraft().fontRenderer.drawStringWithShadow("" + par1ItemStack.count, x + 10, y + 9, -0x1)
+            Minecraft.getMinecraft().fontRenderer.drawStringWithShadow("" + par1ItemStack.count, (x + 10).toFloat(), (y + 9).toFloat(), -0x1)
             // GL11.glPopMatrix();
             enableDepthTest()
         }
@@ -566,8 +563,9 @@ object UtilsClient {
     }
 
     fun getLight(w: World, x: Int, y: Int, z: Int): Int {
-        val b = w.getSkyBlockTypeBrightness(EnumSkyBlock.Block, x, y, z)
-        val s = w.getSkyBlockTypeBrightness(EnumSkyBlock.Sky, x, y, z) - w.calculateSkylightSubtracted(0f)
+        val pos = BlockPos(x, y, z)
+        val b = w.getLightFor(EnumSkyBlock.BLOCK, pos)
+        val s = w.getLightFor(EnumSkyBlock.SKY, pos) - w.calculateSkylightSubtracted(0f)
         return b.coerceAtLeast(s)
     }
 
@@ -583,7 +581,7 @@ object UtilsClient {
 
     @JvmStatic
     fun sendPacketToServer(bos: ByteArrayOutputStream) {
-        val packet = C17PacketCustomPayload(Eln.channelName, bos.toByteArray())
+        val packet = CPacketCustomPayload(Eln.channelName, PacketBuffer(Unpooled.wrappedBuffer(bos.toByteArray())))
         Eln.eventChannel.sendToServer(FMLProxyPacket(packet))
         // Minecraft.getMinecraft().player.sendQueue.addToSendQueue(new FMLProxyPacket(packet));
     }
