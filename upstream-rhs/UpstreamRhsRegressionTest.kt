@@ -61,7 +61,8 @@ class UpstreamRhsRegressionTest {
     }
 
     @Test fun parallelCapacitorsRetainTheCombinedCharge() {
-        assertEquals(0.3 / 0.31, capacitorVoltage(0.001, 0.002), 1e-10)
+        // Backward Euler: (C/dt)/(1/R+C/dt) at initial voltage 1 V.
+        assertEquals(0.3 / 0.4, capacitorVoltage(0.001, 0.002), 1e-10)
     }
 
     @Test fun capacitorRegistrationOrderDoesNotChangeVoltage() {
