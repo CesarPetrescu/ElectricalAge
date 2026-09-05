@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     env:
-      PORT_VERSION: 2.0.0-alpha.2-hardening.1
+      PORT_VERSION: 2.0.0-alpha.2-hardening.2
       LIBGL_ALWAYS_SOFTWARE: '1'
       ALSOFT_DRIVERS: 'null'
     steps:
@@ -38,16 +38,18 @@ jobs:
           git apply --check ../harness/porting/patches/0001-fix-dedicated-server-client-state.patch
           git apply ../harness/porting/patches/0001-fix-dedicated-server-client-state.patch
           python3 - <<'PY'
-          import base64, hashlib, lzma
+          import base64, hashlib, lzma, subprocess
           from pathlib import Path
-          files = sorted(Path('../harness/porting/bundles').glob('hardening-01.xz.b64.part*'))
-          assert len(files) == 4
-          data = base64.b64decode(''.join(p.read_text().strip() for p in files), validate=True)
-          assert hashlib.sha256(data).hexdigest() == 'caa659b879735d96b310abd6b457648638e8cb639c7720974f5e472b7a6c3f98'
-          Path('audit-results/0002-hardening-pass1.patch').write_bytes(lzma.decompress(data))
+          bundles=[('01',4,'caa659b879735d96b310abd6b457648638e8cb639c7720974f5e472b7a6c3f98'),('02',2,'65fa358c6f540fcdfcfdad1320c96f2f038ba916cd9dfb15d1df25cd0a490112')]
+          for key,count,sha in bundles:
+              files=sorted(Path('../harness/porting/bundles').glob('hardening-'+key+'.xz.b64.part*'))
+              assert len(files)==count
+              data=base64.b64decode(''.join(p.read_text().strip() for p in files),validate=True)
+              assert hashlib.sha256(data).hexdigest()==sha, 'Bundle checksum mismatch: '+key
+              patch=Path('audit-results/hardening-'+key+'.patch');patch.write_bytes(lzma.decompress(data))
+              subprocess.run(['git','apply','--check',str(patch)],check=True)
+              subprocess.run(['git','apply',str(patch)],check=True)
           PY
-          git apply --check audit-results/0002-hardening-pass1.patch
-          git apply audit-results/0002-hardening-pass1.patch
           git diff --check
           git diff --stat > audit-results/source-diff-stat.txt
           git rev-parse HEAD > audit-results/upstream-commit.txt
@@ -117,20 +119,20 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          ./gradlew clean build --no-daemon --stacktrace -PportVersion="$PORT_VERSION" 2>&1 | tee audit-results/build.log
+          ./gradlew clean build validationJar --no-daemon --stacktrace -PportVersion="$PORT_VERSION" 2>&1 | tee audit-results/build.log
           python3 tools/verify_test_results.py
-      - name: Dedicated server save and shutdown
+      - name: Dedicated server placement, capability and save probe
         if: ${{ always() && steps.build.outcome == 'success' }}
         working-directory: rewired
-        run: python3 tools/smoke_test.py server --accept-eula --label first --version "$PORT_VERSION"
-      - name: Reload the saved server world
+        run: python3 tools/smoke_test.py server --accept-eula --label first --validation --version "$PORT_VERSION"
+      - name: Reload and verify persisted nodes and inventory NBT
         if: ${{ always() && steps.build.outcome == 'success' }}
         working-directory: rewired
-        run: python3 tools/smoke_test.py server --accept-eula --label reload --version "$PORT_VERSION"
-      - name: Independent client with strict ELN error gate
+        run: python3 tools/smoke_test.py server --accept-eula --label reload --validation --version "$PORT_VERSION"
+      - name: Independent client model and tooltip validation
         if: ${{ always() && steps.build.outcome == 'success' }}
         working-directory: rewired
-        run: xvfb-run -a -s '-screen 0 1280x720x24 +extension GLX +render -noreset' python3 tools/smoke_test.py client --label first --version "$PORT_VERSION"
+        run: xvfb-run -a -s '-screen 0 1280x720x24 +extension GLX +render -noreset' python3 tools/smoke_test.py client --label first --validation --version "$PORT_VERSION"
       - name: Package source and patch evidence
         if: always()
         working-directory: rewired
