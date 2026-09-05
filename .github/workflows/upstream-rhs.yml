@@ -1,0 +1,104 @@
+name: Upstream RHS regression
+on:
+  push:
+    branches: [ci/rewired-hardening-20260905]
+    paths: ['upstream-rhs/**', '.github/workflows/upstream-rhs.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: upstream-rhs-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      GRADLE_USER_HOME: ${{ github.workspace }}/.gradle-upstream
+    steps:
+      - uses: actions/checkout@v4
+        with: {path: harness}
+      - uses: actions/checkout@v4
+        with:
+          repository: age-series/ElectricalAge
+          ref: 6a8cd0dfffec9559ea540f22530b2de36c72a7ee
+          path: upstream
+          fetch-depth: 1
+      - uses: actions/setup-java@v4
+        with: {distribution: zulu, java-version: '8'}
+      - uses: actions/setup-java@v4
+        with: {distribution: zulu, java-version: '17'}
+      - uses: actions/setup-java@v4
+        with: {distribution: zulu, java-version: '21'}
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '25'}
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Install regression cases without changing upstream build configuration
+        working-directory: upstream
+        run: |
+          mkdir -p audit-results src/test/kotlin/mods/eln/sim/mna
+          cp ../harness/upstream-rhs/UpstreamRhsRegressionTest.kt src/test/kotlin/mods/eln/sim/mna/
+          git rev-parse HEAD > audit-results/upstream-commit.txt
+          java -version 2>&1 | tee audit-results/java.log
+      - name: Reproduce overwrite defect on unmodified solver
+        working-directory: upstream
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from xml.etree import ElementTree as ET
+          import json,subprocess,shutil
+          args=['./gradlew','-Dorg.gradle.java.installations.auto-download=false','test','--tests','mods.eln.sim.mna.UpstreamRhsRegressionTest','--no-daemon','--stacktrace']
+          with Path('audit-results/before.log').open('w') as out: result=subprocess.run(args,stdout=out,stderr=subprocess.STDOUT)
+          p=Path('build/test-results/test/TEST-mods.eln.sim.mna.UpstreamRhsRegressionTest.xml')
+          assert p.is_file(),'No JUnit report: build failure is not a regression reproduction'
+          suite=ET.parse(p).getroot()
+          summary={k:int(suite.get(k,'0')) for k in ['tests','failures','errors','skipped']}
+          summary['process_returncode']=result.returncode
+          summary['passed']=summary['tests']==5 and summary['failures']==5 and summary['errors']==0 and result.returncode!=0
+          Path('audit-results/before.json').write_text(json.dumps(summary,indent=2))
+          shutil.copyfile(p,'audit-results/before.xml')
+          assert summary['passed'],summary
+          PY
+      - name: Apply minimal solver fix
+        working-directory: upstream
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('src/main/java/mods/eln/sim/mna/SubSystem.java')
+          s=p.read_text(); assert s.count('Idata[s.getId()] = v;')==1
+          p.write_text(s.replace('Idata[s.getId()] = v;', 'Idata[s.getId()] += v;'))
+          PY
+      - name: Run upstream correctness suite with regression tests
+        working-directory: upstream
+        run: |
+          set -o pipefail
+          ./gradlew -Dorg.gradle.java.installations.auto-download=false test --no-daemon --stacktrace 2>&1 | tee audit-results/after.log
+          python3 - <<'PY'
+          from pathlib import Path
+          from xml.etree import ElementTree as ET
+          import json
+          files=list(Path('build/test-results/test').glob('TEST-*.xml')); assert files
+          totals={k:0 for k in ['tests','failures','errors','skipped']}
+          for p in files:
+              suite=ET.parse(p).getroot()
+              for k in totals: totals[k]+=int(suite.get(k,'0'))
+          totals['suites']=len(files); totals['passed']=totals['tests']>=20 and totals['failures']==0 and totals['errors']==0
+          Path('audit-results/after.json').write_text(json.dumps(totals,indent=2))
+          assert totals['passed'],totals
+          PY
+      - name: Export patch and test evidence
+        if: always()
+        working-directory: upstream
+        run: |
+          git add -N src/test/kotlin/mods/eln/sim/mna/UpstreamRhsRegressionTest.kt
+          git diff --check
+          git diff --binary > audit-results/maintained-1.7.10-rhs-fix.patch
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: upstream-rhs-results
+          path: |
+            upstream/audit-results/
+            upstream/build/test-results/test/
+            upstream/build/reports/tests/test/
+          retention-days: 30
