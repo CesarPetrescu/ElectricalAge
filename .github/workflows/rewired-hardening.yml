@@ -1,0 +1,169 @@
+name: Re-Wired hardening
+on:
+  push:
+    branches: [ci/rewired-hardening-20260905]
+    paths:
+      - 'porting/**'
+      - '.github/workflows/rewired-hardening.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: rewired-hardening-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      PORT_VERSION: 2.0.0-alpha.2-hardening.1
+      LIBGL_ALWAYS_SOFTWARE: '1'
+      ALSOFT_DRIVERS: 'null'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: harness
+      - uses: actions/checkout@v4
+        with:
+          repository: brambora69123/electrical-age-rewired
+          ref: 3a0088b384aa4111c3a7f984d4cbc5f4ff142ed9
+          path: rewired
+          fetch-depth: 0
+      - name: Apply pinned and checksummed patches
+        working-directory: rewired
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p audit-results
+          git apply --check ../harness/porting/patches/0001-fix-dedicated-server-client-state.patch
+          git apply ../harness/porting/patches/0001-fix-dedicated-server-client-state.patch
+          python3 - <<'PY'
+          import base64, hashlib, lzma
+          from pathlib import Path
+          files = sorted(Path('../harness/porting/bundles').glob('hardening-01.xz.b64.part*'))
+          assert len(files) == 4
+          data = base64.b64decode(''.join(p.read_text().strip() for p in files), validate=True)
+          assert hashlib.sha256(data).hexdigest() == 'caa659b879735d96b310abd6b457648638e8cb639c7720974f5e472b7a6c3f98'
+          Path('audit-results/0002-hardening-pass1.patch').write_bytes(lzma.decompress(data))
+          PY
+          git apply --check audit-results/0002-hardening-pass1.patch
+          git apply audit-results/0002-hardening-pass1.patch
+          git diff --check
+          git diff --stat > audit-results/source-diff-stat.txt
+          git rev-parse HEAD > audit-results/upstream-commit.txt
+      - name: Static resource rescan
+        working-directory: rewired
+        run: python3 tools/audit_resources.py --json audit-results/resources.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: gradle
+          cache-dependency-path: |
+            rewired/*.gradle
+            rewired/gradle.properties
+            rewired/gradle/wrapper/gradle-wrapper.properties
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Headless rendering dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends xvfb xauth x11-xserver-utils mesa-utils imagemagick
+      - name: Record toolchain
+        working-directory: rewired
+        run: |
+          java -version 2>&1 | tee audit-results/java.log
+          ./gradlew --version 2>&1 | tee audit-results/gradle.log
+      - name: Prepare Forge workspace
+        working-directory: rewired
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew setupDecompWorkspace --no-daemon --stacktrace 2>&1 | tee audit-results/workspace.log
+      - name: Reproduce original solver defect with the regression test
+        working-directory: rewired
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=src/main/java/mods/eln/sim/mna/SubSystem.java
+          cp "$file" /tmp/Subsystem-fixed.java
+          trap 'cp /tmp/Subsystem-fixed.java "$file"' EXIT
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('src/main/java/mods/eln/sim/mna/SubSystem.java')
+          s=p.read_text(); assert 'Idata[s.getId()] += v;' in s
+          p.write_text(s.replace('Idata[s.getId()] += v;', 'Idata[s.getId()] = v;'))
+          PY
+          set +e
+          ./gradlew test --tests mods.eln.sim.mna.MnaRegressionTest.parallelCurrentContributionsAccumulate --no-daemon --stacktrace -PportVersion="$PORT_VERSION" > audit-results/red-regression.log 2>&1
+          result=$?
+          set -e
+          cp /tmp/Subsystem-fixed.java "$file"
+          mkdir -p audit-results/red-tests
+          cp build/test-results/test/TEST-*.xml audit-results/red-tests/ 2>/dev/null || true
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          files=list(Path('audit-results/red-tests').glob('TEST-*.xml'))
+          assert files, 'No test report: inspect compile/dependency errors; not a valid red regression'
+          cases=[c for p in files for c in ET.parse(p).getroot().iter('testcase')]
+          assert len(cases)==1 and cases[0].find('failure') is not None
+          assert 'parallelCurrentContributionsAccumulate' in cases[0].get('name','')
+          print('Original assignment defect reproduced by an actual failing solver assertion.')
+          PY
+          test "$result" -ne 0
+      - name: Clean candidate build and regression suite
+        id: build
+        working-directory: rewired
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew clean build --no-daemon --stacktrace -PportVersion="$PORT_VERSION" 2>&1 | tee audit-results/build.log
+          python3 tools/verify_test_results.py
+      - name: Dedicated server save and shutdown
+        if: ${{ always() && steps.build.outcome == 'success' }}
+        working-directory: rewired
+        run: python3 tools/smoke_test.py server --accept-eula --label first --version "$PORT_VERSION"
+      - name: Reload the saved server world
+        if: ${{ always() && steps.build.outcome == 'success' }}
+        working-directory: rewired
+        run: python3 tools/smoke_test.py server --accept-eula --label reload --version "$PORT_VERSION"
+      - name: Independent client with strict ELN error gate
+        if: ${{ always() && steps.build.outcome == 'success' }}
+        working-directory: rewired
+        run: xvfb-run -a -s '-screen 0 1280x720x24 +extension GLX +render -noreset' python3 tools/smoke_test.py client --label first --version "$PORT_VERSION"
+      - name: Package source and patch evidence
+        if: always()
+        working-directory: rewired
+        shell: bash
+        run: |
+          git add -N src tools build.gradle gradle.properties
+          git diff --binary > audit-results/complete-source.patch
+          python3 - <<'PY'
+          from pathlib import Path
+          import zipfile, hashlib
+          with zipfile.ZipFile('audit-results/rewired-hardening-source.zip','w',zipfile.ZIP_DEFLATED) as z:
+              for p in sorted(Path('.').rglob('*')):
+                  if not p.is_file() or set(p.parts) & {'.git','.gradle','build','run','audit-results'}: continue
+                  z.write(p, 'rewired-hardening/'+p.as_posix())
+          paths=list(Path('build/libs').glob('*.jar'))
+          Path('audit-results/SHA256SUMS.txt').write_text(''.join(hashlib.sha256(p.read_bytes()).hexdigest()+'  '+p.name+'\n' for p in paths))
+          PY
+      - name: Upload full diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rewired-hardening-results
+          path: |
+            rewired/audit-results/
+            rewired/build/test-results/
+            rewired/build/reports/tests/
+            rewired/run/**/crash-reports/
+          retention-days: 30
+      - name: Upload candidate binaries
+        if: ${{ always() && steps.build.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: rewired-hardening-jars
+          path: rewired/build/libs/*.jar
+          if-no-files-found: error
+          retention-days: 30
