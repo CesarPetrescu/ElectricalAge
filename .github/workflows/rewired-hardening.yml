@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     env:
-      PORT_VERSION: 2.0.0-alpha.2-hardening.4
+      PORT_VERSION: 2.0.0-alpha.2-hardening.5
       LIBGL_ALWAYS_SOFTWARE: '1'
       ALSOFT_DRIVERS: 'null'
     steps:
@@ -35,7 +35,7 @@ jobs:
           python3 - <<'PY'
           import base64, hashlib, lzma, subprocess
           from pathlib import Path
-          bundles=[('01',4,'caa659b879735d96b310abd6b457648638e8cb639c7720974f5e472b7a6c3f98'),('02',2,'65fa358c6f540fcdfcfdad1320c96f2f038ba916cd9dfb15d1df25cd0a490112'),('03',1,'1caa0bef70741a91171f9ea6ed70513a1358753404e918a25b87cb3f4ec54bef'),('04',1,'6b9cea699289f36a1554e2615341d1b47694fbd6fc756941638c3f642380f333')]
+          bundles=[('01',4,'caa659b879735d96b310abd6b457648638e8cb639c7720974f5e472b7a6c3f98'),('02',2,'65fa358c6f540fcdfcfdad1320c96f2f038ba916cd9dfb15d1df25cd0a490112'),('03',1,'1caa0bef70741a91171f9ea6ed70513a1358753404e918a25b87cb3f4ec54bef'),('04',1,'6b9cea699289f36a1554e2615341d1b47694fbd6fc756941638c3f642380f333'),('05',1,'6f393c1aa4d525bf9a5b763aa8a83eb348fea8bb5f3866d61fe5d0b160ad5751')]
           for key,count,sha in bundles:
               files=sorted(Path('../harness/porting/bundles').glob('hardening-'+key+'.xz.b64.part*'))
               assert len(files)==count
