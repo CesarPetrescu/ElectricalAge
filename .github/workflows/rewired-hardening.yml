@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     env:
-      PORT_VERSION: 2.0.0-alpha.2-hardening.3
+      PORT_VERSION: 2.0.0-alpha.2-hardening.4
       LIBGL_ALWAYS_SOFTWARE: '1'
       ALSOFT_DRIVERS: 'null'
     steps:
@@ -35,7 +35,7 @@ jobs:
           python3 - <<'PY'
           import base64, hashlib, lzma, subprocess
           from pathlib import Path
-          bundles=[('01',4,'caa659b879735d96b310abd6b457648638e8cb639c7720974f5e472b7a6c3f98'),('02',2,'65fa358c6f540fcdfcfdad1320c96f2f038ba916cd9dfb15d1df25cd0a490112'),('03',1,'1caa0bef70741a91171f9ea6ed70513a1358753404e918a25b87cb3f4ec54bef')]
+          bundles=[('01',4,'caa659b879735d96b310abd6b457648638e8cb639c7720974f5e472b7a6c3f98'),('02',2,'65fa358c6f540fcdfcfdad1320c96f2f038ba916cd9dfb15d1df25cd0a490112'),('03',1,'1caa0bef70741a91171f9ea6ed70513a1358753404e918a25b87cb3f4ec54bef'),('04',1,'6b9cea699289f36a1554e2615341d1b47694fbd6fc756941638c3f642380f333')]
           for key,count,sha in bundles:
               files=sorted(Path('../harness/porting/bundles').glob('hardening-'+key+'.xz.b64.part*'))
               assert len(files)==count
@@ -72,14 +72,20 @@ jobs:
           java -version 2>&1 | tee audit-results/java.log
           ./gradlew --version 2>&1 | tee audit-results/gradle.log
           ./gradlew setupDecompWorkspace --no-daemon --stacktrace 2>&1 | tee audit-results/workspace.log
-      - name: Clean candidate build and regression suite
+      - name: Regression suite
+        working-directory: rewired
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew clean test --no-daemon --stacktrace -PportVersion="$PORT_VERSION" 2>&1 | tee audit-results/test.log
+          python3 tools/verify_test_results.py
+      - name: Candidate build and separate runtime fixture
         id: build
         working-directory: rewired
         shell: bash
         run: |
           set -o pipefail
-          ./gradlew clean build validationJar --no-daemon --stacktrace -PportVersion="$PORT_VERSION" 2>&1 | tee audit-results/build.log
-          python3 tools/verify_test_results.py
+          ./gradlew build validationJar --no-daemon --stacktrace -PportVersion="$PORT_VERSION" 2>&1 | tee audit-results/build.log
       - name: Dedicated server placement, capability and save probe
         if: ${{ always() && steps.build.outcome == 'success' }}
         working-directory: rewired
