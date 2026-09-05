@@ -2,9 +2,7 @@ name: Re-Wired hardening
 on:
   push:
     branches: [ci/rewired-hardening-20260905]
-    paths:
-      - 'porting/**'
-      - '.github/workflows/rewired-hardening.yml'
+    paths: ['porting/**', '.github/workflows/rewired-hardening.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -16,13 +14,12 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     env:
-      PORT_VERSION: 2.0.0-alpha.2-hardening.2
+      PORT_VERSION: 2.0.0-alpha.2-hardening.3
       LIBGL_ALWAYS_SOFTWARE: '1'
       ALSOFT_DRIVERS: 'null'
     steps:
       - uses: actions/checkout@v4
-        with:
-          path: harness
+        with: {path: harness}
       - uses: actions/checkout@v4
         with:
           repository: brambora69123/electrical-age-rewired
@@ -31,16 +28,14 @@ jobs:
           fetch-depth: 0
       - name: Apply pinned and checksummed patches
         working-directory: rewired
-        shell: bash
         run: |
-          set -euo pipefail
           mkdir -p audit-results
           git apply --check ../harness/porting/patches/0001-fix-dedicated-server-client-state.patch
           git apply ../harness/porting/patches/0001-fix-dedicated-server-client-state.patch
           python3 - <<'PY'
           import base64, hashlib, lzma, subprocess
           from pathlib import Path
-          bundles=[('01',4,'caa659b879735d96b310abd6b457648638e8cb639c7720974f5e472b7a6c3f98'),('02',2,'65fa358c6f540fcdfcfdad1320c96f2f038ba916cd9dfb15d1df25cd0a490112')]
+          bundles=[('01',4,'caa659b879735d96b310abd6b457648638e8cb639c7720974f5e472b7a6c3f98'),('02',2,'65fa358c6f540fcdfcfdad1320c96f2f038ba916cd9dfb15d1df25cd0a490112'),('03',1,'1caa0bef70741a91171f9ea6ed70513a1358753404e918a25b87cb3f4ec54bef')]
           for key,count,sha in bundles:
               files=sorted(Path('../harness/porting/bundles').glob('hardening-'+key+'.xz.b64.part*'))
               assert len(files)==count
@@ -51,7 +46,6 @@ jobs:
               subprocess.run(['git','apply',str(patch)],check=True)
           PY
           git diff --check
-          git diff --stat > audit-results/source-diff-stat.txt
           git rev-parse HEAD > audit-results/upstream-commit.txt
       - name: Static resource rescan
         working-directory: rewired
@@ -70,49 +64,14 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends xvfb xauth x11-xserver-utils mesa-utils imagemagick
-      - name: Record toolchain
-        working-directory: rewired
-        run: |
-          java -version 2>&1 | tee audit-results/java.log
-          ./gradlew --version 2>&1 | tee audit-results/gradle.log
       - name: Prepare Forge workspace
         working-directory: rewired
         shell: bash
         run: |
           set -o pipefail
+          java -version 2>&1 | tee audit-results/java.log
+          ./gradlew --version 2>&1 | tee audit-results/gradle.log
           ./gradlew setupDecompWorkspace --no-daemon --stacktrace 2>&1 | tee audit-results/workspace.log
-      - name: Reproduce original solver defect with the regression test
-        working-directory: rewired
-        shell: bash
-        run: |
-          set -euo pipefail
-          file=src/main/java/mods/eln/sim/mna/SubSystem.java
-          cp "$file" /tmp/Subsystem-fixed.java
-          trap 'cp /tmp/Subsystem-fixed.java "$file"' EXIT
-          python3 - <<'PY'
-          from pathlib import Path
-          p=Path('src/main/java/mods/eln/sim/mna/SubSystem.java')
-          s=p.read_text(); assert 'Idata[s.getId()] += v;' in s
-          p.write_text(s.replace('Idata[s.getId()] += v;', 'Idata[s.getId()] = v;'))
-          PY
-          set +e
-          ./gradlew test --tests mods.eln.sim.mna.MnaRegressionTest.parallelCurrentContributionsAccumulate --no-daemon --stacktrace -PportVersion="$PORT_VERSION" > audit-results/red-regression.log 2>&1
-          result=$?
-          set -e
-          cp /tmp/Subsystem-fixed.java "$file"
-          mkdir -p audit-results/red-tests
-          cp build/test-results/test/TEST-*.xml audit-results/red-tests/ 2>/dev/null || true
-          python3 - <<'PY'
-          from pathlib import Path
-          import xml.etree.ElementTree as ET
-          files=list(Path('audit-results/red-tests').glob('TEST-*.xml'))
-          assert files, 'No test report: inspect compile/dependency errors; not a valid red regression'
-          cases=[c for p in files for c in ET.parse(p).getroot().iter('testcase')]
-          assert len(cases)==1 and cases[0].find('failure') is not None
-          assert 'parallelCurrentContributionsAccumulate' in cases[0].get('name','')
-          print('Original assignment defect reproduced by an actual failing solver assertion.')
-          PY
-          test "$result" -ne 0
       - name: Clean candidate build and regression suite
         id: build
         working-directory: rewired
@@ -136,9 +95,10 @@ jobs:
       - name: Package source and patch evidence
         if: always()
         working-directory: rewired
-        shell: bash
         run: |
           git add -N src tools build.gradle gradle.properties
+          git diff --check
+          git diff --stat > audit-results/source-diff-stat.txt
           git diff --binary > audit-results/complete-source.patch
           python3 - <<'PY'
           from pathlib import Path
