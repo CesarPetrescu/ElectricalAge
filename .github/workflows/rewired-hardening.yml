@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     env:
-      PORT_VERSION: 2.0.0-alpha.2-hardening.7
+      PORT_VERSION: 2.0.0-alpha.2-hardening.8
       LIBGL_ALWAYS_SOFTWARE: '1'
       ALSOFT_DRIVERS: 'null'
     steps:
@@ -47,6 +47,7 @@ jobs:
           PY
           python3 ../harness/porting/hardening/runtime_fix6.py .
           python3 ../harness/porting/hardening/runtime_fix7.py .
+          python3 ../harness/porting/hardening/runtime_fix8.py .
           cp ../harness/porting/hardening/*.py tools/
           git diff --check
           git rev-parse HEAD > audit-results/upstream-commit.txt
