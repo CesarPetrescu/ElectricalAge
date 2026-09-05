@@ -1,0 +1,91 @@
+name: Original ELN MNA regression
+on:
+  push:
+    branches: [ci/rewired-hardening-20260905]
+    paths: ['.github/workflows/original-mna-regression.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  original:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with: {path: harness}
+      - uses: actions/checkout@v4
+        with:
+          repository: CesarPetrescu/ElectricalAge
+          ref: ba4f5ef8f971856c5df326836dd698efae8b8eed
+          path: original
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with: {distribution: zulu, java-version: '8'}
+      - uses: actions/setup-java@v4
+        with: {distribution: zulu, java-version: '17'}
+      - uses: actions/setup-java@v4
+        with: {distribution: zulu, java-version: '21'}
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '25'}
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Add regression tests without modifying production code
+        working-directory: original
+        run: |
+          mkdir -p audit-results src/test/kotlin/mods/eln/sim/mna
+          cp ../harness/porting/original/MnaAdditiveRegressionTest.kt src/test/kotlin/mods/eln/sim/mna/
+          git rev-parse HEAD > audit-results/original-commit.txt
+      - name: Prove original defect with an actual failing assertion
+        working-directory: original
+        run: |
+          set +e
+          ./gradlew -Dorg.gradle.java.installations.auto-download=false test --tests mods.eln.sim.mna.MnaAdditiveRegressionTest.parallelCurrentContributionsAccumulate --no-daemon --stacktrace > audit-results/red.log 2>&1
+          result=$?
+          set -e
+          mkdir -p audit-results/red-tests
+          cp build/test-results/test/TEST-*.xml audit-results/red-tests/ 2>/dev/null || true
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          cases=[c for p in Path('audit-results/red-tests').glob('TEST-*.xml') for c in ET.parse(p).getroot().iter('testcase')]
+          assert len(cases)==1 and cases[0].find('failure') is not None, 'Compile/dependency errors are not regression proof'
+          assert 'parallelCurrentContributionsAccumulate' in cases[0].get('name','')
+          PY
+          test "$result" -ne 0
+      - name: Apply the narrow production fix
+        working-directory: original
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('src/main/java/mods/eln/sim/mna/SubSystem.java')
+          s=p.read_text(); assert s.count('Idata[s.getId()] = v;')==1
+          p.write_text(s.replace('Idata[s.getId()] = v;', 'Idata[s.getId()] += v;'))
+          PY
+          git add -N src/test/kotlin/mods/eln/sim/mna/MnaAdditiveRegressionTest.kt
+          git diff --check
+          git diff > audit-results/original-additive-rhs.patch
+      - name: Run the original complete unit test suite with the fix
+        working-directory: original
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew -Dorg.gradle.java.installations.auto-download=false test --no-daemon --stacktrace 2>&1 | tee audit-results/green.log
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET,json
+          roots=[ET.parse(p).getroot() for p in Path('build/test-results/test').glob('TEST-*.xml')]
+          counts={k:sum(int(r.get(k,0)) for r in roots) for k in ['tests','failures','errors','skipped']}
+          counts['suites']=len(roots)
+          Path('audit-results/test-summary.json').write_text(json.dumps(counts,indent=2))
+          assert counts['tests']>=3 and counts['failures']==counts['errors']==0
+          print(counts)
+          PY
+      - name: Collect reports and reusable patch
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: original-mna-regression-results
+          path: |
+            original/audit-results/
+            original/build/test-results/
+            original/build/reports/tests/
+          retention-days: 30
