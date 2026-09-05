@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     env:
-      PORT_VERSION: 2.0.0-alpha.2-hardening.6
+      PORT_VERSION: 2.0.0-alpha.2-hardening.7
       LIBGL_ALWAYS_SOFTWARE: '1'
       ALSOFT_DRIVERS: 'null'
     steps:
@@ -46,12 +46,15 @@ jobs:
               subprocess.run(['git','apply',str(patch)],check=True)
           PY
           python3 ../harness/porting/hardening/runtime_fix6.py .
-          cp ../harness/porting/hardening/runtime_fix6.py tools/runtime_fix6.py
+          python3 ../harness/porting/hardening/runtime_fix7.py .
+          cp ../harness/porting/hardening/*.py tools/
           git diff --check
           git rev-parse HEAD > audit-results/upstream-commit.txt
-      - name: Static resource rescan
+      - name: Static JSON and OBJ resource rescans
         working-directory: rewired
-        run: python3 tools/audit_resources.py --json audit-results/resources.json
+        run: |
+          python3 tools/audit_resources.py --json audit-results/resources.json
+          python3 tools/audit_obj_assets.py --json audit-results/obj-resources.json
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -74,7 +77,10 @@ jobs:
           java -version 2>&1 | tee audit-results/java.log
           ./gradlew --version 2>&1 | tee audit-results/gradle.log
           ./gradlew setupDecompWorkspace --no-daemon --stacktrace 2>&1 | tee audit-results/workspace.log
-      - name: Regression suite
+      - name: Prove solver tests detect the legacy bug
+        working-directory: rewired
+        run: python3 tools/mutation_probe.py --version "$PORT_VERSION"
+      - name: Regression suite on restored fixed source
         working-directory: rewired
         shell: bash
         run: |
@@ -100,6 +106,10 @@ jobs:
         if: ${{ always() && steps.build.outcome == 'success' }}
         working-directory: rewired
         run: xvfb-run -a -s '-screen 0 1280x720x24 +extension GLX +render -noreset' python3 tools/smoke_test.py client --label first --validation --version "$PORT_VERSION"
+      - name: Packaged reobfuscated server startup
+        if: ${{ always() && steps.build.outcome == 'success' }}
+        working-directory: rewired
+        run: python3 tools/smoke_test.py server --accept-eula --label packaged --obfuscated --version "$PORT_VERSION"
       - name: Package source and patch evidence
         if: always()
         working-directory: rewired
@@ -113,7 +123,7 @@ jobs:
           import zipfile, hashlib
           with zipfile.ZipFile('audit-results/rewired-hardening-source.zip','w',zipfile.ZIP_DEFLATED) as z:
               for p in sorted(Path('.').rglob('*')):
-                  if not p.is_file() or set(p.parts) & {'.git','.gradle','build','run','audit-results'}: continue
+                  if not p.is_file() or set(p.parts) & {'.git','.gradle','.kotlin','build','run','audit-results','__pycache__'}: continue
                   z.write(p, 'rewired-hardening/'+p.as_posix())
           paths=list(Path('build/libs').glob('*.jar'))
           Path('audit-results/SHA256SUMS.txt').write_text(''.join(hashlib.sha256(p.read_bytes()).hexdigest()+'  '+p.name+'\n' for p in paths))
