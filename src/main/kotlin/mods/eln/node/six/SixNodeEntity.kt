@@ -32,6 +32,7 @@ class SixNodeEntity(pos: BlockPos, state: BlockState) : NodeBlockEntity(TYPE.get
         /** Registered by Eln through ElnRegistry.registerBlockEntity. */
         @JvmField
         var TYPE: Supplier<BlockEntityType<SixNodeEntity>> = Supplier { throw IllegalStateException("SixNodeEntity type not registered") }
+        const val singleTargetId = 2
     }
 
     @JvmField
@@ -212,10 +213,6 @@ class SixNodeEntity(pos: BlockPos, state: BlockState) : NodeBlockEntity(TYPE.get
         } else {
             if (node == null) 0 else node!!.isProvidingWeakPower(side)
         }
-    }
-
-    companion object {
-        const val singleTargetId = 2
     }
 
     init {

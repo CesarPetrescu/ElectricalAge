@@ -9,6 +9,9 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.nbt.CompoundTag
 import mods.eln.misc.isNothing
+import mods.eln.misc.editTag
+import mods.eln.misc.hasTagCompound
+import mods.eln.misc.tagCompound
 
 // Config data for one blade tier, mirrors BoilerplateLampData in LampTechnology.kt.
 data class BladeConfigData(
@@ -107,17 +110,17 @@ class TurbineBladeDescriptor(
     }
 
     fun getCondition(stack: ItemStack): Double {
-        val tag = stack.tagCompound /* TODO(components) */ ?: return 1.0
+        val tag = stack.tagCompound ?: return 1.0
         return if (tag.contains("condition")) tag.getDouble("condition").coerceIn(0.0, 1.0) else 1.0
     }
 
     fun setCondition(stack: ItemStack, condition: Double) {
-        if (stack.tagCompound /* TODO(components) */ == null) stack.tagCompound /* TODO(components) */ = CompoundTag()
-        stack.tagCompound /* TODO(components) */!!.putDouble("condition", condition.coerceIn(0.0, 1.0))
+        if (stack.tagCompound == null) stack.tagCompound = CompoundTag()
+        stack.editTag { it.putDouble("condition", condition.coerceIn(0.0, 1.0)) }
     }
 
     private fun getConditionLabel(stack: ItemStack): String {
-        if (!stack.hasTagCompound() || !stack.tagCompound /* TODO(components) */!!.contains("condition")) return tr("New")
+        if (!stack.hasTagCompound() || !stack.tagCompound!!.contains("condition")) return tr("New")
         val c = getCondition(stack)
         return when {
             c >= 1.0  -> tr("New")

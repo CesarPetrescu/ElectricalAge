@@ -14,6 +14,9 @@ import net.minecraft.nbt.CompoundTag
 import kotlin.math.abs
 import kotlin.math.pow
 import mods.eln.misc.isNothing
+import mods.eln.misc.editTag
+import mods.eln.misc.hasTagCompound
+import mods.eln.misc.tagCompound
 
 class LampDescriptor(name: String, iconName: String, val lampData: SpecificLampData) : GenericItemUsingDamageDescriptorUpgrade(name) {
 
@@ -29,15 +32,15 @@ class LampDescriptor(name: String, iconName: String, val lampData: SpecificLampD
     }
 
     fun getLifeInTag(stack: ItemStack): Double {
-        if (!stack.hasTagCompound()) stack.tagCompound /* TODO(components) */ = getDefaultNBT()
+        if (!stack.hasTagCompound()) stack.tagCompound = getDefaultNBT()
 
-        return if (stack.tagCompound /* TODO(components) */!!.contains("life")) stack.tagCompound /* TODO(components) */!!.getDouble("life")
+        return if (stack.tagCompound!!.contains("life")) stack.tagCompound!!.getDouble("life")
         else 24.0 // default 24 hours
     }
 
     fun setLifeInTag(stack: ItemStack, life: Double) {
-        if (!stack.hasTagCompound()) stack.tagCompound /* TODO(components) */ = getDefaultNBT()
-        stack.tagCompound /* TODO(components) */!!.putDouble("life", life)
+        if (!stack.hasTagCompound()) stack.tagCompound = getDefaultNBT()
+        stack.editTag { it.putDouble("life", life) }
     }
 
     override fun getDefaultNBT(): CompoundTag {
@@ -110,7 +113,7 @@ class LampDescriptor(name: String, iconName: String, val lampData: SpecificLampD
     }
 
     private fun getLampCondition(itemStack: ItemStack): String {
-        return if (!itemStack.hasTagCompound() || !itemStack.tagCompound /* TODO(components) */!!.contains("life")) {
+        return if (!itemStack.hasTagCompound() || !itemStack.tagCompound!!.contains("life")) {
             I18N.tr("New")
         } else {
             val lampLife = getLifeInTag(itemStack)

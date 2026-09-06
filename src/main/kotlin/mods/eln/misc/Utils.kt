@@ -1150,7 +1150,7 @@ object Utils {
     }
 
     /**
-     * Smelting recipes are data since 1.13 (data/eln/recipe/*.json, generated from these calls by
+     * Smelting recipes are data since 1.13 (data/eln/recipe/<name>.json, generated from these calls by
      * the recipe data generator); at run time this only records the pair.
      */
     @JvmStatic

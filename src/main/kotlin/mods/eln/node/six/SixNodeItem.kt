@@ -2,10 +2,10 @@
 package mods.eln.node.six
 
 import mods.eln.Eln
+import mods.eln.generic.DescriptorBlockItem
 import mods.eln.generic.GenericItemBlockUsingDamage
 import mods.eln.misc.Coordinate
 import mods.eln.misc.Direction.Companion.fromFacing
-import mods.eln.misc.Direction.Companion.fromIntMinecraftSide
 import mods.eln.misc.LRDU
 import mods.eln.misc.Utils.sendMessage
 import mods.eln.sixnode.electricalcable.UtilityCableDescriptor
@@ -15,7 +15,9 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.item.ItemStack
-import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.context.BlockPlaceContext
+import net.minecraft.world.item.context.UseOnContext
 import net.minecraft.world.InteractionResult
 import net.minecraft.core.Direction as EnumFacing
 import net.minecraft.world.InteractionHand
@@ -27,64 +29,63 @@ import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
 import mods.eln.client.itemrender.IItemRenderer.ItemRendererHelper
 import mods.eln.client.gl.GL11
 import mods.eln.misc.getBlock
-import mods.eln.misc.getBlockMetadata
 import mods.eln.misc.getBlockEntity
 import mods.eln.misc.setBlock
 import mods.eln.misc.setBlockToAir
 import mods.eln.misc.getBlockState
 import mods.eln.misc.isReplaceable
+import java.util.function.Supplier
 
-class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b), IItemRenderer {
+/**
+ * The six-node element family. One [Placer] item is registered per descriptor (the Flattening);
+ * the placement logic is the 1.7.10 `ItemBlock.onItemUse` flow kept here so the Falstad importer
+ * and the smoke test can place a stack that is in nobody's hand.
+ */
+class SixNodeItem(b: Supplier<Block>) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b, "SixNodeItem"), IItemRenderer {
+
+    /** The registered item of one descriptor: vanilla's use hook, routed through the family. */
+    class Placer(family: SixNodeItem, descriptor: SixNodeDescriptor, id: Int, block: Block, properties: Properties) :
+        DescriptorBlockItem<SixNodeDescriptor?>(family, descriptor, id, block, properties) {
+        override fun useOn(context: UseOnContext): InteractionResult {
+            val player = context.player ?: return InteractionResult.PASS
+            // BlockPlaceContext resolves the target cell the way 1.7.10 did: into the clicked block
+            // when it is replaceable (snow layers, grass, vines), else the neighbour on the clicked face.
+            val place = BlockPlaceContext(context)
+            val hit = context.clickLocation
+            val pos = context.clickedPos
+            return (family as SixNodeItem).onItemUse(context.itemInHand, player, context.level, place.clickedPos, context.hand,
+                context.clickedFace, (hit.x - pos.x).toFloat(), (hit.y - pos.y).toFloat(), (hit.z - pos.z).toFloat())
+        }
+    }
+
+    override fun newItem(id: Int, descriptor: SixNodeDescriptor?): Item =
+        Placer(this, descriptor!!, id, block.get(), newProperties(descriptor))
+
     private fun shouldConsumeUtilityCableLength(player: Player): Boolean {
         val creativeFreeLength = Eln.config.getBooleanOrElse("gameplay.cables.creativeFreeLength", true)
         return !(creativeFreeLength && player is ServerPlayer && mods.eln.misc.Utils.isCreative(player))
     }
 
-    override fun getMetadata(damageValue: Int): Int {
-        return damageValue
-    }
-
     /**
-     * Callback for item usage. If the item does something special on right clicking, he will have one of those. Return True if something happen and false if it don't. This is for ITEMS, not BLOCKS
-     */
-    override fun onItemUse(
-        player: Player, world: Level, posIn: BlockPos, hand: InteractionHand,
-        facing: EnumFacing, hitX: Float, hitY: Float, hitZ: Float
-    ): InteractionResult = onItemUse(player.getItemInHand(hand), player, world, posIn, hand, facing, hitX, hitY, hitZ)
-
-    /**
-     * 1.7.10 passed the stack in; 1.12.2 reads it from the hand. Programmatic placement (the Falstad
-     * importer) still needs to place a stack that is not in anyone's hand, so the body takes it explicitly.
+     * 1.7.10's `ItemBlock.onItemUse` with the stack passed in explicitly. [pos] is the cell the
+     * block goes into (already offset from the clicked block when that is not replaceable).
      */
     fun onItemUse(
-        stack: ItemStack, player: Player, world: Level, posIn: BlockPos, hand: InteractionHand,
-        facing: EnumFacing, hitX: Float, hitY: Float, hitZ: Float
+        stack: ItemStack, player: Player, world: Level, pos: BlockPos, @Suppress("UNUSED_PARAMETER") hand: InteractionHand,
+        side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float
     ): InteractionResult {
-        var pos = posIn
-        var side = facing
-        val state = world.getBlockState(pos)
-        val block = state.block
-        // A snow layer one deep is placed *into*, not on top of - the same special case vanilla
-        // ItemBlock makes, and the reason this override exists rather than calling super.
-        if (block === Blocks.SNOW_LAYER && block.getMetaFromState(state) and 0x7 < 1) {
-            side = EnumFacing.UP
-        } else if (block !== Blocks.VINE && block !== Blocks.TALLGRASS && block !== Blocks.DEADBUSH &&
-            !block.isReplaceable(world, pos)
-        ) {
-            pos = pos.offset(facing)
-        }
         if (stack.isEmpty) return InteractionResult.FAIL
         val descriptor = getDescriptor(stack)
         if (descriptor is UtilityCableDescriptor && !descriptor.hasLengthForPlacement(stack)) {
             sendMessage(player, "Not enough wire length remaining to place another segment")
             return InteractionResult.FAIL
         }
-        if (!player.canPlayerEdit(pos, side, stack)) return InteractionResult.FAIL
-        if (pos.y == 255 && this.block.defaultState.material.isSolid) return InteractionResult.FAIL
-        val meta = getMetadata(stack.metadata)
-        val newState = this.block.getStateForPlacement(world, pos, side, hitX, hitY, hitZ, meta, player, hand)
-        if (placeBlockAt(stack, player, world, pos, side, hitX, hitY, hitZ, newState)) {
-            val sound = this.block.getSoundType(newState, world, pos, player)
+        if (!player.mayUseItemAt(pos, side, stack)) return InteractionResult.FAIL
+        if (!canPlaceBlockOnSide(world, pos.relative(side.opposite), side, player, stack)) return InteractionResult.FAIL
+        if (world.isClientSide) return InteractionResult.SUCCESS
+        if (placeBlockAt(stack, player, world, pos, side, hitX, hitY, hitZ)) {
+            val newState = world.getBlockState(pos)
+            val sound = newState.getSoundType(world, pos, player)
             world.playSound(
                 null, pos, sound.placeSound, SoundSource.BLOCKS,
                 (sound.volume + 1.0f) / 2.0f, sound.pitch * 0.8f
@@ -104,11 +105,10 @@ class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b
     }
 
     /**
-     * Returns true if the given ItemBlock can be placed on the given side of the given block position.
+     * Whether the stack can be placed on [side] of the block at [pos] (1.7.10's
+     * `canPlaceBlockOnSide`, called with the clicked block).
      */
-    override fun canPlaceBlockOnSide(
-        world: Level, pos: BlockPos, side: EnumFacing, player: Player, stack: ItemStack
-    ): Boolean {
+    fun canPlaceBlockOnSide(world: Level, pos: BlockPos, side: EnumFacing, player: Player, stack: ItemStack): Boolean {
         if (!isStackValidToPlace(stack)) return false
         val vect = intArrayOf(pos.x, pos.y, pos.z)
         fromFacing(side).applyTo(vect, 1)
@@ -118,8 +118,9 @@ class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b
         }
         // Stacking another face onto an existing six-node is always allowed, whatever vanilla
         // thinks about the block already being there.
-        if (world.getBlockState(BlockPos(vect[0], vect[1], vect[2])).block === Eln.sixNodeBlock) return true
-        return super.canPlaceBlockOnSide(world, pos, side, player, stack)
+        val target = BlockPos(vect[0], vect[1], vect[2])
+        if (world.getBlockState(target).block === Eln.sixNodeBlock) return true
+        return world.getBlockState(target).canBeReplaced()
     }
 
     fun isStackValidToPlace(stack: ItemStack?): Boolean {
@@ -127,18 +128,16 @@ class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b
         return descriptor != null
     }
 
-    override fun placeBlockAt(
-        stack: ItemStack, player: Player, world: Level, pos: BlockPos,
-        side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float, newState: BlockState
-    ): Boolean {
+    /** Server side: creates the node, then the block (1.7.10's `placeBlockAt`). */
+    fun placeBlockAt(stack: ItemStack, player: Player, world: Level, pos: BlockPos, side: EnumFacing, @Suppress("UNUSED_PARAMETER") hitX: Float, @Suppress("UNUSED_PARAMETER") hitY: Float, @Suppress("UNUSED_PARAMETER") hitZ: Float): Boolean {
         if (world.isClientSide) return false
         if (!isStackValidToPlace(stack)) return false
         val x = pos.x; val y = pos.y; val z = pos.z
-        val metadata = this.block.getMetaFromState(newState)
+        val metadata = 0
         val direction = fromFacing(side).inverse
         val blockOld = world.getBlock(x, y, z)
-        val block = Block.getBlockFromItem(this) as SixNodeBlock
-        if (blockOld === Blocks.AIR || blockOld.isReplaceable(world, pos)) {
+        val block = this.block.get() as SixNodeBlock
+        if (blockOld === Blocks.AIR || blockOld.isReplaceable(world, x, y, z)) {
             val coord = Coordinate(x, y, z, world)
             val descriptor = getDescriptor(stack)
             var error: String?
@@ -169,7 +168,7 @@ class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b
                 return true
             }
         } else {
-            val sixNode = (world.getBlockEntity(x, y, z) as SixNodeEntity).node as SixNode?
+            val sixNode = (world.getBlockEntity(x, y, z) as? SixNodeEntity)?.node as SixNode?
             if (sixNode == null) {
                 world.setBlockToAir(x, y, z)
                 return false
@@ -197,7 +196,7 @@ class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b
 
     override fun renderItem(type: ItemRenderType, item: ItemStack, vararg data: Any) {
         if (!isStackValidToPlace(item)) return
-        Minecraft.getInstance().profiler.startSection("SixNodeItem")
+        Minecraft.getInstance().profiler.push("SixNodeItem")
         if (shouldUseRenderHelperEln(type, item, null)) {
             when (type) {
                 ItemRenderType.ENTITY -> GL11.glRotatef(90f, 0f, 0f, 1f)
@@ -226,11 +225,6 @@ class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b
         if (descriptor != null) {
             descriptor.renderItem(type, item, *data)
         }
-        Minecraft.getInstance().profiler.endSection()
-    }
-
-    init {
-        setHasSubtypes(true)
-        translationKey = "SixNodeItem"
+        Minecraft.getInstance().profiler.pop()
     }
 }

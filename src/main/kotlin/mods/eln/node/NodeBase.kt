@@ -24,7 +24,6 @@ import mods.eln.misc.INBTTReady
 import java.io.IOException
 import kotlin.jvm.JvmOverloads
 import net.minecraft.server.MinecraftServer
-import net.minecraftforge.fml.common.FMLCommonHandler
 import mods.eln.ServerKeyHandler
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.entity.item.ItemEntity
@@ -48,6 +47,8 @@ import mods.eln.misc.isNothing
 import mods.eln.misc.isReplaceable
 import mods.eln.misc.rand
 import mods.eln.misc.writeToNBT
+import mods.eln.misc.hasTagCompound
+import mods.eln.misc.tagCompound
 
 abstract class NodeBase {
     var neighborOpaque: Byte = 0
@@ -175,15 +176,20 @@ abstract class NodeBase {
             }
             if (Eln.configCopyToolElement.checkSameItemStack(equipped)) {
                 if (!equipped.hasTagCompound()) {
-                    equipped.tagCompound /* TODO(components) */ = CompoundTag()
+                    equipped.tagCompound = CompoundTag()
                 }
                 val act: String
                 var snd = beepError
                 if (entityPlayer.isShiftKeyDown) {
-                    if (writeConfigTool(side, equipped.tagCompound /* TODO(components) */, entityPlayer)) snd = beepDownloaded
+                    // The tag is a copy on 1.20.5+ (item NBT is a component): write it back afterwards.
+                    val tag = equipped.tagCompound
+                    if (writeConfigTool(side, tag, entityPlayer)) {
+                        equipped.tagCompound = tag
+                        snd = beepDownloaded
+                    }
                     act = "write"
                 } else {
-                    if (readConfigTool(side, equipped.tagCompound /* TODO(components) */, entityPlayer)) {
+                    if (readConfigTool(side, equipped.tagCompound, entityPlayer)) {
                         needPublish()
                         snd = beepUploaded
                     }
@@ -193,9 +199,9 @@ abstract class NodeBase {
                     entityPlayer.x,
                     entityPlayer.y,
                     entityPlayer.z,
-                    entityPlayer.level
+                    entityPlayer.level()
                 ).play()
-                println(String.format("NB.oBA: act %s data %s", act, equipped.tagCompound /* TODO(components) */.toString()))
+                println(String.format("NB.oBA: act %s data %s", act, equipped.tagCompound.toString()))
                 return true
             }
         }
@@ -419,7 +425,7 @@ abstract class NodeBase {
     }
 
     private inline fun forEachWatchingPlayer(action: (ServerPlayer) -> Unit) {
-        val server = FMLCommonHandler.instance().minecraftServerInstance ?: return
+        val server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer() ?: return
         val worldServer = server.getWorld(coordinate.dimension) ?: return
         val chunkMap = worldServer.playerChunkMap
         val chunkX = coordinate.x shr 4

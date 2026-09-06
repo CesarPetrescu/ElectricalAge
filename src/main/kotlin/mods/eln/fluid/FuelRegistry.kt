@@ -207,7 +207,7 @@ object FuelRegistry {
     fun heatEnergyPerMilliBucket(fuelName: String): Double =
         config.getDoubleOrElse(heatValueFactorPath, defaultHeatValueFactor) * baseHeatValueForFuel(fuelName)
 
-    fun heatEnergyPerMilliBucket(fluid: Fluid?): Double = heatEnergyPerMilliBucket(fluid?.name ?: "")
+    fun heatEnergyPerMilliBucket(fluid: Fluid?): Double = heatEnergyPerMilliBucket(FluidRegistry.legacyName(fluid) ?: "")
 
     fun fuelEntry(fuelName: String): FuelEntry {
         val categoryPath = findFuelCategoryPath(fuelName)
@@ -236,7 +236,7 @@ object FuelRegistry {
         }
     }
 
-    fun fuelEntry(fluid: Fluid?): FuelEntry = fuelEntry(fluid?.name ?: "")
+    fun fuelEntry(fluid: Fluid?): FuelEntry = fuelEntry(FluidRegistry.legacyName(fluid) ?: "")
 
     fun temperatureFactor(fuelName: String): Double = fuelEntry(fuelName).temperatureFactor
 

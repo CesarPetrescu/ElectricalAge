@@ -1,8 +1,6 @@
 package mods.eln.server
 
-import net.minecraftforge.fml.common.FMLCommonHandler
 import net.neoforged.bus.api.SubscribeEvent
-import net.minecraftforge.fml.common.gameevent.TickEvent
 import net.neoforged.neoforge.event.tick.ServerTickEvent
 import mods.eln.Eln
 import mods.eln.environment.RoomThermalManager
@@ -17,7 +15,9 @@ import net.minecraft.nbt.NbtIo
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.world.level.Level
 import net.neoforged.neoforge.common.NeoForge
-import net.minecraftforge.event.entity.EntityEvent.EntityConstructing
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent
+import net.minecraft.nbt.NbtAccounter
+import mods.eln.misc.DimensionIds
 import net.neoforged.neoforge.event.level.LevelEvent
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -34,14 +34,19 @@ class ServerEventListener {
     private var lightningList = LinkedList<LightningBolt>()
     @SubscribeEvent
     fun tick(event: ServerTickEvent.Post) {
-        if (event.phase != true /* NeoForge: Post event */) return
         lightningList = lightningListNext
         lightningListNext = LinkedList()
         process(0.05)
     }
 
+    /** Electrical armor absorbs damage with energy (1.7.10's ISpecialArmor, see ElectricalArmor.absorb). */
     @SubscribeEvent
-    fun onNewEntity(event: EntityConstructing) {
+    fun onLivingDamage(event: net.neoforged.neoforge.event.entity.living.LivingDamageEvent.Pre) {
+        mods.eln.item.electricalitem.ElectricalArmor.absorb(event)
+    }
+
+    @SubscribeEvent
+    fun onNewEntity(event: EntityJoinLevelEvent) {
         if (event.entity is LightningBolt) {
             lightningListNext.add(event.entity as LightningBolt)
         }
@@ -54,8 +59,8 @@ class ServerEventListener {
     fun getLightningClosestTo(c: Coordinate): Double {
         var best = 10000000.0
         for (l in lightningList) {
-            if (c.world() !== l.level) continue
-            val d = l.getDistance(c.x.toDouble(), c.y.toDouble(), c.z.toDouble())
+            if (c.world() !== l.level()) continue
+            val d = Math.sqrt(l.distanceToSqr(c.x.toDouble(), c.y.toDouble(), c.z.toDouble()))
             if (d < best) best = d
         }
         return best
@@ -64,10 +69,11 @@ class ServerEventListener {
     private val loadedWorlds = HashSet<Int>()
     @SubscribeEvent
     fun onWorldLoad(e: LevelEvent.Load) {
-        if (e.level.isClientSide) return
-        loadedWorlds.add(e.level.dimension())
-        val fileNames = FileNames(e)
-        val dimension = e.level.dimension()
+        val level = e.level as? Level ?: return
+        if (level.isClientSide) return
+        loadedWorlds.add(DimensionIds.id(level))
+        val fileNames = FileNames(level)
+        val dimension = DimensionIds.id(level)
         try {
             readSave(fileNames.worldSave, dimension)
         } catch (ex: Exception) {
@@ -78,7 +84,7 @@ class ServerEventListener {
             } catch (ex2: Exception) {
                 ex2.printStackTrace()
                 println("Failed to read backup save!")
-                forWorld(e.level)
+                forWorld(level)
             }
         }
     }
@@ -86,18 +92,20 @@ class ServerEventListener {
     @Throws(IOException::class)
     private fun readSave(worldSave: Path, dimension: Int) {
         val inputStream = ByteArrayInputStream(Files.readAllBytes(worldSave))
-        val nbt = NbtIo.readCompressed(inputStream)
+        val nbt = NbtIo.readCompressed(inputStream, NbtAccounter.unlimitedHeap())
         readFromEaWorldNBT(nbt, dimension)
     }
 
     @SubscribeEvent
     fun onWorldUnload(e: LevelEvent.Unload) {
-        if (e.level.isClientSide) return
-        loadedWorlds.remove(e.level.dimension())
+        val level = e.level as? Level ?: return
+        if (level.isClientSide) return
+        val dimension = DimensionIds.id(level)
+        loadedWorlds.remove(dimension)
         try {
-            NodeManager.instance!!.unload(e.level.dimension())
-            Eln.ghostManager.unload(e.level.dimension())
-            RoomThermalManager.unloadDimension(e.level.dimension())
+            NodeManager.instance!!.unload(dimension)
+            Eln.ghostManager.unload(dimension)
+            RoomThermalManager.unloadDimension(dimension)
         } catch (ex: Exception) {
             ex.printStackTrace()
         }
@@ -105,15 +113,17 @@ class ServerEventListener {
 
     @SubscribeEvent
     fun onWorldSave(e: LevelEvent.Save) {
-        if (e.level.isClientSide) return
-        if (!loadedWorlds.contains(e.level.dimension())) {
+        val level = e.level as? Level ?: return
+        if (level.isClientSide) return
+        val dimension = DimensionIds.id(level)
+        if (!loadedWorlds.contains(dimension)) {
             //System.out.println("I hate you minecraft");
             return
         }
         try {
             val nbt = CompoundTag()
-            writeToEaWorldNBT(nbt, e.level.dimension())
-            val fileNames = FileNames(e)
+            writeToEaWorldNBT(nbt, dimension)
+            val fileNames = FileNames(level)
 
             // Write a new save to a temporary file.
             val bytes = ByteArrayOutputStream(512 * 1024)
@@ -137,19 +147,21 @@ class ServerEventListener {
         }
     }
 
-    private inner class FileNames internal constructor(e: LevelEvent) {
+    private inner class FileNames internal constructor(level: Level) {
         val worldSave: Path
         val tempSave: Path
         val backupSave: Path
+        /** `<world>/data/electricalAgeWorld<dim>.dat`, resolved through the server's level path (1.7.10 built the string). */
         private fun getEaWorldSaveName(w: Level): String {
-            return Utils.mapFolder + "data/electricalAgeWorld" + w.dimension() + ".dat"
+            return Utils.getMapFile("data/electricalAgeWorld" + DimensionIds.id(w) + ".dat").path
         }
 
         init {
-            val saveName = getEaWorldSaveName(e.level)
+            val saveName = getEaWorldSaveName(level)
             worldSave = FileSystems.getDefault().getPath(saveName)
             tempSave = FileSystems.getDefault().getPath("$saveName.tmp")
             backupSave = FileSystems.getDefault().getPath("$saveName.bak")
+            Files.createDirectories(worldSave.parent)
         }
     }
 
@@ -203,7 +215,6 @@ class ServerEventListener {
     }
 
     init {
-        NeoForge.EVENT_BUS.register(this)
         NeoForge.EVENT_BUS.register(this)
     }
 }

@@ -14,6 +14,8 @@ import net.minecraft.resources.ResourceLocation
 import mods.eln.client.itemrender.IItemRenderer
 import mods.eln.client.gl.GL11
 import mods.eln.misc.isNothing
+import mods.eln.misc.editTag
+import mods.eln.misc.tagCompound
 
 class BrushDescriptor(name: String): GenericItemUsingDamageDescriptor(name) {
 
@@ -40,13 +42,13 @@ class BrushDescriptor(name: String): GenericItemUsingDamageDescriptor(name) {
 
     fun getColor(stack: ItemStack) = stack.itemDamage and 0xF
 
-    private fun getLife(stack: ItemStack?) = if (stack.isNothing() || stack.tagCompound /* TODO(components) */ == null)
+    private fun getLife(stack: ItemStack?) = if (stack.isNothing() || stack.tagCompound == null)
         32
     else
-        stack.tagCompound /* TODO(components) */!!.getInt("life")
+        stack.tagCompound!!.getInt("life")
 
     fun setLife(stack: ItemStack, life: Int) {
-        stack.tagCompound /* TODO(components) */!!.putInt("life", life)
+        stack.editTag { it.putInt("life", life) }
     }
 
     override fun getDefaultNBT(): CompoundTag? {
@@ -66,11 +68,11 @@ class BrushDescriptor(name: String): GenericItemUsingDamageDescriptor(name) {
     fun use(stack: ItemStack, entityPlayer: Player): Boolean {
 
         val creative = entityPlayer.isCreative()
-        var life = stack.tagCompound /* TODO(components) */!!.getInt("life")
+        var life = stack.tagCompound!!.getInt("life")
         return if (creative || life != 0) {
             if (!creative) {
                 --life
-                stack.tagCompound /* TODO(components) */!!.putInt("life", life)
+                stack.editTag { it.putInt("life", life) }
             }
             true
         } else {

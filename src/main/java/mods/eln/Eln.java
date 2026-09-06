@@ -51,7 +51,6 @@ import mods.eln.sim.Simulator;
 import mods.eln.sim.ThermalLoadInitializer;
 import mods.eln.sim.mna.component.Resistor;
 import mods.eln.sim.nbt.NbtElectricalLoad;
-import mods.eln.simplenode.computerprobe.ComputerProbeBlock;
 import mods.eln.simplenode.energyconverter.EnergyConverterElnToOtherBlock;
 import mods.eln.sixnode.PortableNaNDescriptor;
 import mods.eln.sixnode.currentcable.CurrentCableDescriptor;
@@ -256,7 +255,6 @@ public class Eln {
     public static final double signalVoltageAcceptPositive = SVU + 0.5;
     public static final double SVII = gateInputCurrent / SVU, SVUinv = 1.0 / SVU;
     public EnergyConverterElnToOtherBlock elnToOtherBlockConverter;
-    public ComputerProbeBlock computerProbeBlock;
     public static final double SVP = gateOutputCurrent * SVU;
     public ElectricalFurnaceDescriptor electricalFurnace;
 

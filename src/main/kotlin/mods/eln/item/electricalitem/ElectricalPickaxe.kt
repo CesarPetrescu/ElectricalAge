@@ -50,7 +50,7 @@ class ElectricalPickaxe(name: String, strengthOn: Float, strengthOff: Float,
         getNbt(s).getBoolean("conservative")
 
     private fun setConservative(p: Player?, s: ItemStack, state: Boolean) {
-        getNbt(s).setBoolean("conservative", state)
+        updateNbt(s) { it.putBoolean("conservative", state) }
         if (p != null) {
             Utils.sendMessage(p, "Set land conservation to $state")
         }

@@ -19,6 +19,8 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.nbt.CompoundTag
 import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
 import mods.eln.client.itemrender.IItemRenderer.ItemRendererHelper
+import mods.eln.misc.hasTagCompound
+import mods.eln.misc.tagCompound
 
 class BatteryDescriptor(
     name: String,
@@ -152,13 +154,13 @@ class BatteryDescriptor(
     }
 
     fun getChargeInTag(stack: ItemStack): Double {
-        if (!stack.hasTagCompound()) stack.tagCompound /* TODO(components) */ = defaultNBT
-        return stack.tagCompound /* TODO(components) */!!.getDouble("charge")
+        if (!stack.hasTagCompound()) stack.tagCompound = defaultNBT
+        return stack.tagCompound!!.getDouble("charge")
     }
 
     fun getLifeInTag(stack: ItemStack): Double {
-        if (!stack.hasTagCompound()) stack.tagCompound /* TODO(components) */ = defaultNBT
-        return stack.tagCompound /* TODO(components) */!!.getDouble("life")
+        if (!stack.hasTagCompound()) stack.tagCompound = defaultNBT
+        return stack.tagCompound!!.getDouble("life")
     }
 
     fun getEnergy(charge: Double, life: Double): Double {

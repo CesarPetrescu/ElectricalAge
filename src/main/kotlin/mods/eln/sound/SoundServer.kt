@@ -1,6 +1,5 @@
 package mods.eln.sound
 
-import net.minecraftforge.fml.common.FMLCommonHandler
 import mods.eln.Eln
 import mods.eln.misc.Utils.sendPacketToClient
 import net.minecraft.server.level.ServerPlayer
@@ -16,7 +15,7 @@ object SoundServer {
             stream.writeByte(Eln.packetPlaySound.toInt())
             stream.writeByte(p.level!!.dimension())
             p.writeTo(stream)
-            val server = FMLCommonHandler.instance().minecraftServerInstance
+            val server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer()
             for (obj in server.playerList.players) {
                 val player = obj as ServerPlayer
                 if (player.dimension == p.level!!.dimension() && player.getDistance(

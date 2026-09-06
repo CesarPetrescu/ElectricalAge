@@ -2,9 +2,7 @@ package mods.eln.node
 
 import net.neoforged.neoforge.common.NeoForge
 
-import net.minecraftforge.fml.common.FMLCommonHandler
 import net.neoforged.bus.api.SubscribeEvent
-import net.minecraftforge.fml.common.gameevent.TickEvent
 import net.neoforged.neoforge.event.tick.ServerTickEvent
 import mods.eln.environment.RoomThermalManager
 import net.minecraft.server.level.ServerPlayer
@@ -21,9 +19,8 @@ class NodeServer {
 
     var counter = 0
     @SubscribeEvent
-    fun tick(event: ServerTickEvent.Post) {
-        if (event.phase != TickEvent.Phase.START) return
-        val server = FMLCommonHandler.instance().minecraftServerInstance
+    fun tick(event: ServerTickEvent.Pre) {
+        val server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer()
         if (server != null) {
             RoomThermalManager.tick(server)
             for (node in NodeManager.instance!!.nodeList) {

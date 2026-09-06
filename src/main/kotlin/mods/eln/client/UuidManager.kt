@@ -2,10 +2,7 @@ package mods.eln.client
 
 import net.neoforged.neoforge.common.NeoForge
 
-import net.minecraftforge.fml.common.FMLCommonHandler
 import net.neoforged.bus.api.SubscribeEvent
-import net.minecraftforge.fml.common.gameevent.TickEvent
-import net.minecraftforge.fml.common.gameevent.TickEvent.Phase
 import java.util.*
 
 class UuidManager {
@@ -25,7 +22,6 @@ class UuidManager {
 
     @SubscribeEvent
     fun tick(event: ClientTickEvent.Post) {
-        if (event.phase == Phase.END) return
 
         val i = entities.iterator()
 

@@ -3,42 +3,32 @@ package mods.eln.node.simple
 import mods.eln.misc.Coordinate
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.state.BlockState
-import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.BlockItem
-import net.minecraft.world.item.ItemStack
-import net.minecraft.core.Direction
-import net.minecraft.core.BlockPos
-import net.minecraft.world.level.Level
+import net.minecraft.world.item.context.BlockPlaceContext
 import mods.eln.misc.getBlockState
 
-class SimpleNodeItem(b: Block) : BlockItem(b) {
-    var block: SimpleNodeBlock
+class SimpleNodeItem(b: Block, properties: Properties = Properties()) : BlockItem(b, properties) {
+    val nodeBlock: SimpleNodeBlock = b as SimpleNodeBlock
 
     /**
      * The node has to exist before the block is placed: SimpleNodeEntity looks its node up by
      * coordinate as soon as it is created, and a placement that fails must not leave one behind.
+     * (1.7.10's `placeBlockAt`; vanilla's `place` does the sound, the stat and the stack around it.)
      */
-    override fun placeBlockAt(
-        stack: ItemStack, player: Player, world: Level, pos: BlockPos,
-        side: Direction, hitX: Float, hitY: Float, hitZ: Float, newState: BlockState
-    ): Boolean {
+    override fun placeBlock(context: BlockPlaceContext, newState: BlockState): Boolean {
+        val world = context.level
+        val pos = context.clickedPos
+        val player = context.player ?: return false
         var node: SimpleNode? = null
         if (!world.isClientSide) {
-            node = block.newNode()
-            node!!.descriptorKey = block.descriptorKey
-            node.onBlockPlacedBy(Coordinate(pos.x, pos.y, pos.z, world), block.getFrontForPlacement(player), player, stack)
+            node = nodeBlock.newNode()
+            node!!.descriptorKey = nodeBlock.descriptorKey
+            node.onBlockPlacedBy(Coordinate(pos.x, pos.y, pos.z, world), nodeBlock.getFrontForPlacement(player), player, context.itemInHand)
         }
-        if (!world.setBlockState(pos, newState, 3)) {
+        if (!super.placeBlock(context, newState)) {
             node?.onBreakBlock()
             return false
         }
-        if (world.getBlockState(pos).block === this.block) {
-            this.block.onBlockPlacedBy(world, pos, newState, player, stack)
-        }
         return true
-    }
-
-    init {
-        block = b as SimpleNodeBlock
     }
 }

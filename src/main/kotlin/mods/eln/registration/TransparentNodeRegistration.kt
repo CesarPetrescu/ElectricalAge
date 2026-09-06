@@ -759,7 +759,7 @@ object TransparentNodeRegistration {
             val desc = ElectricalFurnaceDescriptor(name, PfT, thermalPlostfT, 40.0)
             instance.electricalFurnace = desc
             transparentNodeItem.addDescriptor(subId + (id shl 6), desc)
-            instance.furnaceList.add(desc.newItemStack())
+            ElnRegistry.afterItems { instance.furnaceList.add(desc.newItemStack()) }
         }
     }
 

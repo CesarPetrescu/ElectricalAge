@@ -2,7 +2,7 @@ package mods.eln.simplenode.energyconverter
 
 import mods.eln.Other
 import mods.eln.misc.Direction
-import net.minecraftforge.energy.CapabilityEnergy
+import net.neoforged.neoforge.capabilities.Capabilities
 import net.neoforged.neoforge.energy.IEnergyStorage
 
 /**
@@ -11,16 +11,15 @@ import net.neoforged.neoforge.energy.IEnergyStorage
 object EnergyConverterElnToOtherFireWallRf {
 
     fun updateEntity(e: EnergyConverterElnToOtherEntity) {
-        if (e.level.isClientSide) return
+        val level = e.level ?: return
+        if (level.isClientSide) return
         if (e.node == null) return
         val node = e.node as EnergyConverterElnToOtherNode
 
         val energySinkList: List<IEnergyStorage> = Direction.all.mapNotNull { direction ->
-            val neighbour = direction.applyToTileEntity(e) ?: return@mapNotNull null
-            // Ask the neighbour for the face that touches us.
+            // Ask the neighbour for the face that touches us (1.21: block capabilities are looked up on the level).
             val side = direction.inverse.toFacing()
-            if (!neighbour.hasCapability(CapabilityEnergy.ENERGY, side)) return@mapNotNull null
-            neighbour.getCapability(CapabilityEnergy.ENERGY, side)?.takeIf { it.canReceive() }
+            level.getCapability(Capabilities.EnergyStorage.BLOCK, e.blockPos.relative(direction.toFacing()), side)?.takeIf { it.canReceive() }
         }
         if (energySinkList.isEmpty()) return
         val rfUsed = energySinkList.map {

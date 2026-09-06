@@ -40,6 +40,7 @@ import java.io.DataOutputStream
 import java.io.IOException
 import java.util.*
 import mods.eln.misc.writeToNBT
+import mods.eln.misc.tagCompound
 
 abstract class TransparentNodeElement(@JvmField var node: TransparentNode?, @JvmField var transparentNodeDescriptor: TransparentNodeDescriptor) : GhostObserver, IPlayer, INodeElement {
     @JvmField
@@ -246,7 +247,7 @@ abstract class TransparentNodeElement(@JvmField var node: TransparentNode?, @Jvm
     val dropItemStack: ItemStack
         get() {
             val itemStack = ItemStack(Eln.transparentNodeBlock, 1, node!!.elementId)
-            itemStack.tagCompound /* TODO(components) */ = getItemStackNBT()
+            itemStack.tagCompound = getItemStackNBT()
             return itemStack
         }
 

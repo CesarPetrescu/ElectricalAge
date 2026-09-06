@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker
 import net.minecraft.world.level.block.entity.BlockEntityType
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.phys.BlockHitResult
+import mods.eln.misc.getBlockEntity
 
 /**
  * The block behind every node. 1.21: block entities come from [EntityBlock] (with a ticker instead

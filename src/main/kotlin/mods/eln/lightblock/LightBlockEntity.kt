@@ -7,8 +7,10 @@ import mods.eln.misc.Utils
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.world.level.block.entity.BlockEntity
-import net.minecraft.util.ITickable
-import net.minecraft.world.level.LightLayer
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.block.entity.BlockEntityType
+import net.minecraft.world.level.block.state.BlockState
+import java.util.function.Supplier
 import net.minecraft.world.level.Level
 import mods.eln.misc.getBlock
 import mods.eln.misc.getBlockMetadata
@@ -21,9 +23,17 @@ import mods.eln.misc.zCoord
 import mods.eln.misc.getBlockState
 import mods.eln.misc.writeToNBT
 
-class LightBlockEntity : BlockEntity(), ITickable {
+class LightBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(TYPE.get(), pos, state) {
+
+    /** 1.7.10's `worldObj`. */
+    val world: Level
+        get() = level!!
 
     companion object {
+        /** Registered by Eln through ElnRegistry.registerBlockEntity. */
+        @JvmField
+        var TYPE: Supplier<BlockEntityType<LightBlockEntity>> = Supplier { throw IllegalStateException("LightBlockEntity type not registered") }
+
         @JvmField
         val observers: MutableList<LightBlockObserver> = mutableListOf()
 
@@ -74,7 +84,8 @@ class LightBlockEntity : BlockEntity(), ITickable {
 
     }
 
-    override fun update() {
+    /** Ticked by the block's BlockEntityTicker (server only). */
+    fun update() {
         if (world.isClientSide) return
 
         if (lightList.isEmpty()) {
@@ -93,11 +104,10 @@ class LightBlockEntity : BlockEntity(), ITickable {
             if (l.timeout <= 0) iterator.remove()
         }
 
-        val state = world.getBlockState(pos)
+        val state = world.getBlockState(blockPos)
         if (state.block === Eln.lightBlock && light != state.getValue(LightBlock.LIGHT)) {
-            // The light level is a blockstate property on 1.12, not a metadata nibble.
-            world.setBlockState(pos, state.withProperty(LightBlock.LIGHT, light), 2)
-            world.checkLightFor(LightLayer.BLOCK, pos)
+            // The light level is a blockstate property, not a metadata nibble; the light engine follows the state change.
+            world.setBlock(blockPos, state.setValue(LightBlock.LIGHT, light), 2)
         }
     }
 

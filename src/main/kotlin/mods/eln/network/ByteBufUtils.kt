@@ -36,4 +36,13 @@ object ByteBufUtils {
 
     @JvmStatic
     fun readTag(buf: ByteBuf?): CompoundTag? = friendly(buf).readNbt()
+
+    /** Forge's `writeVarInt(buf, value, maxSize)`; the size hint was only a sanity check. */
+    @JvmStatic
+    fun writeVarInt(buf: ByteBuf?, value: Int, @Suppress("UNUSED_PARAMETER") maxSize: Int = 5) {
+        net.minecraft.network.VarInt.write(buf, value)
+    }
+
+    @JvmStatic
+    fun readVarInt(buf: ByteBuf?, @Suppress("UNUSED_PARAMETER") maxSize: Int = 5): Int = net.minecraft.network.VarInt.read(buf)
 }

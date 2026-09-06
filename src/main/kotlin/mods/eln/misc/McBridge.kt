@@ -153,3 +153,26 @@ inline val Level.rand: net.minecraft.util.RandomSource get() = random
 fun itemId(item: net.minecraft.world.item.Item): Int = net.minecraft.core.registries.BuiltInRegistries.ITEM.getId(item)
 fun itemById(id: Int): net.minecraft.world.item.Item = net.minecraft.core.registries.BuiltInRegistries.ITEM.byId(id)
 fun blockById(id: Int): Block = net.minecraft.core.registries.BuiltInRegistries.BLOCK.byId(id)
+
+// ------------------------------------------------------------- item NBT (data components since 1.20.5)
+
+/**
+ * 1.7.10's `stack.stackTagCompound`. Item NBT is the CUSTOM_DATA component now and immutable in
+ * place: the getter returns a *copy*, the setter stores one. Mutating the copy does nothing -
+ * use [editTag] for read-modify-write.
+ */
+var ItemStack.tagCompound: net.minecraft.nbt.CompoundTag?
+    get() = get(net.minecraft.core.component.DataComponents.CUSTOM_DATA)?.copyTag()
+    set(value) {
+        if (value == null) remove(net.minecraft.core.component.DataComponents.CUSTOM_DATA)
+        else set(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.of(value))
+    }
+
+fun ItemStack.hasTagCompound(): Boolean = has(net.minecraft.core.component.DataComponents.CUSTOM_DATA)
+
+/** Read-modify-write of the stack's NBT; creates the tag when the stack has none. */
+inline fun ItemStack.editTag(edit: (net.minecraft.nbt.CompoundTag) -> Unit) {
+    val tag = tagCompound ?: net.minecraft.nbt.CompoundTag()
+    edit(tag)
+    tagCompound = tag
+}

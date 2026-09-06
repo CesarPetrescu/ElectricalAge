@@ -43,7 +43,7 @@ class BatteryItem(name: String, var energyStorage: Double, var chargePower: Doub
     }
 
     override fun setEnergy(stack: ItemStack, value: Double) {
-        getNbt(stack).setDouble("energy", Math.max(0.0, value))
+        updateNbt(stack) { it.putDouble("energy", Math.max(0.0, value)) }
     }
 
     override fun getEnergyMax(stack: ItemStack): Double {

@@ -2,9 +2,7 @@ package mods.eln.misc
 
 import net.neoforged.neoforge.common.NeoForge
 
-import net.minecraftforge.fml.common.FMLCommonHandler
 import net.neoforged.bus.api.SubscribeEvent
-import net.minecraftforge.fml.common.gameevent.TickEvent
 import net.neoforged.neoforge.client.event.RenderFrameEvent
 import java.util.*
 
@@ -36,7 +34,6 @@ class LiveDataManager {
     var map: MutableMap<Any, Element> = HashMap()
     @SubscribeEvent
     fun tick(event: RenderFrameEvent.Post) {
-        if (event.phase != TickEvent.Phase.START) return
         val keyToRemove: MutableList<Any> = ArrayList()
         for ((key, e) in map) {
             e.timeout--

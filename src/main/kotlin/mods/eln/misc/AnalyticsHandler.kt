@@ -1,6 +1,5 @@
 package mods.eln.misc
 
-import net.minecraftforge.fml.common.FMLCommonHandler
 import net.neoforged.api.distmarker.Dist
 import mods.eln.Eln
 import mods.eln.i18n.I18N
@@ -61,7 +60,7 @@ object AnalyticsHandler {
             val version = simpleVersionName.replace("\\s+".toRegex(), "")
             val lang = I18N.getCurrentLanguage()
 
-            if (Eln.config.getBooleanOrElse("analytics.playerUuidOptIn", false) && FMLCommonHandler.instance().effectiveSide == Dist.CLIENT) {
+            if (Eln.config.getBooleanOrElse("analytics.playerUuidOptIn", false) && mods.eln.misc.Utils.side == Dist.CLIENT) {
                 // PLAYER HAS OPTED INTO SENDING THEIR UUID (and is not a server)
                 val formatUrl = "%s?version=%s&lang=%s&uuid=%s&name=%s"
                 url = String.format(

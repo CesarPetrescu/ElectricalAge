@@ -59,6 +59,7 @@ object ElnRegistry {
     private val tabs = LinkedHashMap<ResourceLocation, CreativeModeTab>()
     private val ores = ArrayList<Pair<String, Supplier<ItemStack>>>()
     private val afterItems = ArrayList<Runnable>()
+    private val armorMaterials = LinkedHashMap<ResourceLocation, Staged<net.minecraft.world.item.ArmorMaterial>>()
     private val namedStacks = HashMap<String, Supplier<ItemStack>>()
     private val itemBlocks = HashMap<ResourceLocation, Staged<Item>>()
     private var itemsRegistered = false
@@ -161,6 +162,17 @@ object ElnRegistry {
         return tab
     }
 
+    /**
+     * Replaces Forge's `EnumHelper.addArmorMaterial`: armor materials are a registry since 1.20.5.
+     * The holder resolves lazily, which is all `ArmorItem` needs (its attributes are memoized).
+     */
+    @JvmStatic
+    fun registerArmorMaterial(name: String, factory: Supplier<net.minecraft.world.item.ArmorMaterial>): net.minecraft.core.Holder<net.minecraft.world.item.ArmorMaterial> {
+        val id = registryName(name)
+        stage(armorMaterials, id, factory, null, "armor material")
+        return net.neoforged.neoforge.registries.DeferredHolder.create(Registries.ARMOR_MATERIAL, id)
+    }
+
     /** Runs [action] right after the items are registered (or immediately if they already are). */
     @JvmStatic
     fun afterItems(action: Runnable) {
@@ -201,6 +213,7 @@ object ElnRegistry {
                     items.keys.forEach { Eln.LOGGER.info("REGDUMP item {}", it) }
                 }
             }
+            Registries.ARMOR_MATERIAL -> registerAll(event, Registries.ARMOR_MATERIAL, armorMaterials)
             Registries.BLOCK_ENTITY_TYPE -> registerAll(event, Registries.BLOCK_ENTITY_TYPE, blockEntities)
             Registries.MENU -> registerAll(event, Registries.MENU, menus)
             Registries.CREATIVE_MODE_TAB -> event.register(Registries.CREATIVE_MODE_TAB) { helper -> tabs.forEach { (id, tab) -> helper.register(id, tab) } }

@@ -31,6 +31,9 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 import mods.eln.misc.isNothing
 import mods.eln.misc.writeToNBT
+import mods.eln.misc.editTag
+import mods.eln.misc.hasTagCompound
+import mods.eln.misc.tagCompound
 
 class ClutchPlateItem(
     name: String,
@@ -46,14 +49,14 @@ class ClutchPlateItem(
 
     fun setWear(stack: ItemStack, wear: Double) {
         if (!stack.hasTagCompound()) {
-            stack.tagCompound /* TODO(components) */ = getDefaultNBT()
+            stack.tagCompound = getDefaultNBT()
         }
-        stack.tagCompound /* TODO(components) */!!.putDouble("wear", wear)
+        stack.editTag { it.putDouble("wear", wear) }
     }
 
     fun getWear(stack: ItemStack): Double {
         if (!stack.hasTagCompound()) return 0.0
-        return stack.tagCompound /* TODO(components) */!!.getDouble("wear")
+        return stack.tagCompound!!.getDouble("wear")
     }
 
     fun maxStaticEnergyF(@Suppress("UNUSED_PARAMETER") stack: ItemStack): IFunction =

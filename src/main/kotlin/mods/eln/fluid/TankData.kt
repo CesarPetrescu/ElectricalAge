@@ -6,22 +6,18 @@ import net.minecraft.nbt.CompoundTag
 import net.minecraft.world.level.material.Fluid
 import mods.eln.fluid.FluidRegistry
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank
-import java.lang.Exception
 import mods.eln.misc.writeToNBT
 
 data class TankData(val tank: FluidTank, val fluidWhitelist: MutableList<Fluid> = mutableListOf(), var fractionalDemandMb: Double = 0.0):
     INBTTReady {
 
     override fun readFromNBT(nbt: CompoundTag, str: String) {
-        tank.readFromNBT(nbt.getCompound("${str}tank"))
+        tank.readFromNBT(mods.eln.misc.McRegistries.access(), nbt.getCompound("${str}tank"))
         val fluidWhitelistNames = nbt.getString("${str}whitelist")?.split("|")!!
         fluidWhitelist.clear()
         fluidWhitelistNames.forEach {
-            try {
-                fluidWhitelist.add(FluidRegistry.getFluid(it))
-            } catch (e: Exception) {
-                Utils.println("Error, could not find fluid $it")
-            }
+            val fluid = FluidRegistry.getFluid(it)
+            if (fluid != null) fluidWhitelist.add(fluid) else if (it.isNotEmpty()) Utils.println("Error, could not find fluid $it")
         }
         fractionalDemandMb = nbt.getDouble("${str}demandMb")
         tank.capacity = nbt.getInt("${str}capacity")
@@ -29,9 +25,9 @@ data class TankData(val tank: FluidTank, val fluidWhitelist: MutableList<Fluid> 
 
     override fun writeToNBT(nbt: CompoundTag, str: String) {
         val tag = CompoundTag()
-        tank.writeToNBT(tag)
+        tank.writeToNBT(mods.eln.misc.McRegistries.access(), tag)
         nbt.put("${str}tank", tag)
-        nbt.putString("${str}whitelist", fluidWhitelist.joinToString("|") { it.name })
+        nbt.putString("${str}whitelist", fluidWhitelist.joinToString("|") { FluidRegistry.getFluidName(it) ?: "" })
         nbt.putDouble("${str}demandMb", fractionalDemandMb)
         nbt.putInt("${str}capacity", tank.capacity)
     }

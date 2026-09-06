@@ -6,6 +6,7 @@ import mods.eln.sixnode.electricalcable.UtilityCableDescriptor
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.nbt.CompoundTag
+import mods.eln.misc.tagCompound
 
 class WireScrapDescriptor(name: String) : GenericItemUsingDamageDescriptor(name, "Copper Cable") {
     companion object {
@@ -19,7 +20,7 @@ class WireScrapDescriptor(name: String) : GenericItemUsingDamageDescriptor(name,
 
     fun createScrapStack(cable: UtilityCableDescriptor, count: Int = 1): ItemStack {
         val stack = newItemStack(count)
-        stack.tagCompound /* TODO(components) */ = CompoundTag().apply {
+        stack.tagCompound = CompoundTag().apply {
             setString(nbtSourceName, cable.name)
             setString(nbtMaterial, cable.material.label)
             setString(nbtSize, cable.sizeLabel)
@@ -32,7 +33,7 @@ class WireScrapDescriptor(name: String) : GenericItemUsingDamageDescriptor(name,
 
     override fun addInformation(itemStack: ItemStack?, entityPlayer: Player?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
-        val nbt = itemStack?.tagCompound /* TODO(components) */ ?: return
+        val nbt = itemStack?.tagCompound ?: return
         list.add(tr("Recovered from: %1$", nbt.getString(nbtSourceName)))
         list.add(tr("Material: %1$", nbt.getString(nbtMaterial)))
         list.add(

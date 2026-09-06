@@ -7,7 +7,6 @@ import net.minecraft.server.level.ServerPlayer
 import net.minecraft.core.BlockPos
 import net.minecraft.world.Difficulty
 import net.minecraft.world.level.LightLayer
-import net.minecraftforge.fml.common.FMLCommonHandler
 import mods.eln.misc.isAirBlock
 import mods.eln.misc.isBlockLoaded
 import mods.eln.misc.isEmptyBlock
@@ -19,7 +18,7 @@ import mods.eln.misc.rand
  */
 class ReplicatorPopProcess : IProcess {
     override fun process(time: Double) {
-        val world = FMLCommonHandler.instance().minecraftServerInstance.getWorld(0)
+        val world = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer().getWorld(0)
         val maxReplicators = Eln.config.getIntOrElse("entities.replicator.maxCount", 100)
         val popPerSecondPerPlayer =
             Eln.config.getDoubleOrElse("entities.replicator.thunderSpawnPerSecondPerPlayer", 1.0 / 120.0)

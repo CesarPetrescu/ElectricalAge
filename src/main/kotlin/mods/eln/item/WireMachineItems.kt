@@ -7,6 +7,8 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.nbt.CompoundTag
 import mods.eln.misc.isNothing
+import mods.eln.misc.editTag
+import mods.eln.misc.tagCompound
 
 class RollerWheelDescriptor(name: String, private val materialName: String, iconName: String) : GenericItemUsingDamageDescriptor(name, iconName) {
     fun matchesMaterial(stack: ItemStack?, material: UtilityCableMaterial): Boolean {
@@ -44,19 +46,19 @@ class WoundWireBundleDescriptor(name: String) : GenericItemUsingDamageDescriptor
         }
     }
 
-    fun getTargetLabel(stack: ItemStack?): String? = stack?.tagCompound /* TODO(components) */?.getString(NBT_TARGET_LABEL)?.takeIf { it.isNotEmpty() }
-    fun getTargetMetricLabel(stack: ItemStack?): String? = stack?.tagCompound /* TODO(components) */?.getString(NBT_TARGET_METRIC)?.takeIf { it.isNotEmpty() }
+    fun getTargetLabel(stack: ItemStack?): String? = stack?.tagCompound?.getString(NBT_TARGET_LABEL)?.takeIf { it.isNotEmpty() }
+    fun getTargetMetricLabel(stack: ItemStack?): String? = stack?.tagCompound?.getString(NBT_TARGET_METRIC)?.takeIf { it.isNotEmpty() }
     fun getMaterial(stack: ItemStack?): UtilityCableMaterial? {
-        val label = stack?.tagCompound /* TODO(components) */?.getString(NBT_MATERIAL)?.takeIf { it.isNotEmpty() } ?: return null
+        val label = stack?.tagCompound?.getString(NBT_MATERIAL)?.takeIf { it.isNotEmpty() } ?: return null
         return UtilityCableMaterial.values().firstOrNull { it.label.equals(label, ignoreCase = true) }
     }
-    fun getConductorCount(stack: ItemStack?): Int = stack?.tagCompound /* TODO(components) */?.getInt(NBT_CONDUCTOR_COUNT) ?: 0
-    fun getAreaMm2(stack: ItemStack?): Double = stack?.tagCompound /* TODO(components) */?.getDouble(NBT_AREA) ?: 0.0
-    fun getLengthMeters(stack: ItemStack?): Double = stack?.tagCompound /* TODO(components) */?.getDouble(NBT_LENGTH) ?: 0.0
+    fun getConductorCount(stack: ItemStack?): Int = stack?.tagCompound?.getInt(NBT_CONDUCTOR_COUNT) ?: 0
+    fun getAreaMm2(stack: ItemStack?): Double = stack?.tagCompound?.getDouble(NBT_AREA) ?: 0.0
+    fun getLengthMeters(stack: ItemStack?): Double = stack?.tagCompound?.getDouble(NBT_LENGTH) ?: 0.0
 
     fun setLengthMeters(stack: ItemStack, meters: Double) {
-        if (stack.tagCompound /* TODO(components) */ == null) stack.tagCompound /* TODO(components) */ = CompoundTag()
-        stack.tagCompound /* TODO(components) */!!.putDouble(NBT_LENGTH, meters.coerceAtLeast(0.0))
+        if (stack.tagCompound == null) stack.tagCompound = CompoundTag()
+        stack.editTag { it.putDouble(NBT_LENGTH, meters.coerceAtLeast(0.0)) }
     }
 
     override fun addInformation(itemStack: ItemStack?, entityPlayer: Player?, list: MutableList<String>, par4: Boolean) {

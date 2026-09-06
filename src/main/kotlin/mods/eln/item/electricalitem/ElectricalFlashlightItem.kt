@@ -66,7 +66,7 @@ class ElectricalFlashlightItem(name: String, var lightMin: Int, var rangeMin: In
     }
 
     fun setLightState(stack: ItemStack?, value: Int) {
-        getNbt(stack!!).setInteger("LightState", value)
+        updateNbt(stack!!) { it.putInt("LightState", value) }
     }
 
     fun getLightLevel(stack: ItemStack): Int {
@@ -117,7 +117,7 @@ class ElectricalFlashlightItem(name: String, var lightMin: Int, var rangeMin: In
     }
 
     override fun setEnergy(stack: ItemStack, value: Double) {
-        getNbt(stack).setDouble("energy", value)
+        updateNbt(stack) { it.putDouble("energy", value) }
     }
 
     override fun getEnergyMax(stack: ItemStack): Double {

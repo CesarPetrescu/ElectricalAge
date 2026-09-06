@@ -62,6 +62,8 @@ import mods.eln.misc.yCoord
 import mods.eln.misc.zCoord
 import mods.eln.misc.rand
 import mods.eln.misc.writeToNBT
+import mods.eln.misc.tagCompound
+import mods.eln.misc.editTag
 
 enum class UtilityCableMaterial(val label: String, val meltingPointCelsius: Double) {
     COPPER("Copper", 1085.0),
@@ -224,10 +226,10 @@ class UtilityCableDescriptor(
     }
 
     private fun getOrCreateNbt(stack: ItemStack): CompoundTag {
-        if (stack.tagCompound /* TODO(components) */ == null) {
-            stack.tagCompound /* TODO(components) */ = getDefaultNBT()
+        if (stack.tagCompound == null) {
+            stack.tagCompound = getDefaultNBT()
         }
-        return stack.tagCompound /* TODO(components) */!!
+        return stack.tagCompound!!
     }
 
     fun getRemainingLengthMeters(stack: ItemStack): Double {
@@ -240,7 +242,8 @@ class UtilityCableDescriptor(
     }
 
     fun setRemainingLengthMeters(stack: ItemStack, meters: Double) {
-        getOrCreateNbt(stack).setDouble(nbtLengthMeters, meters.coerceAtLeast(0.0))
+        getOrCreateNbt(stack)
+        stack.editTag { it.putDouble(nbtLengthMeters, meters.coerceAtLeast(0.0)) }
     }
 
     fun hasLengthForPlacement(stack: ItemStack): Boolean {
@@ -248,9 +251,8 @@ class UtilityCableDescriptor(
     }
 
     fun consumeLengthForPlacement(stack: ItemStack) {
-        val nbt = getOrCreateNbt(stack)
         val remaining = (getRemainingLengthMeters(stack) - placeLengthMeters).coerceAtLeast(0.0)
-        nbt.putDouble(nbtLengthMeters, remaining)
+        setRemainingLengthMeters(stack, remaining)
     }
 
     fun placementLengthMeters(): Double = placeLengthMeters

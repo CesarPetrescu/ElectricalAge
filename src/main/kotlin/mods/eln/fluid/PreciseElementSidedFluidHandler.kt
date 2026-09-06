@@ -19,18 +19,18 @@ class PreciseElementSidedFluidHandler: ElementSidedFluidHandler {
      */
     constructor(tankSizeMb: Int): super(tankSizeMb)
 
-    private var fixup = Direction.VALUES.map {Pair(it, 0.0)}.toMap().toMutableMap()
+    private var fixup = Direction.values().map {Pair(it, 0.0)}.toMap().toMutableMap()
 
     override fun readFromNBT(nbt: CompoundTag, str: String) {
         super.readFromNBT(nbt, str)
-        Direction.VALUES.forEach {
+        Direction.values().forEach {
             fixup[it] = nbt.getDouble(str + "fixup" + it.name)
         }
     }
 
     override fun writeToNBT(nbt: CompoundTag, str: String) {
         super.writeToNBT(nbt, str)
-        Direction.VALUES.forEach {
+        Direction.values().forEach {
             nbt.putDouble(str + "fixup" + it.name, fixup[it]?: 0.0)
         }
     }
@@ -45,7 +45,7 @@ class PreciseElementSidedFluidHandler: ElementSidedFluidHandler {
     }
 
     fun drainEnergy(direction: Direction, energy: Double): Double {
-        val heatValue = FuelRegistry.heatEnergyPerMilliBucket(tanks[direction]!!.tank.fluid?.getFluid())
+        val heatValue = FuelRegistry.heatEnergyPerMilliBucket(tanks[direction]!!.tank.fluid.takeIf { !it.isEmpty }?.fluid)
         return if (heatValue > 0)
             heatValue * drain(direction, energy / heatValue)
         else

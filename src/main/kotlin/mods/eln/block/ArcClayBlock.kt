@@ -1,33 +1,24 @@
 package mods.eln.block
 
-import net.neoforged.api.distmarker.Dist
-import net.neoforged.api.distmarker.OnlyIn
 import mods.eln.Eln
+import mods.eln.generic.CreativeTabPopulator
 import mods.eln.i18n.I18N.TR_NAME
 import mods.eln.i18n.I18N.Type
+import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.block.Block
-import net.minecraft.block.material.Material
-import net.minecraft.world.item.BlockItem
+import net.minecraft.world.level.block.state.BlockBehaviour
+import net.minecraft.world.level.material.MapColor
 
-class ArcClayBlock : Block(Material.ROCK) {
-
-    init {
-        setTranslationKey(TR_NAME(Type.TILE, "arc_clay_block"))
-        // 1.12.2: the texture comes from assets/eln/blockstates/<registry name>.json, not the block.
-        setCreativeTab(Eln.creativeTabOresMaterials)
-    }
-
-}
-
-class ArcMetalBlock : Block(Material.ROCK) {
+/** The two arc-furnace product blocks. The texture comes from assets/eln/blockstates/<registry name>.json. */
+open class ArcProductBlock(private val key: String) : Block(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(1.5f, 6.0f).requiresCorrectToolForDrops()) {
+    /** 1.7.10's `setTranslationKey`: the lang key stays `tile.<key>.name`. */
+    override fun getDescriptionId(): String = "tile.$key.name"
 
     init {
-        setTranslationKey(TR_NAME(Type.TILE, "arc_metal_block"))
-        setCreativeTab(Eln.creativeTabOresMaterials)
+        CreativeTabPopulator.register(Eln.creativeTabOresMaterials) { ItemStack(this) }
     }
-
 }
 
-class ArcMetalItemBlock(block: Block?) : BlockItem(block)
+class ArcClayBlock : ArcProductBlock(TR_NAME(Type.TILE, "arc_clay_block"))
 
-class ArcClayItemBlock(block: Block?) : BlockItem(block)
+class ArcMetalBlock : ArcProductBlock(TR_NAME(Type.TILE, "arc_metal_block"))

@@ -61,7 +61,7 @@ class ElectricalAxe(name: String, strengthOn: Float, strengthOff: Float,
     }
 
     private fun setCapitation(p: Player?, stack: ItemStack, capitation: Boolean) {
-        getNbt(stack).setBoolean("capitation", capitation)
+        updateNbt(stack) { it.putBoolean("capitation", capitation) }
         if (p != null) {
             Utils.sendMessage(p, "Set treecapitation to $capitation")
         }

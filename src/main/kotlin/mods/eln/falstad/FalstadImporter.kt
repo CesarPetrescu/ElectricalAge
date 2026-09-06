@@ -446,8 +446,8 @@ object FalstadImporter {
         probeElement.inventory?.setItem(0, Eln.instance.lowVoltageCableDescriptor.newItemStack(1))
         probeElement.inventory?.setChanged()
         val probeConfig = CompoundTag()
-        probeConfig.setFloat("min", (-maxValue).toFloat())
-        probeConfig.setFloat("max", maxValue.toFloat())
+        probeConfig.putFloat("min", (-maxValue).toFloat())
+        probeConfig.putFloat("max", maxValue.toFloat())
         probeElement.readConfigTool(probeConfig, player)
 
         val displayElement = getTopElement(player.level, area, placement.displayPoint) as? ElectricalDataLoggerElement
@@ -455,10 +455,10 @@ object FalstadImporter {
             return PlacementResult(false, tr("placed Industrial Data Logger but couldn't find top element"))
         }
         val displayConfig = CompoundTag()
-        displayConfig.setFloat("min", (-maxValue).toFloat())
-        displayConfig.setFloat("max", maxValue.toFloat())
-        displayConfig.setByte("unit", DataLogs.voltageType)
-        displayConfig.setFloat("period", 0.1f)
+        displayConfig.putFloat("min", (-maxValue).toFloat())
+        displayConfig.putFloat("max", maxValue.toFloat())
+        displayConfig.putByte("unit", DataLogs.voltageType)
+        displayConfig.putFloat("period", 0.1f)
         displayElement.readConfigTool(displayConfig, player)
 
         messages += tr("Falstad scope output substituted with Voltage Probe + Industrial Data Logger")

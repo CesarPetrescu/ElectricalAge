@@ -3,7 +3,11 @@ package mods.eln.fluid;
 import mods.eln.misc.INBTTReady;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.Direction;
-import net.minecraftforge.fluids.*;
+import mods.eln.misc.McRegistries;
+import net.minecraft.world.level.material.Fluid;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 
 /**
  * Use one of these if you want your block to support Forge fluids!
@@ -30,8 +34,13 @@ public class ElementFluidHandler implements ISidedFluidHandler, INBTTReady {
     }
 
     public float getHeatEnergyPerMilliBucket() {
-        if (fluid_heat_mb == 0 && tank.getFluid() != null) setHeatEnergyPerMilliBucket(tank.getFluid().getFluid());
+        if (fluid_heat_mb == 0 && !tank.getFluid().isEmpty()) setHeatEnergyPerMilliBucket(tank.getFluid().getFluid());
         return fluid_heat_mb;
+    }
+
+    /** 1.7.10's `doFill`/`doDrain` booleans on the 1.21 handler enum. */
+    private static FluidAction action(boolean execute) {
+        return execute ? FluidAction.EXECUTE : FluidAction.SIMULATE;
     }
 
     private void setHeatEnergyPerMilliBucket(Fluid fluid) {
@@ -42,18 +51,18 @@ public class ElementFluidHandler implements ISidedFluidHandler, INBTTReady {
     public int fill(Direction from, FluidStack resource, boolean doFill) {
         if (tank.getFluidAmount() > 0) {
             // No change in type of fluid.
-            return tank.fill(resource, doFill);
+            return tank.fill(resource, action(doFill));
         } else if (whitelist == null) {
             // May have a different fluid.
             setHeatEnergyPerMilliBucket(resource.getFluid());
-            return tank.fill(resource, doFill);
+            return tank.fill(resource, action(doFill));
         } else {
             // 1.12.2: fluids have no integer id; FluidRegistry hands out singletons, so compare instances.
             Fluid resourceFluid = resource.getFluid();
             for (int i = 0; i < whitelist.length; i++) {
                 if (whitelist[i] == resourceFluid) {
                     setHeatEnergyPerMilliBucket(resource.getFluid());
-                    return tank.fill(resource, doFill);
+                    return tank.fill(resource, action(doFill));
                 }
             }
             return 0;
@@ -62,15 +71,15 @@ public class ElementFluidHandler implements ISidedFluidHandler, INBTTReady {
 
     @Override
     public FluidStack drain(Direction from, FluidStack resource, boolean doDrain) {
-        if (resource.isFluidEqual(tank.getFluid()))
-            return tank.drain(resource.amount, doDrain);
+        if (FluidStack.isSameFluidSameComponents(resource, tank.getFluid()))
+            return tank.drain(resource.getAmount(), action(doDrain));
         else
             return null;
     }
 
     @Override
     public FluidStack drain(Direction from, int maxDrain, boolean doDrain) {
-        return tank.drain(maxDrain, doDrain);
+        return tank.drain(maxDrain, action(doDrain));
     }
 
     @Override
@@ -94,19 +103,19 @@ public class ElementFluidHandler implements ISidedFluidHandler, INBTTReady {
 
     @Override
     public FluidTankInfo[] getTankInfo(Direction from) {
-        return new FluidTankInfo[]{tank.getInfo()};
+        return new FluidTankInfo[]{new FluidTankInfo(tank)};
     }
 
     @Override
     public void readFromNBT(CompoundTag nbt, String str) {
-        tank.readFromNBT(nbt.getCompound(str + "tank"));
+        tank.readFromNBT(McRegistries.access(), nbt.getCompound(str + "tank"));
         fluid_heat_mb = nbt.getFloat(str + "fhm");
     }
 
     @Override
     public void writeToNBT(CompoundTag nbt, String str) {
         CompoundTag t = new CompoundTag();
-        tank.writeToNBT(t);
+        tank.writeToNBT(McRegistries.access(), t);
         nbt.put(str + "tank", t);
         nbt.putFloat(str + "fhm", fluid_heat_mb);
     }

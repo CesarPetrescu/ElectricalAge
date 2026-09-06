@@ -12,7 +12,6 @@ import net.minecraft.nbt.CompoundTag
 import net.minecraft.server.MinecraftServer
 import net.minecraft.core.BlockPos
 import net.minecraft.world.level.Level
-import net.minecraftforge.fml.common.FMLCommonHandler
 import java.util.ArrayDeque
 import java.util.HashMap
 import java.util.HashSet
@@ -495,7 +494,7 @@ object RoomThermalManager {
         if (tickCounter - room.lastDoorScanTick < ROOM_DOOR_SCAN_INTERVAL_TICKS) return
         room.lastDoorScanTick = tickCounter
 
-        val server = FMLCommonHandler.instance().getMinecraftServerInstance() ?: return
+        val server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer() ?: return
         val world = server.getWorld(room.dimension) ?: return
         if (world.isClientSide) return
 

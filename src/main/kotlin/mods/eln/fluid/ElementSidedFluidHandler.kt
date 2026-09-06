@@ -3,12 +3,18 @@ package mods.eln.fluid
 import mods.eln.misc.INBTTReady
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.core.Direction
-import net.minecraftforge.fluids.*
+import net.minecraft.world.level.material.Fluid
+import net.neoforged.neoforge.fluids.FluidStack
+import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank
 import mods.eln.misc.writeToNBT
 
 open class ElementSidedFluidHandler: ISidedFluidHandler, INBTTReady {
 
     protected val tanks = mutableMapOf<Direction, TankData>()
+
+    /** 1.7.10's `doFill`/`doDrain` booleans on the 1.21 handler enum. */
+    protected fun action(execute: Boolean): FluidAction = if (execute) FluidAction.EXECUTE else FluidAction.SIMULATE
 
     /**
      * This method allows you to create tank references for each side of a block. You can use the same reference of tank
@@ -28,7 +34,7 @@ open class ElementSidedFluidHandler: ISidedFluidHandler, INBTTReady {
      */
     constructor(tankSizeMb: Int) {
         val tank = TankData(FluidTank(tankSizeMb), mutableListOf())
-        Direction.VALUES.forEach {
+        Direction.values().forEach {
             tanks[it] = tank
         }
     }
@@ -49,7 +55,7 @@ open class ElementSidedFluidHandler: ISidedFluidHandler, INBTTReady {
 
     fun getFluidType(direction: Direction): Fluid? {
         return try {
-            tanks[direction]?.tank?.fluid?.getFluid()
+            tanks[direction]?.tank?.fluid?.takeIf { !it.isEmpty }?.fluid
         } catch (e: Exception) {
             null
         }
@@ -78,14 +84,14 @@ open class ElementSidedFluidHandler: ISidedFluidHandler, INBTTReady {
         val tank = tanks[from] ?: return 0
         return if (tank.tank.fluidAmount > 0 || tank.fluidWhitelist.isEmpty()) {
             // The fluid type won't change (or there is no whitelist) so we don't need to worry about the whitelist check
-            tank.tank.fill(resource, doFill)
+            tank.tank.fill(resource, action(doFill))
         } else {
             // We need to make sure the new fluid is meeting the whitelist
             // (1.12.2: fluids are compared by registry instance, the integer id is gone)
             val resourceFluid = resource.fluid
             tank.fluidWhitelist.forEach {
                 if (it === resourceFluid) {
-                    return tank.tank.fill(resource, doFill)
+                    return tank.tank.fill(resource, action(doFill))
                 }
             }
             return 0
@@ -96,7 +102,7 @@ open class ElementSidedFluidHandler: ISidedFluidHandler, INBTTReady {
         if (from == null || fluid == null) return false
         val tank = tanks[from]?: return false
         // Check if the fluid in there is the same fluid
-        if (tank.tank.fluidAmount > 0) return tank.tank.fluid?.fluid === fluid
+        if (tank.tank.fluidAmount > 0) return tank.tank.fluid.fluid === fluid
         return if (tank.fluidWhitelist.size > 0) {
             // if the fluid whitelist has elements, check the list for a compatible fluid type
             tank.fluidWhitelist.any { it === fluid }
@@ -109,19 +115,19 @@ open class ElementSidedFluidHandler: ISidedFluidHandler, INBTTReady {
     override fun getTankInfo(from: Direction?): Array<FluidTankInfo> {
         if (from == null) return arrayOf()
         val tank = tanks[from]?: return arrayOf()
-        return arrayOf(tank.tank.info)
+        return arrayOf(FluidTankInfo(tank.tank))
     }
 
     override fun drain(from: Direction?, resource: FluidStack?, doDrain: Boolean): FluidStack? {
         if (from == null || resource == null) return null
         val tank = tanks[from]?: return null
-        return tank.tank.drain(resource.amount, doDrain)
+        return tank.tank.drain(resource.amount, action(doDrain))
     }
 
     override fun drain(from: Direction?, maxDrain: Int, doDrain: Boolean): FluidStack? {
         if (from == null) return null
         val tank = tanks[from]?: return null
-        return tank.tank.drain(maxDrain, doDrain)
+        return tank.tank.drain(maxDrain, action(doDrain))
     }
 
     @Suppress("ReplaceJavaStaticMethodWithKotlinAnalog")
@@ -138,8 +144,8 @@ open class ElementSidedFluidHandler: ISidedFluidHandler, INBTTReady {
     override fun canDrain(from: Direction?, fluid: Fluid?): Boolean {
         if (from == null || fluid == null) return false
         val tank = tanks[from]?: return false
-        val currentFluid = tank.tank.fluid?.fluid ?: return false
-        return currentFluid === fluid
+        if (tank.tank.fluid.isEmpty) return false
+        return tank.tank.fluid.fluid === fluid
     }
 
     override fun readFromNBT(nbt: CompoundTag, str: String) {
@@ -153,7 +159,7 @@ open class ElementSidedFluidHandler: ISidedFluidHandler, INBTTReady {
         //println("numTanks: $numTanks")
         //println("tankList $tankList")
         tanks.clear()
-        Direction.VALUES.forEach {
+        Direction.values().forEach {
             val tankRef = nbt.getInt("${str}${it.name}tankRef")
             if (tankRef != -1 && numTanks != 0) {
                 //println("$it: $tankRef")
@@ -175,7 +181,7 @@ open class ElementSidedFluidHandler: ISidedFluidHandler, INBTTReady {
             idx: Int, tank: TankData ->
             tank.writeToNBT(nbt, "${str}tank$idx")
         }
-        Direction.VALUES.forEach {
+        Direction.values().forEach {
             val tank = tanks[it]
             val tankRef = tanksList.indexOf(tank)
             nbt.putInt("${str}${it.name}tankRef", tankRef)

@@ -30,6 +30,10 @@ object FluidRegistry {
     @JvmStatic
     fun getFluidName(fluid: Fluid?): String? = fluid?.let { BuiltInRegistries.FLUID.getKey(it).toString() }
 
+    /** The bare 1.7.10 fluid name ("water", "hot_water"): the registry path, which the fuel config keys on. */
+    @JvmStatic
+    fun legacyName(fluid: Fluid?): String? = fluid?.let { BuiltInRegistries.FLUID.getKey(it).path }
+
     @JvmStatic
     fun isFluidRegistered(name: String?): Boolean = getFluid(name) != null
 }

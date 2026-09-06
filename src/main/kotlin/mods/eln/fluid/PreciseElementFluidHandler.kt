@@ -27,7 +27,7 @@ class PreciseElementFluidHandler(tankSize: Int) : ElementFluidHandler(tankSize) 
     }
 
     fun drainEnergy(energy: Double): Double {
-        val heatValue = FuelRegistry.heatEnergyPerMilliBucket(tank.fluid?.getFluid())
+        val heatValue = FuelRegistry.heatEnergyPerMilliBucket(tank.fluid.takeIf { !it.isEmpty }?.fluid)
         return if (heatValue > 0)
             heatValue * drain(energy / heatValue)
         else

@@ -115,7 +115,7 @@ class PortableOreScannerItem(name: String?, private val obj: Obj3D,
     }
 
     override fun setEnergy(stack: ItemStack, value: Double) {
-        getNbt(stack).setDouble("e", value)
+        updateNbt(stack) { it.putDouble("e", value) }
     }
 
     private fun getState(stack: ItemStack): State {
@@ -123,7 +123,7 @@ class PortableOreScannerItem(name: String?, private val obj: Obj3D,
     }
 
     private fun setState(stack: ItemStack, value: State) {
-        getNbt(stack).setByte("s", value.serialized)
+        updateNbt(stack) { it.putByte("s", value.serialized) }
     }
 
     fun getCounter(stack: ItemStack?): Short {
@@ -131,7 +131,7 @@ class PortableOreScannerItem(name: String?, private val obj: Obj3D,
     }
 
     fun setCounter(stack: ItemStack?, value: Short) {
-        getNbt(stack!!).setShort("c", value)
+        updateNbt(stack!!) { it.putShort("c", value) }
     }
 
     fun getDamage(stack: ItemStack?): Byte {
@@ -139,7 +139,7 @@ class PortableOreScannerItem(name: String?, private val obj: Obj3D,
     }
 
     fun setDamage(stack: ItemStack?, value: Byte) {
-        getNbt(stack!!).setByte("d", value)
+        updateNbt(stack!!) { it.putByte("d", value) }
     }
 
     override fun onDroppedByPlayer(item: ItemStack, player: Player?): Boolean {

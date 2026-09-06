@@ -27,6 +27,7 @@ import java.io.DataOutputStream
 import java.io.IOException
 import java.lang.reflect.InvocationTargetException
 import mods.eln.misc.writeToNBT
+import mods.eln.misc.tagCompound
 
 class TransparentNode : Node() {
     @JvmField
@@ -147,7 +148,7 @@ class TransparentNode : Node() {
             if (descriptor is FloodlightDescriptor) {
                 FloodlightElement.placingPlayerIsCreative = entityLiving is ServerPlayer && isCreative(entityLiving)
             }
-            element!!.initializeFromThat(front, entityLiving, itemStack.tagCompound /* TODO(components) */)
+            element!!.initializeFromThat(front, entityLiving, itemStack.tagCompound)
         } catch (e: InstantiationException) {
             e.printStackTrace()
         } catch (e: IllegalAccessException) {

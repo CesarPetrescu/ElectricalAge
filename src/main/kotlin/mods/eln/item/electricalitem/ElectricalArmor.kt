@@ -4,51 +4,55 @@ import mods.eln.generic.genericArmorItem
 import mods.eln.i18n.I18N.tr
 import mods.eln.item.electricalinterface.IItemEnergyBattery
 import mods.eln.misc.Utils
+import mods.eln.misc.editTag
+import mods.eln.misc.tagCompound
 import mods.eln.wiki.Data
-import net.minecraft.world.entity.LivingEntity
-import net.minecraft.world.entity.player.Player
-import net.minecraft.world.item.ItemStack
+import net.minecraft.core.Holder
 import net.minecraft.nbt.CompoundTag
+import net.minecraft.network.chat.Component
+import net.minecraft.world.entity.EquipmentSlot
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.item.ArmorMaterial
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.TooltipFlag
-import net.minecraft.world.damagesource.DamageSource
-import net.minecraft.world.level.Level
-import net.minecraftforge.common.ISpecialArmor
-import net.minecraftforge.common.ISpecialArmor.ArmorProperties
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent
+import java.util.function.Consumer
 
+/**
+ * Armor that absorbs damage with stored energy instead of durability. Forge's `ISpecialArmor`
+ * is gone since 1.17: the absorption is [absorb], applied from a `LivingDamageEvent.Pre`
+ * listener (see [mods.eln.server.ServerEventListener]), and durability loss is turned into energy
+ * loss in [damageItem]. The 1.7.10 per-stack armor bar (`getArmorDisplay`) has no 1.21 equivalent.
+ */
 class ElectricalArmor(
-    par2EnumArmorMaterial: ArmorMaterial?,
-    par3: Int,
-    type: ArmourType?,
-    t1: String?,
-    t2: String?,  //String icon,
+    material: Holder<ArmorMaterial>,
+    type: ArmourType,
+    t1: String,
+    t2: String,
+    properties: Properties,
     var energyStorage: Double,
     var chargePower: Double,
     var ratioMax: Double,
     var ratioMaxEnergy: Double,
     var energyPerDamage: Double
-    ) : genericArmorItem(par2EnumArmorMaterial, par3, type, t1, t2), IItemEnergyBattery, ISpecialArmor {
+) : genericArmorItem(material, type, t1, t2, properties), IItemEnergyBattery {
 
+    /** The fraction of incoming damage this piece absorbs right now (1.7.10's ArmorProperties ratio). */
+    fun absorbRatio(armor: ItemStack): Double = Math.min(1.0, getEnergy(armor) / ratioMaxEnergy) * ratioMax
 
-    override fun getProperties(player: LivingEntity, armor: ItemStack, source: DamageSource, damage: Double, slot: Int): ArmorProperties {
-        return ArmorProperties(100, Math.min(1.0, getEnergy(armor) / ratioMaxEnergy) * ratioMax, (getEnergy(armor) / energyPerDamage * 25.0).toInt())
-    }
+    /** Damage points this piece can still absorb (1.7.10's ArmorProperties max). */
+    fun absorbMax(armor: ItemStack): Double = getEnergy(armor) / energyPerDamage * 25.0
 
-    override fun getArmorDisplay(player: Player, armor: ItemStack, slot: Int): Int {
-        return (Math.min(1.0, getEnergy(armor) / ratioMaxEnergy) * ratioMax * 20).toInt()
-    }
-
-    override fun damageArmor(entity: LivingEntity, stack: ItemStack, source: DamageSource, damage: Int, slot: Int) {
+    override fun <T : LivingEntity> damageItem(stack: ItemStack, amount: Int, entity: T?, onBroken: Consumer<Item>): Int {
         var e = getEnergy(stack)
-        e = Math.max(0.0, e - damage * energyPerDamage)
+        e = Math.max(0.0, e - amount * energyPerDamage)
         setEnergy(stack, e)
-        Utils.println("armor hit  damage=" + damage + " energy=" + e + " energyLost=" + damage * energyPerDamage)
+        Utils.println("armor hit  damage=" + amount + " energy=" + e + " energyLost=" + amount * energyPerDamage)
+        return 0
     }
 
-    override fun getIsRepairable(par1ItemStack: ItemStack, par2ItemStack: ItemStack): Boolean {
-        return false
-    }
-
-    override fun hasColor(par1ItemStack: ItemStack): Boolean {
+    override fun isValidRepairItem(par1ItemStack: ItemStack, par2ItemStack: ItemStack): Boolean {
         return false
     }
 
@@ -61,36 +65,38 @@ class ElectricalArmor(
             return nbt
         }
 
-    protected fun getNbt(stack: ItemStack): CompoundTag? {
-        var nbt = stack.tagCompound /* TODO(components) */
+    protected fun getNbt(stack: ItemStack): CompoundTag {
+        var nbt = stack.tagCompound
         if (nbt == null) {
-            stack.tagCompound /* TODO(components) */ = defaultNBT.also { nbt = it }
+            stack.tagCompound = defaultNBT.also { nbt = it }
         }
-        return nbt
+        return nbt!!
     }
 
     fun getPowerOn(stack: ItemStack): Boolean {
-        return getNbt(stack)!!.getBoolean("powerOn")
+        return getNbt(stack).getBoolean("powerOn")
     }
 
     fun setPowerOn(stack: ItemStack, value: Boolean) {
-        getNbt(stack)!!.setBoolean("powerOn", value)
+        getNbt(stack)
+        stack.editTag { it.putBoolean("powerOn", value) }
     }
 
-    override fun addInformation(itemStack: ItemStack, world: Level?, list: MutableList<String>, flag: TooltipFlag) {
-        super.addInformation(itemStack, world, list, flag)
-        list.add(tr("Charge power: %1\$W", chargePower.toInt()))
-        list.add(tr("Stored energy: %1\$J (%2$%)", getEnergy(itemStack),
-            (getEnergy(itemStack) / energyStorage * 100).toInt()))
+    override fun appendHoverText(itemStack: ItemStack, context: Item.TooltipContext, list: MutableList<Component>, flag: TooltipFlag) {
+        super.appendHoverText(itemStack, context, list, flag)
+        list.add(Component.literal(tr("Charge power: %1\$W", chargePower.toInt())))
+        list.add(Component.literal(tr("Stored energy: %1\$J (%2$%)", getEnergy(itemStack),
+            (getEnergy(itemStack) / energyStorage * 100).toInt())))
         //list.add("Power button is " + (getPowerOn(itemStack) ? "ON" : "OFF"));
     }
 
     override fun getEnergy(stack: ItemStack): Double {
-        return getNbt(stack)!!.getDouble("energy")
+        return getNbt(stack).getDouble("energy")
     }
 
     override fun setEnergy(stack: ItemStack, value: Double) {
-        getNbt(stack)!!.setDouble("energy", value)
+        getNbt(stack)
+        stack.editTag { it.putDouble("energy", value) }
     }
 
     override fun getEnergyMax(stack: ItemStack): Double {
@@ -111,12 +117,33 @@ class ElectricalArmor(
 
     override fun electricalItemUpdate(stack: ItemStack, time: Double) {}
 
-    override fun getItemEnchantability(): Int {
-        return 0;
+    override fun getEnchantmentValue(): Int {
+        return 0
     }
 
     init {
-        //rIcon = ResourceLocation.fromNamespaceAndPath("eln", icon);
-        Data.addPortable(ItemStack(this))
+        Data.addPortable { ItemStack(this) }
+    }
+
+    companion object {
+        /**
+         * 1.7.10's ISpecialArmor pass: every worn electrical piece absorbs its ratio of the damage
+         * (capped by its remaining energy) and pays for it in energy.
+         */
+        @JvmStatic
+        fun absorb(event: LivingDamageEvent.Pre) {
+            val entity = event.entity
+            var damage = event.newDamage.toDouble()
+            if (damage <= 0) return
+            for (slot in arrayOf(EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET)) {
+                val stack = entity.getItemBySlot(slot)
+                val armor = stack.item as? ElectricalArmor ?: continue
+                val absorbed = Math.min(damage * armor.absorbRatio(stack), armor.absorbMax(stack))
+                if (absorbed <= 0) continue
+                damage -= absorbed
+                armor.setEnergy(stack, Math.max(0.0, armor.getEnergy(stack) - absorbed * armor.energyPerDamage))
+            }
+            event.newDamage = damage.toFloat()
+        }
     }
 }
