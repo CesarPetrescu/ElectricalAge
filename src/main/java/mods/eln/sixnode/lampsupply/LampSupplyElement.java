@@ -210,7 +210,7 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
 
     @Override
     public ElectricalLoad getElectricalLoad(LRDU lrdu, int mask) {
-        if (getInventory().getItem(LampSupplyContainer.cableSlotId) == null) return null;
+        if (getInventory().getItem(LampSupplyContainer.cableSlotId).isEmpty()) return null;
         if (front == lrdu) return powerLoad;
         return null;
     }
@@ -223,7 +223,7 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
 
     @Override
     public int getConnectionMask(LRDU lrdu) {
-        if (getInventory().getItem(LampSupplyContainer.cableSlotId) == null) return 0;
+        if (getInventory().getItem(LampSupplyContainer.cableSlotId).isEmpty()) return 0;
         if (front == lrdu) return NodeBase.maskElectricalPower;
         return 0;
     }

@@ -393,7 +393,7 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
 
     private fun prepareRoller(option: UtilityCableDescriptor?, targetLength: Double): Boolean {
         val outputSlot = inventory.getItem(3)
-        if (outputSlot != null) return false
+        if (!outputSlot.isEmpty) return false
         val descriptor = option ?: return false
         if (!descriptor.checkSameItemStack(descriptor.newItemStack(1)) || descriptor.conductorCount != 1 || descriptor.insulated) return false
         if (!hasRollerWheels()) return false
@@ -416,7 +416,7 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
     private fun prepareInsulator(option: UtilityCableDescriptor?, targetLength: Double): Boolean {
         val input = inventory.getItem(0).takeUnless { it.isEmpty } ?: return false
         val output = inventory.getItem(2)
-        if (output != null) return false
+        if (!output.isEmpty) return false
         val descriptor = option ?: return false
         if (targetLength <= 0.0) return false
         absorbInsulationInput()

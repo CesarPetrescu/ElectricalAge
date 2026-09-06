@@ -159,7 +159,7 @@ public class ElectricalSensorElement extends SixNodeElement implements IConfigur
 
     @Override
     public int getConnectionMask(LRDU lrdu) {
-        boolean cable = getInventory().getItem(ElectricalSensorContainer.cableSlotId) != null;
+        boolean cable = !getInventory().getItem(ElectricalSensorContainer.cableSlotId).isEmpty();
         if (!descriptor.voltageOnly) {
             if (front.left() == lrdu && cable) return NodeBase.maskElectricalAll;
             if (front.right() == lrdu && cable) return NodeBase.maskElectricalAll;

@@ -506,7 +506,7 @@ object Utils {
             var i = 0
             while (i < inventory.containerSize && need > 0) {
                 val slot = inventory.getItem(i)
-                if (slot != null && slot.count < limit && slot.isItemEqual(stack)) {
+                if (!slot.isNothing() && slot.count < limit && slot.isItemEqual(stack)) {
                     slots.add(i)
                     need -= limit - slot.count
                 }
@@ -531,7 +531,7 @@ object Utils {
         var toPut = stack.count
         for (slot in slots) {
             val target = inventory.getItem(slot)
-            if (target == null) {
+            if (target.isNothing()) {
                 val amount = toPut.coerceAtMost(limit)
                 inventory.setItem(slot, stack.copyWithCount(amount))
                 toPut -= amount

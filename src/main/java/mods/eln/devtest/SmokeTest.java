@@ -46,8 +46,11 @@ public final class SmokeTest {
     private final boolean placing;
     private int ticks = 0;
 
+    private final boolean everything;
+
     private SmokeTest(String mode) {
-        this.placing = "place".equals(mode);
+        this.placing = "place".equals(mode) || "all".equals(mode);
+        this.everything = "all".equals(mode);
     }
 
     public static void registerIfRequested() {
@@ -64,6 +67,7 @@ public final class SmokeTest {
         if (ticks == 20) {
             try {
                 if (placing) place();
+                if (everything) placeEverything();
             } catch (Throwable t) {
                 Eln.logger.error("{} FAIL placement threw", PREFIX, t);
                 shutdown();
@@ -166,6 +170,52 @@ public final class SmokeTest {
             PREFIX, descriptorName, x, GROUND + 1, z, result, BuiltInRegistries.BLOCK.getKey(placed.getBlock()));
     }
 
+    /**
+     * `-PsmokeTest=all`: every six-node and transparent-node descriptor placed on its own stone,
+     * on a grid north of the circuit, then ticked with the rest. An element whose server-side code
+     * throws on placement or in its first ticks shows up in the log (and stops the server, as it
+     * would in play); the count of nodes afterwards is the pass mark.
+     */
+    private void placeEverything() {
+        ServerLevel world = world();
+        FakePlayer player = FakePlayerFactory.getMinecraft(world);
+        int placed = 0, failed = 0, i = 0;
+        java.util.List<Object[]> descriptors = new java.util.ArrayList<>();
+        for (var d : Eln.sixNodeItem.subItemList.values()) descriptors.add(new Object[]{"six", d});
+        for (var d : Eln.transparentNodeItem.subItemList.values()) descriptors.add(new Object[]{"transparent", d});
+        for (Object[] entry : descriptors) {
+            var descriptor = (mods.eln.generic.GenericItemBlockUsingDamageDescriptor) entry[1];
+            // 6 apart: the biggest multiblock machines reach 2 blocks out; a row of 16 per z
+            int x = X + (i % 16) * 6, z = Z - 8 - (i / 16) * 6;
+            i++;
+            for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) {
+                world.setBlock(new BlockPos(x + dx, GROUND, z + dz), Blocks.STONE.defaultBlockState(), 3);
+            }
+            ItemStack stack = descriptor.newItemStack(1);
+            if (stack == null || stack.isEmpty()) { failed++; continue; }
+            player.setYRot(0f);
+            player.setYHeadRot(0f);
+            player.setItemInHand(InteractionHand.MAIN_HAND, stack.copy());
+            try {
+                boolean ok = "six".equals(entry[0])
+                    ? Eln.sixNodeItem.onItemUse(stack, player, world, new BlockPos(x, GROUND + 1, z), InteractionHand.MAIN_HAND,
+                        net.minecraft.core.Direction.UP, 0.5f, 1.0f, 0.5f) == InteractionResult.SUCCESS
+                    : Eln.transparentNodeItem.placeBlockAt(stack, player, world, new BlockPos(x, GROUND + 1, z), net.minecraft.core.Direction.UP);
+                BlockState state = world.getBlockState(new BlockPos(x, GROUND + 1, z));
+                boolean present = state.getBlock() instanceof mods.eln.node.NodeBlock;
+                if (ok && present) placed++;
+                else {
+                    failed++;
+                    Eln.logger.warn("{} ALL could not place '{}' ({}) at ({},{},{}): ok={} block={}", PREFIX, descriptor.name, entry[0], x, GROUND + 1, z, ok, BuiltInRegistries.BLOCK.getKey(state.getBlock()));
+                }
+            } catch (Throwable t) {
+                failed++;
+                Eln.logger.error("{} ALL placing '{}' ({}) threw", PREFIX, descriptor.name, entry[0], t);
+            }
+        }
+        Eln.logger.info("{} ALL placed {} of {} descriptors ({} not placed)", PREFIX, placed, descriptors.size(), failed);
+    }
+
     /** A transparent node stands on the block; the item's placement path creates node and block. */
     private void placeTransparentNode(ServerLevel world, FakePlayer player, String descriptorName, int x, int z) {
         player.setYRot(0f);
@@ -226,6 +276,7 @@ public final class SmokeTest {
         boolean current = cableMeter != null && !cableMeter.contains("I 0A");
         Eln.logger.info("{} {} nodes present, energised={} current flowing={}",
             PREFIX, (energised && current) ? "PASS" : "FAIL", energised, current);
+        if (everything) Eln.logger.info("{} ALL {} nodes alive after {} ticks", PREFIX, NodeManager.instance.getNodeList().size(), ticks);
         runConsoleCommands(world);
     }
 

@@ -190,7 +190,7 @@ public class SolarPanelElement extends TransparentNodeElement {
     public void networkSerialize(java.io.DataOutputStream stream) {
         super.networkSerialize(stream);
         try {
-            stream.writeBoolean(getInventory().getItem(SolarPanelContainer.trackerSlotId) != null);
+            stream.writeBoolean(!getInventory().getItem(SolarPanelContainer.trackerSlotId).isEmpty());
             stream.writeFloat((float) panelAlpha);
             node.lrduCubeMask.getTranslate(Direction.YN).serialize(stream);
         } catch (IOException e) {

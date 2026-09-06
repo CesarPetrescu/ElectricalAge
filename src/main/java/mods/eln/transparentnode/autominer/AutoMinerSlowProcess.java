@@ -135,7 +135,7 @@ public class AutoMinerSlowProcess implements IProcess, INBTTReady {
                     case pipeRemove:
                         // miner.pushLog("Pipe " + pipeLength + " removed");
                         Eln.ghostManager.removeGhostAndBlock(jobCoord);
-                        if (miner.getInventory().getItem(AutoMinerContainer.MiningPipeSlotId) == null) {
+                        if (miner.getInventory().getItem(AutoMinerContainer.MiningPipeSlotId).isEmpty()) {
                             miner.getInventory().setItem(AutoMinerContainer.MiningPipeSlotId, Eln.miningPipeDescriptor.newItemStack(1));
                             miner.getInventory().setChanged();
                         } else {

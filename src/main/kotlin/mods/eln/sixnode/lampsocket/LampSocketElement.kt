@@ -225,13 +225,14 @@ class LampSocketElement(sixNode: SixNode, side: Direction, sixNodeDescriptor: Si
         val lampStack = inventory.getItem(LampSocketContainer.LAMP_SLOT_ID)
         val cableStack = inventory.getItem(LampSocketContainer.CABLE_SLOT_ID)
 
-        when (lampStack) {
-            null -> lampResistor.highImpedance()
+        // 1.11+: an empty slot is ItemStack.EMPTY, never null
+        when {
+            lampStack.isEmpty -> lampResistor.highImpedance()
             else -> (getItemObject(lampStack) as LampDescriptor).applyTo(lampResistor)
         }
 
-        when (cableStack) {
-            null -> electricalLoad.highImpedance()
+        when {
+            cableStack.isEmpty -> electricalLoad.highImpedance()
             else -> {
                 val cableDescriptor = Eln.sixNodeItem.getDescriptor(cableStack)
 

@@ -198,10 +198,10 @@ class FabricatorProcess(val element: FabricatorElement): IProcess {
         val siliconWaferName = "Silicon_Wafer.name"
         val copperPlateName = "Copper_Plate.name"
 
-        val canOutput = if (outputSlot != null) {
-            val stack = element.inventory.getItem(FabricatorSlots.OUTPUT.slotId)
+        // 1.11+: an empty slot is ItemStack.EMPTY, never null
+        val canOutput = if (!outputSlot.isEmpty) {
             if (operation != null)
-                stack!!.item == operation.outputItem.item && stack.count + operation.perSheet < stack.maxStackSize
+                outputSlot.item == operation.outputItem.item && outputSlot.count + operation.perSheet < outputSlot.maxStackSize
             else
                 true
         } else {

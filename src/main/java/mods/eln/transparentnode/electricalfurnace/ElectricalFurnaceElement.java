@@ -213,7 +213,7 @@ public class ElectricalFurnaceElement extends TransparentNodeElement {
             stream.writeShort((int) thermalLoad.temperatureCelsius);
 
             ItemStack stack;
-            if ((stack = inventory.getItem(inSlotId)) == null) {
+            if ((stack = inventory.getItem(inSlotId)).isEmpty()) {
                 stream.writeShort(-1);
                 stream.writeShort(-1);
             } else {

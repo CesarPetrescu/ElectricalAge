@@ -200,13 +200,14 @@ class FloodlightElement(transparentNode: TransparentNode, transparentNodeDescrip
         val lamp1Stack = inventory.getItem(FloodlightContainer.LAMP_SLOT_1_ID)
         val lamp2Stack = inventory.getItem(FloodlightContainer.LAMP_SLOT_2_ID)
 
-        when (lamp1Stack) {
-            null -> lamp1Resistor.highImpedance()
+        // 1.11+: an empty slot is ItemStack.EMPTY, never null
+        when {
+            lamp1Stack.isEmpty -> lamp1Resistor.highImpedance()
             else -> (getItemObject(lamp1Stack) as LampDescriptor).applyTo(lamp1Resistor)
         }
 
-        when (lamp2Stack) {
-            null -> lamp2Resistor.highImpedance()
+        when {
+            lamp2Stack.isEmpty -> lamp2Resistor.highImpedance()
             else -> (getItemObject(lamp2Stack) as LampDescriptor).applyTo(lamp2Resistor)
         }
     }

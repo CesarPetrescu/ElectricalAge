@@ -70,7 +70,7 @@ public class HubElement extends SixNodeElement {
 
     @Override
     public ElectricalLoad getElectricalLoad(LRDU lrdu, int mask) {
-        if (inventory.getItem(HubContainer.cableSlotId + lrdu.toInt()) != null)
+        if (!inventory.getItem(HubContainer.cableSlotId + lrdu.toInt()).isEmpty())
             return electricalLoad[lrdu.toInt()];
         return null;
     }
@@ -160,7 +160,7 @@ public class HubElement extends SixNodeElement {
             if (connectionGrid[idx]) {
                 LRDU[] lrdu = connectionIdToSide(idx);
 
-                if (inventory.getItem(HubContainer.cableSlotId + lrdu[0].toInt()) != null && inventory.getItem(HubContainer.cableSlotId + lrdu[1].toInt()) != null) {
+                if (!inventory.getItem(HubContainer.cableSlotId + lrdu[0].toInt()).isEmpty() && !inventory.getItem(HubContainer.cableSlotId + lrdu[1].toInt()).isEmpty()) {
                     Resistor r = new Resistor(electricalLoad[lrdu[0].toInt()], electricalLoad[lrdu[1].toInt()]);
                     r.setResistance(getCableDescriptorFromLrdu(lrdu[0]).electricalRs + getCableDescriptorFromLrdu(lrdu[1]).electricalRs);
                     electricalComponentList.add(r);
