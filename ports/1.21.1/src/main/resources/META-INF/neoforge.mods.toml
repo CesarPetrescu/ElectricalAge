@@ -3,10 +3,10 @@ loaderVersion="[4,)"
 license="LGPL-3.0-only; inherited artwork CC-BY-NC-SA-3.0"
 [[mods]]
 modId="eln"
-version="0.1.0-port.1"
+version="${mod_version}"
 displayName="Electrical Age — 1.21.1 Port Prototype"
 authors="Electrical Age contributors; CesarPetrescu port work"
-description='''First port milestone: the inherited electrical simulator and a circuit test bench. Not feature-complete. No legacy-world migration.'''
+description='''Bounded connected two-terminal circuits, a test bench and inherited MNA solver. Prototype, not the complete Electrical Age catalogue. Not feature-complete. No legacy-world migration.'''
 [[dependencies.eln]]
 modId="neoforge"
 type="required"

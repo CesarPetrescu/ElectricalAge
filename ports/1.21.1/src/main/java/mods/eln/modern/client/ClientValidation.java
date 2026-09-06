@@ -38,6 +38,18 @@ public final class ClientValidation {
         BakedModel item = client.getItemRenderer().getModel(new ItemStack(ElectricalAgeModern.CIRCUIT_BENCH_ITEM.get()), null, null, 0);
         int itemQuads = count(item,null);
         if (item == missing || itemQuads != 12) throw new IllegalStateException("ELN circuit bench item model is incomplete: quads=" + itemQuads);
+        int deviceStates=0;
+        for (var device : java.util.List.of(ElectricalAgeModern.VOLTAGE_SOURCE, ElectricalAgeModern.RESISTIVE_WIRE,
+                ElectricalAgeModern.RESISTIVE_LOAD, ElectricalAgeModern.CAPACITOR)) {
+            for (BlockState state : device.get().getStateDefinition().getPossibleStates()) {
+                BakedModel model=client.getBlockRenderer().getBlockModel(state);
+                if (model==missing || count(model,state)!=6) throw new IllegalStateException("ELN network model incomplete: "+state);
+                deviceStates++;
+            }
+            BakedModel deviceItem=client.getItemRenderer().getModel(new ItemStack(device.get().asItem()),null,null,0);
+            if (deviceItem==missing || count(deviceItem,null)!=6) throw new IllegalStateException("ELN device item model incomplete");
+        }
+        ElectricalAgeModern.LOGGER.info("ELN_NETWORK_MODELS_READY states={} items=4",deviceStates);
         if (Boolean.getBoolean("eln.verifyPackagedRuntime")) {
             String origin=ElectricalAgeModern.class.getProtectionDomain().getCodeSource().getLocation().toExternalForm();
             if (!origin.contains(".jar")) throw new IllegalStateException("Packaged probe loaded development classes: "+origin);

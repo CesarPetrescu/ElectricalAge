@@ -43,13 +43,13 @@ public final class CircuitBenchBlockEntity extends BlockEntity {
         }
     }
     public void togglePower() {
-        if (level == null || level.isClientSide || fault != null) return;
+        if (level == null || level.isClientSide || isRemoved() || fault != null) return;
         snapshot = new RcCircuit.Snapshot(snapshot.voltage(), !snapshot.powered());
         if (circuit != null) circuit.setPowered(snapshot.powered());
         setChanged(); sync();
     }
     public void reset() {
-        if (level == null || level.isClientSide) return;
+        if (level == null || level.isClientSide || isRemoved()) return;
         closeCircuit();
         snapshot = new RcCircuit.Snapshot(0, true);
         rejectedState = null; fault = null; simulatedSteps = 0;
@@ -59,6 +59,7 @@ public final class CircuitBenchBlockEntity extends BlockEntity {
         if (level != null && !level.isClientSide && !isRemoved()) level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
     }
     private void closeCircuit() { if (circuit != null) { circuit.close(); circuit = null; } }
+    @Override public void onChunkUnloaded() { closeCircuit(); super.onChunkUnloaded(); }
     @Override public void setRemoved() { closeCircuit(); super.setRemoved(); }
     public double voltage() { return snapshot.voltage(); }
     public double energy() { return .5 * RcCircuit.CAPACITANCE * voltage() * voltage(); }
@@ -72,12 +73,18 @@ public final class CircuitBenchBlockEntity extends BlockEntity {
     }
     private CompoundTag stateTag() {
         CompoundTag state = new CompoundTag();
-        state.putInt("schema", 1); state.putDouble("voltage", voltage()); state.putBoolean("powered", powered());
+        state.putInt("schema", 2); state.putDouble("voltage", voltage()); state.putBoolean("powered", powered());
+        state.putBoolean("faulted", hasFault());
         return state;
     }
     private static RcCircuit.Snapshot decode(CompoundTag state) {
-        if (!state.contains("schema", Tag.TAG_INT) || state.getInt("schema") != 1) throw new IllegalArgumentException("Unsupported bench state schema");
+        if (!state.contains("schema", Tag.TAG_INT) || (state.getInt("schema") != 1 && state.getInt("schema") != 2)) throw new IllegalArgumentException("Unsupported bench state schema");
         if (!state.contains("voltage", Tag.TAG_DOUBLE) || !state.contains("powered", Tag.TAG_BYTE)) throw new IllegalArgumentException("Missing or mistyped bench state");
+        if (state.getByte("powered") != 0 && state.getByte("powered") != 1)
+            throw new IllegalArgumentException("Invalid power boolean");
+        if (state.getInt("schema") == 2 && (!state.contains("faulted", Tag.TAG_BYTE)
+                || (state.getByte("faulted") != 0 && state.getByte("faulted") != 1)))
+            throw new IllegalArgumentException("Missing or invalid fault latch");
         return new RcCircuit.Snapshot(state.getDouble("voltage"), state.getBoolean("powered"));
     }
     @Override public void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
@@ -91,6 +98,7 @@ public final class CircuitBenchBlockEntity extends BlockEntity {
         try {
             if (!tag.contains(STATE, Tag.TAG_COMPOUND)) throw new IllegalArgumentException("Bench state is not a compound");
             snapshot = decode(tag.getCompound(STATE));
+            if (tag.getCompound(STATE).getBoolean("faulted")) fault = "Persisted simulation fault; reset required";
         } catch (IllegalArgumentException invalid) {
             rejectedState = tag.get(STATE).copy();
             snapshot = new RcCircuit.Snapshot(0, false);
@@ -106,6 +114,7 @@ public final class CircuitBenchBlockEntity extends BlockEntity {
     }
     @Override public ClientboundBlockEntityDataPacket getUpdatePacket() { return ClientboundBlockEntityDataPacket.create(this); }
     @Override public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet, HolderLookup.Provider registries) {
-        if (packet.getTag() != null) handleUpdateTag(packet.getTag(), registries);
+        if (packet.getPos().equals(worldPosition) && packet.getType() == getType() && packet.getTag() != null)
+            handleUpdateTag(packet.getTag(), registries);
     }
 }

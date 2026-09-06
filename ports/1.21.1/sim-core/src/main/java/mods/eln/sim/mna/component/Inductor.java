@@ -35,6 +35,7 @@ public class Inductor extends Bipole implements ISubSystemProcessI, StateSeriali
     }
 
     public void setL(double l) {
+        if (!Double.isFinite(l) || l < 0) throw new IllegalArgumentException("Inductance must be finite and nonnegative");
         this.l = l;
         dirty();
     }
@@ -62,8 +63,10 @@ public class Inductor extends Bipole implements ISubSystemProcessI, StateSeriali
 
     @Override
     public void quitSubSystem() {
-        subSystem.states.remove(getCurrentState());
-        subSystem.removeProcess(this);
+        if (subSystem != null) {
+            subSystem.removeState(getCurrentState());
+            subSystem.removeProcess(this);
+        }
         super.quitSubSystem();
     }
 

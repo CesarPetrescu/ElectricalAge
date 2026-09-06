@@ -3,3 +3,6 @@ build/
 sim-core/build/
 run/
 *.log
+
+__pycache__/
+*.py[cod]

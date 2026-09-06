@@ -11,6 +11,12 @@ class PortRegressionTest {
     @TestFactory Stream<DynamicTest> inheritedNumerics() {
         return NumericalChecks.cases().entrySet().stream().map(e -> DynamicTest.dynamicTest(e.getKey(), e.getValue()::run));
     }
+    @TestFactory Stream<DynamicTest> hardening() {
+        return HardeningChecks.cases().entrySet().stream().map(e -> DynamicTest.dynamicTest(e.getKey(), e.getValue()::run));
+    }
+    @TestFactory Stream<DynamicTest> network() {
+        return NetworkChecks.cases().entrySet().stream().map(e -> DynamicTest.dynamicTest(e.getKey(), e.getValue()::run));
+    }
     @Test void initialState() {
         try (RcCircuit c = new RcCircuit()) { assertEquals(0, c.voltage()); assertTrue(c.powered()); assertEquals(0,c.steps()); }
     }

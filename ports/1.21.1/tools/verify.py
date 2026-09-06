@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Fail closed on absent tests, accidentally bundled game/test classes or missing port assets."""
 from pathlib import Path
-import hashlib, json, struct, xml.etree.ElementTree as ET, zipfile
+import hashlib, json, struct, xml.etree.ElementTree as ET, zipfile, tomllib
+from validate_resources import validate
 ROOT=Path(__file__).resolve().parents[1]
 
 def require(value,message):
@@ -16,7 +17,8 @@ def main():
         require(suite.tag=='testsuite','Unexpected JUnit report shape')
         total+=int(suite.get('tests','0'))
         require(all(int(suite.get(k,'0'))==0 for k in ('failures','errors','skipped')),f'Unsuccessful tests: {path}')
-    require(total>=456,f'Test count dropped: {total}, expected at least 456')
+    require(total>=510,f'Test count dropped: {total}, expected at least 510')
+    validate(ROOT/'src/main/resources')
     for source in (ROOT/'sim-core/src/main/java').rglob('*.java'):
         text=source.read_text(encoding='utf-8')
         require(not any(token in text for token in ('import net.minecraft.','import net.minecraftforge.','import net.neoforged.','import org.lwjgl.','import io.netty.')),f'Platform dependency in pure core: {source}')
@@ -31,6 +33,14 @@ def main():
         names=set(archive.namelist())
         for path in ('META-INF/neoforge.mods.toml','mods/eln/modern/ElectricalAgeModern.class','mods/eln/modern/CircuitBenchBlockEntity.class','mods/eln/sim/mna/SubSystem.class','mods/eln/sim/bench/RcCircuit.class','assets/eln/models/block/circuit_bench.obj','assets/eln/models/block/circuit_bench.mtl','assets/eln/textures/block/circuit_bench.png','data/eln/recipe/circuit_bench.json'):
             require(path in names,f'Missing jar entry: {path}')
+        metadata=tomllib.loads(archive.read('META-INF/neoforge.mods.toml').decode('utf-8'))
+        version=next(line.split('=',1)[1] for line in (ROOT/'gradle.properties').read_text().splitlines() if line.startswith('mod_version='))
+        require(metadata['mods'][0]['version']==version,'Packaged version does not match project')
+        for path in ('mods/eln/sim/network/CircuitNetwork.class','mods/eln/modern/network/LevelCircuitManager.class','mods/eln/modern/network/CircuitDeviceBlockEntity.class'):
+            require(path in names, f'Missing connected-network implementation: {path}')
+        for name in ('voltage_source','resistive_wire','resistive_load','capacitor'):
+            for path in (f'assets/eln/blockstates/{name}.json',f'assets/eln/models/item/{name}.json',f'data/eln/recipe/{name}.json',f'data/eln/loot_table/blocks/{name}.json'):
+                require(path in names, f'Missing network resource: {path}')
         require(not any(n.startswith(('net/minecraft/','net/neoforged/','org/junit/','mods/eln/audit/','mods/eln/modern/gametest/','data/eln/structure/')) for n in names),'Game or test implementation leaked into distributable')
         for name in names:
             if name.endswith('.class'):

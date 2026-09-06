@@ -50,6 +50,7 @@ public final class RcCircuit implements AutoCloseable {
     public void restore(Snapshot state) {
         requireOpen(); Objects.requireNonNull(state, "state");
         output.setU(state.voltage());
+        capacitor.setInitialVoltage(state.voltage());
         setPowered(state.powered());
         steps = 0;
     }

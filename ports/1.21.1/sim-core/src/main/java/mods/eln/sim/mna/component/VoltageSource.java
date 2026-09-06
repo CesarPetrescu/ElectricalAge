@@ -25,6 +25,7 @@ public class VoltageSource extends Bipole implements ISubSystemProcessI, StateSe
     }
 
     public VoltageSource setU(double u) {
+        if (!Double.isFinite(u)) throw new IllegalArgumentException("Voltage must be finite");
         this.u = u;
         return this;
     }
@@ -35,8 +36,10 @@ public class VoltageSource extends Bipole implements ISubSystemProcessI, StateSe
 
     @Override
     public void quitSubSystem() {
-        subSystem.states.remove(getCurrentState());
-        subSystem.removeProcess(this);
+        if (subSystem != null) {
+            subSystem.removeState(getCurrentState());
+            subSystem.removeProcess(this);
+        }
         super.quitSubSystem();
     }
 

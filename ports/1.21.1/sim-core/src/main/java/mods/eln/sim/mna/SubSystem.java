@@ -41,6 +41,7 @@ public class SubSystem {
     double[] XtempData;
 
     boolean breaked = false;
+    private boolean calculated;
 
     ArrayList<ISubSystemProcessFlush> processF = new ArrayList<ISubSystemProcessFlush>();
 
@@ -49,34 +50,48 @@ public class SubSystem {
     }
 
     public SubSystem(RootSystem root, double dt) {
+        if (!Double.isFinite(dt) || dt <= 0) throw new IllegalArgumentException("Timestep must be finite and positive");
         this.dt = dt;
         this.root = root;
     }
 
     public void invalidate() {
         matrixValid = false;
+        calculated = false;
     }
 
     public void addComponent(Component c) {
+        requireActive();
+        if (c == null || component.contains(c) || c.getSubSystem() != null)
+            throw new IllegalArgumentException("Component already owned or null");
         component.add(c);
-        c.addedTo(this);
+        try { c.addedTo(this); }
+        catch (RuntimeException failure) {
+            component.remove(c);
+            c.quitSubSystem();
+            invalidate();
+            throw failure;
+        }
         invalidate();
     }
 
     public void addState(State s) {
+        requireActive();
+        if (s == null || states.contains(s) || s.getSubSystem() != null)
+            throw new IllegalArgumentException("State already owned or null");
         states.add(s);
         s.addedTo(this);
         invalidate();
     }
 
     public void removeComponent(Component c) {
-        component.remove(c);
+        if (!component.remove(c)) return;
         c.quitSubSystem();
         invalidate();
     }
 
     public void removeState(State s) {
-        states.remove(s);
+        if (!states.remove(s)) return;
         s.quitSubSystem();
         invalidate();
     }
@@ -109,12 +124,13 @@ public class SubSystem {
     }
 
     public void addProcess(ISubSystemProcessI p) {
-        processI.add(p);
+        if (!processI.contains(p)) processI.add(p);
     }
 
     //double[][] getDataRef()
 
     public void generateMatrix() {
+        requireActive();
         stateCount = states.size();
 
         // Profiler p = new Profiler();
@@ -142,17 +158,13 @@ public class SubSystem {
         //	org.apache.commons.math3.linear.
 
         try {
-            //FieldLUDecomposition QRDecomposition  LUDecomposition RRQRDecomposition
-            Matrix Ainv = A.getInverse();
-            AInvdata = Ainv.getData();
+            Matrix inverse = A.getInverse();
+            AInvdata = inverse.getData();
             singularMatrix = false;
-        } catch (Exception e) {
+        } catch (ArithmeticException | IllegalArgumentException failure) {
             singularMatrix = true;
-            if (stateCount > 1) {
-                int idx = 0;
-                idx++;
-                SimLog.println("//////////SingularMatrix////////////");
-            }
+            AInvdata = null;
+            throw new ArithmeticException("MNA matrix cannot be solved: " + failure.getMessage());
         }
 
         statesTab = new State[stateCount];
@@ -164,17 +176,32 @@ public class SubSystem {
         // SimLog.println(p);
     }
 
-    public void addToA(State a, State b, double v) {
-        if (a == null || b == null)
-            return;
-        A.addToEntry(a.getId(), b.getId(), v);
-        //Adata[a.getId()][b.getId()] += v;
+    private void requireActive() {
+        if (breaked) throw new IllegalStateException("Subsystem has been disposed");
     }
 
-    public void addToI(State s, double v) {
-        if (s == null) return;
-        Idata[s.getId()] += v; // Shared-node contributions must accumulate.
-        //Idata[s.getId()][0] += v;
+    private int stateIndex(State state) {
+        if (state.getSubSystem() != this || state.getId() < 0 || state.getId() >= stateCount)
+            throw new IllegalArgumentException("State does not belong to this matrix");
+        return state.getId();
+    }
+
+    private static double finite(double value) {
+        if (!Double.isFinite(value)) throw new ArithmeticException("Nonfinite MNA value");
+        return value;
+    }
+
+    public void addToA(State a, State b, double value) {
+        finite(value);
+        if (a == null || b == null) return;
+        A.addToEntry(stateIndex(a), stateIndex(b), value);
+    }
+
+    public void addToI(State state, double value) {
+        finite(value);
+        if (state == null) return;
+        int index = stateIndex(state);
+        Idata[index] = finite(Idata[index] + value);
     }
 
 	/*
@@ -194,77 +221,41 @@ public class SubSystem {
     }
 
     public void stepCalc() {
-        Profiler profiler = new Profiler();
-        //	profiler.add("generateMatrix");
-        if (!matrixValid) {
-            generateMatrix();
+        requireActive();
+        calculated = false;
+        if (!matrixValid) generateMatrix();
+        java.util.Arrays.fill(Idata, 0);
+        for (ISubSystemProcessI process : processI) process.simProcessI(this);
+        for (int row = 0; row < stateCount; row++) {
+            double sum = 0;
+            for (int column = 0; column < stateCount; column++)
+                sum += AInvdata[row][column] * Idata[column];
+            XtempData[row] = finite(sum);
         }
-
-        if (!singularMatrix) {
-            //profiler.add("generateMatrix");
-            for (int y = 0; y < stateCount; y++) {
-                Idata[y] = 0;
-            }
-            //profiler.add("generateMatrix");
-            for (ISubSystemProcessI p : processI) {
-                p.simProcessI(this);
-            }
-            //	profiler.add("generateMatrix");
-
-            for (int idx2 = 0; idx2 < stateCount; idx2++) {
-                double stack = 0;
-                for (int idx = 0; idx < stateCount; idx++) {
-                    stack += AInvdata[idx2][idx] * Idata[idx];
-                }
-                XtempData[idx2] = stack;
-            }
-            //Xtemp = Ainv.multiply(I);
-        }
-        profiler.stop();
-        //SimLog.println(profiler);
+        calculated = true;
     }
 
     public double solve(State pin) {
-        //Profiler profiler = new Profiler();
-        if (!matrixValid) {
-            generateMatrix();
-        }
-
-        if (!singularMatrix) {
-            for (int y = 0; y < stateCount; y++) {
-                Idata[y] = 0;
-            }
-            for (ISubSystemProcessI p : processI) {
-                p.simProcessI(this);
-            }
-
-            int idx2 = pin.getId();
-            double stack = 0;
-            for (int idx = 0; idx < stateCount; idx++) {
-                stack += AInvdata[idx2][idx] * Idata[idx];
-            }
-            return stack;
-        }
-        return 0;
+        requireActive();
+        if (pin == null) return 0;
+        if (!matrixValid) generateMatrix();
+        int row = stateIndex(pin);
+        java.util.Arrays.fill(Idata, 0);
+        for (ISubSystemProcessI process : processI) process.simProcessI(this);
+        double sum = 0;
+        for (int column = 0; column < stateCount; column++)
+            sum += AInvdata[row][column] * Idata[column];
+        return finite(sum);
     }
 
-    //Matrix Xtemp;
+    /** No state is published until every equation has a finite solution. */
     public void stepFlush() {
-        if (!singularMatrix) {
-            for (int idx = 0; idx < stateCount; idx++) {
-                //statesTab[idx].state = Xtemp.getEntry(idx, 0);
-                statesTab[idx].state = XtempData[idx];
-
-            }
-        } else {
-            for (int idx = 0; idx < stateCount; idx++) {
-                statesTab[idx].state = 0;
-            }
-        }
-
-        for (ISubSystemProcessFlush p : processF) {
-            p.simProcessFlush();
-        }
+        requireActive();
+        if (!calculated) throw new IllegalStateException("No successful calculation to publish");
+        for (int index = 0; index < stateCount; index++) finite(XtempData[index]);
+        for (int index = 0; index < stateCount; index++) statesTab[index].state = XtempData[index];
+        calculated = false;
+        for (ISubSystemProcessFlush process : processF) process.simProcessFlush();
     }
 
     public static void main(String[] args) {
@@ -337,7 +328,7 @@ public class SubSystem {
             breakDestructor.pop().destruct();
         }
 
-        for (Component c : component) {
+        for (Component c : new ArrayList<>(component)) {
             c.quitSubSystem();
         }
         for (State s : states) {
@@ -357,11 +348,14 @@ public class SubSystem {
         invalidate();
 
         breaked = true;
+        component.clear(); states.clear(); processI.clear(); processF.clear();
+        interSystemConnectivity.clear(); statesTab = null;
+        A = null; AInvdata = null; Idata = null; XtempData = null;
         return true;
     }
 
     public void addProcess(ISubSystemProcessFlush p) {
-        processF.add(p);
+        if (!processF.contains(p)) processF.add(p);
     }
 
     public void removeProcess(ISubSystemProcessFlush p) {

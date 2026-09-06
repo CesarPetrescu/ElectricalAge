@@ -40,15 +40,16 @@ public class PowerSource extends VoltageSource implements IRootSystemPreStepProc
 
     @Override
     public void quitSubSystem() {
-        getSubSystem().getRoot().removeProcess(this);
+        if (getSubSystem() != null && getSubSystem().getRoot() != null) getSubSystem().getRoot().removeProcess(this);
         super.quitSubSystem();
     }
 
     @Override
     public void addedTo(SubSystem s) {
+        if (s.getRoot() == null) throw new IllegalArgumentException("PowerSource requires a root controller");
         super.addedTo(s);
         getSubSystem().getRoot().addProcess(this);
-        s.addProcess(this);
+        // VoltageSource.addedTo already registers the RHS process.
     }
 
     @Override

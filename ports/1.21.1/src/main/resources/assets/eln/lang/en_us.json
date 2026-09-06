@@ -1,1 +1,8 @@
-{"block.eln.circuit_bench":"Electrical Circuit Test Bench","itemGroup.eln":"Electrical Age — Port Prototype"}
+{
+  "block.eln.circuit_bench": "Electrical Circuit Test Bench",
+  "itemGroup.eln": "Electrical Age \u2014 Port Prototype",
+  "block.eln.voltage_source": "ELN 10 V Source (Prototype)",
+  "block.eln.resistive_wire": "ELN Resistive Wire (Prototype)",
+  "block.eln.resistive_load": "ELN 10 Ohm Load (Prototype)",
+  "block.eln.capacitor": "ELN 1 F Capacitor (Prototype)"
+}

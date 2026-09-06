@@ -47,6 +47,8 @@ public class Resistor extends Bipole {
     }
 
     public Resistor setR(double r) {
+        if (!Double.isFinite(r) || r <= 0 || !Double.isFinite(1 / r))
+            throw new IllegalArgumentException("Resistance must be finite, positive and numerically representable");
         if (this.r != r) {
             this.r = r;
             this.rInv = 1 / r;

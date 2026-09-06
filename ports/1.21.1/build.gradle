@@ -54,3 +54,8 @@ tasks.named('sourcesJar', Jar) {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+
+tasks.named('processResources', ProcessResources) {
+    inputs.property('mod_version', project.version)
+    filesMatching('META-INF/neoforge.mods.toml') { expand(mod_version: project.version) }
+}

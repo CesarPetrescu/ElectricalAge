@@ -1,0 +1,1 @@
+{"type": "minecraft:crafting_shapeless", "category": "misc", "ingredients": [{"item": "minecraft:copper_ingot"}, {"item": "minecraft:redstone"}, {"item": "minecraft:redstone_lamp"}], "result": {"id": "eln:resistive_load", "count": 1}}

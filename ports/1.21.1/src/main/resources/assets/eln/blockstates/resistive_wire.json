@@ -1,0 +1,50 @@
+{
+  "variants": {
+    "facing=north,lit=false": {
+      "model": "eln:block/resistive_wire"
+    },
+    "facing=north,lit=true": {
+      "model": "eln:block/resistive_wire_lit"
+    },
+    "facing=south,lit=false": {
+      "model": "eln:block/resistive_wire",
+      "y": 180
+    },
+    "facing=south,lit=true": {
+      "model": "eln:block/resistive_wire_lit",
+      "y": 180
+    },
+    "facing=west,lit=false": {
+      "model": "eln:block/resistive_wire",
+      "y": 270
+    },
+    "facing=west,lit=true": {
+      "model": "eln:block/resistive_wire_lit",
+      "y": 270
+    },
+    "facing=east,lit=false": {
+      "model": "eln:block/resistive_wire",
+      "y": 90
+    },
+    "facing=east,lit=true": {
+      "model": "eln:block/resistive_wire_lit",
+      "y": 90
+    },
+    "facing=up,lit=false": {
+      "model": "eln:block/resistive_wire",
+      "x": 270
+    },
+    "facing=up,lit=true": {
+      "model": "eln:block/resistive_wire_lit",
+      "x": 270
+    },
+    "facing=down,lit=false": {
+      "model": "eln:block/resistive_wire",
+      "x": 90
+    },
+    "facing=down,lit=true": {
+      "model": "eln:block/resistive_wire_lit",
+      "x": 90
+    }
+  }
+}
