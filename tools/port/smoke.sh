@@ -11,11 +11,12 @@ source tools/port/env.sh >/dev/null 2>&1 || true
 
 rm -rf run/server/world
 ./gradlew runServer -PsmokeTest=all -q
+# the client's copy is taken now: the restart run ends by breaking shafts
+rm -rf run/client/saves/smoke
+cp -r run/server/world run/client/saves/smoke
 ./gradlew runServer -PsmokeTest=verify -q
 
 if [ -z "${SKIP_CLIENT:-}" ]; then
-    rm -rf run/client/saves/smoke
-    cp -r run/server/world run/client/saves/smoke
     ./gradlew runClient -PsmokeClient=smoke -q
     ls -l run/client/screenshots/smoke-*.png
 fi

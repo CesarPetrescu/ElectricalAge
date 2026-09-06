@@ -34,6 +34,9 @@ public final class ClientSetup {
     public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(SixNodeEntity.TYPE.get(), context -> new SixNodeRender());
         event.registerBlockEntityRenderer(TransparentNodeEntity.TYPE.get(), context -> new TransparentNodeRender());
+        // the fluid-handling transparent nodes (EntityMetaTag.Fluid: the steam and gas turbines, the
+        // radial motor, the fuel heat furnace, the heat exchanger) are their own block entity type
+        event.registerBlockEntityRenderer(mods.eln.node.transparent.TransparentNodeEntityWithFluid.TYPE.get(), context -> new TransparentNodeRender());
         event.registerEntityRenderer(ReplicatorEntity.TYPE.get(),
             context -> new ReplicatorRender(context, new SilverfishModel<>(context.bakeLayer(ModelLayers.SILVERFISH)), 0.3f));
     }

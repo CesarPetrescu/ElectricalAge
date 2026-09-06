@@ -72,13 +72,22 @@ stopped, which fails the Gradle task. `-PwithoutCc` leaves CC: Tweaked out of a 
 
 The dedicated server places a circuit, a lamp and the computer probe through the real item-use
 path (a FakePlayer), reads the meters, the light and the peripheral, and reads them again after a
-restart against the saved world:
+restart against the saved world. South of those, the rotating machines: a shaft line (shaft motor,
+joint, tachometer, flywheel, generator) fed by a creative source and loaded with a resistor; the
+large 3x3x3 motor and generator with a joint at shaft height between them; a gallery of every other
+shaft machine (the turbines with a blade, the radial motor over open floor); and the early-game
+generator, a stone heat furnace burning coal into a 48V turbine through a thermal cable. Those are
+read 12 seconds after placement (`LAST_TICK`), once the shafts have spun up:
 
     ./gradlew runServer -PsmokeTest=place      # SMOKE PASS ... energised=true current flowing=true
                                                # SMOKE PASS lamp: node light=13 aux=13 block light at socket=13; ...
                                                # SMOKE PASS computer probe ... peripheral type=ElnProbe methods=[...]
                                                # SMOKE PASS spool '...' into a lamp socket / dropped on the GUI slot / shift-clicked
-    ./gradlew runServer -PsmokeTest=verify     # the same after the restart; also runs /eln on the console
+                                               # SMOKE PASS shaft line is one network / turns at 200 rad/s / generator delivers 477 V 4.8 A
+                                               # SMOKE PASS large shaft line ... / large generator delivers 3.2 kV ...
+                                               # SMOKE PASS shaft machine gallery present / heat generator: furnace at ... C, 48V turbine delivers ...
+    ./gradlew runServer -PsmokeTest=verify     # the same after the restart; also runs /eln on the console; then breaks
+                                               # the flywheel (the network must split) and the large motor (its ghosts must go)
     ./gradlew runServer -PsmokeTest=all        # place, plus every placeable descriptor on a grid north of it:
                                                # SMOKE ALL placed 388 of 401 descriptors / 414 nodes alive after 80 ticks
 
@@ -89,16 +98,20 @@ in `run/server/server.properties`); on the flat dev world it says SKIP. `all` is
 after touching anything an element does at placement or in its first ticks: an exception in one
 of them stops the server, and the log names the descriptor.
 
-The client joins a copy of that world, flies to the circuit and screenshots the world by day and
-by midnight (the lamp), the descriptor grid from above, a third-person view with items on the floor, the macerator in hand from
-the front and through the player's eyes, a cable in hand, the resistor GUI, the macerator's
-container GUI, the inventory and an Electrical Age creative tab into `run/client/screenshots/`:
+The client joins a copy of that world (taken before the restart run breaks things), flies to the
+circuit and screenshots the world by day and by midnight (the lamp), the descriptor grid from above,
+the shaft line twice a second apart (`smoke-mech`, `smoke-mech-spin`: the client-side shaft angle
+must have moved on, which is the published speed integrated by the renderer), the tachometer's
+screen, the large machines, the gallery, a third-person view with items on the floor, the macerator
+in hand from the front and through the player's eyes, a cable in hand, the resistor GUI, the
+macerator's container GUI, the inventory and two Electrical Age creative tabs into
+`run/client/screenshots/`:
 
     cp -r run/server/world run/client/saves/smoke
     DISPLAY=:99 ./gradlew runClient -PsmokeClient=smoke
 
-`SMOKE PASS screen open: ...` twice in the log, no crash report, and the pictures are the evidence
-(`docs/port/smoke-*-1.21.png` are the committed ones). Software GL (llvmpipe) on two cores takes
+`SMOKE PASS` for the three screens and the two turning shafts, no crash report, and the pictures
+are the evidence (`docs/port/smoke-*-1.21.png` are the committed ones). Software GL (llvmpipe) on two cores takes
 about a minute per run; do not run two game processes at once on a small box, the second Gradle
 daemon and the Kotlin compile daemon together push it into swap.
 

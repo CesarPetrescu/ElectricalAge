@@ -119,6 +119,17 @@ runs in order; each exits 1 on a failed check):
   segment to a device already holding some takes one segment off the spool rather than the whole
   spool (upstream ate the spool). Swapping with a number key still moves the spool whole; the
   segment length is 1 m unless the device says otherwise.
+- **The fluid-handling machines are visible.** The steam and gas turbines (and their large versions),
+  the radial motor, the fuel heat furnace and the thermal heat exchanger are `EntityMetaTag.Fluid`
+  nodes, whose block entity is a type of its own (`TransparentNodeEntityWithFluid`, for the fluid
+  capability), and no renderer was registered for that type: the seven machines were there and
+  worked (right-click, GUI, tank) but drew nothing. The transparent node renderer serves both types.
+- **The large generator and large shaft motor run at the very-high-voltage cable's 3.2 kV.**
+  Upstream's power-tier audit puts them at 7.2 kV and registered them so, on the very-high-voltage
+  cable family, but nothing in the mod carries 7.2 kV (every cable and pole is the 3.2 kV family,
+  whose insulation fails at 1.3x): the first cable on a running large generator, or feeding a large
+  motor, burned within a second. They take the family's nominal (`Eln.VVU`) until a 7.2 kV cable
+  exists; their power figures are unchanged (108 kW / 32 kW).
 - **Element inventories save their items.** `ItemStack.save(provider, prefix)` returns a copy since
   1.20.5; the `writeToNBT(tag)` bridge returned it and every caller ignored it, so a saved slot carried
   only its index and every machine came back empty after a restart. The bridge merges into the tag
@@ -144,6 +155,12 @@ runs in order; each exits 1 on a failed check):
 - The IC2-era `Eln.cfg` dictionary names (`runtime.dictionary.*`) still drive which `c:` tag a recipe
   wants; nothing on 1.21 fills `c:dusts/eln_tungsten` but this mod.
 - Sound: no audio device in the headless runs, so the looped sounds are untested past construction.
+- The steam and gas turbines, the fuel generator and the fuel heat furnace burn fluids other mods
+  register (`config/eln/fluids.cfg` lists the steam, gasoline, gas and diesel families by name); the
+  mod's own fluids are hot and cold water and it has no pipes, so on a bare install those machines
+  cannot be fed, as on 1.7.10 without Railcraft/IC2. The heat exchanger's water -> steam pairing
+  resolves `steam` only when some mod registers a fluid of that name (Mekanism does on 1.21.1). The
+  shaft machines themselves are exercised by the smoke runs with a shaft motor as the prime mover.
 - The probe's Lua surface is exercised up to CC's method generator and a call through the binding;
   no computer has run a program against it in these runs.
 - Development-only content (the conduits, the isolation transformer) is absent from the generated

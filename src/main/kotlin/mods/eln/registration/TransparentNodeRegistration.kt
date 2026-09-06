@@ -644,10 +644,14 @@ object TransparentNodeRegistration {
             transparentNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
 
+        // The large machines are registered on the very-high-voltage cable family, so they run at its
+        // nominal voltage: the 7.2 kV tier the power-tier audit gives them has no cable yet (every cable
+        // and pole in the mod is the 3.2 kV family, whose insulation fails at 1.3x), so at 7.2 kV the
+        // first cable on a running large generator, or feeding a large motor, burned.
         run {
             subId = 24
             val nominalRads = 200f
-            val nominalU = NominalVoltage.V7200.toFloat()
+            val nominalU = Eln.VVU.toFloat()
             val nominalP = 4000f * LARGE_MACHINE_VOLUME_SCALE
 
             val desc = GeneratorDescriptor(
@@ -666,7 +670,7 @@ object TransparentNodeRegistration {
         run {
             subId = 25
             val nominalRads = 200f
-            val nominalU = NominalVoltage.V7200.toFloat()
+            val nominalU = Eln.VVU.toFloat()
             val nominalP = 1200f * LARGE_MACHINE_VOLUME_SCALE
 
             val desc = MotorDescriptor(

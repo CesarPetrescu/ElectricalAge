@@ -31,8 +31,10 @@ import net.neoforged.neoforge.common.NeoForge;
 public final class ClientSmokeTest {
     private static final String PREFIX = "SMOKE";
     private static final int X = 512, Z = 512, GROUND = 64;
+    /** The server test's mechanical rows (SmokeTest.MECH_Z, LARGE_Z). */
+    private static final int MECH_Z = Z + 14, LARGE_Z = Z + 21, GALLERY_Z = Z + 28;
 
-    private enum Phase { OPEN, JOIN, SETUP, WORLD_SHOT, NIGHT_SHOT, GRID_SHOT, THIRD_PERSON_SHOT, HAND_THIRD_SHOT, HAND_FIRST_SHOT, HAND_CABLE_SHOT, GUI, GUI_SHOT, MACHINE_GUI, MACHINE_GUI_SHOT, INVENTORY, INVENTORY_SHOT, CREATIVE_TAB, CREATIVE_SHOT, DONE }
+    private enum Phase { OPEN, JOIN, SETUP, WORLD_SHOT, NIGHT_SHOT, GRID_SHOT, MECH_SHOT, MECH_SPIN_SHOT, TACHOMETER_GUI, TACHOMETER_GUI_SHOT, LARGE_SHOT, GALLERY_SHOT, THIRD_PERSON_SHOT, HAND_THIRD_SHOT, HAND_FIRST_SHOT, HAND_CABLE_SHOT, GUI, GUI_SHOT, MACHINE_GUI, MACHINE_GUI_SHOT, INVENTORY, INVENTORY_SHOT, CREATIVE_TAB, CREATIVE_SHOT, CREATIVE_TAB_POWER, CREATIVE_POWER_SHOT, DONE }
 
     private final String save;
     private Phase phase = Phase.OPEN;
@@ -130,6 +132,73 @@ public final class ClientSmokeTest {
             case GRID_SHOT -> {
                 if (wait++ < 80) return;
                 shot(mc, "smoke-all");
+                // the mechanical row (motor, joint, tachometer, flywheel, generator) from the south, at shaft height
+                var server = mc.getSingleplayerServer();
+                server.execute(() -> {
+                    ServerPlayer player = server.getPlayerList().getPlayers().get(0);
+                    player.teleportTo(player.serverLevel(), X + 2.5, GROUND + 2.0, MECH_Z + 4.5, 180f, 12f);
+                });
+                phase = Phase.MECH_SHOT;
+                wait = 0;
+            }
+            case MECH_SHOT -> {
+                if (wait++ < 60) return;
+                shot(mc, "smoke-mech");
+                mechAngle = shaftAngle(mc, X, GROUND + 1, MECH_Z);
+                phase = Phase.MECH_SPIN_SHOT;
+                wait = 0;
+            }
+            case MECH_SPIN_SHOT -> {
+                // a second later: the client-side shaft angle must have moved on (the renderer integrates the published speed)
+                if (wait++ < 20) return;
+                double angle = shaftAngle(mc, X, GROUND + 1, MECH_Z);
+                double rads = shaftRads(mc, X, GROUND + 1, MECH_Z);
+                check(rads > 10 && !Double.isNaN(mechAngle) && angle != mechAngle, "shaft motor render turns: {} rad/s, angle {} -> {}", rads, mechAngle, angle);
+                shot(mc, "smoke-mech-spin");
+                phase = Phase.TACHOMETER_GUI;
+                wait = 0;
+            }
+            case TACHOMETER_GUI -> {
+                if (wait++ < 10) return;
+                // right-click the tachometer: a shaft element's own screen (container-less, opened over the byte protocol)
+                BlockPos pos = new BlockPos(X + 2, GROUND + 1, MECH_Z);
+                BlockHitResult hit = new BlockHitResult(new Vec3(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 1.0), Direction.SOUTH, pos, false);
+                var result = mc.gameMode.useItemOn(mc.player, InteractionHand.MAIN_HAND, hit);
+                Eln.LOGGER.info("{} right-click on the tachometer -> {}", PREFIX, result);
+                phase = Phase.TACHOMETER_GUI_SHOT;
+                wait = 0;
+            }
+            case TACHOMETER_GUI_SHOT -> {
+                if (wait++ < 40) return;
+                check(mc.screen instanceof mods.eln.mechanical.TachometerGui, "tachometer screen open: {}", mc.screen == null ? null : mc.screen.getClass().getName());
+                shot(mc, "smoke-tachometer-gui");
+                if (mc.screen != null) mc.screen.onClose();
+                // the large row: a large shaft motor, a joint at shaft height, a large generator
+                var server = mc.getSingleplayerServer();
+                server.execute(() -> {
+                    ServerPlayer player = server.getPlayerList().getPlayers().get(0);
+                    player.teleportTo(player.serverLevel(), X + 2.5, GROUND + 3.5, LARGE_Z + 7.5, 180f, 15f);
+                });
+                phase = Phase.LARGE_SHOT;
+                wait = 0;
+            }
+            case LARGE_SHOT -> {
+                if (wait++ < 60) return;
+                shot(mc, "smoke-mech-large");
+                double rads = shaftRads(mc, X, GROUND + 1, LARGE_Z);
+                check(rads > 10, "large shaft motor render turns: {} rad/s", rads);
+                // the gallery of the other shaft machines, and the large turbines behind it
+                var server = mc.getSingleplayerServer();
+                server.execute(() -> {
+                    ServerPlayer player = server.getPlayerList().getPlayers().get(0);
+                    player.teleportTo(player.serverLevel(), X + 5.5, GROUND + 3.0, GALLERY_Z + 7.5, 180f, 14f);
+                });
+                phase = Phase.GALLERY_SHOT;
+                wait = 0;
+            }
+            case GALLERY_SHOT -> {
+                if (wait++ < 60) return;
+                shot(mc, "smoke-mech-gallery");
                 // back at the circuit; third person from behind, with a macerator and a cable lying on the floor: the in-hand and on-ground item transforms
                 var server = mc.getSingleplayerServer();
                 server.execute(() -> {
@@ -221,24 +290,26 @@ public final class ClientSmokeTest {
             case CREATIVE_TAB -> {
                 if (wait++ < 10) return;
                 // the creative inventory (a creative player's inventory screen) on one of the mod's tabs
-                if (mc.screen instanceof net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen creative) {
-                    var tab = net.minecraft.core.registries.BuiltInRegistries.CREATIVE_MODE_TAB.stream()
-                        .filter(t -> t.getDisplayName().getString().contains("Machines")).findFirst().orElse(null);
-                    try {
-                        var m = net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen.class.getDeclaredMethod("selectTab", net.minecraft.world.item.CreativeModeTab.class);
-                        m.setAccessible(true);
-                        m.invoke(creative, tab);
-                        Eln.LOGGER.info("{} creative tab '{}' selected", PREFIX, tab == null ? null : tab.getDisplayName().getString());
-                    } catch (Exception e) {
-                        fail("selecting the creative tab", e);
-                    }
-                }
+                selectCreativeTab(mc, "Machines");
                 phase = Phase.CREATIVE_SHOT;
                 wait = 0;
             }
             case CREATIVE_SHOT -> {
                 if (wait++ < 40) return;
                 shot(mc, "smoke-creative");
+                phase = Phase.CREATIVE_TAB_POWER;
+                wait = 0;
+            }
+            case CREATIVE_TAB_POWER -> {
+                if (wait++ < 10) return;
+                // the tab with the shaft machines: their inventory icons are their models
+                selectCreativeTab(mc, "Power Electronics");
+                phase = Phase.CREATIVE_POWER_SHOT;
+                wait = 0;
+            }
+            case CREATIVE_POWER_SHOT -> {
+                if (wait++ < 40) return;
+                shot(mc, "smoke-creative-power");
                 phase = Phase.DONE;
                 wait = 0;
             }
@@ -284,6 +355,40 @@ public final class ClientSmokeTest {
             entity.setPickUpDelay(10000);
             level.addFreshEntity(entity);
         }
+    }
+
+    private void selectCreativeTab(Minecraft mc, String name) {
+        if (!(mc.screen instanceof net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen creative)) return;
+        var tab = net.minecraft.core.registries.BuiltInRegistries.CREATIVE_MODE_TAB.stream()
+            .filter(t -> t.getDisplayName().getString().contains(name)).findFirst().orElse(null);
+        try {
+            var m = net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen.class.getDeclaredMethod("selectTab", net.minecraft.world.item.CreativeModeTab.class);
+            m.setAccessible(true);
+            m.invoke(creative, tab);
+            Eln.LOGGER.info("{} creative tab '{}' selected", PREFIX, tab == null ? null : tab.getDisplayName().getString());
+        } catch (Exception e) {
+            fail("selecting the creative tab", e);
+        }
+    }
+
+    private double mechAngle = Double.NaN;
+
+    private mods.eln.mechanical.ShaftRender shaftRender(Minecraft mc, int x, int y, int z) {
+        var entity = mc.level.getBlockEntity(new BlockPos(x, y, z));
+        if (entity instanceof mods.eln.node.transparent.TransparentNodeEntity node && node.getElementRender() instanceof mods.eln.mechanical.ShaftRender shaft) return shaft;
+        return null;
+    }
+
+    /** The client-side shaft angle of the shaft element at (x, y, z), NaN when there is no such render. */
+    private double shaftAngle(Minecraft mc, int x, int y, int z) {
+        var render = shaftRender(mc, x, y, z);
+        return render == null ? Double.NaN : render.getAngle();
+    }
+
+    /** The shaft speed the client last received for the shaft element at (x, y, z), NaN when there is no such render. */
+    private double shaftRads(Minecraft mc, int x, int y, int z) {
+        var render = shaftRender(mc, x, y, z);
+        return render == null ? Double.NaN : render.getRads();
     }
 
     private void shot(Minecraft mc, String name) {
