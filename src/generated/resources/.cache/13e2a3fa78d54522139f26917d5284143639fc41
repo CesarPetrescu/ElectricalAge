@@ -1,4 +1,4 @@
-// 1.21.1	2026-09-06T10:17:43.003680156	Item Models: eln
+// 1.21.1	2026-09-06T11:14:14.469301322	Item Models: eln
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/100a_electrical_breaker.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/100a_switch.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/10a_diode.json
@@ -335,8 +335,9 @@ d04f067ade578b576a8d6ee73a60214ae9324ec0 assets/eln/models/item/electrical_probe
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/electrical_source.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/electrical_timer.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/electrical_weather_sensor.json
+b0f3e8f66d06ec3ffaf8401ed262935bb0b1a9c8 assets/eln/models/item/elnprobe.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/energy_meter.json
-bb502eb46e72e39c7d21dd57a362ef943ded9793 assets/eln/models/item/energyconverter.json
+fe64e387e1916ca7502d8bd82e07914a597c223b assets/eln/models/item/energyconverter.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/experimental_battery.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/experimental_transporter.json
 a2b23c3c751a8755b918e3065b7eefce745d2a8f assets/eln/models/item/fabricator.json

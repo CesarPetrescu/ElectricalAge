@@ -1,6 +1,8 @@
 package mods.eln.misc
 
+import mods.eln.Eln
 import mods.eln.fluid.ISidedFluidHandler
+import mods.eln.integration.computercraft.ComputerCraftIntegration
 import mods.eln.node.transparent.TransparentNodeEntity
 import mods.eln.node.transparent.TransparentNodeEntityWithFluid
 import mods.eln.simplenode.energyconverter.EnergyConverterElnToOtherEntity
@@ -8,6 +10,7 @@ import net.minecraft.core.Direction
 import net.minecraft.world.WorldlyContainer
 import net.neoforged.neoforge.capabilities.Capabilities
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent
+import net.neoforged.fml.ModList
 import net.neoforged.neoforge.fluids.FluidStack
 import net.neoforged.neoforge.fluids.capability.IFluidHandler
 import net.neoforged.neoforge.items.wrapper.InvWrapper
@@ -32,6 +35,10 @@ object ElnCapabilities {
         }
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, EnergyConverterElnToOtherEntity.TYPE.get()) { entity, _ ->
             entity.energyStorage
+        }
+        // the computer probe's peripheral; the integration class is the only one naming CC classes
+        if (Eln.computerProbeRegistered && ModList.get().isLoaded(ComputerCraftIntegration.MOD_ID)) {
+            ComputerCraftIntegration.register(event)
         }
     }
 }

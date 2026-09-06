@@ -222,6 +222,11 @@ repositories {
         url = uri("https://api.modrinth.com/maven")
         content { includeGroup("maven.modrinth") }
     }
+    maven {
+        name = "SquidDev"
+        url = uri("https://maven.squiddev.cc")
+        content { includeGroup("cc.tweaked") }
+    }
 }
 
 dependencies {
@@ -241,6 +246,13 @@ dependencies {
     // Jade (Waila's successor) for the hover overlay: compiled against, and loaded as a mod in the
     // dev runs so the overlay can be looked at; optional at run time (mods.eln.integration.jade).
     implementation("maven.modrinth:jade:${property("jadeVersion")}")
+
+    // CC: Tweaked for the computer probe peripheral: the API to compile against, the mod itself
+    // in the dev runs; optional at run time (mods.eln.integration.computercraft). Its "forge"
+    // artifact is the NeoForge build on 1.21.1.
+    compileOnly("cc.tweaked:cc-tweaked-1.21.1-forge-api:${property("ccVersion")}")
+    // -PwithoutCc runs without it, to check the mod does not need it
+    if (!project.hasProperty("withoutCc")) runtimeOnly("cc.tweaked:cc-tweaked-1.21.1-forge:${property("ccVersion")}")
 
     // Build-time only: the lang-file generator parses the mod's own sources for tr() and
     // TR_NAME() call sites. Never shipped, never loaded at run time.

@@ -147,7 +147,28 @@ public final class SmokeTest {
         } else {
             Eln.logger.error("{} FAIL no lamp socket element after placement", PREFIX);
         }
+
+        // The computer probe at the end of the lamp row: a node block on its own, a peripheral with CC: Tweaked.
+        world.setBlock(new BlockPos(X + 4, GROUND, LAMP_Z), Blocks.STONE.defaultBlockState(), 3);
+        placeBlockItem(world, player, "elnprobe", X + 4, LAMP_Z);
+        // and the energy exporter beside it: the other single-node block, a textured cube too
+        world.setBlock(new BlockPos(X + 6, GROUND, LAMP_Z), Blocks.STONE.defaultBlockState(), 3);
+        placeBlockItem(world, player, "energyconverter", X + 6, LAMP_Z);
         countOres(world);
+    }
+
+    /** A plain block item (the single-node blocks) placed on top of the stone at (x, GROUND, z) through its own use path. */
+    private void placeBlockItem(ServerLevel world, FakePlayer player, String id, int x, int z) {
+        var item = BuiltInRegistries.ITEM.get(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(Eln.MODID, id));
+        ItemStack stack = new ItemStack(item);
+        player.setYRot(0f);
+        player.setYHeadRot(0f);
+        player.setItemInHand(InteractionHand.MAIN_HAND, stack);
+        var hit = new net.minecraft.world.phys.BlockHitResult(new net.minecraft.world.phys.Vec3(x + 0.5, GROUND + 1.0, z + 0.5),
+            net.minecraft.core.Direction.UP, new BlockPos(x, GROUND, z), false);
+        var result = item.useOn(new net.minecraft.world.item.context.UseOnContext(player, InteractionHand.MAIN_HAND, hit));
+        BlockState placed = world.getBlockState(new BlockPos(x, GROUND + 1, z));
+        Eln.logger.info("{} place '{}' at ({},{},{}) -> {} block={}", PREFIX, id, x, GROUND + 1, z, result, BuiltInRegistries.BLOCK.getKey(placed.getBlock()));
     }
 
     /** The creative source defaults to 0 V; readConfigTool is the public setter. */
@@ -315,7 +336,26 @@ public final class SmokeTest {
             PREFIX, (energised && current) ? "PASS" : "FAIL", energised, current);
         if (everything) Eln.logger.info("{} ALL {} nodes alive after {} ticks", PREFIX, NodeManager.instance.getNodeList().size(), ticks);
         verifyLamp(world);
+        verifyProbe(world);
         runConsoleCommands(world);
+    }
+
+    /** The probe's node must be there; with CC: Tweaked loaded, the capability must answer with the peripheral. */
+    private void verifyProbe(ServerLevel world) {
+        BlockPos pos = new BlockPos(X + 4, GROUND + 1, LAMP_Z);
+        NodeBase node = NodeManager.instance.getNodeFromCoordonate(new Coordinate(pos.getX(), pos.getY(), pos.getZ(), world));
+        boolean nodeOk = node instanceof mods.eln.simplenode.computerprobe.ComputerProbeNode;
+        if (!net.neoforged.fml.ModList.get().isLoaded(mods.eln.integration.computercraft.ComputerCraftIntegration.MOD_ID)) {
+            Eln.logger.info("{} {} computer probe node present={}; CC: Tweaked not loaded, peripheral SKIP", PREFIX, nodeOk ? "PASS" : "FAIL", nodeOk);
+            return;
+        }
+        String type = mods.eln.integration.computercraft.ComputerCraftIntegration.peripheralTypeAt(world, pos);
+        String description = mods.eln.integration.computercraft.ComputerCraftIntegration.describePeripheralAt(world, pos);
+        // the ten 1.7.10 method names, bound by CC's generator, and version() answering through the binding
+        boolean methodsOk = description.contains("methods=[signalGetDir, signalGetIn, signalGetOut, signalSetDir, signalSetOut, version, wirelessGet, wirelessRemove, wirelessRemoveAll, wirelessSet]")
+            && description.contains("version=" + mods.eln.misc.Version.INSTANCE.getSimpleVersionName());
+        boolean pass = nodeOk && "ElnProbe".equals(type) && methodsOk;
+        Eln.logger.info("{} {} computer probe node present={} peripheral {}", PREFIX, pass ? "PASS" : "FAIL", nodeOk, description);
     }
 
     /**

@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "down": "eln:blocks/computerprobe_yn",
+    "east": "eln:blocks/computerprobe_xn",
+    "north": "eln:blocks/computerprobe_zn",
+    "particle": "eln:blocks/computerprobe_yp",
+    "south": "eln:blocks/computerprobe_zp",
+    "up": "eln:blocks/computerprobe_yp",
+    "west": "eln:blocks/computerprobe_xp"
+  }
+}

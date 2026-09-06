@@ -13,15 +13,14 @@ import mods.eln.simplenode.energyconverter.EnergyConverterElnToOtherDescriptor
 import mods.eln.simplenode.energyconverter.EnergyConverterElnToOtherEntity
 import mods.eln.simplenode.energyconverter.EnergyConverterElnToOtherNode
 import mods.eln.simplenode.energyconverter.EnergyConverterElnToOtherNode.Companion.nodeUuidStatic
+import mods.eln.simplenode.computerprobe.ComputerProbeBlock
+import mods.eln.simplenode.computerprobe.ComputerProbeEntity
+import mods.eln.simplenode.computerprobe.ComputerProbeNode
 import net.minecraft.world.level.block.Block
 import java.util.function.Function
 import java.util.function.Supplier
 
-/**
- * The single-purpose node blocks. The computer probe (ComputerCraft/OpenComputers peripheral) is
- * not registered on 1.21: OpenComputers has no 1.21 release and the CC:Tweaked peripheral is
- * phase 4 work (see PORT-1.21.md).
- */
+/** The single-purpose node blocks: the energy exporter, the computer probe, the dev-only conduit. */
 object SingleNodeRegistration {
 
     fun registerSingle() {
@@ -29,6 +28,20 @@ object SingleNodeRegistration {
             registerConduitSingles()
         }
         registerEnergyConverter()
+        registerComputer()
+    }
+
+    /** The probe is a node with or without a computer mod; CC: Tweaked makes it a peripheral (ElnCapabilities). */
+    private fun registerComputer() {
+        if (!Eln.config.getBooleanOrElse("integrations.computerProbe.enabled", true)) return
+        val entityName = I18N.TR_NAME(I18N.Type.TILE, "eln.ElnProbe")
+        registerUuid(ComputerProbeNode.getNodeUuidStatic(), ComputerProbeNode::class.java)
+        val block: Supplier<Block> = ElnRegistry.registerBlock(entityName, {
+            Eln.instance.computerProbeBlock = ComputerProbeBlock()
+            Eln.instance.computerProbeBlock
+        }, Function { SimpleNodeItem(it) })
+        ComputerProbeEntity.TYPE = ElnRegistry.registerBlockEntity(entityName, block) { pos, state -> ComputerProbeEntity(pos, state) }
+        Eln.computerProbeRegistered = true
     }
 
     private fun registerConduitSingles() {

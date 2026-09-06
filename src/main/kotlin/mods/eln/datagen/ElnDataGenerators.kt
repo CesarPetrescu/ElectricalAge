@@ -71,7 +71,7 @@ class ElnItemModelProvider(output: PackOutput, helper: ExistingFileHelper) : Ite
                         .customLoader { parent, helper -> net.neoforged.neoforge.client.model.generators.loaders.DynamicFluidContainerModelBuilder.begin(parent, helper).fluid(item.content) }
                         .end()
                 is net.minecraft.world.item.BlockItem -> {
-                    // the single-node blocks (energy converter, dev conduit) are invisible blocks drawn by their tile
+                    // a block item is its block model; the dev conduit has none and is invisible
                     val model = modLoc("block/${id.path}")
                     if (existingFileHelper.exists(model, PackType.CLIENT_RESOURCES, ".json", "models")) withExistingParent(id.path, model)
                     else withExistingParent(id.path, modLoc("block/invisible"))
@@ -128,6 +128,12 @@ class ElnBlockStateProvider(output: PackOutput, helper: ExistingFileHelper) : Bl
         ElnRegistry.registeredBlocks.forEach { (id, block) ->
             when (block) {
                 is OreBlock -> simpleBlock(block, models().cubeAll(id.path, modLoc("blocks/${block.descriptor.iconName}")))
+                // the two single-node blocks were plain textured cubes on 1.7.10 (registerBlockIcons)
+                is mods.eln.simplenode.energyconverter.EnergyConverterElnToOtherBlock -> simpleBlock(block, models().cubeAll(id.path, modLoc("blocks/elntoic2lvu_side")))
+                is mods.eln.simplenode.computerprobe.ComputerProbeBlock -> simpleBlock(block, models().cube(id.path,
+                    modLoc("blocks/computerprobe_yn"), modLoc("blocks/computerprobe_yp"), modLoc("blocks/computerprobe_zn"),
+                    modLoc("blocks/computerprobe_zp"), modLoc("blocks/computerprobe_xn"), modLoc("blocks/computerprobe_xp")
+                ).texture("particle", modLoc("blocks/computerprobe_yp")))
                 // a fluid block renders through the fluid's client extensions; vanilla's water model is the empty one
                 is net.minecraft.world.level.block.LiquidBlock -> simpleBlock(block, models().getExistingFile(mcLoc("block/water")))
             }

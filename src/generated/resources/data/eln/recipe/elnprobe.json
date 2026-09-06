@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "tag": "c:circuits/advanced"
+    },
+    "I": {
+      "item": "eln:iron_cable"
+    },
+    "W": {
+      "item": "eln:wireless_signal_transmitter"
+    },
+    "c": {
+      "item": "eln:signal_cable"
+    },
+    "w": {
+      "item": "eln:wireless_signal_receiver"
+    }
+  },
+  "pattern": [
+    "cIw",
+    "ICI",
+    "WIc"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:elnprobe"
+  }
+}

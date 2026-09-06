@@ -2681,7 +2681,12 @@ object CraftingRecipes {
     }
 
     private fun recipeComputerProbe() {
-        // The computer probe (ComputerCraft/OpenComputers peripheral) is not part of the port yet.
+        if (Eln.computerProbeRegistered) {
+            addRecipe(
+                ItemStack(Eln.instance.computerProbeBlock), "cIw", "ICI", "WIc", 'C', Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced"), 'c',
+                findItemStack("Signal Cable"), 'I', findItemStack("Iron Cable"), 'w', findItemStack("Wireless Signal Receiver"), 'W', findItemStack("Wireless Signal Transmitter")
+            )
+        }
     }
 
     private fun recipeArmor() {

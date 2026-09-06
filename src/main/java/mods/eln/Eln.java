@@ -180,6 +180,9 @@ public class Eln {
     public static TransparentNodeBlock transparentNodeBlock;
     public static GhostBlock ghostBlock;
     public static LightBlock lightBlock;
+    public mods.eln.simplenode.computerprobe.ComputerProbeBlock computerProbeBlock;
+    /** Set once the probe is registered (its config switch is on); the capability hook keys off it. */
+    public static boolean computerProbeRegistered;
     public static ArcClayBlock arcClayBlock;
     public static ArcMetalBlock arcMetalBlock;
     public static SixNodeItem sixNodeItem;

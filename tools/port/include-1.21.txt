@@ -8,7 +8,6 @@ mods/eln/**
 !mods/eln/transparentnode/computercraftio/**
 !mods/eln/simplenode/energyconverter/*Ic2*
 !mods/eln/simplenode/energyconverter/*Oc*
-!mods/eln/simplenode/computerprobe/**
 # --- unused upstream scaffolding (never registered): the CC/OC device probe and the test node
 !mods/eln/simplenode/DeviceProbe.kt
 !mods/eln/simplenode/test/**
