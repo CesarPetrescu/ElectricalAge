@@ -141,11 +141,15 @@ private object ClientRegistries {
     fun recipes(): net.minecraft.world.item.crafting.RecipeManager? = net.minecraft.client.Minecraft.getInstance().level?.recipeManager
 }
 
-/** 1.7.10's `ItemStack.writeToNBT(tag)`. */
+/**
+ * 1.7.10's `ItemStack.writeToNBT(tag)`: the stack's fields are written *into* the tag. 1.20.5's
+ * `save(provider, prefix)` returns a copy of the prefix instead of writing to it, and every
+ * caller here ignores the return value, so the fields are merged in by hand.
+ */
 fun ItemStack.writeToNBT(tag: net.minecraft.nbt.CompoundTag): net.minecraft.nbt.CompoundTag {
     if (isEmpty) return tag
-    val saved = save(McRegistries.access(), tag)
-    return saved as? net.minecraft.nbt.CompoundTag ?: tag
+    tag.merge(save(McRegistries.access()) as net.minecraft.nbt.CompoundTag)
+    return tag
 }
 
 /** 1.7.10's `ItemStack.loadItemStackFromNBT(tag)`: an unknown item reads as EMPTY, as before it read as null. */
