@@ -1425,7 +1425,7 @@ object TransparentNodeRegistration {
             g.addRectangle(-2, 0, 0, 1, 1, 1)
             g.addRectangle(-4, -1, 2, 2, 0, 0)
             g.addElement(0, 1, 0)
-            g.addElement(-1, 0, 0, Eln.ghostBlock, GhostBlock.tFloor)
+            g.addElement(-1, 0, 0, GhostBlock.tFloor)
             g.addRectangle(-3, -3, 0, 1, -1, -1)
             g.addRectangle(-3, -3, 0, 1, 1, 1)
             desc.ghostGroup = g

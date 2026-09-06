@@ -240,9 +240,15 @@ public class SubSystem {
         A[a.getId()][b.getId()] += v;
     }
 
+    /**
+     * Stamps a current into the right-hand side. Accumulates: two sources on one state (a series
+     * string of Norton-modelled panels, a capacitor next to an inter-system delay) both count.
+     * Upstream assigned here, so the last stamp in component-iteration order won, which was a
+     * HashSet order - the result depended on identity hash codes.
+     */
     public void addToI(State s, double v) {
         if (s == null) return;
-        Idata[s.getId()] = v;
+        Idata[s.getId()] += v;
     }
 
     public void step() {

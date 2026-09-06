@@ -7,7 +7,7 @@ import mods.eln.misc.FunctionTable
 internal fun ensureBatteryVoltageTable(table: FunctionTable) {
     bootstrapMinecraft()
     if (Eln.instance == null) {
-        Eln.instance = Eln()
+        Eln.newTestInstance()
     }
     Eln.instance.batteryVoltageFunctionTable = table
 }

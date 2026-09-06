@@ -66,7 +66,7 @@ public class GenericItemUsingDamage<Descriptor extends GenericItemUsingDamageDes
         }
         // The Item itself is created inside the item RegisterEvent (see ElnRegistry); the
         // descriptor learns about it then, and stack-needing callers wait for afterItems.
-        ElnRegistry.registerItem(descriptor.name, () -> newItem(id, descriptor), item -> descriptor.setParent(item, id));
+        ElnRegistry.registerDescriptorItem(descriptor.name, id, () -> newItem(id, descriptor), item -> descriptor.setParent(item, id));
         applyDefaultTab(id, descriptor);
     }
 

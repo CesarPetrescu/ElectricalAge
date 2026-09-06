@@ -81,6 +81,10 @@ neoForge {
 
     validateAccessTransformers = true
 
+    // The unit tests run through FML's JUnit launcher: NeoForge's patched Bootstrap needs a
+    // loaded mod list (FeatureFlags reads it), so a plain Bootstrap.bootStrap() cannot work. The
+    // launcher loads the mod itself, so tests see the registered content.
+
     runs {
         create("client") {
             client()
@@ -119,6 +123,11 @@ neoForge {
 
     mods {
         create("eln") { sourceSet(sourceSets.main.get()) }
+    }
+
+    unitTest {
+        enable()
+        testedMod = mods.getByName("eln")
     }
 }
 
@@ -223,13 +232,20 @@ dependencies {
     compileOnly("com.github.javaparser:javaparser-core:3.26.3")
     compileOnly("org.jetbrains.kotlin:kotlin-compiler-embeddable:${property("kotlinVersion")}")
 
+    // The tests are JUnit 4; they run on the JUnit Platform (vintage engine) because FML's JUnit
+    // launcher (junit-fml, added by ModDevGradle's unitTest) is a platform LauncherSessionListener.
     testImplementation("junit:junit:4.13.2")
     testImplementation(kotlin("test-junit"))
+    testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.10.2")
 }
 
 // ---------------------------------------------------------------------- tests
 tasks.named<Test>("test") {
+    useJUnitPlatform()
     exclude("**/*BenchmarkTest.*", "**/*ProfilingTest.*")
+    // The FML launcher runs the tests from build/minecraft-junit; tests that read repository
+    // files (docs/examples, biomes.json) resolve them against this.
+    systemProperty("eln.projectDir", projectDir.absolutePath)
 }
 
 tasks.register<Test>("benchmarkTest") {
@@ -237,6 +253,7 @@ tasks.register<Test>("benchmarkTest") {
     group = "verification"
     testClassesDirs = sourceSets.test.get().output.classesDirs
     classpath = sourceSets.test.get().runtimeClasspath
+    useJUnitPlatform()
     include("**/*BenchmarkTest.*", "**/*ProfilingTest.*")
     shouldRunAfter(tasks.named("test"))
 }

@@ -1,1 +1,8 @@
 # Test files the 1.21.1 build compiles (relative to src/test/java and src/test/kotlin).
+mods/eln/**
+# the 1.12 test-side GL/UtilsClient stubs: the Obj3D loader now draws through mods.eln.client.gl (excluded until a headless GL emulator test double exists)
+!mods/eln/misc/UtilsClient.java
+!org/lwjgl/**
+!mods/eln/misc/Obj3DRenderCoverageTest.kt
+# console commands are phase 4
+!mods/eln/server/console/**

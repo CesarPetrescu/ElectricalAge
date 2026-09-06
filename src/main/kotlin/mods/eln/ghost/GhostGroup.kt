@@ -8,17 +8,28 @@ import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.Level
 import java.util.*
 
-data class GhostGroupElement(var x: Int, var y: Int, var z: Int, var block: Block, var meta: Int)
+/**
+ * One cell of a ghost group. The block is resolved when the group is plotted: groups are built
+ * while the descriptors register, before the block RegisterEvent has created [Eln.ghostBlock].
+ */
+class GhostGroupElement(var x: Int, var y: Int, var z: Int, private val blockSupplier: () -> Block, var meta: Int) {
+    val block: Block get() = blockSupplier()
+}
 
 class GhostGroup {
     var elementList = ArrayList<GhostGroupElement>()
 
     fun addElement(x: Int, y: Int, z: Int) {
-        elementList.add(GhostGroupElement(x, y, z, Eln.ghostBlock, GhostBlock.tCube))
+        addElement(x, y, z, GhostBlock.tCube)
+    }
+
+    /** A ghost block cell of the given shape ([GhostBlock.tCube], [GhostBlock.tFloor], [GhostBlock.tLadder]). */
+    fun addElement(x: Int, y: Int, z: Int, meta: Int) {
+        elementList.add(GhostGroupElement(x, y, z, { Eln.ghostBlock }, meta))
     }
 
     fun addElement(x: Int, y: Int, z: Int, block: Block, meta: Int) {
-        elementList.add(GhostGroupElement(x, y, z, block, meta))
+        elementList.add(GhostGroupElement(x, y, z, { block }, meta))
     }
 
     fun removeElement(x: Int, y: Int, z: Int) {

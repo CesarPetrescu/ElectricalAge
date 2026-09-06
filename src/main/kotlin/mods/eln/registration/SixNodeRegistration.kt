@@ -1398,7 +1398,9 @@ object SixNodeRegistration {
         }
         run {
             subId = 3
-            name = I18N.TR_NAME(I18N.Type.NONE, "Signal Switch")
+            // Was "Signal Switch" too; the flattening gives every descriptor its own registry
+            // name, and the gate-source one (registerSixNodeMisc) is the switch players see.
+            name = I18N.TR_NAME(I18N.Type.NONE, "Legacy Signal Switch")
             desc = ElectricalSwitchDescriptor(
                 name, Eln.instance.stdCableRenderSignal, Eln.obj.getObj("LowVoltageSwitch"), Eln.SVU,
                 Eln.SVP, 0.02, Eln.SVU * 1.5, Eln.SVP * 1.2, Eln.cableThermalLoadInitializer.copy(), true

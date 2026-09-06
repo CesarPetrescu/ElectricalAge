@@ -3,6 +3,12 @@ package mods.eln.misc;
 import mods.eln.misc.Obj3D.Obj3DPart;
 
 import java.io.File;
+import java.util.stream.Stream;
+import java.util.stream.Collectors;
+import java.util.List;
+import java.nio.file.Paths;
+import java.nio.file.Path;
+import java.nio.file.Files;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -26,38 +32,39 @@ public class Obj3DFolder {
     private final Set<String> missingObjNamesWarned = new HashSet<String>();
 
     /**
-     * Load all obj models available in the release mod asset folder.
+     * Load all obj models available in the mod's assets. The mod file is walked through FML's
+     * mod-file resource root (a jar, a dev classpath directory or the JUnit union filesystem
+     * alike); the 1.7.10 code-source/jar walk only knew the first two.
      */
     public void loadAllElnModels() {
+        Path modelRoot = null;
         try {
-            // Find location of electrical age jar file.
-            CodeSource codeSource = Obj3DFolder.class.getProtectionDomain().getCodeSource();
-            if (codeSource != null) {
-                File location = codeSourceLocationToFile(codeSource.getLocation().toString());
-                if (location.isFile()) {
-                    try (JarFile jarFile = new JarFile(location)) {
-                        Enumeration<JarEntry> entries = jarFile.entries();
-                        int modelCount = 0;
-                        while (entries.hasMoreElements()) {
-                            String filename = entries.nextElement().getName();
-                            if (filename.startsWith("assets/eln/model/") && filename.toLowerCase().endsWith(".obj")) {
-                                filename = filename.substring(filename.indexOf("/model/") + 7, filename.length());
-                                Utils.println(String.format("Loading model %03d '%s'", ++modelCount, filename));
-                                loadObj(filename);
-                            }
-                        }
-                    }
-                } else {
-                    Integer modelCount = 0;
-                    File modelFolder = new File(mods.eln.Eln.class.getResource("/assets/eln/model").toURI());
-                    if (modelFolder.isDirectory()) {
-                        loadModelsRecursive(modelFolder, modelCount);
-                    }
-                }
+            net.neoforged.fml.ModList modList = net.neoforged.fml.ModList.get();
+            if (modList != null && modList.getModFileById(mods.eln.Eln.MODID) != null) {
+                modelRoot = modList.getModFileById(mods.eln.Eln.MODID).getFile().findResource("assets", "eln", "model");
+            }
+        } catch (Throwable ignored) {
+            // outside a mod-loading context (unit tests without FML): fall through to the classpath
+        }
+        if (modelRoot == null || !Files.isDirectory(modelRoot)) {
+            try {
+                java.net.URL url = mods.eln.Eln.class.getResource("/assets/eln/model");
+                if (url != null) modelRoot = Paths.get(url.toURI());
+            } catch (Exception e) {
+                e.printStackTrace();
+                return;
+            }
+        }
+        if (modelRoot == null || !Files.isDirectory(modelRoot)) return;
+        try (Stream<Path> files = Files.walk(modelRoot)) {
+            List<Path> objs = files.filter(f -> f.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".obj")).sorted().collect(Collectors.toList());
+            int modelCount = 0;
+            for (Path obj : objs) {
+                String filename = modelRoot.relativize(obj).toString().replace('\\', '/');
+                Utils.println(String.format("Loading model %03d '%s'", ++modelCount, filename));
+                loadObj(filename);
             }
         } catch (IOException e) {
-            e.printStackTrace();
-        } catch (URISyntaxException e) {
             e.printStackTrace();
         }
     }

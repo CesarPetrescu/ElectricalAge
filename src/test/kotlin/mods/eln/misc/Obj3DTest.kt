@@ -41,18 +41,7 @@ class Obj3DTest {
         assertTrue(box.max.yCoord >= 1.0)
     }
 
-    @Test
-    fun faceGroupDrawNoBindUsesGlShim() {
-        val obj = Obj3D()
-        val fg = Obj3D.FaceGroup()
-        val a = obj.Vertex(0f, 0f, 0f)
-        val b = obj.Vertex(1f, 0f, 0f)
-        val c = obj.Vertex(0f, 1f, 0f)
-        val normal = obj.Normal(a, b, c)
-        val face = obj.Face(arrayOf(a, b, c), arrayOf(obj.Uv(0f, 0f), obj.Uv(0f, 0f), obj.Uv(0f, 0f)), normal)
-        fg.face.add(face)
-
-        fg.drawNoBind()
-        fg.drawNoBind()
-    }
+    // faceGroupDrawNoBindUsesGlShim is gone with the 1.7.10 render path: drawNoBind now emits
+    // through mods.eln.client.gl, which needs the render thread and a GL context (see
+    // Obj3DRenderCoverageTest in tools/port/include-1.21-test.txt).
 }

@@ -304,6 +304,16 @@ public class Eln {
         mods.eln.devtest.DevHooks.registerIfRequested();
     }
 
+    /** Tests only: the content staged, no bus listeners (the FML JUnit launcher normally constructs the mod itself). */
+    public static Eln newTestInstance() {
+        return new Eln();
+    }
+
+    private Eln() {
+        instance = this;
+        registerContent();
+    }
+
     /** What used to be preInit: everything the mod constructs, in the order it always did. */
     private void registerContent() {
         ElnNetwork.register("achieve", AchievePacket.class, AchievePacket::new, new AchievePacketHandler(), true);

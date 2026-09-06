@@ -127,7 +127,7 @@ class FalstadNetlistParserTest {
 
     @Test
     fun docsFalstadExamplesParseAndPlan() {
-        val examplesRoot = File("docs/examples")
+        val examplesRoot = mods.eln.projectFile("docs/examples")
         val netlists = examplesRoot.walkTopDown()
             .filter { it.isFile && it.extension == "txt" }
             .toList()

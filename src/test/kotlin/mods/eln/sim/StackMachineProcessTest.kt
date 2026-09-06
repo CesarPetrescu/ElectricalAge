@@ -9,9 +9,8 @@ import mods.eln.misc.RecipesList
 import net.minecraft.world.Container
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
-import net.minecraft.network.chat.Component
 
-/** Minimal 1.12.2 Container: slots are never null, an empty slot holds ItemStack.EMPTY. */
+/** Minimal Container: slots are never null, an empty slot holds ItemStack.EMPTY. */
 private class SimpleInventory(size: Int) : Container {
     private val stacks = Array(size) { ItemStack.EMPTY }
     override fun getContainerSize(): Int = stacks.size
@@ -37,19 +36,11 @@ private class SimpleInventory(size: Int) : Container {
         stacks[slot] = stack
     }
 
-    override fun getName(): String = "inv"
-    override fun hasCustomName(): Boolean = false
-    override fun getDisplayName(): Component = Component.literal(name)
     override fun getMaxStackSize(): Int = 64
     override fun setChanged() {}
-    override fun stillValid(player: net.minecraft.level.entity.player.Player): Boolean = true
-    override fun startOpen(player: net.minecraft.level.entity.player.Player) {}
-    override fun stopOpen(player: net.minecraft.level.entity.player.Player) {}
+    override fun stillValid(player: net.minecraft.world.entity.player.Player): Boolean = true
     override fun canPlaceItem(slot: Int, stack: ItemStack): Boolean = true
-    override fun getField(id: Int): Int = 0
-    override fun setField(id: Int, value: Int) {}
-    override fun getFieldCount(): Int = 0
-    override fun clear() = stacks.fill(ItemStack.EMPTY)
+    override fun clearContent() = stacks.fill(ItemStack.EMPTY)
 }
 
 class StackMachineProcessTest {
@@ -60,8 +51,9 @@ class StackMachineProcessTest {
     @Test
     fun processSmeltsWhenEnergyAvailable() {
         val inventory = SimpleInventory(3)
-        val inputItem = Item()
-        val outputItem = Item()
+        // Registries are frozen after Bootstrap: use vanilla items rather than constructing new ones.
+        val inputItem = net.minecraft.world.item.Items.STONE
+        val outputItem = net.minecraft.world.item.Items.DIRT
         val input = ItemStack(inputItem, 1)
         inventory.setItem(0, input)
 
@@ -88,8 +80,9 @@ class StackMachineProcessTest {
     @Test
     fun getProcessStateReflectsProgress() {
         val inventory = SimpleInventory(2)
-        val inputItem = Item()
-        val outputItem = Item()
+        // Registries are frozen after Bootstrap: use vanilla items rather than constructing new ones.
+        val inputItem = net.minecraft.world.item.Items.STONE
+        val outputItem = net.minecraft.world.item.Items.DIRT
         val input = ItemStack(inputItem, 1)
         inventory.setItem(0, input)
 

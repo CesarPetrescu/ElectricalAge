@@ -1,19 +1,21 @@
 package mods.eln
 
-import net.minecraft.server.Bootstrap
+import java.io.File
 
 internal fun disableLog4jJmx() {
     System.setProperty("log4j2.disable.jmx", "true")
 }
 
 /**
- * 1.12.2 guards Blocks/Items/SoundEvent behind Bootstrap: the first touch of any of them throws
- * "Accessed Blocks before Bootstrap!" instead of the null 1.7.10 handed out. Tests that build an
- * ItemStack, a SixNode (which caches Blocks.AIR) or an Eln instance call this first. Idempotent.
+ * Blocks/Items/SoundEvents live behind Bootstrap. The tests run through FML's JUnit launcher
+ * (ModDevGradle `unitTest`), which has bootstrapped the game and loaded the mod before any test
+ * runs; this is kept as the one place tests declare that dependency. Idempotent.
  */
 fun bootstrapMinecraft() {
     disableLog4jJmx()
-    if (!Bootstrap.isRegistered()) {
-        Bootstrap.register()
-    }
+    check(net.neoforged.fml.loading.FMLLoader.getLoadingModList() != null) { "the tests must run through the FML JUnit launcher (./gradlew test)" }
 }
+
+/** A file of the repository ("docs/examples"); the launcher's working directory is build/minecraft-junit. */
+fun projectFile(relative: String): File =
+    File(System.getProperty("eln.projectDir") ?: ".", relative)

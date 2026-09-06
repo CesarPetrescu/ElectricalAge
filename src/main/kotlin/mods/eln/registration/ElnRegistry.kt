@@ -96,6 +96,21 @@ object ElnRegistry {
         stage(items, id, factory, onRegistered, "item")
 
     /**
+     * [registerItem] for a descriptor's item. Two descriptors of one family may share a display
+     * name (1.7.10 never needed them distinct); a taken name gets the legacy id suffixed rather
+     * than failing mod construction.
+     */
+    @JvmStatic
+    fun registerDescriptorItem(name: String, legacyId: Int, factory: Supplier<Item>, onRegistered: Consumer<Item>?): Supplier<Item> {
+        var id = registryName(name)
+        if (items.containsKey(id)) {
+            id = registryName("${name}_$legacyId")
+            Eln.logger.warn("registry name for '$name' is taken; using $id")
+        }
+        return stage(items, id, factory, onRegistered, "item")
+    }
+
+    /**
      * Stages a block and, unless [item] is null, an item for it under the same name (a plain
      * [BlockItem] by default). The item factory receives the block, which exists by then.
      */

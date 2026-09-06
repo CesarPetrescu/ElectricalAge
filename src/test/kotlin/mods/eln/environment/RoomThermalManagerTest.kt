@@ -44,7 +44,7 @@ class RoomThermalManagerTest {
     @Test
     fun writeToNbtRoundTripPreservesRoomData() {
         val source = CompoundTag()
-        source.setTag("roomThermal", buildRootNbt(version = 1, rooms = listOf(
+        source.put("roomThermal", buildRootNbt(version = 1, rooms = listOf(
             roomTag(
                 id = "room-roundtrip",
                 dim = 3,
@@ -60,14 +60,14 @@ class RoomThermalManagerTest {
         val target = CompoundTag()
         RoomThermalManager.writeToNbt(target, 3)
 
-        val root = target.getCompoundTag("roomThermal")
+        val root = target.getCompound("roomThermal")
         assertEquals(1, root.getInt("version"))
         assertEquals(1, root.getInt("count"))
 
         val room = root.getCompound("room_0")
         assertEquals("room-roundtrip", room.getString("id"))
-        assertEquals(3, room.getInteger("dim"))
-        assertEquals(3, room.getInteger("interiorCount"))
+        assertEquals(3, room.getInt("dim"))
+        assertEquals(3, room.getInt("interiorCount"))
         assertEquals(9, room.getIntArray("interiorCells").size)
     }
 
@@ -262,21 +262,21 @@ class RoomThermalManagerTest {
         thermalNodes: IntArray
     ): CompoundTag {
         val room = CompoundTag()
-        room.setString("id", id)
-        room.setInteger("dim", dim)
-        room.setDouble("tempC", tempC)
-        room.setLong("lastSeen", 0L)
-        room.setInteger("interiorCount", interiorCount)
-        room.setTag("bounds", CompoundTag().apply {
-            setInteger("minX", bounds[0])
-            setInteger("minY", bounds[1])
-            setInteger("minZ", bounds[2])
-            setInteger("maxX", bounds[3])
-            setInteger("maxY", bounds[4])
-            setInteger("maxZ", bounds[5])
+        room.putString("id", id)
+        room.putInt("dim", dim)
+        room.putDouble("tempC", tempC)
+        room.putLong("lastSeen", 0L)
+        room.putInt("interiorCount", interiorCount)
+        room.put("bounds", CompoundTag().apply {
+            putInt("minX", bounds[0])
+            putInt("minY", bounds[1])
+            putInt("minZ", bounds[2])
+            putInt("maxX", bounds[3])
+            putInt("maxY", bounds[4])
+            putInt("maxZ", bounds[5])
         })
-        room.setIntArray("interiorCells", interiorCells)
-        room.setIntArray("thermalNodes", thermalNodes)
+        room.putIntArray("interiorCells", interiorCells)
+        room.putIntArray("thermalNodes", thermalNodes)
         return room
     }
 

@@ -186,7 +186,7 @@ class GroundCableElementTest {
             side,
             ElectricalCableDescriptor("Test Electrical Cable", null, "Test cable", false)
         )
-        cable.readFromNBT(CompoundTag().also { it.setByte("color", (color + (1 shl 4)).toByte()) })
+        cable.readFromNBT(CompoundTag().also { it.putByte("color", (color + (1 shl 4)).toByte()) })
         return cable
     }
 

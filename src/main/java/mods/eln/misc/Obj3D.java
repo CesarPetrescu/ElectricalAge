@@ -26,7 +26,7 @@ public class Obj3D {
     private String dirPath;
 
     public void bindTexture(String texFilename) {
-        ResourceLocation textureResource = ResourceLocation.fromNamespaceAndPath("eln", "model/" + dirPath + "/" + texFilename);
+        ResourceLocation textureResource = ResourceLocation.fromNamespaceAndPath("eln", ("model/" + dirPath + "/" + texFilename).toLowerCase(java.util.Locale.ROOT));
         UtilsClient.bindTexture(textureResource);
     }
 
@@ -356,8 +356,17 @@ public class Obj3D {
         public int vertexNbr;
     }
 
+    /**
+     * The asset tree is lowercase (1.11+ resource paths); the .mtl/.obj files still name
+     * mixed-case files, and a few carry the modeller's absolute path - only the file name counts.
+     * A missing property (a model .txt without "tOn") is null, as the unvalidated 1.7.10 location
+     * effectively was: renderers only bind the textures of parts the model has.
+     */
     public ResourceLocation getModelResourceLocation(String name) {
-        return ResourceLocation.fromNamespaceAndPath("eln", "model/" + dirPath + "/" + name);
+        if (name == null) return null;
+        String file = name.replace('\\', '/');
+        file = file.substring(file.lastIndexOf('/') + 1);
+        return ResourceLocation.fromNamespaceAndPath("eln", ("model/" + dirPath + "/" + file).toLowerCase(java.util.Locale.ROOT));
     }
 
     /**

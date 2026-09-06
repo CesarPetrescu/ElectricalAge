@@ -32,7 +32,9 @@ object SingleNodeRegistration {
     }
 
     private fun registerConduitSingles() {
-        val entityName = I18N.TR_NAME(I18N.Type.TILE, "eln.Conduit")
+        // Registry names are flat now: the six-node "Conduit" cable already owns eln:conduit, so
+        // this dev-only single node block is eln:conduitsingle.
+        val entityName = I18N.TR_NAME(I18N.Type.TILE, "eln.ConduitSingle")
         registerUuid(getNodeUuidStatic(), ConduitNode::class.java)
         val block: Supplier<Block> = ElnRegistry.registerBlock(entityName, { ConduitBlock() }, Function { SimpleNodeItem(it) })
         ConduitEntity.TYPE = ElnRegistry.registerBlockEntity(entityName, block) { pos, state -> ConduitEntity(pos, state) }
