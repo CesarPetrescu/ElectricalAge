@@ -5,22 +5,29 @@ plugins {
 version = mod_version
 group = 'mods.eln'
 base { archivesName = 'eln-1.21.1' }
-java {
-    toolchain.languageVersion = JavaLanguageVersion.of(21)
-    withSourcesJar()
-}
+java { toolchain.languageVersion = JavaLanguageVersion.of(21); withSourcesJar() }
 repositories { mavenCentral() }
 dependencies { implementation project(':sim-core') }
 evaluationDependsOn(':sim-core')
-// GameTests compile against the real mapped game. They are development-only,
-// explicitly excluded from both distributable jars, and verified in CI.
+// The empty source set deliberately has NO dependency on main or sim-core.
+// Packaged-client tests must load the actual jar from their own mods directory.
+sourceSets { packaged {} }
 sourceSets.main.java.srcDir 'src/gametest/java'
 sourceSets.main.resources.srcDir 'src/gametest/resources'
 neoForge {
     version = project.neo_version
+    addModdingDependenciesTo(sourceSets.packaged)
     runs {
         client { client(); gameDirectory = project.file('run/client') }
         server { server(); gameDirectory = project.file('run/server'); programArgument '--nogui' }
+        smokeClient { client(); gameDirectory = project.file('run/smoke-client') }
+        packagedClient {
+            client()
+            gameDirectory = project.file('run/packaged-smoke-client')
+            sourceSet = sourceSets.packaged
+            loadedMods = []
+            systemProperty 'eln.verifyPackagedRuntime', 'true'
+        }
         gameTestServer {
             type = 'gameTestServer'
             gameDirectory = project.file('run/gametest')
@@ -29,10 +36,7 @@ neoForge {
         configureEach { logLevel = org.slf4j.event.Level.INFO }
     }
     mods {
-        eln {
-            sourceSet sourceSets.main
-            sourceSet project(':sim-core').sourceSets.main
-        }
+        eln { sourceSet sourceSets.main; sourceSet project(':sim-core').sourceSets.main }
     }
 }
 tasks.named('jar', Jar) {

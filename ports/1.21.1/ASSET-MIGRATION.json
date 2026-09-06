@@ -1,0 +1,18 @@
+{
+  "supersedes": "PROVENANCE.json asset.change and asset.scale (initial extraction record retained)",
+  "source": "brambora69123/electrical-age-rewired@3a0088b384aa4111c3a7f984d4cbc5f4ff142ed9:src/main/resources/assets/eln/model/voltagesource/voltagesource.obj",
+  "selected_objects": ["main"],
+  "omitted_objects": ["Minecraft_2_Edge_Connectivity_Cube.002", "Minecraft_4_Edge_Connectivity_Cube.001", "Minecraft_Block_Cube"],
+  "rationale": "ElectricalSourceDescriptor draws main and optional led, not connectivity/reference helpers. Helpers have missing UV fields that the NeoForge OBJ baker indexes as -1. Do not bake helper geometry into a visible machine.",
+  "scale": 2.1333333333333333,
+  "x_translation": 0.3666666666666667,
+  "y_translation": 0.45,
+  "z_translation": 0.5,
+  "visible_vertices": 8,
+  "visible_triangles": 12,
+  "normals_and_uvs": "Unchanged for the selected main mesh",
+  "texture": "Original PNG unchanged, hash verified against PROVENANCE.json",
+  "attribution": "Electrical Age team",
+  "license": "CC-BY-NC-SA-3.0",
+  "failed_run": 34018362524
+}

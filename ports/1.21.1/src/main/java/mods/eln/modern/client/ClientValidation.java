@@ -32,6 +32,15 @@ public final class ClientValidation {
         BakedModel missing = client.getModelManager().getMissingModel();
         int blockQuads = count(block,state), itemQuads = count(item,null);
         if (block == missing || item == missing || blockQuads == 0 || itemQuads == 0) throw new IllegalStateException("ELN circuit bench model did not bake correctly");
+        if (Boolean.getBoolean("eln.verifyPackagedRuntime")) {
+            String origin=ElectricalAgeModern.class.getProtectionDomain().getCodeSource().getLocation().toExternalForm();
+            if (!origin.contains(".jar")) throw new IllegalStateException("Packaged probe loaded development classes: "+origin);
+            try {
+                Class.forName("mods.eln.modern.gametest.CircuitBenchGameTests",false,ElectricalAgeModern.class.getClassLoader());
+                throw new IllegalStateException("GameTest classes leaked into the packaged runtime");
+            } catch (ClassNotFoundException expected) { /* The production jar must not contain test classes. */ }
+            ElectricalAgeModern.LOGGER.info("ELN_PACKAGED_RUNTIME_OK origin={}",origin);
+        }
         validated = true;
         ElectricalAgeModern.LOGGER.info("ELN_CLIENT_READY obj_quads={} item_quads={}", blockQuads, itemQuads);
     }
