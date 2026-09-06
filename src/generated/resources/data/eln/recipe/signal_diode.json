@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "tag": "c:rubber"
+    },
+    "I": {
+      "item": "eln:iron_cable"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    " RB",
+    " IR",
+    " RB"
+  ],
+  "result": {
+    "count": 4,
+    "id": "eln:signal_diode"
+  }
+}

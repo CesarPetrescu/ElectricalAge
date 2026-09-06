@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "eln:machine_block"
+    },
+    "C": {
+      "item": "eln:copper_14_awg_cable_600v"
+    },
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "M": {
+      "item": "eln:electrical_motor"
+    }
+  },
+  "pattern": [
+    " I ",
+    "CMC",
+    "IBI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:wind_turbine"
+  }
+}

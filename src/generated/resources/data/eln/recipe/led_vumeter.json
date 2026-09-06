@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "S": {
+      "item": "eln:signal_cable"
+    },
+    "T": {
+      "item": "minecraft:redstone_torch"
+    },
+    "W": {
+      "tag": "minecraft:planks"
+    }
+  },
+  "pattern": [
+    " W ",
+    "WTW",
+    " S "
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:led_vumeter"
+  }
+}

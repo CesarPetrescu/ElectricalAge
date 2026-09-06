@@ -1,0 +1,33 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "eln:advanced_machine_block"
+    },
+    "C": {
+      "item": "eln:motor_cowling"
+    },
+    "H": {
+      "item": "eln:heavy_winding"
+    },
+    "M": {
+      "item": "eln:copper_thermal_cable"
+    },
+    "R": {
+      "item": "eln:reinforced_shaft"
+    },
+    "T": {
+      "item": "eln:turbine_blade_set"
+    }
+  },
+  "pattern": [
+    "CTC",
+    "RHR",
+    "MAM"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:large_gas_turbine"
+  }
+}

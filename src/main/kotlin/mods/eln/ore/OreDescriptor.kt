@@ -16,6 +16,16 @@ class OreDescriptor(
 
     lateinit var block: OreBlock
 
+    /** The Eln.cfg switch that turns this ore's generation on ([mods.eln.worldgen.ElnOreBiomeModifier] reads it). */
+    var configKey: String? = null
+    var configDefault = true
+
+    fun gatedBy(key: String, default: Boolean): OreDescriptor {
+        configKey = key
+        configDefault = default
+        return this
+    }
+
     override fun setParent(item: Item, damage: Int) {
         super.setParent(item, damage)
         Data.addOre(newItemStack())

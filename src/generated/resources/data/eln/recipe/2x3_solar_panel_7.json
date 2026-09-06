@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "eln:copper_12_awg_cable_600v"
+    },
+    "I": {
+      "tag": "c:casings/machine_advanced"
+    },
+    "P": {
+      "item": "eln:small_solar_panel"
+    }
+  },
+  "pattern": [
+    "PPP",
+    "PPP",
+    "ICI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:2x3_solar_panel"
+  }
+}

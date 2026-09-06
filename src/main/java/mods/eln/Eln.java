@@ -473,6 +473,9 @@ public class Eln {
     private void loadComplete(FMLLoadCompleteEvent event) {
         Other.check();
         serverEventListener = new ServerEventListener();
+        // postInit: the recipe declarations (crafting and smelting into RecipeBook for the data
+        // generator, the machine lists live).
+        mods.eln.craft.CraftingRecipes.INSTANCE.itemCrafting();
     }
 
     private void buildCreativeTabContents(BuildCreativeModeTabContentsEvent event) {

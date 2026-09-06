@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "tag": "c:circuits/basic"
+    },
+    "D": {
+      "item": "minecraft:redstone"
+    },
+    "S": {
+      "item": "eln:thermal_probe_chip"
+    }
+  },
+  "pattern": [
+    "SCD"
+  ],
+  "result": {
+    "count": 4,
+    "id": "eln:overheating_protection"
+  }
+}

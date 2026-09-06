@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "E": {
+      "item": "eln:low_voltage_cable"
+    },
+    "H": {
+      "item": "eln:copper_thermal_cable"
+    },
+    "M": {
+      "item": "eln:machine_block"
+    },
+    "m": {
+      "item": "eln:electrical_motor"
+    }
+  },
+  "pattern": [
+    " m ",
+    "HMH",
+    " E "
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:48v_turbine"
+  }
+}

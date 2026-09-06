@@ -3,7 +3,6 @@
 mods/eln/**
 # --- not yet ported: packets and the sided proxies (phase 2)
 # --- not yet ported: content registration and recipes (phase 2)
-!mods/eln/craft/**
 !mods/eln/fluid/FluidRegistration.kt
 !mods/eln/fluid/BlockElnFluid.kt
 # --- not yet ported: commands (brigadier) and cross-mod integrations (phase 4); IC2/OC are gone on 1.21

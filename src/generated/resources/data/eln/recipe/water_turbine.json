@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "eln:machine_block"
+    },
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "M": {
+      "item": "eln:electrical_motor"
+    }
+  },
+  "pattern": [
+    "  I",
+    "BMI",
+    "  I"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:water_turbine"
+  }
+}

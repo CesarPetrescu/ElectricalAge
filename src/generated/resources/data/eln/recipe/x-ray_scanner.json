@@ -1,0 +1,35 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "eln:portable_battery"
+    },
+    "C": {
+      "tag": "c:circuits/advanced"
+    },
+    "G": {
+      "item": "eln:ore_scanner"
+    },
+    "P": {
+      "item": "eln:iron_cable"
+    }
+  },
+  "pattern": [
+    "PGP",
+    "PCP",
+    "PBP"
+  ],
+  "result": {
+    "components": {
+      "minecraft:custom_data": {
+        "c": 80,
+        "d": 0,
+        "e": 20000.0,
+        "s": 1
+      }
+    },
+    "count": 1,
+    "id": "eln:x-ray_scanner"
+  }
+}

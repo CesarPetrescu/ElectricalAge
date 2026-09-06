@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "tag": "c:circuits/advanced"
+    },
+    "c": {
+      "item": "eln:copper_cable"
+    },
+    "i": {
+      "item": "eln:power_inductor"
+    },
+    "r": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    " i ",
+    "cCc",
+    " r "
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:3.3v_boost_regulator_chip"
+  }
+}

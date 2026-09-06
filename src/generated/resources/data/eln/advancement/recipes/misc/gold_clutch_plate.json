@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_plates_gold": {
+      "conditions": {
+        "items": [
+          {
+            "items": "#c:plates/gold"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "eln:gold_clutch_plate"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_plates_gold"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "eln:gold_clutch_plate"
+    ]
+  }
+}

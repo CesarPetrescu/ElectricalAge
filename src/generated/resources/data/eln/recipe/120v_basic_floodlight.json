@@ -1,0 +1,33 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "eln:machine_block"
+    },
+    "C": {
+      "item": "eln:low_voltage_cable"
+    },
+    "G": {
+      "item": "minecraft:glass_pane"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "M": {
+      "item": "eln:electrical_motor"
+    },
+    "P": {
+      "item": "eln:iron_plate"
+    }
+  },
+  "pattern": [
+    " PG",
+    "MBP",
+    "ICI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:120v_basic_floodlight"
+  }
+}

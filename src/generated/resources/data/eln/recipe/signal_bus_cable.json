@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "eln:signal_cable"
+    },
+    "R": {
+      "tag": "c:rubber"
+    }
+  },
+  "pattern": [
+    "R",
+    "C"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:signal_bus_cable"
+  }
+}

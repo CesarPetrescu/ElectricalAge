@@ -1,0 +1,9 @@
+// 1.21.1	2026-09-06T09:02:40.856281397	Loot Tables
+0099d65dedaf61b73f49ff5e60c2cd387bf8ff19 data/eln/loot_table/blocks/arc_clay_block.json
+ffffe3b258ec0cb1c5c73ef7c04a78f25991e209 data/eln/loot_table/blocks/arc_metal_block.json
+2170c6d8242e2739dcd455c79e0359eaedb3d8bc data/eln/loot_table/blocks/cinnabar_ore.json
+86a00030765883330b31b404a8453d686cf0bde7 data/eln/loot_table/blocks/conduitsingle.json
+11359e299d92bd1780e39bc53a5007f62f13b45b data/eln/loot_table/blocks/copper_ore.json
+42473a8e3cbff9da2dd81a402adeb2e5a5cad3ac data/eln/loot_table/blocks/energyconverter.json
+291da1415e4b2906a98bb7943fd817f29f17e5f2 data/eln/loot_table/blocks/lead_ore.json
+d657d72fe1812093540fa7905cf1c275a8dea5d6 data/eln/loot_table/blocks/tungsten_ore.json

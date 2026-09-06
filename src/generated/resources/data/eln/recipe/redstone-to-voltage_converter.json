@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "tag": "c:circuits/basic"
+    },
+    "S": {
+      "item": "eln:signal_cable"
+    },
+    "T": {
+      "item": "minecraft:redstone_torch"
+    }
+  },
+  "pattern": [
+    "TCS"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:redstone-to-voltage_converter"
+  }
+}

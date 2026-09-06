@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "eln:copper_cable"
+    },
+    "D": {
+      "item": "eln:one-way_dc-dc_converter"
+    },
+    "G": {
+      "item": "eln:ground_cable"
+    }
+  },
+  "pattern": [
+    "GGG",
+    "CDC",
+    "GGG"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:isolation_transformer"
+  }
+}

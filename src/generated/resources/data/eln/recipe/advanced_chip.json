@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "tag": "c:circuits/basic"
+    },
+    "L": {
+      "tag": "c:ingots/silicon"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    "LRL",
+    "RCR",
+    "LRL"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:advanced_chip"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "P": {
+      "tag": "c:ingots/lead"
+    }
+  },
+  "pattern": [
+    " I ",
+    "IPI",
+    "IPI"
+  ],
+  "result": {
+    "components": {
+      "minecraft:custom_data": {
+        "energy": 0.0
+      }
+    },
+    "count": 1,
+    "id": "eln:portable_battery"
+  }
+}

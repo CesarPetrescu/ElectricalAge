@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "tag": "c:circuits/basic"
+    },
+    "c": {
+      "item": "eln:copper_cable"
+    },
+    "d": {
+      "item": "eln:signal_diode"
+    },
+    "r": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    " d ",
+    "cCc",
+    "rrr"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:5v_ldo_regulator_chip"
+  }
+}

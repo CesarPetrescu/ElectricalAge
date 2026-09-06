@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "r": {
+      "tag": "c:rubber"
+    }
+  },
+  "pattern": [
+    " r ",
+    "rRr",
+    " r "
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:humidity_sensor"
+  }
+}

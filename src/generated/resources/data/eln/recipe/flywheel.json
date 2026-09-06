@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": {
+      "tag": "c:ingots/lead"
+    },
+    "m": {
+      "item": "eln:machine_block"
+    }
+  },
+  "pattern": [
+    "PPP",
+    "PmP",
+    "PPP"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:flywheel"
+  }
+}

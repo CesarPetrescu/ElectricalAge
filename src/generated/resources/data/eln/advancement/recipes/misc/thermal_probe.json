@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "eln:thermal_probe"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_thermal_probe_chip": {
+      "conditions": {
+        "items": [
+          {
+            "items": "eln:thermal_probe_chip"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_thermal_probe_chip"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "eln:thermal_probe"
+    ]
+  }
+}

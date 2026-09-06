@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "eln:voltages/medium",
+    "layer1": "eln:items/small200vcopperheatingelement"
+  }
+}

@@ -16,4 +16,10 @@ class ElnFMLEventsHandler {
             Achievements.grant(player, Achievements.craft50VMacerator)
         }
     }
+
+    /** Tags are bound when a world's packs load (and sent to the client): expand the machine recipes declared on dictionary names. */
+    @SubscribeEvent
+    fun onTagsUpdated(@Suppress("UNUSED_PARAMETER") event: net.neoforged.neoforge.event.TagsUpdatedEvent) {
+        mods.eln.misc.RecipesList.resolveAllTags()
+    }
 }

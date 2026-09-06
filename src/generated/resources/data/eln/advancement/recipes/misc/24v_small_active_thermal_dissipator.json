@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_small_passive_thermal_dissipator": {
+      "conditions": {
+        "items": [
+          {
+            "items": "eln:small_passive_thermal_dissipator"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "eln:24v_small_active_thermal_dissipator"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_small_passive_thermal_dissipator"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "eln:24v_small_active_thermal_dissipator"
+    ]
+  }
+}

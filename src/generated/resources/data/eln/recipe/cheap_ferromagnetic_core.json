@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "L": {
+      "item": "eln:iron_cable"
+    }
+  },
+  "pattern": [
+    "LLL",
+    "L  ",
+    "LLL"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:cheap_ferromagnetic_core"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "c:ingots/aluminium"
+    },
+    "W": {
+      "tag": "minecraft:logs"
+    }
+  },
+  "pattern": [
+    "WWW",
+    "IWI",
+    " W "
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:utility_pole"
+  }
+}

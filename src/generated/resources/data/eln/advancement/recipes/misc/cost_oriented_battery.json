@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_low_voltage_cable": {
+      "conditions": {
+        "items": [
+          {
+            "items": "eln:low_voltage_cable"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "eln:cost_oriented_battery"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_low_voltage_cable"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "eln:cost_oriented_battery"
+    ]
+  }
+}

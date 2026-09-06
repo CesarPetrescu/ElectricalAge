@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "item": "eln:iron_cable"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "c": {
+      "item": "eln:copper_14_2_cable_600v"
+    }
+  },
+  "pattern": [
+    "RIR",
+    "III",
+    "RcR"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:120v_battery_charger"
+  }
+}

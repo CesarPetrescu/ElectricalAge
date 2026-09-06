@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "tag": "c:circuits/advanced"
+    },
+    "I": {
+      "item": "eln:iron_cable"
+    },
+    "R": {
+      "item": "minecraft:gold_ingot"
+    },
+    "c": {
+      "item": "eln:high_voltage_cable"
+    }
+  },
+  "pattern": [
+    "III",
+    "cCR",
+    "III"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:energyconverter"
+  }
+}

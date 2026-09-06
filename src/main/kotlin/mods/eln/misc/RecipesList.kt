@@ -16,6 +16,35 @@ class RecipesList {
         recipe.setMachineList(machines)
     }
 
+    /**
+     * A recipe whose input is an ore-dictionary name ("logWood", "oreCertusQuartz"). 1.7.10 expanded
+     * the dictionary at post-init; the tags behind those names are data, bound when a world's packs
+     * load, so the expansion is redone on every [net.neoforged.neoforge.event.TagsUpdatedEvent]
+     * ([resolveAllTags]) - the mod's own items are matched right away.
+     */
+    private class TagRecipe(val inputName: String, val output: () -> ItemStack?, val energy: Double, var added: List<Recipe> = emptyList())
+    private val tagRecipes = ArrayList<TagRecipe>()
+
+    fun addTagRecipe(inputName: String, output: ItemStack, energy: Double) {
+        TagRecipe(inputName, { output }, energy).also { tagRecipes.add(it); resolve(it) }
+    }
+
+    /** Input and output both dictionary names: the output is the first item under its name. */
+    fun addTagRecipe(inputName: String, outputName: String, outputCount: Int, energy: Double) {
+        TagRecipe(inputName, { OreDict.getOres(outputName).firstOrNull()?.copyWithCount(outputCount) }, energy).also { tagRecipes.add(it); resolve(it) }
+    }
+
+    private fun resolve(t: TagRecipe) {
+        recipes.removeAll(t.added.toSet())
+        val output = t.output()
+        t.added = if (output == null || output.isEmpty) emptyList() else OreDict.getOres(t.inputName).map { input ->
+            Recipe(input.copyWithCount(1), output.copy(), t.energy).also { it.setMachineList(machines) }
+        }
+        recipes.addAll(t.added)
+    }
+
+    fun resolveTags() = tagRecipes.forEach { resolve(it) }
+
     fun addMachine(machine: ItemStack) {
         machines.add(machine)
     }
@@ -45,6 +74,9 @@ class RecipesList {
 
     companion object {
         val listOfList = ArrayList<RecipesList>()
+
+        @JvmStatic
+        fun resolveAllTags() = listOfList.forEach { it.resolveTags() }
         @JvmStatic
         fun getGlobalRecipeWithOutput(output: ItemStack): ArrayList<Recipe> {
             var output = output

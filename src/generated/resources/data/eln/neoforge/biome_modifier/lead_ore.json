@@ -1,0 +1,5 @@
+{
+  "type": "eln:ores",
+  "config": "worldgen.ores.lead_ore.enabled",
+  "feature": "eln:lead_ore"
+}

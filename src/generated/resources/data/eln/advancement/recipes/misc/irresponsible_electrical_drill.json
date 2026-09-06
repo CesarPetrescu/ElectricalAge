@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "eln:irresponsible_electrical_drill"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_turbo_electrical_drill": {
+      "conditions": {
+        "items": [
+          {
+            "items": "eln:turbo_electrical_drill"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_turbo_electrical_drill"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "eln:irresponsible_electrical_drill"
+    ]
+  }
+}

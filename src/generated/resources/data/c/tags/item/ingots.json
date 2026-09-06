@@ -1,0 +1,13 @@
+{
+  "values": [
+    "#c:ingots/copper",
+    "#c:ingots/lead",
+    "#c:ingots/eln_tungsten",
+    "#c:ingots/ferrite",
+    "#c:ingots/alloy",
+    "#c:ingots/aluminum",
+    "#c:ingots/aluminium",
+    "#c:ingots/steel",
+    "#c:ingots/silicon"
+  ]
+}

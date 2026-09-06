@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "eln:combustion_chamber"
+    },
+    "c": {
+      "item": "eln:copper_thermal_cable"
+    }
+  },
+  "pattern": [
+    "   ",
+    "CCc",
+    "CC "
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:big_fuel_burner"
+  }
+}

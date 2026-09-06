@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "E": {
+      "item": "eln:medium_voltage_cable"
+    },
+    "H": {
+      "item": "eln:copper_thermal_cable"
+    },
+    "I": {
+      "tag": "c:rubber"
+    },
+    "M": {
+      "item": "eln:advanced_machine_block"
+    },
+    "m": {
+      "item": "eln:advanced_electrical_motor"
+    }
+  },
+  "pattern": [
+    "ImI",
+    "HMH",
+    "IEI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:240v_turbine"
+  }
+}

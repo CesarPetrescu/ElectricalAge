@@ -96,6 +96,8 @@ neoForge {
             server()
             programArgument("--nogui")
         }
+        // ./gradlew runData: recipes, tags, loot tables and ore worldgen from the mod's own
+        // registrations (mods.eln.data.ElnDataGenerator).
         create("data") {
             data()
             programArguments.addAll(

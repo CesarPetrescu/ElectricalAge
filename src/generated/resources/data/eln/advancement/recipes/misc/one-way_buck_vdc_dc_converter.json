@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "eln:one-way_buck_vdc_dc_converter"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_variable_dc-dc_converter": {
+      "conditions": {
+        "items": [
+          {
+            "items": "eln:variable_dc-dc_converter"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_variable_dc-dc_converter"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "eln:one-way_buck_vdc_dc_converter"
+    ]
+  }
+}

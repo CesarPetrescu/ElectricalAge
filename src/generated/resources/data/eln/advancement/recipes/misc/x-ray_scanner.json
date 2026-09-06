@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_circuits_advanced": {
+      "conditions": {
+        "items": [
+          {
+            "items": "#c:circuits/advanced"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "eln:x-ray_scanner"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_circuits_advanced"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "eln:x-ray_scanner"
+    ]
+  }
+}

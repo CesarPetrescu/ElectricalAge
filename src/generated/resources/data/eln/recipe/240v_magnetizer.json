@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "tag": "c:circuits/advanced"
+    },
+    "I": {
+      "tag": "c:ingots/alloy"
+    },
+    "M": {
+      "item": "eln:advanced_machine_block"
+    },
+    "c": {
+      "item": "eln:advanced_electrical_motor"
+    }
+  },
+  "pattern": [
+    "ICI",
+    "cMc",
+    "III"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:240v_magnetizer"
+  }
+}

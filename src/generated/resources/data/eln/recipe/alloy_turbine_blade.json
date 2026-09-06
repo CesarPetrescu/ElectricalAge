@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "tag": "c:ingots/alloy"
+    },
+    "C": {
+      "item": "eln:advanced_machine_block"
+    },
+    "I": {
+      "tag": "c:ingots/iron"
+    }
+  },
+  "pattern": [
+    "AIA",
+    "ACA",
+    "AIA"
+  ],
+  "result": {
+    "components": {
+      "minecraft:custom_data": {
+        "condition": 1.0
+      }
+    },
+    "count": 1,
+    "id": "eln:alloy_turbine_blade"
+  }
+}

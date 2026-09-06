@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "eln:portable_battery"
+    },
+    {
+      "item": "eln:portable_battery"
+    },
+    {
+      "item": "eln:portable_battery"
+    },
+    {
+      "item": "eln:portable_battery"
+    }
+  ],
+  "result": {
+    "components": {
+      "minecraft:custom_data": {
+        "energy": 0.0
+      }
+    },
+    "count": 1,
+    "id": "eln:portable_battery_pack"
+  }
+}

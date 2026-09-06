@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "tag": "c:circuits/advanced"
+    },
+    "c": {
+      "item": "eln:copper_cable"
+    },
+    "p": {
+      "item": "eln:copper_plate"
+    }
+  },
+  "pattern": [
+    "   ",
+    "cCc",
+    " p "
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:d_flip_flop_chip"
+  }
+}

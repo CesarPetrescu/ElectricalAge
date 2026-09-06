@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "c": {
+      "item": "eln:iron_cable"
+    }
+  },
+  "pattern": [
+    "c",
+    "c"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:signal_antenna"
+  }
+}

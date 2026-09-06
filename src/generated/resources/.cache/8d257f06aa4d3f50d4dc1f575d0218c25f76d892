@@ -1,0 +1,9 @@
+// 1.21.1	2026-09-06T09:02:40.855103914	Tags for minecraft:block mod id eln
+65736e9012c6966fa77fb5a79f2641c6fc89dbd1 data/c/tags/block/ores.json
+2b6951f8fd96baa6c173700469c8988bb9beb54b data/c/tags/block/ores/cinnabar.json
+28c605018a975611801fa52feac3f4707a1ecc54 data/c/tags/block/ores/copper.json
+c4d5e840a138209dffa934f3802ed4e360f264eb data/c/tags/block/ores/eln_tungsten.json
+e72492bfd3c828c6078748e561051971b8565211 data/c/tags/block/ores/lead.json
+65736e9012c6966fa77fb5a79f2641c6fc89dbd1 data/c/tags/block/ores_in_ground/stone.json
+60a246047d3bdb1d680be9fbf190c0f2ae3f1db1 data/minecraft/tags/block/mineable/pickaxe.json
+65736e9012c6966fa77fb5a79f2641c6fc89dbd1 data/minecraft/tags/block/needs_stone_tool.json

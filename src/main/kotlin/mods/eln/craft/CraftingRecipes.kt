@@ -1,31 +1,30 @@
 package mods.eln.craft
 
-import net.minecraftforge.fml.common.registry.EntityRegistry
 import mods.eln.Eln
 import mods.eln.entity.ReplicatorEntity
-import mods.eln.i18n.I18N
 import mods.eln.misc.Recipe
 import mods.eln.misc.Utils.addSmelting
-import mods.eln.misc.Utils.areSame
 import mods.eln.misc.Utils.println
-import mods.eln.railroad.EntityElectricMinecart
-import net.minecraft.world.level.block.Blocks
-import net.minecraft.world.item.Items
+import mods.eln.misc.isNothing
 import net.minecraft.world.item.ItemStack
-import net.minecraft.world.item.crafting.Recipe
-import net.minecraft.launchwrapper.LogWrapper
-import net.minecraft.resources.ResourceLocation
-import net.minecraftforge.fml.common.registry.ForgeRegistries
-import net.minecraftforge.oredict.OreDictionary
-import net.minecraftforge.oredict.ShapedOreRecipe
-import net.minecraftforge.oredict.ShapelessOreRecipe
+import net.minecraft.world.item.Items
+import net.minecraft.world.level.block.Blocks
 import java.util.*
 import kotlin.collections.HashSet
-import mods.eln.misc.isNothing
 
+/**
+ * Every recipe the mod declares, in the 1.7.10 shape. Crafting and smelting recipes are recorded
+ * into [RecipeBook] (the data generator writes them out as JSON; vanilla loads the JSON); the
+ * machine recipes (macerator, compressor, ...) are the mod's own lists and stay live.
+ */
 object CraftingRecipes {
+    private var declared = false
 
+    /** Declares everything once (load-complete, or the data generator - whichever asks first). */
+    @JvmStatic
     fun itemCrafting() {
+        if (declared) return
+        declared = true
 
         //
         registerReplicator()
@@ -136,13 +135,14 @@ object CraftingRecipes {
         return Eln.findItemStack(name, 1)
     }
 
+    /** The first of these names the mod itself provides an item for; else the first name (a tag another mod may fill). */
     private fun firstExistingOre(vararg oreNames: String): String {
         for (oreName in oreNames) {
-            if (OreDictionary.doesOreNameExist(oreName)) {
+            if (Eln.oreNames.contains(oreName)) {
                 return oreName
             }
         }
-        return ""
+        return oreNames.firstOrNull() ?: ""
     }
 
     private fun checkRecipe() {
@@ -175,35 +175,18 @@ object CraftingRecipes {
 
     private fun recipeExists(stack: ItemStack?): Boolean {
         if (stack.isNothing()) return false
-        for (o in ForgeRegistries.RECIPES) {
-            if (o.recipeOutput.isEmpty) continue
-            if (areSame(stack, o.recipeOutput)) return true
-        }
-        return false
-    }
-
-    /**
-     * 1.12.2: recipes live in a Forge registry and need a unique name. Every Eln recipe is registered
-     * through here, named after its output plus a running index (several recipes share an output).
-     */
-    private var recipeIndex = 0
-    private val recipeGroup = ResourceLocation.fromNamespaceAndPath(Eln.MODID, "recipes")
-
-    private fun registerRecipe(recipe: Recipe, output: ItemStack) {
-        val base = output.item.registryName?.path ?: "recipe"
-        recipe.registryName = ResourceLocation.fromNamespaceAndPath(Eln.MODID, "${base}_${output.metadata}_${recipeIndex++}")
-        ForgeRegistries.RECIPES.register(recipe)
+        return RecipeBook.crafts(stack)
     }
 
     private fun craftBrush() {
         val emptyStack: ItemStack = findItemStack("White Brush")
         Eln.whiteDesc!!.setLife(emptyStack, 0)
         for (idx in 0..15) {
-            addShapelessRecipe(emptyStack.copy(), ItemStack(Blocks.WOOL, 1, idx), findItemStack("Iron Cable"))
+            addShapelessRecipe(emptyStack.copy(), LegacyItems.wool(idx), findItemStack("Iron Cable"))
         }
         for (idx in 0..15) {
             val name = Eln.brushSubNames[idx]
-            addShapelessRecipe(Eln.findItemStack(name, 1), ItemStack(Items.DYE, 1, idx), emptyStack.copy())
+            addShapelessRecipe(Eln.findItemStack(name, 1), LegacyItems.dye(idx), emptyStack.copy())
         }
     }
 
@@ -876,11 +859,11 @@ object CraftingRecipes {
         )
         addRecipe(
             findItemStack("Single-use Battery"), "ppp", "III", "ppp", 'C', findItemStack("Low Voltage Cable"),
-            'p', ItemStack(Items.COAL, 1, 0), 'I', "ingotCopper"
+            'p', ItemStack(Items.COAL, 1), 'I', "ingotCopper"
         )
         addRecipe(
             findItemStack("Single-use Battery"), "ppp", "III", "ppp", 'C', findItemStack("Low Voltage Cable"),
-            'p', ItemStack(Items.COAL, 1, 1), 'I', "ingotCopper"
+            'p', LegacyItems.charcoal(), 'I', "ingotCopper"
         )
     }
 
@@ -1168,7 +1151,7 @@ object CraftingRecipes {
         addRecipe(
             Eln.findItemStack("12V Carbon Light Bulb", 4), " G ", "GFG", " S ",
             'G', ItemStack(Blocks.GLASS_PANE),
-            'F', ItemStack(Items.COAL, 1, 1),
+            'F', LegacyItems.charcoal(),
             'S', findItemStack("Copper Cable")
         )
         addRecipe(
@@ -1180,7 +1163,7 @@ object CraftingRecipes {
         addRecipe(
             Eln.findItemStack("120V Carbon Light Bulb", 4), " G ", "GFG", " S ",
             'G', ItemStack(Blocks.GLASS_PANE),
-            'F', ItemStack(Items.COAL, 1, 1),
+            'F', LegacyItems.charcoal(),
             'S', findItemStack("Low Voltage Cable")
         )
         addRecipe(
@@ -1192,7 +1175,7 @@ object CraftingRecipes {
         addRecipe(
             Eln.findItemStack("240V Carbon Light Bulb", 4), " G ", "GFG", " S ",
             'G', ItemStack(Blocks.GLASS_PANE),
-            'F', ItemStack(Items.COAL, 1, 1),
+            'F', LegacyItems.charcoal(),
             'S', findItemStack("Medium Voltage Cable")
         )
         addRecipe(
@@ -1284,7 +1267,7 @@ object CraftingRecipes {
         addRecipe(findItemStack("Combustion Chamber"), " L ", "L L", " L ", 'L', ItemStack(Blocks.STONE))
         addRecipe(
             Eln.findItemStack("Thermal Insulation", 4), "WSW", "SWS", "WSW", 'S', ItemStack(Blocks.STONE), 'W',
-            ItemStack(Blocks.WOOL)
+            "blockWool"
         )
     }
 
@@ -1324,7 +1307,7 @@ object CraftingRecipes {
     }
 
     private fun addShapelessRecipe(output: ItemStack, vararg params: Any) {
-        registerRecipe(ShapelessOreRecipe(recipeGroup, output, *params), output)
+        RecipeBook.recipes.add(ElnRecipe.Shapeless(output, params.toList()))
     }
 
     private fun recipeElectricalMotor() {
@@ -1615,15 +1598,15 @@ object CraftingRecipes {
         addRecipe(findItemStack("Wrench"), " c ", "cc ", "  c", 'c', findItemStack("Iron Cable"))
         addRecipe(
             findItemStack("Player Filter"), " g", "gc", " g", 'g', ItemStack(Blocks.GLASS_PANE), 'c',
-            ItemStack(Items.DYE, 1, 2)
+            LegacyItems.dye(2)
         )
         addRecipe(
             findItemStack("Monster Filter"), " g", "gc", " g", 'g', ItemStack(Blocks.GLASS_PANE), 'c',
-            ItemStack(Items.DYE, 1, 1)
+            LegacyItems.dye(1)
         )
         addRecipe(
             findItemStack("Animal Filter"), " g", "gc", " g", 'g', ItemStack(Blocks.GLASS_PANE), 'c',
-            ItemStack(Items.DYE, 1, 4)
+            LegacyItems.dye(4)
         )
         addRecipe(Eln.findItemStack("Casing", 1), "ppp", "p p", "ppp", 'p', findItemStack("Iron Cable"))
         addRecipe(findItemStack("Iron Clutch Plate"), " t ", "tIt", " t ", 'I', "plateIron", 't', Eln.config.getStringOrElse("runtime.dictionary.tungstenDust", "dustElnTungsten"))
@@ -1701,7 +1684,7 @@ object CraftingRecipes {
         val f = 4000f
         Eln.instance.maceratorRecipes.addRecipe(
             Recipe(
-                ItemStack(Blocks.COAL_ORE, 1), ItemStack(Items.COAL, 3, 0),
+                ItemStack(Blocks.COAL_ORE, 1), ItemStack(Items.COAL, 3),
                 1.0 * f
             )
         )
@@ -1757,7 +1740,7 @@ object CraftingRecipes {
         )
         Eln.instance.maceratorRecipes.addRecipe(
             Recipe(
-                ItemStack(Items.COAL, 1, 0), arrayOf<ItemStack>(
+                ItemStack(Items.COAL, 1), arrayOf<ItemStack>(
                     Eln.findItemStack(
                         "Coal " +
                                 "Dust", 1
@@ -1767,7 +1750,7 @@ object CraftingRecipes {
         )
         Eln.instance.maceratorRecipes.addRecipe(
             Recipe(
-                ItemStack(Items.COAL, 1, 1), arrayOf<ItemStack>(
+                LegacyItems.charcoal(), arrayOf<ItemStack>(
                     Eln.findItemStack(
                         "Coal " +
                                 "Dust", 1
@@ -1797,7 +1780,7 @@ object CraftingRecipes {
         )
         Eln.instance.maceratorRecipes.addRecipe(
             Recipe(
-                ItemStack(Items.DYE, 1, 4), arrayOf<ItemStack>(
+                LegacyItems.dye(4), arrayOf<ItemStack>(
                     Eln.findItemStack(
                         "Lapis " +
                                 "Dust", 1
@@ -2020,7 +2003,7 @@ object CraftingRecipes {
         )
         Eln.instance.arcFurnaceRecipes.addRecipe(
             Recipe(
-                ItemStack(Blocks.QUARTZ_ORE, 1),
+                ItemStack(Blocks.NETHER_QUARTZ_ORE, 1),
                 arrayOf<ItemStack>(ItemStack(Items.QUARTZ, 2)), smeltf.toDouble()
             )
         )
@@ -2103,30 +2086,13 @@ object CraftingRecipes {
         recipeMaceratorModOre(f * 1.5f, "crystalFluix", "dustFluix", 1)
     }
 
+    /**
+     * Ores other mods provide (AE2's certus quartz, nether quartz): 1.7.10 looked the dictionary up
+     * at post-init; the tags behind those names are data, so [mods.eln.misc.RecipesList] expands
+     * them again whenever tags are (re)loaded.
+     */
     private fun recipeMaceratorModOre(f: Float, inputName: String, outputName: String, outputCount: Int) {
-        if (!OreDictionary.doesOreNameExist(inputName)) {
-            LogWrapper.info("No entries for oredict: $inputName")
-            return
-        }
-        if (!OreDictionary.doesOreNameExist(outputName)) {
-            LogWrapper.info("No entries for oredict: $outputName")
-            return
-        }
-        val inOres = OreDictionary.getOres(inputName)
-        val outOres = OreDictionary.getOres(outputName)
-        if (inOres.size == 0) {
-            LogWrapper.info("No ores in oredict entry: $inputName")
-        }
-        if (outOres.size == 0) {
-            LogWrapper.info("No ores in oredict entry: $outputName")
-            return
-        }
-        val output = outOres[0].copy()
-        output.count = outputCount
-        LogWrapper.info("Adding mod recipe from $inputName to $outputName")
-        for (input in inOres) {
-            Eln.instance.maceratorRecipes.addRecipe(Recipe(input, output, f.toDouble()))
-        }
+        Eln.instance.maceratorRecipes.addTagRecipe(inputName, outputName, outputCount, f.toDouble())
     }
 
     private fun recipePlateMachine() {
@@ -2161,13 +2127,13 @@ object CraftingRecipes {
         )
         Eln.instance.plateMachineRecipes.addRecipe(
             Recipe(
-                ItemStack(Items.IRON_INGOT, plateConversionRatio, 0),
+                ItemStack(Items.IRON_INGOT, plateConversionRatio),
                 findItemStack("Iron Plate"), 1.0 * f
             )
         )
         Eln.instance.plateMachineRecipes.addRecipe(
             Recipe(
-                ItemStack(Items.GOLD_INGOT, plateConversionRatio, 0),
+                ItemStack(Items.GOLD_INGOT, plateConversionRatio),
                 findItemStack("Gold Plate"), 1.0 * f
             )
         )
@@ -2185,7 +2151,7 @@ object CraftingRecipes {
         Eln.instance.compressorRecipes.addRecipe(Recipe(Eln.findItemStack("Coal Dust", 4), findItemStack("Coal Plate"), 40000.0))
         Eln.instance.compressorRecipes.addRecipe(Recipe(Eln.findItemStack("Coal Plate", 4), findItemStack("Graphite Rod"), 80000.0))
         Eln.instance.compressorRecipes.addRecipe(Recipe(ItemStack(Blocks.SAND), findItemStack("Dielectric"), 2000.0))
-        Eln.instance.compressorRecipes.addRecipe(Recipe(ItemStack(Blocks.LOG), findItemStack("Tree Resin"), 3000.0))
+        Eln.instance.compressorRecipes.addTagRecipe("logWood", findItemStack("Tree Resin"), 3000.0)
     }
 
     private fun recipeMagnetizer() {
@@ -2278,29 +2244,29 @@ object CraftingRecipes {
     private fun recipeFurnace() {
         var `in`: ItemStack
         `in` = findItemStack("Copper Ore")
-        addSmelting(`in`.item, `in`.itemDamage, findItemStack("Copper Ingot"))
+        addSmelting(`in`.item, 0, findItemStack("Copper Ingot"))
         `in` = findItemStack("dustCopper")
-        addSmelting(`in`.item, `in`.itemDamage, findItemStack("Copper Ingot"))
+        addSmelting(`in`.item, 0, findItemStack("Copper Ingot"))
         `in` = findItemStack("Lead Ore")
-        addSmelting(`in`.item, `in`.itemDamage, findItemStack("ingotLead"))
+        addSmelting(`in`.item, 0, findItemStack("ingotLead"))
         `in` = findItemStack("dustLead")
-        addSmelting(`in`.item, `in`.itemDamage, findItemStack("ingotLead"))
+        addSmelting(`in`.item, 0, findItemStack("ingotLead"))
         `in` = findItemStack("Tungsten Ore")
-        addSmelting(`in`.item, `in`.itemDamage, findItemStack("Tungsten Ingot"))
+        addSmelting(`in`.item, 0, findItemStack("Tungsten Ingot"))
         `in` = findItemStack("Tungsten Dust")
-        addSmelting(`in`.item, `in`.itemDamage, findItemStack("Tungsten Ingot"))
+        addSmelting(`in`.item, 0, findItemStack("Tungsten Ingot"))
         `in` = findItemStack("dustIron")
-        addSmelting(`in`.item, `in`.itemDamage, ItemStack(Items.IRON_INGOT))
+        addSmelting(`in`.item, 0, ItemStack(Items.IRON_INGOT))
         `in` = findItemStack("dustGold")
-        addSmelting(`in`.item, `in`.itemDamage, ItemStack(Items.GOLD_INGOT))
+        addSmelting(`in`.item, 0, ItemStack(Items.GOLD_INGOT))
         `in` = findItemStack("Tree Resin")
-        addSmelting(`in`.item, `in`.itemDamage, Eln.findItemStack("Rubber", 2))
+        addSmelting(`in`.item, 0, Eln.findItemStack("Rubber", 2))
         `in` = findItemStack("Alloy Dust")
-        addSmelting(`in`.item, `in`.itemDamage, findItemStack("Alloy Ingot"))
+        addSmelting(`in`.item, 0, findItemStack("Alloy Ingot"))
         `in` = findItemStack("Silicon Dust")
-        addSmelting(`in`.item, `in`.itemDamage, findItemStack("Silicon Ingot"))
+        addSmelting(`in`.item, 0, findItemStack("Silicon Ingot"))
         `in` = findItemStack("dustCinnabar")
-        addSmelting(`in`.item, `in`.itemDamage, findItemStack("Mercury"))
+        addSmelting(`in`.item, 0, findItemStack("Mercury"))
     }
 
     private fun recipeElectricalSensor() {
@@ -2457,10 +2423,7 @@ object CraftingRecipes {
     private fun recipeElectricalVuMeter() {
         addRecipe(
             Eln.findItemStack("Analog vuMeter", 1), "WWW", "RIr", "WSW", 'W', "plankWood",
-            'R', ItemStack(Items.REDSTONE), 'I', findItemStack("Iron Cable"), 'r', ItemStack(
-                Items.DYE,
-                1, 1
-            ), 'S', findItemStack("Signal Cable")
+            'R', ItemStack(Items.REDSTONE), 'I', findItemStack("Iron Cable"), 'r', LegacyItems.dye(1), 'S', findItemStack("Signal Cable")
         )
         addRecipe(
             Eln.findItemStack("LED vuMeter", 1), " W ", "WTW", " S ", 'W', "plankWood",
@@ -2646,11 +2609,11 @@ object CraftingRecipes {
     private fun recipeElectricalAlarm() {
         addRecipe(
             Eln.findItemStack("Nuclear Alarm", 1), "ITI", "IMI", "IcI", 'c', findItemStack("Signal Cable"), 'T',
-            ItemStack(Blocks.REDSTONE_TORCH), 'I', findItemStack("Iron Cable"), 'M', ItemStack(Blocks.NOTEBLOCK)
+            ItemStack(Blocks.REDSTONE_TORCH), 'I', findItemStack("Iron Cable"), 'M', ItemStack(Blocks.NOTE_BLOCK)
         )
         addRecipe(
             Eln.findItemStack("Standard Alarm", 1), "MTM", "IcI", "III", 'c', findItemStack("Signal Cable"), 'T',
-            ItemStack(Blocks.REDSTONE_TORCH), 'I', findItemStack("Iron Cable"), 'M', ItemStack(Blocks.NOTEBLOCK)
+            ItemStack(Blocks.REDSTONE_TORCH), 'I', findItemStack("Iron Cable"), 'M', ItemStack(Blocks.NOTE_BLOCK)
         )
     }
 
@@ -2718,15 +2681,7 @@ object CraftingRecipes {
     }
 
     private fun recipeComputerProbe() {
-        if (Eln.config.getBooleanOrElse("integrations.computerProbe.enabled", true)) {
-            addRecipe(
-                ItemStack(Eln.instance.computerProbeBlock), "cIw", "ICI", "WIc", 'C', Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced"), 'c',
-                findItemStack("Signal Cable"), 'I', findItemStack("Iron Cable"), 'w', findItemStack(
-                    "Wireless Signal " +
-                            "Receiver"
-                ), 'W', findItemStack("Wireless Signal Transmitter")
-            )
-        }
+        // The computer probe (ComputerCraft/OpenComputers peripheral) is not part of the port yet.
     }
 
     private fun recipeArmor() {
@@ -2737,15 +2692,15 @@ object CraftingRecipes {
     }
 
     private fun addRecipe(output: ItemStack, vararg params: Any) {
-        registerRecipe(ShapedOreRecipe(recipeGroup, output, *normalizeShaped(output, params)), output)
+        RecipeBook.recipes.add(normalizeShaped(output, params))
     }
 
     /**
-     * 1.12's CraftingHelper.parseShaped rejects two things 1.7.10 tolerated: key symbols the
-     * pattern never uses, and pattern symbols without a key (1.7.10 read those as empty slots).
-     * Both exist in the recipe list, so they are folded back to the 1.7.10 meaning here.
+     * Vanilla's shaped-recipe JSON rejects two things 1.7.10 tolerated: key symbols the pattern
+     * never uses, and pattern symbols without a key (1.7.10 read those as empty slots). Both exist
+     * in the recipe list, so they are folded back to the 1.7.10 meaning here.
      */
-    private fun normalizeShaped(output: ItemStack, params: Array<out Any>): Array<Any> {
+    private fun normalizeShaped(output: ItemStack, params: Array<out Any>): ElnRecipe.Shaped {
         var idx = 0
         val rows = ArrayList<String>()
         while (idx < params.size && params[idx] is String) {
@@ -2762,12 +2717,13 @@ object CraftingRecipes {
         val unused = keys.keys - used
         if (undefined.isNotEmpty() || unused.isNotEmpty()) {
             Eln.logger.warn("Recipe for {}: pattern symbols without key {} treated as empty, unused keys {} dropped",
-                output.displayName, undefined, unused)
+                net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(output.item), undefined, unused)
         }
-        val out = ArrayList<Any>()
-        rows.mapTo(out) { row -> row.map { if (it in undefined) ' ' else it }.joinToString("") }
-        keys.filterKeys { it in used }.forEach { (c, v) -> out.add(c); out.add(v) }
-        return out.toTypedArray()
+        return ElnRecipe.Shaped(
+            output,
+            rows.map { row -> row.map { if (it in undefined) ' ' else it }.joinToString("") },
+            keys.filterKeys { it in used }
+        )
     }
 
     private fun recipeTool() {
@@ -2794,37 +2750,19 @@ object CraftingRecipes {
     }
 
     private fun registerReplicator() {
-        val redColor = (255 shl 16)
-        val orangeColor = (255 shl 16) + (200 shl 8)
-
-        // 1.12.2: entity ids are per-mod, the global id space (and the config key that stored one) is gone.
-        EntityRegistry.registerModEntity(
-            ResourceLocation.fromNamespaceAndPath(Eln.MODID, "replicator"), ReplicatorEntity::class.java,
-            I18N.TR_NAME(I18N.Type.ENTITY, "EAReplicator"), ENTITY_ID_REPLICATOR, Eln.instance,
-            80, 3, true, redColor, orangeColor
-        )
-
+        // The entity type itself is registered by EntityRegistration; only the drop list lives here.
         ReplicatorEntity.dropList.add(Eln.findItemStack("Iron Dust", 1))
         ReplicatorEntity.dropList.add(Eln.findItemStack("Copper Dust", 1))
         ReplicatorEntity.dropList.add(Eln.findItemStack("Gold Dust", 1))
         ReplicatorEntity.dropList.add(ItemStack(Items.REDSTONE))
         ReplicatorEntity.dropList.add(ItemStack(Items.GLOWSTONE_DUST))
-        // EntityRegistry.addSpawn(ReplicatorEntity.class, 1, 1, 2, EnumCreatureType.monster, Biome.plains);
     }
 
     private fun registerElectricMinecart() {
-        EntityRegistry.registerModEntity(
-            ResourceLocation.fromNamespaceAndPath(Eln.MODID, "electric_minecart"), EntityElectricMinecart::class.java,
-            I18N.TR_NAME(I18N.Type.ENTITY, "ElectricMinecart"), ENTITY_ID_ELECTRIC_MINECART, Eln.instance,
-            80, 3, true
-        )
     }
 
-    private const val ENTITY_ID_REPLICATOR = 0
-    private const val ENTITY_ID_ELECTRIC_MINECART = 1
-
     private fun recipeChristmas(){
-        addShapelessRecipe(Eln.findItemStack("Christmas Tree", 1), findItemStack("String Lights"), ItemStack(Blocks.SAPLING, 1, 1), findItemStack("String Lights"))
+        addShapelessRecipe(Eln.findItemStack("Christmas Tree", 1), findItemStack("String Lights"), LegacyItems.spruceSapling(), findItemStack("String Lights"))
         addRecipe(
             Eln.findItemStack("Holiday Candle", 1), " g ", "gbg", " i ", 'g', ItemStack(Blocks.GLASS_PANE), 'b',
             findItemStack("120V LED Light Bulb"), 'i', "ingotIron"

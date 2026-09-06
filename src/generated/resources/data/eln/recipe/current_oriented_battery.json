@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "eln:cost_oriented_battery"
+    },
+    "P": {
+      "tag": "c:ingots/copper"
+    }
+  },
+  "pattern": [
+    "PBP"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:current_oriented_battery"
+  }
+}

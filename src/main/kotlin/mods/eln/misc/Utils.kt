@@ -1160,7 +1160,7 @@ object Utils {
     @JvmOverloads
     fun addSmelting(parentItem: Item?, @Suppress("UNUSED_PARAMETER") parentItemDamage: Int, findItemStack: ItemStack?, f: Float = 0.3f) {
         if (parentItem == null || findItemStack == null) return
-        smeltingRecipes.add(Triple(ItemStack(parentItem), findItemStack, f))
+        mods.eln.craft.RecipeBook.smelting.add(Triple(ItemStack(parentItem), findItemStack, f))
     }
 
     @JvmStatic
@@ -1168,10 +1168,6 @@ object Utils {
     fun addSmelting(parentBlock: Block?, parentItemDamage: Int, findItemStack: ItemStack?, f: Float = 0.3f) {
         addSmelting(parentBlock?.asItem(), parentItemDamage, findItemStack, f)
     }
-
-    /** (input, output, experience) of every smelting recipe the mod declared. */
-    @JvmStatic
-    val smeltingRecipes = ArrayList<Triple<ItemStack, ItemStack, Float>>()
 
     @JvmStatic
     fun newNbtTagCompund(nbt: CompoundTag?, string: String): CompoundTag {

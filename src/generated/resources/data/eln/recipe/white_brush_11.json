@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "minecraft:purple_wool"
+    },
+    {
+      "item": "eln:iron_cable"
+    }
+  ],
+  "result": {
+    "components": {
+      "minecraft:custom_data": {
+        "life": 0
+      }
+    },
+    "count": 1,
+    "id": "eln:white_brush"
+  }
+}

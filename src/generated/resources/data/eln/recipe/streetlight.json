@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": {
+      "item": "minecraft:glass_pane"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "pattern": [
+    "G",
+    "I",
+    "I"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:streetlight"
+  }
+}

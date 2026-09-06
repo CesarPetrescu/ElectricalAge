@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": {
+      "item": "eln:10a_diode"
+    }
+  },
+  "pattern": [
+    "D",
+    "D",
+    "D"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:25a_diode"
+  }
+}

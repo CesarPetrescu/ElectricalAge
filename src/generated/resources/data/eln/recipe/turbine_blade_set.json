@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "eln:advanced_machine_block"
+    },
+    "B": {
+      "tag": "c:plates/alloy"
+    },
+    "I": {
+      "item": "eln:iron_plate"
+    },
+    "S": {
+      "tag": "c:ingots/aluminum"
+    }
+  },
+  "pattern": [
+    "SIS",
+    "BAB",
+    "SIS"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:turbine_blade_set"
+  }
+}

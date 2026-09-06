@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "tag": "c:circuits/basic"
+    },
+    "c": {
+      "item": "eln:copper_cable"
+    }
+  },
+  "pattern": [
+    " c ",
+    "cCc",
+    " c "
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:and_chip"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "F": {
+      "tag": "c:ingots/eln_tungsten"
+    },
+    "G": {
+      "item": "minecraft:glass_pane"
+    },
+    "S": {
+      "item": "eln:medium_voltage_cable"
+    }
+  },
+  "pattern": [
+    "GGG",
+    "FFF",
+    "GSG"
+  ],
+  "result": {
+    "components": {
+      "minecraft:custom_data": {
+        "life": 48.0
+      }
+    },
+    "count": 2,
+    "id": "eln:240v_farming_light_bulb"
+  }
+}

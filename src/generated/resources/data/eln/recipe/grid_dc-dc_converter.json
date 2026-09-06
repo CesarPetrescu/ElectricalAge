@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "i": {
+      "tag": "c:ingots/aluminum"
+    },
+    "m": {
+      "item": "eln:advanced_machine_block"
+    },
+    "t": {
+      "item": "eln:dc-dc_converter"
+    }
+  },
+  "pattern": [
+    "i i",
+    "mtm",
+    "imi"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:grid_dc-dc_converter"
+  }
+}

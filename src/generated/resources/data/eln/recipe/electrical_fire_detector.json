@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "b": {
+      "tag": "c:circuits/basic"
+    },
+    "c": {
+      "item": "eln:signal_cable"
+    },
+    "p": {
+      "tag": "c:plates/copper"
+    },
+    "r": {
+      "tag": "c:rubber"
+    }
+  },
+  "pattern": [
+    "cbr",
+    "p p",
+    "r r"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:electrical_fire_detector"
+  }
+}

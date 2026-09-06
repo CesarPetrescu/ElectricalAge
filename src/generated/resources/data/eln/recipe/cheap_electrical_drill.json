@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "tag": "c:circuits/basic"
+    },
+    "M": {
+      "item": "eln:electrical_motor"
+    },
+    "P": {
+      "item": "minecraft:iron_pickaxe"
+    },
+    "T": {
+      "item": "eln:mining_pipe"
+    }
+  },
+  "pattern": [
+    "CMC",
+    " T ",
+    " P "
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:cheap_electrical_drill"
+  }
+}

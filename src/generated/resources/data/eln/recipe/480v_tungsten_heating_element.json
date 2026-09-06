@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "eln:small_480v_tungsten_heating_element"
+    }
+  },
+  "pattern": [
+    "CC"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:480v_tungsten_heating_element"
+  }
+}

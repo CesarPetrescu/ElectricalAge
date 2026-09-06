@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "tag": "c:circuits/advanced"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "w": {
+      "item": "eln:wrench"
+    }
+  },
+  "pattern": [
+    "wR",
+    "RC"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:config_copy_tool"
+  }
+}

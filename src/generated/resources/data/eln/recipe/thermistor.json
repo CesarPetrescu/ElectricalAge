@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "eln:copper_ingot"
+    },
+    "c": {
+      "item": "eln:copper_cable"
+    }
+  },
+  "pattern": [
+    "   ",
+    "cCc",
+    "   "
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:thermistor"
+  }
+}

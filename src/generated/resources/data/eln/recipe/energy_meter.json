@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "item": "eln:iron_cable"
+    },
+    "R": {
+      "tag": "c:circuits/basic"
+    },
+    "c": {
+      "item": "eln:copper_cable"
+    }
+  },
+  "pattern": [
+    "IcI",
+    "IRI",
+    "IcI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:energy_meter"
+  }
+}

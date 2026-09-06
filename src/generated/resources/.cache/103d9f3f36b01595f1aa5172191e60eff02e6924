@@ -1,0 +1,13 @@
+// 1.21.1	2026-09-06T09:05:02.792356383	Registries
+48b5747de9a44551b6607fd054b0d814bc078142 data/eln/neoforge/biome_modifier/cinnabar_ore.json
+18037c4a54f0e291ad56410175f352947152c1df data/eln/neoforge/biome_modifier/copper_ore.json
+4b17c7f5987c09531b61b05239eacdd20b6a29a5 data/eln/neoforge/biome_modifier/lead_ore.json
+92c25d315ba5addd3be69fbbaecb68806cf0f037 data/eln/neoforge/biome_modifier/tungsten_ore.json
+1b02fca93edf9d8f234126719289b0245156c99e data/eln/worldgen/configured_feature/cinnabar_ore.json
+819b1086551b4b806b892e12def9bd5f4acf60a6 data/eln/worldgen/configured_feature/copper_ore.json
+82114d443678440930d42be54320444484b44216 data/eln/worldgen/configured_feature/lead_ore.json
+d448c7665b46db1065f3334e9423162ea7728f94 data/eln/worldgen/configured_feature/tungsten_ore.json
+07eba01dfe70e432098ab8b607873b63c64ac4b2 data/eln/worldgen/placed_feature/cinnabar_ore.json
+42376c6764c1fd3eec88a22ffdc75a8d880e617c data/eln/worldgen/placed_feature/copper_ore.json
+3550a19cd5c417ff5b869884b196e1c32da5b444 data/eln/worldgen/placed_feature/lead_ore.json
+21db4f0f08d3d216999001357a5274be449fbdb0 data/eln/worldgen/placed_feature/tungsten_ore.json

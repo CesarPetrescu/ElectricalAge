@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "eln:iron_cable"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "pattern": [
+    " I ",
+    "C C"
+  ],
+  "result": {
+    "count": 3,
+    "id": "eln:fluorescent_lamp_socket"
+  }
+}

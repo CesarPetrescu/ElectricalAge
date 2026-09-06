@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "L": {
+      "item": "eln:iron_cable"
+    },
+    "c": {
+      "item": "eln:copper_cable"
+    },
+    "r": {
+      "item": "eln:tree_resin"
+    }
+  },
+  "pattern": [
+    "rLr",
+    "LcL",
+    "rLr"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:machine_block"
+  }
+}

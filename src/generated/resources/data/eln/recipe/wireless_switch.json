@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "tag": "c:circuits/basic"
+    },
+    "a": {
+      "item": "eln:signal_antenna"
+    },
+    "r": {
+      "tag": "c:rubber"
+    }
+  },
+  "pattern": [
+    " a ",
+    "rCr",
+    " r "
+  ],
+  "result": {
+    "count": 3,
+    "id": "eln:wireless_switch"
+  }
+}

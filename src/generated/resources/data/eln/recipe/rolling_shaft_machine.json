@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "c": {
+      "item": "eln:machine_block"
+    },
+    "i": {
+      "tag": "c:ingots/iron"
+    }
+  },
+  "pattern": [
+    "IiI",
+    "IcI",
+    "IiI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:rolling_shaft_machine"
+  }
+}

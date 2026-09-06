@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "L": {
+      "tag": "c:plates/lead"
+    },
+    "t": {
+      "tag": "c:dusts/eln_tungsten"
+    }
+  },
+  "pattern": [
+    " t ",
+    "tLt",
+    " t "
+  ],
+  "result": {
+    "components": {
+      "minecraft:custom_data": {}
+    },
+    "count": 1,
+    "id": "eln:lead_clutch_plate"
+  }
+}

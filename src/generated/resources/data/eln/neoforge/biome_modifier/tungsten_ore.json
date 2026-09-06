@@ -1,0 +1,5 @@
+{
+  "type": "eln:ores",
+  "config": "worldgen.ores.tungsten_ore.enabled",
+  "feature": "eln:tungsten_ore"
+}

@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "eln:advanced_machine_block"
+    },
+    "F": {
+      "item": "eln:fixed_shaft"
+    },
+    "M": {
+      "tag": "c:storage_blocks/steel"
+    },
+    "s": {
+      "tag": "c:ingots/steel"
+    }
+  },
+  "pattern": [
+    " s ",
+    "sFs",
+    "AMA"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:reinforced_shaft"
+  }
+}

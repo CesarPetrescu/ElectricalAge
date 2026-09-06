@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "c": {
+      "item": "minecraft:green_dye"
+    },
+    "g": {
+      "item": "minecraft:glass_pane"
+    }
+  },
+  "pattern": [
+    " g",
+    "gc",
+    " g"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:player_filter"
+  }
+}

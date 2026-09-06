@@ -158,6 +158,7 @@ object ElnRegistry {
             return
         }
         ores.add(name to stack)
+        Eln.oreNames.add(name)
         afterItems { Eln.dictionnaryOreFromMod.putIfAbsent(name, stack.get()) }
     }
 
@@ -257,6 +258,10 @@ object ElnRegistry {
             Registries.BLOCK_ENTITY_TYPE -> registerAll(event, Registries.BLOCK_ENTITY_TYPE, blockEntities)
             Registries.MENU -> registerAll(event, Registries.MENU, menus)
             Registries.CREATIVE_MODE_TAB -> event.register(Registries.CREATIVE_MODE_TAB) { helper -> tabs.forEach { (id, tab) -> helper.register(id, tab) } }
+            net.neoforged.neoforge.registries.NeoForgeRegistries.Keys.BIOME_MODIFIER_SERIALIZERS ->
+                event.register(net.neoforged.neoforge.registries.NeoForgeRegistries.Keys.BIOME_MODIFIER_SERIALIZERS) { helper ->
+                    helper.register(registryName("ores"), mods.eln.worldgen.ElnOreBiomeModifier.CODEC)
+                }
         }
     }
 

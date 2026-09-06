@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": {
+      "item": "eln:synthetic_diamond"
+    },
+    "F": {
+      "item": "eln:turbo_electrical_drill"
+    }
+  },
+  "pattern": [
+    "DDD",
+    "DFD",
+    "DDD"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:irresponsible_electrical_drill"
+  }
+}

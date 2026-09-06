@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "tag": "c:storage_blocks/steel"
+    },
+    "i": {
+      "tag": "c:ingots/steel"
+    },
+    "m": {
+      "item": "eln:machine_block"
+    }
+  },
+  "pattern": [
+    "ii ",
+    "mi ",
+    " B "
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:transmission_tower"
+  }
+}

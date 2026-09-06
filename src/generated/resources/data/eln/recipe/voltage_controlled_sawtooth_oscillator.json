@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "tag": "c:circuits/advanced"
+    },
+    "c": {
+      "item": "eln:copper_cable"
+    },
+    "r": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    "   ",
+    "cCc",
+    "rrr"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:voltage_controlled_sawtooth_oscillator"
+  }
+}

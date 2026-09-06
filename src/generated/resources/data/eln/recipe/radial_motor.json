@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "M": {
+      "item": "eln:advanced_machine_block"
+    },
+    "S": {
+      "tag": "c:storage_blocks/steel"
+    },
+    "r": {
+      "tag": "c:plates/alloy"
+    }
+  },
+  "pattern": [
+    " r ",
+    "rSr",
+    " rM"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:radial_motor"
+  }
+}

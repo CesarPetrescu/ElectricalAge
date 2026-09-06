@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "tag": "c:rubber"
+    },
+    "C": {
+      "item": "eln:medium_voltage_cable"
+    },
+    "I": {
+      "item": "eln:copper_cable"
+    }
+  },
+  "pattern": [
+    "  I",
+    "AIA",
+    "CAC"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:medium_voltage_switch"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "W": {
+      "tag": "minecraft:planks"
+    }
+  },
+  "pattern": [
+    "W W",
+    "WW "
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:tree_resin_collector"
+  }
+}

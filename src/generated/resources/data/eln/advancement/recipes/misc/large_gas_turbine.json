@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_motor_cowling": {
+      "conditions": {
+        "items": [
+          {
+            "items": "eln:motor_cowling"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "eln:large_gas_turbine"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_motor_cowling"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "eln:large_gas_turbine"
+    ]
+  }
+}

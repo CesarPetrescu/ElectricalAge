@@ -1,0 +1,5 @@
+{
+  "type": "eln:ores",
+  "config": "worldgen.ores.cinnabar_ore.enabled",
+  "feature": "eln:cinnabar_ore"
+}

@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "eln:utility_pole_w_dc-dc_converter"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_utility_pole": {
+      "conditions": {
+        "items": [
+          {
+            "items": "eln:utility_pole"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_utility_pole"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "eln:utility_pole_w_dc-dc_converter"
+    ]
+  }
+}

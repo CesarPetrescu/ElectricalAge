@@ -181,7 +181,8 @@ class JsonConfigTest {
         val map = config.getStringDoubleMap("tools.xrayScanner.oreFactors")
         val keys = map.keys.toList()
         assertTrue(keys.indexOf("minecraft:coal_ore") < keys.indexOf("minecraft:iron_ore"))
-        assertTrue(keys.indexOf("minecraft:diamond_ore") < keys.indexOf("Eln:Eln.Ore:1"))
+        // the mod's own ores follow vanilla's in the defaults ("Eln:Eln.Ore:1" until the flattening)
+        assertTrue(keys.indexOf("minecraft:diamond_ore") < keys.indexOf("eln:copper_ore"))
     }
 
     @Test

@@ -751,6 +751,14 @@ object ItemRegistration {
         ElnRegistry.registerOre(name, ore)
     }
 
+    /**
+     * A stack supplier for a descriptor, evaluated once the item exists. Taking the descriptor as
+     * a parameter captures its value: the registration functions reuse one `var` for descriptor
+     * after descriptor, and a lambda written at the call site would see whichever came last.
+     */
+    private fun stackOf(d: GenericItemUsingDamageDescriptor): java.util.function.Supplier<ItemStack> = java.util.function.Supplier { d.newItemStack() }
+    private fun stackOf(d: mods.eln.generic.GenericItemBlockUsingDamageDescriptor): java.util.function.Supplier<ItemStack> = java.util.function.Supplier { d.newItemStack() }
+
     private fun registerDust(id: Int) {
         var currentId = id
         // TODO: Breaking change! We should really not be modifying ID. When we re-assign these to be subId, it will break existing registered items
@@ -766,8 +774,8 @@ object ItemRegistration {
             element = GenericItemUsingDamageDescriptorWithComment(name, arrayOf())
             Eln.dustCopper = element
             Eln.sharedItem.addElement(completId, element)
-            Data.addResource { element.newItemStack() }
-            addToOre("dustCopper") { element.newItemStack() }
+            Data.addResource(stackOf(element))
+            addToOre("dustCopper", stackOf(element))
         }
         run {
             subId = 2
@@ -776,8 +784,8 @@ object ItemRegistration {
             element = GenericItemUsingDamageDescriptorWithComment(name, arrayOf())
             Eln.dustCopper = element
             Eln.sharedItem.addElement(completId, element)
-            Data.addResource { element.newItemStack() }
-            addToOre("dustIron") { element.newItemStack() }
+            Data.addResource(stackOf(element))
+            addToOre("dustIron", stackOf(element))
         }
         run {
             subId = 3
@@ -786,8 +794,8 @@ object ItemRegistration {
             element = GenericItemUsingDamageDescriptorWithComment(name, arrayOf())
             Eln.dustCopper = element
             Eln.sharedItem.addElement(completId, element)
-            Data.addResource { element.newItemStack() }
-            addToOre("dustLapis") { element.newItemStack() }
+            Data.addResource(stackOf(element))
+            addToOre("dustLapis", stackOf(element))
         }
         run {
             subId = 4
@@ -796,8 +804,8 @@ object ItemRegistration {
             element = GenericItemUsingDamageDescriptorWithComment(name, arrayOf())
             Eln.dustCopper = element
             Eln.sharedItem.addElement(completId, element)
-            Data.addResource { element.newItemStack() }
-            addToOre("dustDiamond") { element.newItemStack() }
+            Data.addResource(stackOf(element))
+            addToOre("dustDiamond", stackOf(element))
         }
 
         run {
@@ -805,16 +813,16 @@ object ItemRegistration {
             name = I18N.TR_NAME(I18N.Type.NONE, "Lead Dust")
             element = GenericItemUsingDamageDescriptorWithComment(name, arrayOf())
             Eln.sharedItem.addElement(currentId, element)
-            Data.addResource { element.newItemStack() }
-            addToOre("dustLead") { element.newItemStack() }
+            Data.addResource(stackOf(element))
+            addToOre("dustLead", stackOf(element))
         }
         run {
             currentId = 6
             name = I18N.TR_NAME(I18N.Type.NONE, "Tungsten Dust")
             element = GenericItemUsingDamageDescriptorWithComment(name, arrayOf())
             Eln.sharedItem.addElement(currentId, element)
-            Data.addResource { element.newItemStack() }
-            addToOre(Eln.config.getStringOrElse("runtime.dictionary.tungstenDust", "dustElnTungsten")) { element.newItemStack() }
+            Data.addResource(stackOf(element))
+            addToOre(Eln.config.getStringOrElse("runtime.dictionary.tungstenDust", "dustElnTungsten"), stackOf(element))
         }
 
         run {
@@ -822,8 +830,8 @@ object ItemRegistration {
             name = I18N.TR_NAME(I18N.Type.NONE, "Gold Dust")
             element = GenericItemUsingDamageDescriptorWithComment(name, arrayOf())
             Eln.sharedItem.addElement(currentId, element)
-            Data.addResource { element.newItemStack() }
-            addToOre("dustGold") { element.newItemStack() }
+            Data.addResource(stackOf(element))
+            addToOre("dustGold", stackOf(element))
         }
 
         run {
@@ -831,16 +839,16 @@ object ItemRegistration {
             name = I18N.TR_NAME(I18N.Type.NONE, "Coal Dust")
             element = GenericItemUsingDamageDescriptorWithComment(name, arrayOf())
             Eln.sharedItem.addElement(currentId, element)
-            Data.addResource { element.newItemStack() }
-            addToOre("dustCoal") { element.newItemStack() }
+            Data.addResource(stackOf(element))
+            addToOre("dustCoal", stackOf(element))
         }
         run {
             currentId = 9
             name = I18N.TR_NAME(I18N.Type.NONE, "Alloy Dust")
             element = GenericItemUsingDamageDescriptorWithComment(name, arrayOf())
             Eln.sharedItem.addElement(currentId, element)
-            Data.addResource { element.newItemStack() }
-            addToOre("dustAlloy") { element.newItemStack() }
+            Data.addResource(stackOf(element))
+            addToOre("dustAlloy", stackOf(element))
         }
 
         run {
@@ -848,8 +856,8 @@ object ItemRegistration {
             name = I18N.TR_NAME(I18N.Type.NONE, "Cinnabar Dust")
             element = GenericItemUsingDamageDescriptorWithComment(name, arrayOf())
             Eln.sharedItem.addElement(currentId, element)
-            Data.addResource { element.newItemStack() }
-            addToOre("dustCinnabar") { element.newItemStack() }
+            Data.addResource(stackOf(element))
+            addToOre("dustCinnabar", stackOf(element))
         }
     }
 
@@ -867,8 +875,8 @@ object ItemRegistration {
             element = GenericItemUsingDamageDescriptorWithComment(name, arrayOf())
             Eln.sharedItem.addElement(completId, element)
             instance.copperIngot = element
-            Data.addResource { element.newItemStack() }
-            addToOre("ingotCopper") { element.newItemStack() }
+            Data.addResource(stackOf(element))
+            addToOre("ingotCopper", stackOf(element))
         }
 
         run {
@@ -878,8 +886,8 @@ object ItemRegistration {
             element = GenericItemUsingDamageDescriptorWithComment(name, arrayOf())
             Eln.sharedItem.addElement(completId, element)
             instance.plumbIngot = element
-            Data.addResource { element.newItemStack() }
-            addToOre("ingotLead") { element.newItemStack() }
+            Data.addResource(stackOf(element))
+            addToOre("ingotLead", stackOf(element))
         }
 
         run {
@@ -889,8 +897,8 @@ object ItemRegistration {
             element = GenericItemUsingDamageDescriptorWithComment(name, arrayOf())
             Eln.sharedItem.addElement(completId, element)
             instance.tungstenIngot = element
-            Data.addResource { element.newItemStack() }
-            addToOre(Eln.config.getStringOrElse("runtime.dictionary.tungstenIngot", "ingotElnTungsten")) { element.newItemStack() }
+            Data.addResource(stackOf(element))
+            addToOre(Eln.config.getStringOrElse("runtime.dictionary.tungstenIngot", "ingotElnTungsten"), stackOf(element))
         }
 
         run {
@@ -902,8 +910,8 @@ object ItemRegistration {
                 arrayOf(tr("useless"), tr("Really useless"))
             )
             Eln.sharedItem.addElement(completId, element)
-            Data.addResource { element.newItemStack() }
-            addToOre("ingotFerrite") { element.newItemStack() }
+            Data.addResource(stackOf(element))
+            addToOre("ingotFerrite", stackOf(element))
         }
 
         run {
@@ -912,8 +920,8 @@ object ItemRegistration {
             name = I18N.TR_NAME(I18N.Type.NONE, "Alloy Ingot")
             element = GenericItemUsingDamageDescriptorWithComment(name, arrayOf())
             Eln.sharedItem.addElement(completId, element)
-            Data.addResource { element.newItemStack() }
-            addToOre("ingotAlloy") { element.newItemStack() }
+            Data.addResource(stackOf(element))
+            addToOre("ingotAlloy", stackOf(element))
         }
 
         run {
@@ -923,8 +931,8 @@ object ItemRegistration {
             element =
                 GenericItemUsingDamageDescriptorWithComment(name, arrayOf(tr("useless"), tr("miaou")))
             Eln.sharedItem.addElement(completId, element)
-            Data.addResource { element.newItemStack() }
-            addToOre("quicksilver") { element.newItemStack() }
+            Data.addResource(stackOf(element))
+            addToOre("quicksilver", stackOf(element))
         }
     }
 
@@ -980,7 +988,7 @@ object ItemRegistration {
             name = I18N.TR_NAME(I18N.Type.NONE, "Electrical Motor")
             element = GenericItemUsingDamageDescriptorWithComment(name, arrayOf())
             Eln.sharedItem.addElement(completId, element)
-            Data.addResource { element.newItemStack() }
+            Data.addResource(stackOf(element))
         }
         run {
             subId = 1
@@ -988,7 +996,7 @@ object ItemRegistration {
             name = I18N.TR_NAME(I18N.Type.NONE, "Advanced Electrical Motor")
             element = GenericItemUsingDamageDescriptorWithComment(name, arrayOf())
             Eln.sharedItem.addElement(completId, element)
-            Data.addResource { element.newItemStack() }
+            Data.addResource(stackOf(element))
         }
     }
 
@@ -1081,7 +1089,7 @@ object ItemRegistration {
             val descriptor = TreeResin(name)
             Eln.sharedItem.addElement(completId, descriptor)
             Eln.treeResin = descriptor
-            addToOre("materialResin") { descriptor.newItemStack() }
+            addToOre("materialResin", stackOf(descriptor))
         }
         run {
             subId = 1
@@ -1089,7 +1097,7 @@ object ItemRegistration {
             name = I18N.TR_NAME(I18N.Type.NONE, "Rubber")
             val descriptor = GenericItemUsingDamageDescriptor(name)
             Eln.sharedItem.addElement(completId, descriptor)
-            addToOre("itemRubber") { descriptor.newItemStack() }
+            addToOre("itemRubber", stackOf(descriptor))
         }
     }
 
@@ -1189,7 +1197,7 @@ object ItemRegistration {
             name = I18N.TR_NAME(I18N.Type.NONE, "Iron Cable")
             val descriptor = GenericItemUsingDamageDescriptor(name)
             Eln.sharedItem.addElement(completId, descriptor)
-            Data.addResource { descriptor.newItemStack() }
+            Data.addResource(stackOf(descriptor))
         }
         run {
             subId = 2
@@ -1197,7 +1205,7 @@ object ItemRegistration {
             name = I18N.TR_NAME(I18N.Type.NONE, "Tungsten Cable")
             val descriptor = GenericItemUsingDamageDescriptor(name)
             Eln.sharedItem.addElement(completId, descriptor)
-            Data.addResource { descriptor.newItemStack() }
+            Data.addResource(stackOf(descriptor))
         }
     }
 
@@ -1212,7 +1220,7 @@ object ItemRegistration {
             name = I18N.TR_NAME(I18N.Type.NONE, "Graphite Rod")
             val graphiteDescriptor = GraphiteDescriptor(name)
             Eln.sharedItem.addElement(completId, graphiteDescriptor)
-            Data.addResource { graphiteDescriptor.newItemStack() }
+            Data.addResource(stackOf(graphiteDescriptor))
         }
         run {
             subId = 1
@@ -1220,7 +1228,7 @@ object ItemRegistration {
             name = I18N.TR_NAME(I18N.Type.NONE, "2x Graphite Rods")
             val descriptor = GenericItemUsingDamageDescriptor(name)
             Eln.sharedItem.addElement(completId, descriptor)
-            Data.addResource { descriptor.newItemStack() }
+            Data.addResource(stackOf(descriptor))
         }
         run {
             subId = 2
@@ -1228,7 +1236,7 @@ object ItemRegistration {
             name = I18N.TR_NAME(I18N.Type.NONE, "3x Graphite Rods")
             val descriptor = GenericItemUsingDamageDescriptor(name)
             Eln.sharedItem.addElement(completId, descriptor)
-            Data.addResource { descriptor.newItemStack() }
+            Data.addResource(stackOf(descriptor))
         }
         run {
             subId = 3
@@ -1236,7 +1244,7 @@ object ItemRegistration {
             name = I18N.TR_NAME(I18N.Type.NONE, "4x Graphite Rods")
             val descriptor = GenericItemUsingDamageDescriptor(name)
             Eln.sharedItem.addElement(completId, descriptor)
-            Data.addResource { descriptor.newItemStack() }
+            Data.addResource(stackOf(descriptor))
         }
         run {
             subId = 4
@@ -1244,7 +1252,7 @@ object ItemRegistration {
             name = I18N.TR_NAME(I18N.Type.NONE, "Synthetic Diamond")
             val descriptor = GenericItemUsingDamageDescriptor(name)
             Eln.sharedItem.addElement(completId, descriptor)
-            Data.addResource { descriptor.newItemStack() }
+            Data.addResource(stackOf(descriptor))
         }
         run {
             subId = 5
@@ -1252,7 +1260,7 @@ object ItemRegistration {
             name = I18N.TR_NAME(I18N.Type.NONE, "unreleasedium")
             val descriptor = GenericItemUsingDamageDescriptor(name)
             Eln.sharedItem.addElement(completId, descriptor)
-            Data.addResource { descriptor.newItemStack() }
+            Data.addResource(stackOf(descriptor))
         }
         run {
             subId = 6
@@ -1260,9 +1268,9 @@ object ItemRegistration {
             name = I18N.TR_NAME(I18N.Type.NONE, "Arc Clay Ingot")
             val descriptor = GenericItemUsingDamageDescriptor(name)
             Eln.sharedItem.addElement(completId, descriptor)
-            Data.addResource { descriptor.newItemStack() }
-            ElnRegistry.registerOre("ingotAluminum") { descriptor.newItemStack() }
-            ElnRegistry.registerOre("ingotAluminium") { descriptor.newItemStack() }
+            Data.addResource(stackOf(descriptor))
+            ElnRegistry.registerOre("ingotAluminum", stackOf(descriptor))
+            ElnRegistry.registerOre("ingotAluminium", stackOf(descriptor))
         }
         run {
             subId = 7
@@ -1270,8 +1278,8 @@ object ItemRegistration {
             name = I18N.TR_NAME(I18N.Type.NONE, "Arc Metal Ingot")
             val descriptor = GenericItemUsingDamageDescriptor(name)
             Eln.sharedItem.addElement(completId, descriptor)
-            Data.addResource { descriptor.newItemStack() }
-            ElnRegistry.registerOre("ingotSteel") { descriptor.newItemStack() }
+            Data.addResource(stackOf(descriptor))
+            ElnRegistry.registerOre("ingotSteel", stackOf(descriptor))
         }
         run {
             subId = 8
@@ -1279,7 +1287,7 @@ object ItemRegistration {
             name = I18N.TR_NAME(I18N.Type.NONE, "Inert Canister")
             val descriptor = GenericItemUsingDamageDescriptor(name)
             Eln.sharedItem.addElement(completId, descriptor)
-            Data.addResource { descriptor.newItemStack() }
+            Data.addResource(stackOf(descriptor))
         }
         /*{
         GenericItemUsingDamageDescriptor descriptor;
@@ -1289,7 +1297,7 @@ object ItemRegistration {
 
         descriptor = new GenericItemUsingDamageDescriptor(name);
         sharedItem.addElement(completId, descriptor);
-        Data.addResource { descriptor.newItemStack() };
+        Data.addResource(stackOf(descriptor));
     }
     {
         GenericItemUsingDamageDescriptor descriptor;
@@ -1299,7 +1307,7 @@ object ItemRegistration {
 
         descriptor = new GenericItemUsingDamageDescriptor(name);
         sharedItem.addElement(completId, descriptor);
-        Data.addResource { descriptor.newItemStack() };
+        Data.addResource(stackOf(descriptor));
     }*/
         run {
             subId = 11
@@ -1307,7 +1315,7 @@ object ItemRegistration {
             name = I18N.TR_NAME(I18N.Type.NONE, "Canister of Water")
             val descriptor = GenericItemUsingDamageDescriptor(name)
             Eln.sharedItem.addElement(completId, descriptor)
-            Data.addResource { descriptor.newItemStack() }
+            Data.addResource(stackOf(descriptor))
         }
         run {
             subId = 12
@@ -1315,7 +1323,7 @@ object ItemRegistration {
             name = I18N.TR_NAME(I18N.Type.NONE, "Canister of Arc Water")
             val descriptor = GenericItemUsingDamageDescriptor(name)
             Eln.sharedItem.addElement(completId, descriptor)
-            Data.addResource { descriptor.newItemStack() }
+            Data.addResource(stackOf(descriptor))
         }
     }
 
@@ -1479,8 +1487,8 @@ object ItemRegistration {
                 arrayOf()
             ).inOresAndMaterialsTab()
             Eln.sharedItem.addElement(subId + (id shl 6), desc)
-            Data.addResource { desc.newItemStack() }
-            ElnRegistry.registerOre(Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic")) { desc.newItemStack() }
+            Data.addResource(stackOf(desc))
+            ElnRegistry.registerOre(Eln.config.getStringOrElse("runtime.dictionary.cheapChip", "circuitElnBasic"), stackOf(desc))
         }
         run {
             subId = 1
@@ -1490,8 +1498,8 @@ object ItemRegistration {
                 arrayOf()
             ).inOresAndMaterialsTab()
             Eln.sharedItem.addElement(subId + (id shl 6), desc)
-            Data.addResource { desc.newItemStack() }
-            ElnRegistry.registerOre(Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced")) { desc.newItemStack() }
+            Data.addResource(stackOf(desc))
+            ElnRegistry.registerOre(Eln.config.getStringOrElse("runtime.dictionary.advancedChip", "circuitElnAdvanced"), stackOf(desc))
         }
         run {
             subId = 2
@@ -1501,8 +1509,8 @@ object ItemRegistration {
                 arrayOf()
             ).inOresAndMaterialsTab()
             Eln.sharedItem.addElement(subId + (id shl 6), desc)
-            Data.addResource { desc.newItemStack() }
-            addToOre("casingMachine") { desc.newItemStack() }
+            Data.addResource(stackOf(desc))
+            addToOre("casingMachine", stackOf(desc))
         }
         run {
             subId = 3
@@ -1512,7 +1520,7 @@ object ItemRegistration {
                 arrayOf()
             ).inOresAndMaterialsTab()
             Eln.sharedItem.addElement(subId + (id shl 6), desc)
-            Data.addResource { desc.newItemStack() }
+            Data.addResource(stackOf(desc))
         }
         run {
             subId = 4
@@ -1522,7 +1530,7 @@ object ItemRegistration {
                 arrayOf()
             ).inOresAndMaterialsTab()
             Eln.sharedItem.addElement(subId + (id shl 6), desc)
-            Data.addResource { desc.newItemStack() }
+            Data.addResource(stackOf(desc))
         }
 
         run {
@@ -1533,9 +1541,9 @@ object ItemRegistration {
                 arrayOf()
             ).inOresAndMaterialsTab()
             Eln.sharedItem.addElement(subId + (id shl 6), desc)
-            Data.addResource { desc.newItemStack() }
+            Data.addResource(stackOf(desc))
             Eln.plateCopper = desc
-            addToOre("plateCopper") { desc.newItemStack() }
+            addToOre("plateCopper", stackOf(desc))
         }
         run {
             subId = 7
@@ -1545,8 +1553,8 @@ object ItemRegistration {
                 arrayOf()
             ).inOresAndMaterialsTab()
             Eln.sharedItem.addElement(subId + (id shl 6), desc)
-            Data.addResource { desc.newItemStack() }
-            addToOre("plateIron") { desc.newItemStack() }
+            Data.addResource(stackOf(desc))
+            addToOre("plateIron", stackOf(desc))
         }
         run {
             subId = 8
@@ -1556,8 +1564,8 @@ object ItemRegistration {
                 arrayOf()
             ).inOresAndMaterialsTab()
             Eln.sharedItem.addElement(subId + (id shl 6), desc)
-            Data.addResource { desc.newItemStack() }
-            addToOre("plateGold") { desc.newItemStack() }
+            Data.addResource(stackOf(desc))
+            addToOre("plateGold", stackOf(desc))
         }
         run {
             subId = 9
@@ -1567,8 +1575,8 @@ object ItemRegistration {
                 arrayOf()
             ).inOresAndMaterialsTab()
             Eln.sharedItem.addElement(subId + (id shl 6), desc)
-            Data.addResource { desc.newItemStack() }
-            addToOre("plateLead") { desc.newItemStack() }
+            Data.addResource(stackOf(desc))
+            addToOre("plateLead", stackOf(desc))
         }
         run {
             subId = 10
@@ -1578,8 +1586,8 @@ object ItemRegistration {
                 arrayOf()
             ).inOresAndMaterialsTab()
             Eln.sharedItem.addElement(subId + (id shl 6), desc)
-            Data.addResource { desc.newItemStack() }
-            addToOre("plateSilicon") { desc.newItemStack() }
+            Data.addResource(stackOf(desc))
+            addToOre("plateSilicon", stackOf(desc))
         }
 
         run {
@@ -1590,8 +1598,8 @@ object ItemRegistration {
                 arrayOf()
             ).inOresAndMaterialsTab()
             Eln.sharedItem.addElement(subId + (id shl 6), desc)
-            Data.addResource { desc.newItemStack() }
-            addToOre("plateAlloy") { desc.newItemStack() }
+            Data.addResource(stackOf(desc))
+            addToOre("plateAlloy", stackOf(desc))
         }
         run {
             subId = 12
@@ -1601,8 +1609,8 @@ object ItemRegistration {
                 arrayOf()
             ).inOresAndMaterialsTab()
             Eln.sharedItem.addElement(subId + (id shl 6), desc)
-            Data.addResource { desc.newItemStack() }
-            addToOre("plateCoal") { desc.newItemStack() }
+            Data.addResource(stackOf(desc))
+            addToOre("plateCoal", stackOf(desc))
         }
 
         run {
@@ -1613,8 +1621,8 @@ object ItemRegistration {
                 arrayOf()
             ).inOresAndMaterialsTab()
             Eln.sharedItem.addElement(subId + (id shl 6), desc)
-            Data.addResource { desc.newItemStack() }
-            addToOre("dustSilicon") { desc.newItemStack() }
+            Data.addResource(stackOf(desc))
+            addToOre("dustSilicon", stackOf(desc))
         }
         run {
             subId = 17
@@ -1624,8 +1632,8 @@ object ItemRegistration {
                 arrayOf()
             ).inOresAndMaterialsTab()
             Eln.sharedItem.addElement(subId + (id shl 6), desc)
-            Data.addResource { desc.newItemStack() }
-            addToOre("ingotSilicon") { desc.newItemStack() }
+            Data.addResource(stackOf(desc))
+            addToOre("ingotSilicon", stackOf(desc))
         }
 
         run {
@@ -1642,8 +1650,8 @@ object ItemRegistration {
                     arrayOf()
                 ).inOresAndMaterialsTab() // TODO: Description.
             Eln.sharedItem.addElement(subId + (id shl 6), desc)
-            Data.addResource { desc.newItemStack() }
-            addToOre("casingMachineAdvanced") { desc.newItemStack() }
+            Data.addResource(stackOf(desc))
+            addToOre("casingMachineAdvanced", stackOf(desc))
         }
         run {
             subId = 28
@@ -1653,7 +1661,7 @@ object ItemRegistration {
                 arrayOf()
             ).inOresAndMaterialsTab()
             Eln.sharedItem.addElement(subId + (id shl 6), desc)
-            Data.addResource { desc.newItemStack() }
+            Data.addResource(stackOf(desc))
         }
         run {
             subId = 29
@@ -1663,7 +1671,7 @@ object ItemRegistration {
                 arrayOf()
             ).inOresAndMaterialsTab()
             Eln.sharedItem.addElement(subId + (id shl 6), desc)
-            Data.addResource { desc.newItemStack() }
+            Data.addResource(stackOf(desc))
         }
         run {
             subId = 32
@@ -1682,7 +1690,7 @@ object ItemRegistration {
                 arrayOf()
             ).inOresAndMaterialsTab()
             Eln.sharedItem.addElement(subId + (id shl 6), desc)
-            Data.addResource { desc.newItemStack() }
+            Data.addResource(stackOf(desc))
         }
 
         run {
@@ -1767,7 +1775,7 @@ object ItemRegistration {
                 arrayOf()
             ).inOresAndMaterialsTab()
             Eln.sharedItem.addElement(subId + (id shl 6), desc)
-            Data.addResource { desc.newItemStack() }
+            Data.addResource(stackOf(desc))
         }
         run {
             subId = 61
@@ -1777,7 +1785,7 @@ object ItemRegistration {
                 arrayOf()
             ).inOresAndMaterialsTab()
             Eln.sharedItem.addElement(subId + (id shl 6), desc)
-            Data.addResource { desc.newItemStack() }
+            Data.addResource(stackOf(desc))
         }
         run {
             subId = 62
@@ -1787,7 +1795,7 @@ object ItemRegistration {
                 arrayOf()
             ).inOresAndMaterialsTab()
             Eln.sharedItem.addElement(subId + (id shl 6), desc)
-            Data.addResource { desc.newItemStack() }
+            Data.addResource(stackOf(desc))
         }
         run {
             subId = 63
@@ -1797,7 +1805,7 @@ object ItemRegistration {
                 arrayOf()
             ).inOresAndMaterialsTab()
             Eln.sharedItem.addElement(subId + (id shl 6), desc)
-            Data.addResource { desc.newItemStack() }
+            Data.addResource(stackOf(desc))
         }
     }
 
@@ -1860,7 +1868,7 @@ object ItemRegistration {
                 OreDescriptor(name, id, 30 * (if (Eln.config.getBooleanOrElse("worldgen.ores.copper.enabled", true)) 1 else 0), 6, 10, 0, 80)
             Eln.oreCopper = desc
             Eln.oreItem.addDescriptor(id, desc)
-            addToOre("oreCopper") { desc.newItemStack() }
+            addToOre("oreCopper", stackOf(desc))
         }
 
         run {
@@ -1869,7 +1877,7 @@ object ItemRegistration {
             val desc =
                 OreDescriptor(name, id, 8 * (if (Eln.config.getBooleanOrElse("worldgen.ores.lead.enabled", true)) 1 else 0), 3, 9, 0, 24)
             Eln.oreItem.addDescriptor(id, desc)
-            addToOre("oreLead") { desc.newItemStack() }
+            addToOre("oreLead", stackOf(desc))
         }
         run {
             id = 5
@@ -1877,7 +1885,7 @@ object ItemRegistration {
             val desc =
                 OreDescriptor(name, id, 6 * (if (Eln.config.getBooleanOrElse("worldgen.ores.tungsten.enabled", true)) 1 else 0), 3, 9, 0, 32)
             Eln.oreItem.addDescriptor(id, desc)
-            addToOre(Eln.config.getStringOrElse("runtime.dictionary.tungstenOre", "oreElnTungsten")) { desc.newItemStack() }
+            addToOre(Eln.config.getStringOrElse("runtime.dictionary.tungstenOre", "oreElnTungsten"), stackOf(desc))
         }
         run {
             id = 6
@@ -1885,7 +1893,7 @@ object ItemRegistration {
             val desc =
                 OreDescriptor(name, id, 3 * (if (Eln.config.getBooleanOrElse("runtime.worldgen.ores.cinnabar.enabled", false)) 1 else 0), 3, 9, 0, 32)
             Eln.oreItem.addDescriptor(id, desc)
-            addToOre("oreCinnabar") { desc.newItemStack() }
+            addToOre("oreCinnabar", stackOf(desc))
         }
     }
 

@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "c": {
+      "item": "eln:signal_cable"
+    },
+    "i": {
+      "tag": "c:ingots/iron"
+    },
+    "m": {
+      "item": "eln:machine_block"
+    },
+    "p": {
+      "item": "eln:electrical_probe_chip"
+    }
+  },
+  "pattern": [
+    "p  ",
+    "iii",
+    "cm "
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:tachometer"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "S": {
+      "item": "eln:signal_cable"
+    },
+    "c": {
+      "item": "eln:copper_cable"
+    }
+  },
+  "pattern": [
+    " S ",
+    "cIc",
+    " c "
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:variable_inductor"
+  }
+}

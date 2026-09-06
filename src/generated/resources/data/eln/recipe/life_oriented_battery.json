@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "eln:cost_oriented_battery"
+    },
+    "P": {
+      "item": "minecraft:gold_ingot"
+    }
+  },
+  "pattern": [
+    "PBP"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:life_oriented_battery"
+  }
+}

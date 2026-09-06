@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "minecraft:light_blue_dye"
+    },
+    {
+      "item": "eln:white_brush"
+    }
+  ],
+  "result": {
+    "components": {
+      "minecraft:custom_data": {
+        "life": 32
+      }
+    },
+    "count": 1,
+    "id": "eln:light_blue_brush"
+  }
+}

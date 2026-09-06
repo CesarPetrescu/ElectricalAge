@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "eln:overheating_protection"
+    },
+    "c": {
+      "item": "eln:overvoltage_protection"
+    },
+    "r": {
+      "item": "eln:12v_control_relay_20a"
+    }
+  },
+  "pattern": [
+    "crC"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:20a_electrical_breaker"
+  }
+}

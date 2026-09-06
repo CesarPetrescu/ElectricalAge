@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "tag": "c:circuits/basic"
+    },
+    "I": {
+      "item": "eln:iron_cable"
+    },
+    "S": {
+      "item": "eln:signal_antenna"
+    }
+  },
+  "pattern": [
+    " S ",
+    "ICI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:wireless_signal_receiver"
+  }
+}

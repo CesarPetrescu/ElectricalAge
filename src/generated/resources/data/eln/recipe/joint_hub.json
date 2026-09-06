@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "i": {
+      "tag": "c:ingots/iron"
+    },
+    "m": {
+      "item": "eln:machine_block"
+    }
+  },
+  "pattern": [
+    " i ",
+    "iii",
+    " m "
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:joint_hub"
+  }
+}

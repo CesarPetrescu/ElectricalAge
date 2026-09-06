@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "eln:portable_condensator"
+    },
+    "P": {
+      "tag": "c:plates/coal"
+    }
+  },
+  "pattern": [
+    "PPP",
+    "PCP",
+    "P P"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:e-coal_leggings"
+  }
+}

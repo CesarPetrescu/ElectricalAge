@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "E": {
+      "item": "eln:high_voltage_cable"
+    },
+    "M": {
+      "item": "eln:advanced_machine_block"
+    },
+    "a": {
+      "tag": "c:ingots/aluminum"
+    },
+    "m": {
+      "item": "eln:advanced_electrical_motor"
+    }
+  },
+  "pattern": [
+    "mmm",
+    "ama",
+    " ME"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:generator"
+  }
+}

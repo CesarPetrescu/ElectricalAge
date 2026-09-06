@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_2x_graphite_rods": {
+      "conditions": {
+        "items": [
+          {
+            "items": "eln:2x_graphite_rods"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "eln:4x_graphite_rods_2"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_2x_graphite_rods"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "eln:4x_graphite_rods_2"
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "eln:large_steam_turbine"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_turbine_blade_set": {
+      "conditions": {
+        "items": [
+          {
+            "items": "eln:turbine_blade_set"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_turbine_blade_set"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "eln:large_steam_turbine"
+    ]
+  }
+}

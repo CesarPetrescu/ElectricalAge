@@ -261,5 +261,6 @@ object I18N {
 }
 
 private object ClientLanguage {
-    fun selected(): String = Minecraft.getInstance().languageManager.selected
+    /** No Minecraft instance during data generation and in the JUnit launcher. */
+    fun selected(): String = Minecraft.getInstance()?.languageManager?.selected ?: "en_us"
 }

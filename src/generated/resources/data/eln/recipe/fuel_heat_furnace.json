@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "minecraft:cauldron"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "c": {
+      "item": "eln:cheap_chip"
+    },
+    "i": {
+      "item": "eln:copper_thermal_cable"
+    },
+    "m": {
+      "item": "eln:electrical_motor"
+    }
+  },
+  "pattern": [
+    "IcI",
+    "mCI",
+    "IiI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:fuel_heat_furnace"
+  }
+}

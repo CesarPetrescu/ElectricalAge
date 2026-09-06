@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "eln:medium_voltage_cable"
+    },
+    "G": {
+      "item": "minecraft:glass_pane"
+    },
+    "T": {
+      "tag": "c:ingots/eln_tungsten"
+    }
+  },
+  "pattern": [
+    "GGG",
+    "CTC",
+    "GGG"
+  ],
+  "result": {
+    "components": {
+      "minecraft:custom_data": {
+        "life": 96.0
+      }
+    },
+    "count": 2,
+    "id": "eln:240v_halogen_light_bulb"
+  }
+}

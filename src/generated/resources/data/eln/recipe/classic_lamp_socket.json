@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": {
+      "item": "minecraft:glass_pane"
+    },
+    "I": {
+      "item": "eln:iron_cable"
+    }
+  },
+  "pattern": [
+    "GIG",
+    " G "
+  ],
+  "result": {
+    "count": 3,
+    "id": "eln:classic_lamp_socket"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_alloy_dust": {
+      "conditions": {
+        "items": [
+          {
+            "items": "eln:alloy_dust"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "eln:alloy_ingot_from_smelting_alloy_dust"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_alloy_dust"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "eln:alloy_ingot_from_smelting_alloy_dust"
+    ]
+  }
+}

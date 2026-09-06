@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "tag": "c:plates/copper"
+    },
+    "t": {
+      "tag": "c:dusts/eln_tungsten"
+    }
+  },
+  "pattern": [
+    " t ",
+    "tCt",
+    " t "
+  ],
+  "result": {
+    "components": {
+      "minecraft:custom_data": {}
+    },
+    "count": 1,
+    "id": "eln:copper_clutch_plate"
+  }
+}

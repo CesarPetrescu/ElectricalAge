@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "pattern": [
+    "III"
+  ],
+  "result": {
+    "count": 12,
+    "id": "eln:iron_cable"
+  }
+}

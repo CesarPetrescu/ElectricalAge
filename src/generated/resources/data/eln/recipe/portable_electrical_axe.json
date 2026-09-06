@@ -1,0 +1,34 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "eln:portable_battery"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "M": {
+      "item": "eln:electrical_motor"
+    },
+    "T": {
+      "item": "minecraft:iron_axe"
+    }
+  },
+  "pattern": [
+    " T ",
+    "IMI",
+    "IBI"
+  ],
+  "result": {
+    "components": {
+      "minecraft:custom_data": {
+        "energy": 0.0,
+        "powerOn": 0,
+        "rand": 76722153
+      }
+    },
+    "count": 1,
+    "id": "eln:portable_electrical_axe"
+  }
+}

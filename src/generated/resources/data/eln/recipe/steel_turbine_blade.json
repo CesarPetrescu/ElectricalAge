@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "c:ingots/iron"
+    },
+    "M": {
+      "item": "eln:machine_block"
+    },
+    "S": {
+      "tag": "c:ingots/steel"
+    }
+  },
+  "pattern": [
+    "SIS",
+    "SMS",
+    "SIS"
+  ],
+  "result": {
+    "components": {
+      "minecraft:custom_data": {
+        "condition": 1.0
+      }
+    },
+    "count": 1,
+    "id": "eln:steel_turbine_blade"
+  }
+}

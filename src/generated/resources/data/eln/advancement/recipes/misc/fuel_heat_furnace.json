@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_cheap_chip": {
+      "conditions": {
+        "items": [
+          {
+            "items": "eln:cheap_chip"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "eln:fuel_heat_furnace"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_cheap_chip"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "eln:fuel_heat_furnace"
+    ]
+  }
+}

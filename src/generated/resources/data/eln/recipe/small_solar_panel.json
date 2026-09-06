@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "eln:copper_16_awg_cable_300v"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "L": {
+      "item": "eln:lapis_dust"
+    },
+    "S": {
+      "tag": "c:plates/silicon"
+    }
+  },
+  "pattern": [
+    "LLL",
+    "CSC",
+    "III"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:small_solar_panel"
+  }
+}

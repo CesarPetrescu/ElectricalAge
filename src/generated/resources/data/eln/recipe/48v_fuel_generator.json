@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "eln:analogic_regulator"
+    },
+    "B": {
+      "item": "eln:machine_block"
+    },
+    "C": {
+      "item": "eln:low_voltage_cable"
+    },
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "M": {
+      "item": "eln:electrical_motor"
+    }
+  },
+  "pattern": [
+    "III",
+    " BA",
+    "CMC"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:48v_fuel_generator"
+  }
+}

@@ -114,6 +114,25 @@ public final class SmokeTest {
             ((mods.eln.item.IConfigurable) source).readConfigTool(cfg, player);
         }
         Eln.logger.info("{} placed source and cable, source set to 50 V", PREFIX);
+        countOres(world);
+    }
+
+    /** World generation is data now: the chunk the circuit sits in must contain the mod's ores. */
+    private void countOres(ServerLevel world) {
+        if (world.getChunkSource().getGenerator() instanceof net.minecraft.world.level.levelgen.FlatLevelSource) {
+            Eln.logger.info("{} SKIP ore count: flat world (set level-type=minecraft:normal in run/server/server.properties to check world generation)", PREFIX);
+            return;
+        }
+        java.util.Map<String, Integer> counts = new java.util.TreeMap<>();
+        int cx = X >> 4, cz = Z >> 4;
+        for (int x = cx << 4; x < (cx << 4) + 16; x++)
+            for (int z = cz << 4; z < (cz << 4) + 16; z++)
+                for (int y = world.getMinBuildHeight(); y < 96; y++) {
+                    BlockState state = world.getBlockState(new BlockPos(x, y, z));
+                    if (state.getBlock() instanceof mods.eln.ore.OreBlock)
+                        counts.merge(BuiltInRegistries.BLOCK.getKey(state.getBlock()).getPath(), 1, Integer::sum);
+                }
+        Eln.logger.info("{} {} ore blocks in chunk ({},{}): {}", PREFIX, counts.isEmpty() ? "FAIL no" : "PASS", cx, cz, counts);
     }
 
     private void placeSixNode(ServerLevel world, FakePlayer player, String descriptorName, int x, int z) {
