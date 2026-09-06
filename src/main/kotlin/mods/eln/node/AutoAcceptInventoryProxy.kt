@@ -83,7 +83,10 @@ class AutoAcceptInventoryProxy(val inventory: Container) {
             val itemBlockDescriptor = GenericItemBlockUsingDamageDescriptor.getDescriptor(itemStack)
 
             if (existingItemBloackDescriptor != null && existingItemBloackDescriptor == itemBlockDescriptor) {
-                if (!creativeFreeInsert) itemStack.count -= 1
+                if (itemBlockDescriptor is UtilityCableDescriptor) {
+                    // one more segment off the spool, not the whole spool
+                    if (!IUtilityCableInventory.consumeFromSpool(itemStack, IUtilityCableInventory.requiredLengthOf(inventory), creativeFreeInsert)) return false
+                } else if (!creativeFreeInsert) itemStack.count -= 1
                 existingStack.count += 1
                 return true
             }

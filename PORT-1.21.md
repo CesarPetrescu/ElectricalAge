@@ -109,6 +109,16 @@ runs in order; each exits 1 on a failed check):
   last model face drawn before them (dark on one machine, bright on another). `disableLight` also
   turned off the *texture* rather than the lightmap (the emulator ignored the texture unit), so
   glowing parts drew as flat white. Both are modelled now (see "Lighting in the emulator").
+- **Cable spools go into any cable slot and pay one segment.** `SixNodeItemSlot` compared the
+  stack's item with the six-node *family*, which is no item since the Flattening, so no cable could
+  be put into any GUI cable slot (lamp sockets, supplies, hubs, sensors, meters, transformers); only
+  right-clicking worked. The slot recognises the descriptor now, accepts subclasses (a utility spool
+  is an electrical cable, as the right-click path always held), and a spool is *cut*, never moved:
+  dropping it on a slot or shift-clicking it takes the device's segment length off the spool and
+  hands the rest back, whatever the spool's length (128 m, used, cut short, as crafted). Adding a
+  segment to a device already holding some takes one segment off the spool rather than the whole
+  spool (upstream ate the spool). Swapping with a number key still moves the spool whole; the
+  segment length is 1 m unless the device says otherwise.
 - **Element inventories save their items.** `ItemStack.save(provider, prefix)` returns a copy since
   1.20.5; the `writeToNBT(tag)` bridge returned it and every caller ignored it, so a saved slot carried
   only its index and every machine came back empty after a restart. The bridge merges into the tag

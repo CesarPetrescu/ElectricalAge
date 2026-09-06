@@ -77,6 +77,7 @@ restart against the saved world:
     ./gradlew runServer -PsmokeTest=place      # SMOKE PASS ... energised=true current flowing=true
                                                # SMOKE PASS lamp: node light=13 aux=13 block light at socket=13; ...
                                                # SMOKE PASS computer probe ... peripheral type=ElnProbe methods=[...]
+                                               # SMOKE PASS spool '...' into a lamp socket / dropped on the GUI slot / shift-clicked
     ./gradlew runServer -PsmokeTest=verify     # the same after the restart; also runs /eln on the console
     ./gradlew runServer -PsmokeTest=all        # place, plus every placeable descriptor on a grid north of it:
                                                # SMOKE ALL placed 388 of 401 descriptors / 414 nodes alive after 80 ticks

@@ -54,7 +54,9 @@ open class BasicContainer(player: Player, protected var inventory: Container, sl
             if (slotId < invSize) {
                 mergeItemStack(itemstack1, invSize, slots.size, true)
             } else {
-                if (!mergeItemStack(itemstack1, 0, invSize, true)) {
+                // a cable spool is cut into the device's cable slot, not moved into it
+                val cut = (0 until invSize).any { (slots[it] as? mods.eln.node.six.SixNodeItemSlot)?.cutSpoolInto(itemstack1) == true }
+                if (!cut && !mergeItemStack(itemstack1, 0, invSize, true)) {
                     if (slotId < invSize + 27) {
                         mergeItemStack(itemstack1, invSize + 27, slots.size, false)
                     } else {

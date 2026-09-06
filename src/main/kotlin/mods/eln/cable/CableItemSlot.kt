@@ -9,7 +9,6 @@ import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor
 import mods.eln.sixnode.electricalcable.UtilityCableDescriptor
 import net.minecraft.world.Container
 import net.minecraft.world.item.ItemStack
-import kotlin.math.abs
 
 /**
  * This class should be used going forward for all devices which accept cables in their inventory. It provides the
@@ -35,7 +34,8 @@ class CableItemSlot(
         if (!super.mayPlace(itemStack)) return false
 
         return when (val cableDescriptor = Utils.getItemObject(itemStack)) {
-            is UtilityCableDescriptor -> abs(cableDescriptor.getRemainingLengthMeters(itemStack) - expectedCableLength) < UtilityCableDescriptor.LENGTH_METERS_EPSILON
+            // a cut segment of the right length, or a spool with at least that much left (it is cut on insert)
+            is UtilityCableDescriptor -> cableDescriptor.getRemainingLengthMeters(itemStack) + UtilityCableDescriptor.LENGTH_METERS_EPSILON >= expectedCableLength
             is ElectricalCableDescriptor -> !(cableDescriptor.signalWire && !acceptSignalCable)
             is CurrentCableDescriptor -> true
             else -> false

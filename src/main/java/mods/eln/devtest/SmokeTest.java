@@ -165,6 +165,8 @@ public final class SmokeTest {
             fail("no lamp socket element after placement");
         }
 
+        checkCableSpools(world, player);
+
         // The computer probe at the end of the lamp row: a node block on its own, a peripheral with CC: Tweaked.
         world.setBlock(new BlockPos(X + 4, GROUND, LAMP_Z), Blocks.STONE.defaultBlockState(), 3);
         placeBlockItem(world, player, "elnprobe", X + 4, LAMP_Z);
@@ -186,6 +188,111 @@ public final class SmokeTest {
         var result = item.useOn(new net.minecraft.world.item.context.UseOnContext(player, InteractionHand.MAIN_HAND, hit));
         BlockState placed = world.getBlockState(new BlockPos(x, GROUND + 1, z));
         Eln.logger.info("{} place '{}' at ({},{},{}) -> {} block={}", PREFIX, id, x, GROUND + 1, z, result, BuiltInRegistries.BLOCK.getKey(placed.getBlock()));
+    }
+
+    /**
+     * Utility cable spools: a socket takes 1 m off whatever spool is right-clicked on it, whether the
+     * spool is the creative 128 m, one that has placed a segment, one cut short, or one as crafted.
+     * Each case gets its own classic lamp socket on a row south of the circuit.
+     */
+    private void checkCableSpools(ServerLevel world, FakePlayer player) {
+        var desc = Eln.sixNodeItem.subItemList.values().stream()
+            .filter(d -> d instanceof mods.eln.sixnode.electricalcable.UtilityCableDescriptor u && !u.melted)
+            .map(d -> (mods.eln.sixnode.electricalcable.UtilityCableDescriptor) d).findFirst().orElse(null);
+        if (desc == null) {
+            fail("no utility cable descriptor registered");
+            return;
+        }
+        int z = Z + 7;   // a row of its own, behind where the client smoke stands
+        // a spool that placed one segment: through the item-use path, on its own stone
+        ItemStack used = desc.newCreativeTabStack();
+        world.setBlock(new BlockPos(X - 2, GROUND, z), Blocks.STONE.defaultBlockState(), 3);
+        player.setItemInHand(InteractionHand.MAIN_HAND, used);
+        Eln.sixNodeItem.onItemUse(used, player, world, new BlockPos(X - 2, GROUND + 1, z), InteractionHand.MAIN_HAND, net.minecraft.core.Direction.UP, 0.5f, 1.0f, 0.5f);
+        ItemStack cut = desc.newCreativeTabStack();
+        desc.setRemainingLengthMeters(cut, 5.0);
+        Object[][] spools = {{"creative", desc.newCreativeTabStack()}, {"after one placement", used}, {"cut to 5 m", cut}, {"as crafted", desc.newItemStack()}};
+        int i = 0;
+        for (Object[] entry : spools) {
+            ItemStack spool = (ItemStack) entry[1];
+            double before = desc.getRemainingLengthMeters(spool);
+            int x = X + 2 * i++;
+            world.setBlock(new BlockPos(x, GROUND, z), Blocks.STONE.defaultBlockState(), 3);
+            placeSixNode(world, player, "Classic Lamp Socket", x, z);
+            if (!(element(world, x, z) instanceof mods.eln.sixnode.lampsocket.LampSocketElement socket)) {
+                fail("no lamp socket for the '{}' spool", entry[0]);
+                continue;
+            }
+            player.setItemInHand(InteractionHand.MAIN_HAND, spool);
+            boolean taken = socket.onBlockActivated(player, Direction.YN, 0.5f, 0.5f, 0.5f);
+            ItemStack inSlot = socket.getInventory().getItem(mods.eln.sixnode.lampsocket.LampSocketContainer.CABLE_SLOT_ID);
+            double slotLength = inSlot.isEmpty() ? -1 : desc.getRemainingLengthMeters(inSlot);
+            double after = spool.isEmpty() ? 0 : desc.getRemainingLengthMeters(spool);
+            boolean ok = taken && !inSlot.isEmpty() && Math.abs(slotLength - 1.0) < 1e-6 && Math.abs(before - after - 1.0) < 1e-6;
+            check(ok, "spool '{}' into a lamp socket: taken={} slot={} m, spool {} -> {} m", entry[0], taken, slotLength, before, after);
+        }
+        checkCableSpoolGui(world, player, desc);
+    }
+
+    /**
+     * The same through the GUI, without one: a spool dropped on a cable slot (what the client's
+     * click sends as Slot.safeInsert) and a spool shift-clicked from the hotbar (quickMoveStack)
+     * each cut one segment, and a plain 128 m spool goes into a lamp supply that already holds
+     * segments as one more segment. A classic cable (no length) still moves whole.
+     */
+    private void checkCableSpoolGui(ServerLevel world, FakePlayer player, mods.eln.sixnode.electricalcable.UtilityCableDescriptor desc) {
+        int z = Z + 9;
+        // drop on the slot
+        world.setBlock(new BlockPos(X, GROUND, z), Blocks.STONE.defaultBlockState(), 3);
+        placeSixNode(world, player, "Classic Lamp Socket", X, z);
+        if (element(world, X, z) instanceof mods.eln.sixnode.lampsocket.LampSocketElement socket) {
+            mods.eln.GuiHandler.pendingContainerId = 1;
+            var menu = socket.newContainer(Direction.YN, player);
+            var slot = menu.slots.get(mods.eln.sixnode.lampsocket.LampSocketContainer.CABLE_SLOT_ID);
+            ItemStack spool = desc.newCreativeTabStack();
+            ItemStack back = slot.safeInsert(spool, 1);
+            ItemStack inSlot = socket.getInventory().getItem(mods.eln.sixnode.lampsocket.LampSocketContainer.CABLE_SLOT_ID);
+            boolean ok = !inSlot.isEmpty() && Math.abs(desc.getRemainingLengthMeters(inSlot) - 1.0) < 1e-6
+                && back == spool && Math.abs(desc.getRemainingLengthMeters(spool) - 127.0) < 1e-6;
+            check(ok, "spool dropped on the socket's GUI slot: slot={} m, spool left {} m", inSlot.isEmpty() ? -1 : desc.getRemainingLengthMeters(inSlot), desc.getRemainingLengthMeters(spool));
+            // a classic cable through the same slot: moves whole, as before
+            ItemStack lv = Eln.findItemStack("Low Voltage Cable", 1);
+            socket.getInventory().setItem(mods.eln.sixnode.lampsocket.LampSocketContainer.CABLE_SLOT_ID, ItemStack.EMPTY);
+            ItemStack lvBack = slot.safeInsert(lv, 1);
+            check(lvBack.isEmpty() && !socket.getInventory().getItem(mods.eln.sixnode.lampsocket.LampSocketContainer.CABLE_SLOT_ID).isEmpty(),
+                "a classic cable dropped on the socket's GUI slot moves whole: slot empty={}", socket.getInventory().getItem(1).isEmpty());
+        } else fail("no lamp socket for the GUI spool check");
+
+        // shift-click from the hotbar into a lamp supply: one segment is cut into the slot; a second
+        // shift-click finds the slot full (segments do not stack: the item stacks to 1) and must not
+        // cut anything more off the spool
+        world.setBlock(new BlockPos(X + 2, GROUND, z), Blocks.STONE.defaultBlockState(), 3);
+        placeSixNode(world, player, "120V Lamp Supply", X + 2, z);
+        if (element(world, X + 2, z) instanceof mods.eln.sixnode.lampsupply.LampSupplyElement supply) {
+            mods.eln.GuiHandler.pendingContainerId = 2;
+            var menu = supply.newContainer(Direction.YN, player);
+            int invSize = supply.getInventory().getContainerSize();
+            ItemStack spool = desc.newCreativeTabStack();
+            player.getInventory().setItem(0, spool);
+            int hotbarSlot = invSize + 27;   // the container binds the player inventory rows first, then the hotbar
+            menu.quickMoveStack(player, hotbarSlot);
+            ItemStack inSlot = supply.getInventory().getItem(mods.eln.sixnode.lampsupply.LampSupplyContainer.cableSlotId);
+            boolean ok = inSlot.getCount() == 1 && Math.abs(desc.getRemainingLengthMeters(inSlot) - 1.0) < 1e-6
+                && Math.abs(desc.getRemainingLengthMeters(spool) - 127.0) < 1e-6;
+            check(ok, "spool shift-clicked into a lamp supply: slot has {} x {} m, spool left {} m",
+                inSlot.getCount(), inSlot.isEmpty() ? -1 : desc.getRemainingLengthMeters(inSlot), desc.getRemainingLengthMeters(spool));
+            // the second shift-click: the slot is full, so vanilla moves the spool within the player's
+            // inventory (a copy, elsewhere) and it must keep its length
+            menu.quickMoveStack(player, hotbarSlot);
+            inSlot = supply.getInventory().getItem(mods.eln.sixnode.lampsupply.LampSupplyContainer.cableSlotId);
+            double moved = -1;
+            for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+                ItemStack st = player.getInventory().getItem(i);
+                if (!st.isEmpty() && Eln.sixNodeItem.getDescriptor(st) == desc) moved = desc.getRemainingLengthMeters(st);
+            }
+            check(inSlot.getCount() == 1 && Math.abs(moved - 127.0) < 1e-6,
+                "second shift-click with the slot full: slot has {}, spool still {} m", inSlot.getCount(), moved);
+        } else fail("no lamp supply for the GUI spool check");
     }
 
     /** The creative source defaults to 0 V; readConfigTool is the public setter. */

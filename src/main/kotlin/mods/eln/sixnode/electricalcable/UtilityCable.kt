@@ -108,21 +108,42 @@ interface IUtilityCableInventory {
         @JvmStatic @JvmOverloads
         fun trimCable(srcItemStack: ItemStack, dstInventory: Container, dstIndex: Int, creativeFree: Boolean = false): Boolean {
             val srcCableDesc = Utils.getItemObject(srcItemStack) as? UtilityCableDescriptor ?: return false
-
+            val requiredCableLength = requiredLengthOf(dstInventory)
+            if (!consumeFromSpool(srcItemStack, requiredCableLength, creativeFree)) return false
             val dstItemStack = srcCableDesc.newItemStack()
-            val existingCableLength = srcCableDesc.getRemainingLengthMeters(srcItemStack)
-            val requiredCableLength =
-                if (dstInventory is IUtilityCableInventory) dstInventory.requiredCableLength
-                else DEFAULT_REQUIRED_LENGTH
+            srcCableDesc.setRemainingLengthMeters(dstItemStack, requiredCableLength)
+            dstInventory.setItem(dstIndex, dstItemStack)
+            dstInventory.setChanged()
+            return true
+        }
 
-            if (existingCableLength >= requiredCableLength) {
-                srcCableDesc.setRemainingLengthMeters(dstItemStack, requiredCableLength)
-                if (!creativeFree) srcCableDesc.setRemainingLengthMeters(srcItemStack, existingCableLength - requiredCableLength)
-                if (!creativeFree && abs(srcCableDesc.getRemainingLengthMeters(srcItemStack)) < UtilityCableDescriptor.LENGTH_METERS_EPSILON) srcItemStack.count -= 1
-                dstInventory.setItem(dstIndex, dstItemStack)
-                dstInventory.setChanged()
-                return true
-            } else return false
+        /** The length one cable segment takes in that inventory: what the device declares, else 1 m. */
+        @JvmStatic
+        fun requiredLengthOf(inventory: Container): Double =
+            if (inventory is IUtilityCableInventory) inventory.requiredCableLength else DEFAULT_REQUIRED_LENGTH
+
+        /** Whether the stack is a spool with more than one segment's worth of cable left (as opposed to a cut segment). */
+        @JvmStatic
+        fun isSpoolLongerThan(stack: ItemStack, meters: Double): Boolean {
+            val desc = Utils.getItemObject(stack) as? UtilityCableDescriptor ?: return false
+            return desc.getRemainingLengthMeters(stack) > meters + UtilityCableDescriptor.LENGTH_METERS_EPSILON
+        }
+
+        /**
+         * Takes [meters] of cable off a spool, in place: the spool keeps the rest, and disappears
+         * (count - 1) when nothing is left. Every way of putting a cable into a device goes
+         * through here - right-click, the GUI slot, shift-click - so a spool of any length pays the
+         * same one segment. False when the spool is too short or the stack is not a utility cable.
+         */
+        @JvmStatic @JvmOverloads
+        fun consumeFromSpool(spool: ItemStack, meters: Double, creativeFree: Boolean = false): Boolean {
+            val desc = Utils.getItemObject(spool) as? UtilityCableDescriptor ?: return false
+            val remaining = desc.getRemainingLengthMeters(spool)
+            if (remaining + UtilityCableDescriptor.LENGTH_METERS_EPSILON < meters) return false
+            if (creativeFree) return true
+            desc.setRemainingLengthMeters(spool, remaining - meters)
+            if (abs(desc.getRemainingLengthMeters(spool)) < UtilityCableDescriptor.LENGTH_METERS_EPSILON) spool.count -= 1
+            return true
         }
     }
 
@@ -226,13 +247,12 @@ class UtilityCableDescriptor(
     }
 
     private fun getOrCreateNbt(stack: ItemStack): CompoundTag {
-        if (stack.tagCompound == null) {
-            stack.tagCompound = getDefaultNBT()
-        }
-        return stack.tagCompound!!
+        // an empty stack holds no components (a write to it is dropped): answer the defaults without storing them
+        return stack.tagCompound ?: getDefaultNBT().also { if (!stack.isEmpty) stack.tagCompound = it }
     }
 
     fun getRemainingLengthMeters(stack: ItemStack): Double {
+        if (stack.isEmpty) return 0.0
         val nbt = getOrCreateNbt(stack)
         return if (nbt.contains(nbtLengthMeters)) {
             nbt.getDouble(nbtLengthMeters).coerceAtLeast(0.0)
