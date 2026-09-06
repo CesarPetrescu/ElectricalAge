@@ -27,7 +27,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           cache-read-only: false
-      - name: Record exact checked-in source
+      - name: Record exact checked-in source and validate resources
         working-directory: work/ports/1.21.1
         shell: bash
         run: |
@@ -35,25 +35,26 @@ jobs:
           mkdir -p build/evidence
           git rev-parse HEAD | tee build/evidence/source-commit.txt
           java -version 2>&1 | tee build/evidence/java.txt
-          python -m unittest discover -s tools -p 'test_*.py' -v 2>&1 | tee build/evidence/tool-tests.log
-          python tools/validate_obj.py | tee build/evidence/obj-validation.txt
-      - name: Compile real NeoForge target and run core regressions
+          python3 -m unittest discover -s tools -p 'test_*.py' -v 2>&1 | tee build/evidence/tool-tests.log
+          python3 tools/validate_obj.py | tee build/evidence/obj-validation.txt
+          python3 tools/validate_resources.py | tee build/evidence/resource-validation.txt
+      - name: Compile NeoForge target and execute fresh core regressions
         id: build
         working-directory: work/ports/1.21.1
         shell: bash
         run: |
-          set -o pipefail
-          ./gradlew :sim-core:test build --no-daemon --stacktrace 2>&1 | tee build/evidence/build.log
-          python tools/verify.py
+          set -euo pipefail
+          ./gradlew :sim-core:cleanTest :sim-core:test build --no-build-cache --no-daemon --stacktrace 2>&1 | tee build/evidence/build.log
+          python3 tools/verify.py
       - name: Run real Minecraft GameTests
         if: ${{ always() && steps.build.outcome == 'success' }}
         working-directory: work/ports/1.21.1
         shell: bash
         run: |
-          set -o pipefail
+          set -euo pipefail
           ./gradlew runGameTestServer --no-daemon --stacktrace 2>&1 | tee build/evidence/gametest.log
           grep -E 'ELN_GAMETEST_PASS' build/evidence/gametest.log | sort -u | tee build/evidence/gametest-cases.txt
-          test "$(wc -l < build/evidence/gametest-cases.txt)" -ge 10
+          test "$(wc -l < build/evidence/gametest-cases.txt)" -ge 20
       - name: Install headless graphics and audio dependencies
         if: ${{ always() && steps.build.outcome == 'success' }}
         shell: bash
@@ -64,12 +65,12 @@ jobs:
         if: ${{ always() && steps.build.outcome == 'success' }}
         working-directory: work/ports/1.21.1
         shell: bash
-        run: python tools/client_smoke.py
+        run: python3 tools/client_smoke.py
       - name: Load the distributable JAR without development classes
         if: ${{ always() && steps.build.outcome == 'success' }}
         working-directory: work/ports/1.21.1
         shell: bash
-        run: python tools/client_smoke.py --packaged
+        run: python3 tools/client_smoke.py --packaged
       - name: Record distributable and source hashes
         if: always()
         working-directory: work/ports/1.21.1
@@ -89,7 +90,7 @@ jobs:
             work/ports/1.21.1/sim-core/build/reports/tests/
             work/ports/1.21.1/run/**/logs/
             work/ports/1.21.1/run/**/crash-reports/
-          retention-days: 14
+          retention-days: 30
       - uses: actions/upload-artifact@v4
         if: ${{ always() && steps.build.outcome == 'success' }}
         with:
@@ -97,5 +98,5 @@ jobs:
           path: |
             work/ports/1.21.1/build/libs/*.jar
             work/ports/1.21.1/build/eln-1.21.1-source.zip
-          retention-days: 14
+          retention-days: 30
           if-no-files-found: error
