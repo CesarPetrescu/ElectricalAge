@@ -1,0 +1,21 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="LGPL-3.0-only; inherited artwork CC-BY-NC-SA-3.0"
+[[mods]]
+modId="eln"
+version="0.1.0-port.1"
+displayName="Electrical Age — 1.21.1 Port Prototype"
+authors="Electrical Age contributors; CesarPetrescu port work"
+description='''First port milestone: the inherited electrical simulator and a circuit test bench. Not feature-complete. No legacy-world migration.'''
+[[dependencies.eln]]
+modId="neoforge"
+type="required"
+versionRange="[21.1.249,21.2)"
+ordering="NONE"
+side="BOTH"
+[[dependencies.eln]]
+modId="minecraft"
+type="required"
+versionRange="[1.21.1]"
+ordering="NONE"
+side="BOTH"

@@ -1,0 +1,109 @@
+name: ELN 1.21.1 port
+on:
+  push:
+    branches: ['port/1.21.1']
+    paths: ['ports/1.21.1/**', '.github/workflows/eln-1.21.1.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: eln-1.21.1-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  port:
+    if: github.ref == 'refs/heads/port/1.21.1'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: work
+          fetch-depth: 1
+      - uses: actions/checkout@v4
+        with:
+          repository: brambora69123/electrical-age-rewired
+          ref: 3a0088b384aa4111c3a7f984d4cbc5f4ff142ed9
+          path: legacy
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: NeoForgeMDKs/MDK-1.21.1-ModDevGradle
+          ref: 70d335c962ee8a773b38fb0690c7e7f30d1bafa6
+          path: mdk
+          persist-credentials: false
+      - name: Materialize inherited sources on the isolated branch
+        working-directory: work
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = refs/heads/port/1.21.1
+          python ports/1.21.1/tools/bootstrap.py --legacy ../legacy --mdk ../mdk
+          git add ports/1.21.1
+          if ! git diff --cached --quiet; then
+            test "$(git ls-remote origin refs/heads/port/1.21.1 | cut -f1)" = "$GITHUB_SHA"
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'port: materialize audited simulation core and 1.21.1 assets [skip ci]'
+            git push origin HEAD:refs/heads/port/1.21.1
+          fi
+          mkdir -p ports/1.21.1/build/evidence
+          git rev-parse HEAD | tee ports/1.21.1/build/evidence/source-commit.txt
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Compile real NeoForge target and run core regressions
+        id: build
+        working-directory: work/ports/1.21.1
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew :sim-core:test build --no-daemon --stacktrace 2>&1 | tee build/evidence/build.log
+          python tools/verify.py
+      - name: Run real Minecraft GameTests
+        if: ${{ always() && steps.build.outcome == 'success' }}
+        working-directory: work/ports/1.21.1
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew runGameTestServer --no-daemon --stacktrace 2>&1 | tee build/evidence/gametest.log
+          grep -E 'ELN_GAMETEST_PASS' build/evidence/gametest.log | sort -u | tee build/evidence/gametest-cases.txt
+          test "$(wc -l < build/evidence/gametest-cases.txt)" -ge 8
+      - name: Independent client initialization and model test
+        if: ${{ always() && steps.build.outcome == 'success' }}
+        working-directory: work/ports/1.21.1
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends xvfb xauth x11-xserver-utils libgl1-mesa-dri libopenal1
+          python tools/client_smoke.py
+      - name: Record distributable and source hashes
+        if: always()
+        working-directory: work/ports/1.21.1
+        shell: bash
+        run: |
+          mkdir -p build/evidence
+          git -C ../.. rev-parse HEAD > build/evidence/source-commit.txt
+          find build/libs -name '*.jar' -exec sha256sum {} \; > build/evidence/jar-sha256.txt || true
+          git -C ../.. archive HEAD:ports/1.21.1 -o "$PWD/build/eln-1.21.1-source.zip"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eln-1.21.1-evidence
+          path: |
+            work/ports/1.21.1/build/evidence/
+            work/ports/1.21.1/sim-core/build/test-results/
+            work/ports/1.21.1/sim-core/build/reports/tests/
+            work/ports/1.21.1/run/**/logs/
+            work/ports/1.21.1/run/**/crash-reports/
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() && steps.build.outcome == 'success' }}
+        with:
+          name: eln-1.21.1-candidate
+          path: |
+            work/ports/1.21.1/build/libs/*.jar
+            work/ports/1.21.1/build/eln-1.21.1-source.zip
+          retention-days: 14
+          if-no-files-found: error

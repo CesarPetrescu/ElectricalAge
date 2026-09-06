@@ -1,0 +1,1 @@
+{"type":"minecraft:crafting_shaped","category":"misc","pattern":["CCC","GRG","SSS"],"key":{"C":{"item":"minecraft:copper_ingot"},"G":{"item":"minecraft:glass"},"R":{"item":"minecraft:redstone"},"S":{"item":"minecraft:stone"}},"result":{"id":"eln:circuit_bench","count":1}}

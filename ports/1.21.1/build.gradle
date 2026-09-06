@@ -1,0 +1,48 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.146'
+}
+version = mod_version
+group = 'mods.eln'
+base { archivesName = 'eln-1.21.1' }
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    withSourcesJar()
+}
+repositories { mavenCentral() }
+dependencies { implementation project(':sim-core') }
+evaluationDependsOn(':sim-core')
+// GameTests compile against the real mapped game. They are development-only,
+// explicitly excluded from both distributable jars, and verified in CI.
+sourceSets.main.java.srcDir 'src/gametest/java'
+sourceSets.main.resources.srcDir 'src/gametest/resources'
+neoForge {
+    version = project.neo_version
+    runs {
+        client { client(); gameDirectory = project.file('run/client') }
+        server { server(); gameDirectory = project.file('run/server'); programArgument '--nogui' }
+        gameTestServer {
+            type = 'gameTestServer'
+            gameDirectory = project.file('run/gametest')
+            systemProperty 'neoforge.enabledGameTestNamespaces', 'eln'
+        }
+        configureEach { logLevel = org.slf4j.event.Level.INFO }
+    }
+    mods {
+        eln {
+            sourceSet sourceSets.main
+            sourceSet project(':sim-core').sourceSets.main
+        }
+    }
+}
+tasks.named('jar', Jar) {
+    from project(':sim-core').sourceSets.main.output
+    exclude 'mods/eln/modern/gametest/**', 'data/eln/structure/**'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+tasks.named('sourcesJar', Jar) {
+    from project(':sim-core').sourceSets.main.allSource
+    exclude 'mods/eln/modern/gametest/**', 'data/eln/structure/**'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }

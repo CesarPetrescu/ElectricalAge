@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"eln:block/circuit_bench"},"facing=east":{"model":"eln:block/circuit_bench","y":90},"facing=south":{"model":"eln:block/circuit_bench","y":180},"facing=west":{"model":"eln:block/circuit_bench","y":270}}}
