@@ -1,0 +1,8 @@
+.gradle/
+.kotlin/
+build/
+run/
+.idea/
+*.iml
+__pycache__/
+*.pyc

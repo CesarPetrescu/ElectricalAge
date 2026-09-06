@@ -10,42 +10,13 @@ concurrency:
   group: eln-full-source-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  migrate:
-    if: github.ref == 'refs/heads/port/1.21.1-full-source'
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: write
-    outputs:
-      source_sha: ${{ steps.source.outputs.sha }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Apply reviewed ten-file API followup once
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 -m unittest discover -s ports/1.21.1-full/tools -p 'test_*.py' -v
-          if [[ ! -f ports/1.21.1-full/migrations/003-applied.txt ]]; then
-            git apply --check --directory=ports/1.21.1-full ports/1.21.1-full/migrations/003-followup-api.patch
-            git apply --directory=ports/1.21.1-full ports/1.21.1-full/migrations/003-followup-api.patch
-            python3 ports/1.21.1-full/tools/verify_preservation.py
-            sha256sum ports/1.21.1-full/migrations/003-followup-api.patch > ports/1.21.1-full/migrations/003-applied.txt
-            git config user.name 'github-actions[bot]'
-            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git add ports/1.21.1-full/src ports/1.21.1-full/migrations
-            git commit -m 'port: correct original item and logic-chip NBT calls without replacing behavior [skip ci]'
-            git push origin HEAD:refs/heads/port/1.21.1-full-source
-          fi
-      - name: Record exact source revision
-        id: source
-        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
   compile:
-    needs: migrate
+    if: github.ref == 'refs/heads/port/1.21.1-full-source'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ needs.migrate.outputs.source_sha }}
           persist-credentials: false
       - uses: actions/setup-java@v4
         with:
@@ -54,11 +25,15 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           cache-read-only: false
-      - name: Verify complete original source and resource preservation
+      - name: Record revision, test tooling and verify original-source preservation
         working-directory: ports/1.21.1-full
+        shell: bash
         run: |
+          set -euo pipefail
           mkdir -p build/migration
-          set -o pipefail
+          git rev-parse HEAD | tee build/migration/source-commit.txt
+          java -version 2>&1 | tee build/migration/java-version.txt
+          python3 -m unittest discover -s tools -p 'test_*.py' -v 2>&1 | tee build/migration/tool-tests.log
           python3 tools/verify_preservation.py | tee build/migration/preservation.json
       - name: Inspect actual target classpath
         working-directory: ports/1.21.1-full
@@ -70,23 +45,24 @@ jobs:
         run: python3 tools/compile_selected_api.py
       - name: Compile every original active Java and Kotlin source
         working-directory: ports/1.21.1-full
-        shell: bash
-        run: |
-          mkdir -p build/migration
-          git rev-parse HEAD > build/migration/source-commit.txt
-          python3 tools/compile_report.py --label round4
+        run: python3 tools/compile_report.py --label checkpoint
       - name: Enforce independent API probe
         if: ${{ always() && steps.api_probe.outcome == 'failure' }}
         run: exit 1
-      - name: Export compiler report and complete migration project
+      - name: Export source ledger, compiler report and complete migration project
         if: always()
         working-directory: ports/1.21.1-full
         shell: bash
         run: |
+          set -euo pipefail
           mkdir -p build/migration
-          cat build/migration/round4/SUMMARY.md >> "$GITHUB_STEP_SUMMARY" || true
+          if [[ -f build/migration/checkpoint/diagnostics.json ]]; then
+            python3 tools/source_status.py build/migration/checkpoint/diagnostics.json
+            cat build/migration/checkpoint/SUMMARY.md >> "$GITHUB_STEP_SUMMARY"
+          fi
           git -C ../.. archive --format=zip HEAD:ports/1.21.1-full -o "$PWD/build/full-source-migration.zip"
           python3 -c "import zipfile; z=zipfile.ZipFile('build/full-source-migration.zip'); assert len(z.namelist()) > 4000, 'Incomplete source archive'"
+          cp ../../.github/workflows/eln-full-source.yml build/migration/executed-workflow.yml
       - uses: actions/upload-artifact@v4
         if: always()
         with:
