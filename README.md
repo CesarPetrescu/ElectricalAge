@@ -1,34 +1,40 @@
-# Minecraft Mod - Codename: ELN
+# Electrical Age — Minecraft 1.21.1 port branch
 
-Electrical Age (ELN) brings large-scale electrical simulations and advanced automation tools to Minecraft 1.7.10. Development continues here as the maintained fork by Jared Dunbar (jrddunbr) and Graham Nothup (Grissess); upstream has gone dormant. Back up your worlds before testing new builds.
+This branch is **port/1.21.1**. It contains a tested **NeoForge 1.21.1 prototype**, not a complete port of Electrical Age.
 
-Visit [electrical-age.net](https://electrical-age.net/) for general project info, join the [Discord server](https://discord.gg/YjK2JAD) for support/discussion, and browse the [GitHub wiki](https://github.com/age-series/ElectricalAge/wiki) for extra documentation.
+**The modern Gradle project is in [`ports/1.21.1/`](ports/1.21.1/). Do not run the legacy repository-root Gradle build when testing this port.**
 
-Key highlights:
+```sh
+cd ports/1.21.1
+./gradlew :sim-core:test build
+./gradlew runGameTestServer
+./gradlew runClient
+```
 
-- True electrical simulation with resistive and capacitive effects
-- Machines such as furnaces, solar panels, wind turbines, batteries, and capacitors
-- Face-based wiring that packs sensors, actuators, alarms, and other IO on each cube face
-- Rich lighting options, interoperability with redstone circuits, and extensive materials/items
-- Utility tools including X-ray scanners, flashlights, and portable mining drills
+Target: Minecraft 1.21.1, NeoForge 21.1.249, Java 21. The initial implementation has a Minecraft-independent MNA simulation module and one circuit test bench with adapted original OBJ artwork, persistence and synchronization.
 
-## Download
+## Current verified milestone
 
-We only upload releases to the [GitHub releases page](https://github.com/age-series/ElectricalAge), the [Modrinth page](https://modrinth.com/mod/electrical-age-jrddunbr-edition), and the [CurseForge page](https://legacy.curseforge.com/minecraft/mc-mods/electrical-age-eln). If you download the mod from anywhere else, you are taking an unnecessary risk.
+- Tested source commit: `1170d34764119f6d03de12297d829a77ea91f34b`.
+- [Final successful CI](https://github.com/CesarPetrescu/ElectricalAge/actions/runs/34019376906).
+- 456 core JUnit cases, ten in-game GameTests and five asset-validator tests passed.
+- Development client and independent packaged-JAR client passed, including four block orientations and the inventory model.
+- The final unchanged core JUnit results came from Gradle cache; the previous green run executed them, and a fresh plain-Java numerical recheck also passed.
 
-## Getting started
+See the [validation record](porting/1.21.1-VALIDATION.md), [modern module README](ports/1.21.1/README.md), and [porting plan](ports/1.21.1/docs/PORTING-PLAN.md).
 
-**ElectricalAge is Minecraft 1.7.10 compatible only. Forge is required.**
+## Trying the prototype
 
-1. Fetch the latest stable build from the [releases](https://github.com/age-series/ElectricalAge/releases) page.
-2. Drop the downloaded JAR into your launcher’s mods folder. Use Forge 1.7.10, revision 1614.
-3. Launch the game and enjoy.
-4. Optionally, grab the [test world](https://eln.ja13.org/worlds/latest.zip) to explore ready-made examples.
+Use a **new disposable NeoForge 1.21.1 profile and Java 21**, with the regular `eln-1.21.1-0.1.0-port.1.jar` from the CI artifact. Do not use the sources JAR or load a legacy world.
 
-If you want to compile the project yourself, see the [contributing guide](./CONTRIBUTING.md#building-from-source-and-adding-new-features).
+Obtain `/give @s eln:circuit_bench`, place it, and empty-hand right-click to switch the internal RC source and display V/A/J measurements. Sneak-right-click resets it. Separate benches do not connect to each other, and breaking/replacing one resets its charge.
 
-## Credits and License
+## Remaining work
 
-The people who made Electrical Age possible are listed in [docs/credits.md](docs/credits.md). Notable feature contributions in this fork include work by TheBuilderBoy76. The [GitHub contributors graph](https://github.com/age-series/ElectricalAge/graphs/contributors) highlights even more community members.
+Connected source/cable/load networks, SixNode face-mounted components, full machines, inventories/menus/capabilities, animated machinery, thermal/mechanical systems, modern upstream parity, survival progression, optional integrations, populated-world restarts and multiplayer still need implementation or validation. No legacy-world conversion or full feature parity is claimed.
 
-Source code is available under the terms described in [LICENSE.md](LICENSE.md). Art assets follow the licenses documented alongside those files as detailed in that document.
+## Legacy source and attribution
+
+The older root source is retained for reference, not compiled by the modern module. The previous root README is preserved as [README-legacy.md](README-legacy.md). The default and 1.12 baseline branches were not changed by this port work.
+
+Inherited source and artwork retain their original notices and respective licenses. See the modern module's LICENSE-legacy.md, PROVENANCE.json and ASSET-MIGRATION.json.
