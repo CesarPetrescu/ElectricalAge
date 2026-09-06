@@ -1,0 +1,3 @@
+# Preserve exact binary and reference bytes from the pinned import.
+src/main/resources/** -text
+reference/** -text

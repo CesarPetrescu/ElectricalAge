@@ -19,18 +19,19 @@ jobs:
       source_sha: ${{ steps.source.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
-      - name: Apply reviewed member migration once
+      - name: Restore exact asset bytes and apply reviewed member migration once
         shell: bash
         run: |
           set -euo pipefail
           python3 -m unittest discover -s ports/1.21.1-full/tools -p 'test_*.py' -v
           if [[ ! -f ports/1.21.1-full/migrations/002-members.json ]]; then
+            python3 ports/1.21.1-full/tools/restore_binary_assets.py
             python3 ports/1.21.1-full/tools/rewrite_members.py --apply
             python3 ports/1.21.1-full/tools/verify_preservation.py
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git add ports/1.21.1-full/src ports/1.21.1-full/migrations
-            git commit -m 'port: migrate NBT, inventory and sided API members in original source [skip ci]'
+            git add ports/1.21.1-full/src ports/1.21.1-full/reference ports/1.21.1-full/migrations
+            git commit -m 'port: migrate original API members and restore binary import integrity [skip ci]'
             git push origin HEAD:refs/heads/port/1.21.1-full-source
           fi
       - name: Record exact source revision
@@ -56,6 +57,7 @@ jobs:
         working-directory: ports/1.21.1-full
         run: |
           mkdir -p build/migration
+          set -o pipefail
           python3 tools/verify_preservation.py | tee build/migration/preservation.json
       - name: Inspect actual target classpath
         working-directory: ports/1.21.1-full
