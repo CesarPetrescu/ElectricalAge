@@ -21,6 +21,7 @@ public final class DevHooks {
 
     public static void registerIfRequested() {
         if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) ClientDevHooks.registerIfRequested();
+        SmokeTest.registerIfRequested();
         String stop = System.getProperty("eln.stopAfterStart");
         if (stop == null) return;
         NeoForge.EVENT_BUS.register(new DevHooks(Integer.parseInt(stop)));

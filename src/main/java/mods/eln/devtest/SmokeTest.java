@@ -15,14 +15,15 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.common.util.FakePlayerFactory;
-import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 /**
- * In-world smoke test for the 1.12.2 port, driven from a headless dedicated server.
+ * In-world smoke test for the port, driven from a headless dedicated server.
  *
  * Placement of an Eln block cannot be reproduced with /setblock: the node behind the tile entity is
  * created by the item's use path, and a tile entity without a node is removed again on the next
@@ -58,7 +59,6 @@ public final class SmokeTest {
 
     @SubscribeEvent
     public void onTick(ServerTickEvent.Post event) {
-        if (event.phase != true /* NeoForge: Post event */) return;
         ticks++;
         // 20 ticks of settling before touching the world, then let the simulator run before reading.
         if (ticks == 20) {
@@ -79,18 +79,18 @@ public final class SmokeTest {
     }
 
     private ServerLevel world() {
-        return FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(0);
+        return ServerLifecycleHooks.getCurrentServer().overworld();
     }
 
     private void place() {
         ServerLevel world = world();
-        FakePlayer player = FakePlayerFactory.getInstance(world);
+        FakePlayer player = FakePlayerFactory.getMinecraft(world);
 
-        // A known-good floor: two stone blocks with air above them.
+        // A known-good floor: stone blocks with air above them.
         for (int dx = 0; dx <= 4; dx++) {
-            world.setBlockState(new BlockPos(X + dx, GROUND, Z), Blocks.STONE.getDefaultState());
+            world.setBlock(new BlockPos(X + dx, GROUND, Z), Blocks.STONE.defaultBlockState(), 3);
             for (int dy = 1; dy <= 2; dy++) {
-                world.setBlockToAir(new BlockPos(X + dx, GROUND + dy, Z));
+                world.setBlock(new BlockPos(X + dx, GROUND + dy, Z), Blocks.AIR.defaultBlockState(), 3);
             }
         }
 
@@ -125,8 +125,8 @@ public final class SmokeTest {
      * placing player's look direction - so the yaw decides which way the terminals face.
      */
     private void placeSixNode(ServerLevel world, FakePlayer player, String descriptorName, int x, int z, float yaw) {
-        player.getYRot() = yaw;
-        player.rotationYawHead = yaw;
+        player.setYRot(yaw);
+        player.setYHeadRot(yaw);
         ItemStack stack = Eln.findItemStack(descriptorName, 1);
         if (stack == null || stack.isEmpty()) {
             Eln.logger.error("{} FAIL no item stack named '{}'", PREFIX, descriptorName);
@@ -134,12 +134,13 @@ public final class SmokeTest {
         }
         player.setItemInHand(InteractionHand.MAIN_HAND, stack.copy());
         // Right-click the top face of the stone: the six node lands on the block above, YN face.
+        // onItemUse takes the cell the block goes into (BlockPlaceContext has resolved it by then).
         InteractionResult result = Eln.sixNodeItem.onItemUse(
-            stack, player, world, new BlockPos(x, GROUND, z), InteractionHand.MAIN_HAND,
+            stack, player, world, new BlockPos(x, GROUND + 1, z), InteractionHand.MAIN_HAND,
             net.minecraft.core.Direction.UP, 0.5f, 1.0f, 0.5f);
         BlockState placed = world.getBlockState(new BlockPos(x, GROUND + 1, z));
         Eln.logger.info("{} place '{}' at ({},{},{}) -> {} block={}",
-            PREFIX, descriptorName, x, GROUND + 1, z, result, placed.getBlock().getRegistryName());
+            PREFIX, descriptorName, x, GROUND + 1, z, result, BuiltInRegistries.BLOCK.getKey(placed.getBlock()));
     }
 
     private void orient(ServerLevel world, int x, int z, mods.eln.misc.LRDU front) {
@@ -191,6 +192,6 @@ public final class SmokeTest {
 
     private void shutdown() {
         Eln.logger.info("{} done, stopping server", PREFIX);
-        FMLCommonHandler.instance().getMinecraftServerInstance().initiateShutdown();
+        ServerLifecycleHooks.getCurrentServer().halt(false);
     }
 }

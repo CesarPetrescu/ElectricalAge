@@ -77,11 +77,19 @@ object OreScannerConfigLoader {
         if (parts.size < 2) {
             return
         }
-        val modid = parts[0]
+        val modid = parts[0].lowercase()
         val name = parts[1]
-        // a third part (the 1.7.10 metadata) is ignored: variants are separate blocks now
-
-        val block = BuiltInRegistries.BLOCK.getOptional(ResourceLocation.fromNamespaceAndPath(modid, name)).orElse(null)
+        // "Eln:Eln.Ore:4" (a 1.7.10 config): the metadata picked the ore descriptor, which owns a block now.
+        val block: Block? = if (modid == Eln.MODID && name.equals("Eln.Ore", ignoreCase = true) && parts.size >= 3) {
+            parts[2].toIntOrNull()?.let { Eln.oreItem.getDescriptor(it)?.block }
+        } else {
+            val id = ResourceLocation.tryParse("$modid:${name.lowercase()}")
+            if (id == null) {
+                Eln.LOGGER.warn("{}: '{}' is not a block id", ORE_FACTORS_PATH, key)
+                return
+            }
+            BuiltInRegistries.BLOCK.getOptional(id).orElse(null)
+        }
         if (block == null || block === Blocks.AIR) {
             return
         }

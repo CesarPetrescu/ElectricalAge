@@ -221,9 +221,12 @@ dependencies {
     implementation("thedarkcolour:kotlinforforge-neoforge:${property("kffVersion")}")
 
     // Libraries the mod carries (jar-in-jar; Minecraft ships none of them).
+    // additionalRuntimeClasspath: on 1.21.1, dev runs only load a plain library jar if it is
+    // named there (FML loads mods and FMLModType jars from the classpath, nothing else).
     for (lib in listOf("org.apache.commons:commons-math3:3.6.1", "org.apache.commons:commons-numbers-core:1.2", "org.semver4j:semver4j:4.3.0")) {
         implementation(lib)
         jarJar(lib)
+        "additionalRuntimeClasspath"(lib)
     }
     compileOnly("com.fazecast:jSerialComm:2.6.2")
 

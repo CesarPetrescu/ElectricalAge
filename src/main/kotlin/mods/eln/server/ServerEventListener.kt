@@ -74,6 +74,11 @@ class ServerEventListener {
         loadedWorlds.add(DimensionIds.id(level))
         val fileNames = FileNames(level)
         val dimension = DimensionIds.id(level)
+        if (!Files.exists(fileNames.worldSave) && !Files.exists(fileNames.backupSave)) {
+            // A fresh world (or a dimension the mod never saved) is not the error upstream printed it as.
+            forWorld(level)
+            return
+        }
         try {
             readSave(fileNames.worldSave, dimension)
         } catch (ex: Exception) {

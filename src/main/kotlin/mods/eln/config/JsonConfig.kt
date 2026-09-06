@@ -157,12 +157,21 @@ class JsonConfig @JvmOverloads constructor(
                 "minecraft:redstone_ore" to 0.40,
                 "minecraft:diamond_ore" to 1.00,
                 "minecraft:emerald_ore" to 0.40,
-                "Eln:Eln.Ore:1" to 0.10,
-                "Eln:Eln.Ore:4" to 0.20,
-                "Eln:Eln.Ore:5" to 0.20,
-                "Eln:Eln.Ore:6" to 0.20
+                "minecraft:deepslate_coal_ore" to 0.05,
+                "minecraft:deepslate_iron_ore" to 0.15,
+                "minecraft:deepslate_gold_ore" to 0.40,
+                "minecraft:deepslate_lapis_ore" to 0.40,
+                "minecraft:deepslate_redstone_ore" to 0.40,
+                "minecraft:deepslate_diamond_ore" to 1.00,
+                "minecraft:deepslate_emerald_ore" to 0.40,
+                "minecraft:copper_ore" to 0.10,
+                "minecraft:deepslate_copper_ore" to 0.10,
+                "eln:copper_ore" to 0.10,
+                "eln:lead_ore" to 0.20,
+                "eln:tungsten_ore" to 0.20,
+                "eln:cinnabar_ore" to 0.20
             ),
-            comment = "Ore scanner detection factors. Keys with ':' are block references (modid:name or modid:name:meta), keys without ':' are OreDictionary names. The ELN ores at the top are, in order: Copper Ore, Lead Ore, Tungsten Ore, and Cinnabar Ore."
+            comment = "Ore scanner detection factors. Keys with ':' are block references (modid:name; the 1.7.10 modid:name:meta form still resolves), keys without ':' are OreDictionary names (oreCopper = the c:ores/copper block tag)."
         ),
         spec(path = "simulation.electrical.frequency", defaultValue = 20.0, comment = "Set to a clean divisor of 20."),
         spec(path = "simulation.electrical.interSystemOverSampling", defaultValue = 50, comment = "Avoid setting this below 50."),

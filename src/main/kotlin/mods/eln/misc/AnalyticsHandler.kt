@@ -5,22 +5,21 @@ import mods.eln.Eln
 import mods.eln.i18n.I18N
 import mods.eln.misc.Version.simpleVersionName
 import net.minecraft.client.Minecraft
-import org.apache.http.HttpStatus
-import org.apache.http.client.methods.HttpGet
-import org.apache.http.impl.client.HttpClientBuilder
 import java.io.IOException
+import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
+import java.time.Duration
 
 object AnalyticsHandler {
+    /** Minecraft stopped shipping Apache HttpClient; the JDK's client does the one GET this needs. */
     private fun sendHttpRequest(url: String) {
         try {
-            val client = HttpClientBuilder.create().build()
-            val response = client.execute(HttpGet(url))
-
-            val repCode = response.statusLine.statusCode
-            if (repCode != HttpStatus.SC_OK) throw IOException("HTTP error $repCode")
-
-            response.close()
-            client.close()
+            val client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).followRedirects(HttpClient.Redirect.NORMAL).build()
+            val request = HttpRequest.newBuilder(URI.create(url)).timeout(Duration.ofSeconds(20)).GET().build()
+            val response = client.send(request, HttpResponse.BodyHandlers.discarding())
+            if (response.statusCode() != 200) throw IOException("HTTP error " + response.statusCode())
         } catch (e: Exception) {
             val error = "Unable to send analytics data: " + e.message + "."
             System.err.println(error)
