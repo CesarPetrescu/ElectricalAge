@@ -1,18 +1,17 @@
 package mods.eln.client.itemrender
 
-import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemDisplayContext
+import net.minecraft.world.item.ItemStack
 
 /**
  * A stand-in for Forge's `IItemRenderer`, which was removed in 1.8 along with the rest of the
  * pre-JSON item pipeline.
  *
  * Electrical Age draws roughly 250 of its items as OBJ models through descriptor `renderItem`
- * bodies. On 1.12.2 those bodies still work - the fixed-function GL they use is unchanged - but
- * they have to be reached through a [net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer]
- * instead of an `IItemRenderer`. Keeping the old interface shape here means the descriptors do
- * not have to be rewritten twice: phase 3 binds a single TEISR that reads the current
- * [TransformType], maps it onto [ItemRenderType], and calls straight into these methods.
+ * bodies. Keeping the old interface shape means those bodies are not rewritten per Minecraft
+ * version: on 1.21 a single `BlockEntityWithoutLevelRenderer` (phase 3) reads the current
+ * [ItemDisplayContext], maps it onto [ItemRenderType], and calls straight into these methods.
+ * Plain 2D items no longer come through here at all - their JSON model draws them.
  *
  * @see mods.eln.node.six.SixNodeDescriptor
  * @see mods.eln.generic.GenericItemUsingDamageDescriptor
@@ -29,17 +28,18 @@ interface IItemRenderer {
 
         companion object {
             /**
-             * Maps 1.12.2's [TransformType] onto the legacy perspective the descriptors expect.
+             * Maps 1.21's [ItemDisplayContext] onto the legacy perspective the descriptors expect.
              * `GROUND` covers dropped items, `FIXED` covers item frames, and both hands collapse
              * onto the same first-person case because no descriptor distinguishes them.
              */
             @JvmStatic
-            fun of(type: TransformType): ItemRenderType = when (type) {
-                TransformType.GUI -> INVENTORY
-                TransformType.GROUND, TransformType.FIXED -> ENTITY
-                TransformType.FIRST_PERSON_LEFT_HAND, TransformType.FIRST_PERSON_RIGHT_HAND -> EQUIPPED_FIRST_PERSON
-                TransformType.THIRD_PERSON_LEFT_HAND, TransformType.THIRD_PERSON_RIGHT_HAND -> EQUIPPED
-                TransformType.HEAD, TransformType.NONE -> EQUIPPED
+            fun of(type: ItemDisplayContext): ItemRenderType = when (type) {
+                ItemDisplayContext.GUI -> INVENTORY
+                ItemDisplayContext.GROUND, ItemDisplayContext.FIXED -> ENTITY
+                ItemDisplayContext.FIRST_PERSON_LEFT_HAND, ItemDisplayContext.FIRST_PERSON_RIGHT_HAND -> EQUIPPED_FIRST_PERSON
+                ItemDisplayContext.THIRD_PERSON_LEFT_HAND, ItemDisplayContext.THIRD_PERSON_RIGHT_HAND -> EQUIPPED
+                ItemDisplayContext.HEAD, ItemDisplayContext.NONE -> EQUIPPED
+                else -> EQUIPPED
             }
         }
     }

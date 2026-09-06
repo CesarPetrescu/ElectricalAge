@@ -1,16 +1,17 @@
 package mods.eln.ore
 
-import net.minecraftforge.fml.common.registry.GameRegistry
+import mods.eln.generic.DescriptorBlockItem
 import mods.eln.generic.GenericItemBlockUsingDamage
-import net.minecraft.block.Block
+import mods.eln.registration.ElnRegistry
+import net.minecraft.world.item.Item
 
-class OreItem(b: Block?) : GenericItemBlockUsingDamage<OreDescriptor?>(b) {
-    override fun getMetadata(par1: Int): Int {
-        return par1
+/** The ore family: each descriptor gets its own block (registered under the descriptor's name) and a BlockItem for it. */
+class OreItem : GenericItemBlockUsingDamage<OreDescriptor>(null, "Eln.Ore") {
+    override fun addDescriptor(id: Int, descriptor: OreDescriptor) {
+        ElnRegistry.registerBlock(descriptor.name, { OreBlock(descriptor).also { descriptor.block = it } }, null)
+        super.addDescriptor(id, descriptor)
     }
 
-    override fun addDescriptor(damage: Int, descriptor: OreDescriptor?) {
-        super.addDescriptor(damage, descriptor)
-        GameRegistry.registerWorldGenerator(descriptor, 0)
-    }
+    override fun newItem(id: Int, descriptor: OreDescriptor): Item =
+        DescriptorBlockItem(this, descriptor, id, descriptor.block, newProperties(descriptor))
 }

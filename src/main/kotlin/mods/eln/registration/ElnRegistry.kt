@@ -1,177 +1,168 @@
 package mods.eln.registration
 
 import mods.eln.Eln
-import net.minecraft.block.Block
-import net.minecraft.item.Item
-import net.minecraft.item.ItemBlock
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
-import com.google.gson.JsonParser
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.SoundEvent
-import java.io.InputStreamReader
-import net.minecraftforge.event.RegistryEvent
-import net.minecraftforge.fml.common.Mod
-import net.minecraftforge.fml.common.registry.GameRegistry
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import net.minecraftforge.oredict.OreDictionary
+import net.minecraft.core.registries.Registries
+import net.minecraft.resources.ResourceKey
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.item.BlockItem
+import net.minecraft.world.item.CreativeModeTab
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.Block
+import net.neoforged.bus.api.SubscribeEvent
+import net.neoforged.fml.common.EventBusSubscriber
+import net.neoforged.neoforge.registries.RegisterEvent
 import java.util.Locale
+import java.util.function.Consumer
+import java.util.function.Function
+import java.util.function.Supplier
 
 /**
- * Collects the mod's blocks and items during preInit and hands them to Forge when it fires the
- * registry events.
+ * The mod's registration front door.
  *
- * On 1.7.10 `GameRegistry.registerItem` took effect immediately, so Electrical Age builds all of
- * its content inline in preInit, in an order that matters: descriptors are wired to their items
- * as they are constructed. 1.9 moved registration into [RegistryEvent.Register], which fires
- * *before* preInit. Rather than reorder ~250 descriptor constructions, the calls now stage their
- * objects here and the events drain the staging list. Construction order is preserved.
- *
- * `GameRegistry.registerCustomItemStack` is gone with no replacement; it backed
- * [Eln.findItemStack], which the crafting recipes use to name a stack by its display name. That
- * lookup table lives here now.
+ * NeoForge keeps the registries frozen except while it fires [RegisterEvent] for each of them, and
+ * an [Item] or [Block] cannot even be *constructed* outside that window (its constructor creates an
+ * intrusive holder in the frozen registry). Electrical Age's content code, on the other hand, is a
+ * long ordered sequence of descriptor constructions that used to create their items on the spot.
+ * The split is: descriptors and families are still built eagerly, in order, in the mod
+ * constructor; every registry object is staged here as a factory and created inside its event;
+ * and anything that needs an [ItemStack] at construction time (wiki data, tag entries, tab icons,
+ * the `findItemStack` table) is queued with [afterItems] and runs as soon as the items exist.
+ * The order of events is the vanilla registry order: blocks, then items, then block entity types,
+ * then creative tabs.
  */
-@Mod.EventBusSubscriber(modid = Eln.MODID)
+@EventBusSubscriber(modid = Eln.MODID, bus = EventBusSubscriber.Bus.MOD)
 object ElnRegistry {
 
-    private val pendingBlocks = ArrayList<Block>()
-    private val pendingItems = ArrayList<Item>()
-    private val namedStacks = HashMap<String, ItemStack>()
+    /** A registry object that exists once its registry event has run; [get] throws before that. */
+    class Staged<T : Any>(val id: ResourceLocation, private val factory: Supplier<T>, private val onRegistered: Consumer<T>?) : Supplier<T> {
+        var value: T? = null
+            private set
+
+        override fun get(): T = value ?: throw IllegalStateException("$id is not registered yet - defer with ElnRegistry.afterItems")
+
+        fun create(): T = factory.get().also { value = it }
+
+        fun registered() = onRegistered?.accept(get())
+    }
+
+    private val blocks = LinkedHashMap<ResourceLocation, Staged<Block>>()
+    private val items = LinkedHashMap<ResourceLocation, Staged<Item>>()
+    private val tabs = LinkedHashMap<ResourceLocation, CreativeModeTab>()
+    private val afterItems = ArrayList<Runnable>()
+    private val namedStacks = HashMap<String, Supplier<ItemStack>>()
+    private val itemBlocks = HashMap<ResourceLocation, Staged<Item>>()
+    private var itemsRegistered = false
 
     /**
-     * Registry names must match `[a-z0-9_.-]` since 1.11. The mod names things for humans
-     * ("Copper Helmet", "Eln.SixNode"), so they are folded down deterministically: any character
-     * outside the allowed set becomes an underscore.
+     * Registry names must match `[a-z0-9_.-]`. The mod names things for humans ("Copper Helmet",
+     * "Eln.SixNode"), so they are folded down deterministically: any character outside the allowed
+     * set becomes an underscore. Same rule as the 1.12.2 branch, so ids stay stable across the ports.
      */
+    @JvmStatic
     fun registryName(name: String): ResourceLocation {
         val path = name.lowercase(Locale.ROOT)
             .removePrefix("eln.")
             .map { if (it.isLetterOrDigit() || it == '_' || it == '.' || it == '-') it else '_' }
             .joinToString("")
-        return ResourceLocation(Eln.MODID, path)
+        return ResourceLocation.fromNamespaceAndPath(Eln.MODID, path)
     }
 
-    @JvmStatic
-    fun registerItem(item: Item, name: String): Item {
-        item.registryName ?: item.setRegistryName(registryName(name))
-        pendingItems.add(item)
-        return item
+    private fun <T : Any> stage(into: LinkedHashMap<ResourceLocation, Staged<T>>, id: ResourceLocation, factory: Supplier<T>, onRegistered: Consumer<T>?, kind: String): Staged<T> {
+        check(!into.containsKey(id)) { "duplicate $kind registry name $id" }
+        return Staged(id, factory, onRegistered).also { into[id] = it }
     }
-
-    private val itemBlocks = HashMap<Block, ItemBlock>()
 
     @JvmStatic
     @JvmOverloads
-    fun registerBlock(block: Block, name: String, itemBlockClass: Class<out ItemBlock>? = null): Block {
-        block.registryName ?: block.setRegistryName(registryName(name))
-        pendingBlocks.add(block)
-        val itemBlock = when (itemBlockClass) {
-            null -> ItemBlock(block)
-            else -> itemBlockClass.getConstructor(Block::class.java).newInstance(block)
+    fun registerItem(name: String, factory: Supplier<Item>, onRegistered: Consumer<Item>? = null): Supplier<Item> =
+        stage(items, registryName(name), factory, onRegistered, "item")
+
+    @JvmStatic
+    @JvmOverloads
+    fun registerItem(id: ResourceLocation, factory: Supplier<Item>, onRegistered: Consumer<Item>? = null): Supplier<Item> =
+        stage(items, id, factory, onRegistered, "item")
+
+    /**
+     * Stages a block and, unless [item] is null, an item for it under the same name (a plain
+     * [BlockItem] by default). The item factory receives the block, which exists by then.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun registerBlock(name: String, factory: Supplier<Block>, item: Function<Block, Item>? = Function { BlockItem(it, Item.Properties()) }): Supplier<Block> {
+        val id = registryName(name)
+        val block = stage(blocks, id, factory, null, "block")
+        if (item != null) {
+            itemBlocks[id] = stage(items, id, { item.apply(block.get()) }, null, "item")
         }
-        itemBlock.registryName = block.registryName
-        pendingItems.add(itemBlock)
-        itemBlocks[block] = itemBlock
         return block
     }
 
-    /**
-     * The ItemBlock created by [registerBlock]. 1.7.10's GameRegistry.registerBlock registered the
-     * item on the spot, so `Item.getItemFromBlock` worked inside preInit; on 1.12 the item only
-     * reaches the registry in RegistryEvent.Register<Item>, which fires after preInit.
-     */
+    /** The item registered by [registerBlock] for that block. Valid once the items exist. */
     @JvmStatic
-    fun itemBlockOf(block: Block): ItemBlock =
-        itemBlocks[block] ?: throw IllegalStateException("no ItemBlock registered for ${block.registryName}")
-
-    /**
-     * Replaces TileEntity.addMapping: tile entity ids are ResourceLocations on 1.12 and the
-     * registry is the same one GameRegistry.registerTileEntity feeds. Safe to call in preInit.
-     */
-    @JvmStatic
-    fun registerTileEntity(tileEntityClass: Class<out TileEntity>, name: String) {
-        GameRegistry.registerTileEntity(tileEntityClass, registryName(name))
+    fun itemBlockOf(block: Block): Item {
+        val id = blocks.entries.firstOrNull { it.value.value === block }?.key
+            ?: throw IllegalStateException("$block was not registered through ElnRegistry")
+        return itemBlocks[id]?.get() ?: throw IllegalStateException("no BlockItem registered for $id")
     }
 
-    /** Registers an item that was constructed and named elsewhere (fluid buckets, ore items). */
+    /** Tabs are plain objects; they are built eagerly (descriptors point at them) and registered in their event. */
     @JvmStatic
-    fun registerItem(item: Item): Item {
-        pendingItems.add(item)
-        return item
+    fun registerCreativeTab(name: String, tab: CreativeModeTab): CreativeModeTab {
+        val id = registryName(name)
+        check(!tabs.containsKey(id)) { "duplicate creative tab registry name $id" }
+        tabs[id] = tab
+        return tab
+    }
+
+    /** Runs [action] right after the items are registered (or immediately if they already are). */
+    @JvmStatic
+    fun afterItems(action: Runnable) {
+        if (itemsRegistered) action.run() else afterItems.add(action)
     }
 
     /** Replaces GameRegistry.registerCustomItemStack: name -> stack, read by [Eln.findItemStack]. */
     @JvmStatic
-    fun registerCustomItemStack(name: String, stack: ItemStack) {
+    fun registerCustomItemStack(name: String, stack: Supplier<ItemStack>) {
         namedStacks[name] = stack
     }
 
     @JvmStatic
     fun findItemStack(name: String, stackSize: Int): ItemStack? {
-        val stack = namedStacks[name] ?: return null
-        return stack.copy().apply { count = stackSize }
+        val stack = namedStacks[name]?.get() ?: return null
+        return stack.copyWithCount(stackSize)
     }
 
-    @JvmStatic
-    @SubscribeEvent
-    fun onRegisterBlocks(event: RegistryEvent.Register<Block>) {
-        pendingBlocks.forEach(event.registry::register)
-    }
-
-    @JvmStatic
-    @SubscribeEvent
-    fun onRegisterItems(event: RegistryEvent.Register<Item>) {
-        pendingItems.forEach(event.registry::register)
-        if (System.getProperty("eln.dumpRegistry") != null) {
-            pendingBlocks.forEach { Eln.logger.info("REGDUMP block {} {}", it.registryName, it.blockState.validStates.map { s -> it.getMetaFromState(s) }.distinct().size) }
-            pendingItems.forEach { Eln.logger.info("REGDUMP item {}", it.registryName) }
+    private fun <T : Any> registerAll(event: RegisterEvent, key: ResourceKey<out net.minecraft.core.Registry<T>>, staged: Map<ResourceLocation, Staged<T>>) {
+        event.register(key) { helper ->
+            staged.values.forEach { helper.register(it.id, it.create()) }
         }
-        // Ore dictionary entries need registered items ("broken ore dictionary registration"
-        // otherwise); everything queued during preInit lands here, right after the items.
-        pendingOres.forEach { (name, stack) -> OreDictionary.registerOre(name, stack) }
-        pendingOres.clear()
-        pendingOreBlocks.forEach { (name, block) -> OreDictionary.registerOre(name, ItemStack(itemBlockOf(block))) }
-        pendingOreBlocks.clear()
+        staged.values.forEach { it.registered() }
     }
 
-    private val pendingOres = ArrayList<Pair<String, ItemStack>>()
-
-    /**
-     * Deferred OreDictionary.registerOre: 1.12 wants the item in the registry first. A null name
-     * is skipped: upstream registers a few items under dictionary names it never assigns
-     * (Eln.dictSiliconWafer and friends), which 1.7.10's HashMap silently accepted.
-     */
-    @JvmStatic
-    fun registerOre(name: String?, stack: ItemStack) {
-        if (name == null) {
-            Eln.logger.warn("Ore dictionary registration of {} skipped: no dictionary name", stack.displayName)
-            return
-        }
-        pendingOres.add(name to stack)
-    }
-
-    /**
-     * 1.9+: sounds are registry objects. Every key of assets/eln/sounds.json becomes an
-     * eln:<key> SoundEvent, so server-side World.playSound and the client sound commands both
-     * resolve to a registered event (an unregistered one is sent to clients as id -1 and NPEs).
-     */
-    @JvmStatic
+    // KFF registers the object instance, so the handler is an instance method (no @JvmStatic).
     @SubscribeEvent
-    fun onRegisterSounds(event: RegistryEvent.Register<SoundEvent>) {
-        val stream = ElnRegistry::class.java.getResourceAsStream("/assets/eln/sounds.json") ?: return
-        // entrySet, not keySet: Minecraft 1.12.2 ships Gson 2.8.0, which predates JsonObject.keySet.
-        val keys = stream.use { JsonParser().parse(InputStreamReader(it, Charsets.UTF_8)).asJsonObject.entrySet().map { e -> e.key } }
-        keys.forEach { key ->
-            val id = ResourceLocation(Eln.MODID, key)
-            event.registry.register(SoundEvent(id).setRegistryName(id))
+    fun onRegister(event: RegisterEvent) {
+        when (event.registryKey) {
+            Registries.BLOCK -> registerAll(event, Registries.BLOCK, blocks)
+            Registries.ITEM -> {
+                registerAll(event, Registries.ITEM, items)
+                itemsRegistered = true
+                afterItems.forEach { it.run() }
+                afterItems.clear()
+                if (System.getProperty("eln.dumpRegistry") != null) {
+                    blocks.keys.forEach { Eln.LOGGER.info("REGDUMP block {}", it) }
+                    items.keys.forEach { Eln.LOGGER.info("REGDUMP item {}", it) }
+                }
+            }
+            Registries.CREATIVE_MODE_TAB -> event.register(Registries.CREATIVE_MODE_TAB) { helper -> tabs.forEach { (id, tab) -> helper.register(id, tab) } }
         }
     }
 
-    /** Block form: the ItemStack is only built once the ItemBlock exists, i.e. at flush time. */
+    /** Every registered item, in staging order; data generation walks this. */
     @JvmStatic
-    fun registerOre(name: String, block: Block) {
-        pendingOreBlocks.add(name to block)
-    }
+    val registeredItems: Map<ResourceLocation, Item> get() = items.mapValues { it.value.get() }
 
-    private val pendingOreBlocks = ArrayList<Pair<String, Block>>()
+    @JvmStatic
+    val registeredBlocks: Map<ResourceLocation, Block> get() = blocks.mapValues { it.value.get() }
 }

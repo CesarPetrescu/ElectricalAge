@@ -1,19 +1,17 @@
 package mods.eln.generic;
 
-import mods.eln.misc.McBridge;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import mods.eln.Eln;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.NonNullList;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
- * Keeps track of metadata driven items so we can render their descriptors inside secondary creative tabs.
+ * Keeps track of the descriptor families so their items can be listed in the creative tabs.
+ * 1.21: tab contents are assembled in {@link BuildCreativeModeTabContentsEvent}; the mod listens
+ * for it and calls {@link #addEntries} for each of its tabs.
  */
 public final class CreativeTabPopulator {
 
@@ -35,52 +33,16 @@ public final class CreativeTabPopulator {
         }
     }
 
-    @SideOnly(Side.CLIENT)
-    public static void addEntries(CreativeTabs tab, NonNullList<ItemStack> list) {
+    public static void addEntries(CreativeModeTab tab, Consumer<ItemStack> out) {
         for (GenericItemBlockUsingDamage<?> item : BLOCK_ITEMS) {
-            item.getSubItems(tab, list);
+            item.getSubItems(tab, out);
         }
         for (GenericItemUsingDamage<?> item : GENERIC_ITEMS) {
-            item.getSubItems(tab, list);
-        }
-        if (tab == Eln.creativeTabPowerElectronics) {
-            moveRegulatorChipsAfterDcDcConverters(list);
+            item.getSubItems(tab, out);
         }
     }
 
-    private static void moveRegulatorChipsAfterDcDcConverters(List<ItemStack> list) {
-        List<ItemStack> regulators = new ArrayList<ItemStack>();
-
-        for (Iterator<ItemStack> iterator = list.iterator(); iterator.hasNext(); ) {
-            ItemStack stack = iterator.next();
-            if (McBridge.isNothing(stack)) continue;
-
-            if (isRegulatorChip(stack)) {
-                regulators.add(stack);
-                iterator.remove();
-            }
-        }
-
-        if (regulators.isEmpty()) return;
-        int insertAfter = -1;
-        for (int index = 0; index < list.size(); index++) {
-            if (isDcDcConverter(list.get(index))) {
-                insertAfter = index;
-            }
-        }
-        int insertAt = insertAfter >= 0 ? insertAfter + 1 : list.size();
-        list.addAll(insertAt, regulators);
-    }
-
-    private static boolean isRegulatorChip(ItemStack stack) {
-        return stack.getItem() == Eln.sixNodeItem && (stack.getItemDamage() >> 6) == 5;
-    }
-
-    private static boolean isDcDcConverter(ItemStack stack) {
-        if (stack.getItem() != Eln.transparentNodeItem) return false;
-        int damage = stack.getItemDamage();
-        int group = damage >> 6;
-        int subId = damage & 63;
-        return group == 2 && subId >= 1 && subId <= 7;
+    public static void addEntries(BuildCreativeModeTabContentsEvent event) {
+        addEntries(event.getTab(), event::accept);
     }
 }

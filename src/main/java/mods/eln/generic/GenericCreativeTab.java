@@ -1,48 +1,48 @@
 package mods.eln.generic;
 
-import mods.eln.misc.McBridge;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import mods.eln.Eln;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.init.Items;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.NonNullList;
+import mods.eln.registration.ElnRegistry;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
-public class GenericCreativeTab extends CreativeTabs {
+import java.util.HashMap;
+import java.util.Map;
 
-    private ItemStack iconStack;
+/**
+ * Electrical Age's creative tabs. 1.21 builds tabs through {@link CreativeModeTab.Builder} and
+ * registers them like any other registry object, and their contents come from
+ * {@link CreativeTabPopulator} (via {@code BuildCreativeModeTabContentsEvent}) rather than from the
+ * tab itself. The icon is read through a supplier, so {@link #setIcon} still works after the fact,
+ * once the descriptor whose item is the icon exists.
+ */
+public final class GenericCreativeTab {
+    private static final Map<CreativeModeTab, ItemStack> ICONS = new HashMap<>();
 
-    public GenericCreativeTab(String label, Item item) {
-        this(label, new ItemStack(item));
+    private GenericCreativeTab() {
     }
 
-    public GenericCreativeTab(String label, ItemStack stack) {
-        super(label);
-        setIcon(stack);
+    public static CreativeModeTab create(String label, ItemLike icon) {
+        return create(label, new ItemStack(icon));
     }
 
-    public void setIcon(ItemStack stack) {
-        if (McBridge.isNothing(stack)) {
-            this.iconStack = null;
-        } else {
-            this.iconStack = stack.copy();
-        }
+    /** {@code label} is the 1.7.10 tab label; its lang key stays {@code itemGroup.<label>}. */
+    public static CreativeModeTab create(String label, ItemStack icon) {
+        CreativeModeTab[] self = new CreativeModeTab[1];
+        CreativeModeTab tab = CreativeModeTab.builder()
+            .title(Component.translatable("itemGroup." + label))
+            .icon(() -> {
+                ItemStack stack = ICONS.get(self[0]);
+                return stack == null || stack.isEmpty() ? new ItemStack(Items.REDSTONE) : stack;
+            })
+            .build();
+        self[0] = tab;
+        ICONS.put(tab, icon.copy());
+        return ElnRegistry.registerCreativeTab(label, tab);
     }
 
-    @Override
-    @SideOnly(Side.CLIENT)
-    public ItemStack createIcon() {
-        return !McBridge.isNothing(iconStack) ? iconStack : new ItemStack(Items.REDSTONE);
-    }
-
-    @Override
-    @SideOnly(Side.CLIENT)
-    public void displayAllRelevantItems(NonNullList<ItemStack> list) {
-        super.displayAllRelevantItems(list);
-        if (this != Eln.creativeTabOther) {
-            CreativeTabPopulator.addEntries(this, list);
-        }
+    public static void setIcon(CreativeModeTab tab, ItemStack stack) {
+        ICONS.put(tab, stack == null ? ItemStack.EMPTY : stack.copy());
     }
 }

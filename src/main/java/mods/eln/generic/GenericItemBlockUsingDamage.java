@@ -1,50 +1,48 @@
 package mods.eln.generic;
 
-import mods.eln.misc.McBridge;
-import mods.eln.registration.ElnRegistry;
-
-import net.minecraftforge.fml.common.registry.GameRegistry;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import mods.eln.Eln;
-import mods.eln.misc.RealisticEnum;
-import mods.eln.misc.Utils;
-import mods.eln.misc.UtilsClient;
-import net.minecraft.block.Block;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
-import net.minecraft.item.ItemStack;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.NonNullList;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import mods.eln.registration.ElnRegistry;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Hashtable;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-public class GenericItemBlockUsingDamage<Descriptor extends GenericItemBlockUsingDamageDescriptor> extends ItemBlock {
+/**
+ * A family of descriptor-driven items that place a block: ores, and the six-node and
+ * transparent-node elements. Up to 1.12.2 this was the block's single {@code ItemBlock} with the
+ * descriptor in the damage value; it is now the registrar of one item per descriptor (see
+ * {@link GenericItemUsingDamage} for the reasoning), and keeps the lookups the mod calls on
+ * {@code Eln.sixNodeItem} and friends. Subclasses decide what the item is through {@link #newItem}.
+ */
+public class GenericItemBlockUsingDamage<Descriptor extends GenericItemBlockUsingDamageDescriptor> {
 
     public Hashtable<Integer, Descriptor> subItemList = new Hashtable<Integer, Descriptor>();
     public ArrayList<Integer> orderList = new ArrayList<Integer>();
     public ArrayList<Descriptor> descriptors = new ArrayList<Descriptor>();
-    private final Map<Integer, CreativeTabs> creativeTabByGroup = new HashMap<Integer, CreativeTabs>();
+    private final Map<Integer, CreativeModeTab> creativeTabByGroup = new HashMap<Integer, CreativeModeTab>();
+    /** The block this family places (the shared node block; null for ores, which have one block each). Exists once blocks are registered. */
+    public final Supplier<Block> block;
+    public final String name;
+    private CreativeModeTab creativeTab;
 
     public Descriptor defaultElement = null;
 
-    public GenericItemBlockUsingDamage(Block b) {
-        super(b);
-        setHasSubtypes(true);
+    public GenericItemBlockUsingDamage(Supplier<Block> b, String name) {
+        this.block = b;
+        this.name = name;
         CreativeTabPopulator.register(this);
+    }
+
+    public GenericItemBlockUsingDamage<Descriptor> setCreativeTab(CreativeModeTab tab) {
+        creativeTab = tab;
+        return this;
     }
 
     public void setDefaultElement(Descriptor descriptor) {
@@ -55,135 +53,70 @@ public class GenericItemBlockUsingDamage<Descriptor extends GenericItemBlockUsin
         subItemList.put(dst, subItemList.get(src));
     }
 
-    public void addDescriptor(int damage, Descriptor descriptor) {
-        subItemList.put(damage, descriptor);
-        ItemStack stack = new ItemStack(this, 1, damage);
-        stack.setTagCompound(descriptor.getDefaultNBT());
-        //LanguageRegistry.addName(stack, descriptor.name);
-        orderList.add(damage);
-        descriptors.add(descriptor);
-        descriptor.setParent(this, damage);
-        applyDefaultTab(damage, descriptor);
-        ElnRegistry.registerCustomItemStack(descriptor.name, descriptor.newItemStack(1));
+    protected Item.Properties newProperties(Descriptor descriptor) {
+        return new Item.Properties().stacksTo(descriptor.getItemStackLimit(ItemStack.EMPTY));
     }
 
-    public void addWithoutRegistry(int damage, Descriptor descriptor) {
-        subItemList.put(damage, descriptor);
-        ItemStack stack = new ItemStack(this, 1, damage);
-        stack.setTagCompound(descriptor.getDefaultNBT());
-        descriptor.setParent(this, damage);
-        applyDefaultTab(damage, descriptor);
+    /** The registered item for one descriptor; runs inside the item RegisterEvent, so blocks exist. Ores make a BlockItem of their own block; node families their placer item. */
+    protected Item newItem(int id, Descriptor descriptor) {
+        return new DescriptorBlockItem<>(this, descriptor, id, block.get(), newProperties(descriptor));
     }
 
-    public Descriptor getDescriptor(int damage) {
-        return subItemList.get(damage);
-    }
-
-    public Descriptor getDescriptor(ItemStack itemStack) {
-        if (McBridge.isNothing(itemStack)) return defaultElement;
-        if (itemStack.getItem() != this) return defaultElement;
-        return getDescriptor(itemStack.getItemDamage());
-    }
-
-	/*
-    @Override
-	@SideOnly(Side.CLIENT)
-	public int getIconFromDamage(int damage) {
-		return getDescriptor(damage).getIconId();
-		
-	}
-	//caca1.5.1
-	@Override
-	public String getTextureFile () {
-		return CommonProxy.ITEMS_PNG;
-	}
-	@Override
-	public String getItemNameIS(ItemStack itemstack) {
-		return getItemName() + "." + getDescriptor(itemstack).name;
-	}
-	*/
-
-	/*@Override
-    public String getItemStackDisplayName(ItemStack par1ItemStack) {
-		Descriptor desc = getDescriptor(par1ItemStack);
-		if(desc == null) return "Unknown";
-        return desc.getName(par1ItemStack);
-    }*/
-
-	@Override
-	public String getUnlocalizedNameInefficiently(ItemStack stack) {
-		return getTranslationKey(stack);
-	}
-
-    @Override
-    public String getTranslationKey(ItemStack par1ItemStack) {
-        Descriptor desc = getDescriptor(par1ItemStack);
-        if (desc == null) {
-            return this.getClass().getName();
-        } else {
-            return desc.name.replaceAll("\\s+", "_");
+    private void add(int id, Descriptor descriptor) {
+        Descriptor previous = subItemList.put(id, descriptor);
+        if (previous != null && previous != descriptor) {
+            throw new IllegalStateException(name + ": legacy id " + id + " used by both " + previous.name + " and " + descriptor.name);
         }
+        // The Item itself is created inside the item RegisterEvent (see ElnRegistry); the
+        // descriptor learns about it then, and stack-needing callers wait for afterItems.
+        ElnRegistry.registerItem(descriptor.name, () -> newItem(id, descriptor), item -> descriptor.setParent(item, id));
+        applyDefaultTab(id, descriptor);
     }
 
-
-    @Override
-    public int getItemStackLimit(ItemStack stack) {
-        Descriptor desc = getDescriptor(stack);
-        if (desc == null) return super.getItemStackLimit(stack);
-        return desc.getItemStackLimit(stack);
+    public void addDescriptor(int id, Descriptor descriptor) {
+        add(id, descriptor);
+        orderList.add(id);
+        descriptors.add(descriptor);
+        ElnRegistry.registerCustomItemStack(descriptor.name, () -> descriptor.newItemStack(1));
     }
 
+    public void addWithoutRegistry(int id, Descriptor descriptor) {
+        add(id, descriptor);
+    }
 
-    @Override
-    public void getSubItems(CreativeTabs tabs, NonNullList<ItemStack> list) {
-        // You can also take a more direct approach and do each one individual but I prefer the lazy / right way
-        //for(Entry<Integer, Descriptor> entry : subItemList.entrySet())
+    public Descriptor getDescriptor(int id) {
+        return subItemList.get(id);
+    }
+
+    @SuppressWarnings("unchecked")
+    public Descriptor getDescriptor(ItemStack itemStack) {
+        if (itemStack == null || itemStack.isEmpty()) return defaultElement;
+        if (!(itemStack.getItem() instanceof IDescriptorItem item) || item.descriptorFamily() != this) return defaultElement;
+        return (Descriptor) subItemList.get(item.legacyId());
+    }
+
+    /** Feeds the creative tab: every visible descriptor whose tab is {@code tab}, in registration order. */
+    public void getSubItems(CreativeModeTab tab, Consumer<ItemStack> list) {
         for (int id : orderList) {
             Descriptor descriptor = subItemList.get(id);
             if (descriptor == null || descriptor.isHidden()) continue;
-            CreativeTabs descriptorTab = descriptor.getCreativeTab();
-            if (descriptorTab == null) descriptorTab = Eln.creativeTabOther;
-            if (tabs == null || tabs == descriptorTab || tabs == CreativeTabs.SEARCH) {
-                list.add(descriptor.newCreativeTabStack());
+            CreativeModeTab descriptorTab = descriptor.getCreativeTab();
+            if (descriptorTab == null) descriptorTab = creativeTab != null ? creativeTab : Eln.creativeTabOther;
+            if (tab == null || tab == descriptorTab) {
+                list.accept(descriptor.newCreativeTabStack());
             }
         }
     }
 
-    @Override
-    @SideOnly(Side.CLIENT)
-    public void addInformation(ItemStack itemStack, World world, List<String> list, ITooltipFlag flag) {
-        Descriptor desc = getDescriptor(itemStack);
-        if (desc == null) return;
-        List<String> listFromDescriptor = new ArrayList<String>();
-        List<String> realismData = new ArrayList<String>();
-        desc.addInformation(itemStack, Minecraft.getMinecraft().player, listFromDescriptor, flag.isAdvanced());
-        RealisticEnum realism = desc.addRealismContext(realismData);
-        UtilsClient.showItemTooltip(listFromDescriptor, realismData, realism, list);
-    }
-
-    public boolean onEntityItemUpdate(EntityItem entityItem) {
-        Descriptor desc = getDescriptor(entityItem.getItem());
-        if (desc != null) return desc.onEntityItemUpdate(entityItem);
-        return false;
-    }
-
-    @Override
-    public EnumActionResult onItemUseFirst(EntityPlayer player, World world, BlockPos pos, EnumFacing side, float hitX, float hitY, float hitZ, EnumHand hand) {
-        ItemStack stack = player.getHeldItem(hand);
-        Descriptor desc = getDescriptor(stack);
-        if (desc != null && desc.onItemUseFirst(stack, player)) return EnumActionResult.SUCCESS;
-        return EnumActionResult.PASS;
-    }
-
-    private void applyDefaultTab(int damage, Descriptor descriptor) {
+    private void applyDefaultTab(int id, Descriptor descriptor) {
         if (descriptor.getCreativeTab() != null) return;
-        CreativeTabs tab = creativeTabByGroup.get(damage >> 6);
+        CreativeModeTab tab = creativeTabByGroup.get(id >> 6);
         if (tab != null) {
             descriptor.setCreativeTab(tab);
         }
     }
 
-    public void setCreativeTabForGroup(int group, CreativeTabs tab) {
+    public void setCreativeTabForGroup(int group, CreativeModeTab tab) {
         creativeTabByGroup.put(group, tab);
     }
 }

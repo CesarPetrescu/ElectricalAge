@@ -1,22 +1,22 @@
 package mods.eln.i18n
 
-import net.minecraftforge.fml.common.FMLCommonHandler
-import mods.eln.misc.Utils
+import net.minecraft.client.Minecraft
+import net.minecraft.locale.Language
+import net.neoforged.fml.loading.FMLEnvironment
 
 /**
  * Internationalization and localization helper class.
  *
- * 1.12.2: LanguageRegistry is gone. The side-neutral replacement is the (deprecated but functional)
- * [net.minecraft.util.text.translation.I18n], backed by LanguageMap: the client swaps the current
- * locale into it on resource reload, the dedicated server injects every mod's en_us.lang into it.
- * Keys and placeholder syntax are unchanged, so the generated lang files stay valid.
+ * 1.21: the side-neutral lookup is [Language.getInstance] - on the client it holds the selected
+ * locale, on the dedicated server NeoForge loads every mod's `en_us.json` into it. The generated
+ * `.lang` files are turned into that JSON at build time (see build.gradle.kts), keys and placeholder
+ * syntax unchanged, so translations written for 1.7.10 still apply.
  */
 object I18N {
-    @Suppress("DEPRECATION")
-    private fun lookup(key: String): String? =
-        if (net.minecraft.util.text.translation.I18n.canTranslate(key))
-            net.minecraft.util.text.translation.I18n.translateToLocal(key)
-        else null
+    private fun lookup(key: String): String? {
+        val language = Language.getInstance()
+        return if (language.has(key)) language.getOrDefault(key) else null
+    }
 
     /**
      * Defines the different translatable types.
@@ -87,9 +87,8 @@ object I18N {
     }
 
     @JvmStatic
-    fun getCurrentLanguage(): String {
-        return FMLCommonHandler.instance().currentLanguage
-    }
+    fun getCurrentLanguage(): String =
+        if (FMLEnvironment.dist.isClient) ClientLanguage.selected() else "en_us"
 
     internal fun encodeLangKey(key: String): String {
         return encodeLangKey(key, true)!!
@@ -259,4 +258,8 @@ object I18N {
     fun TR_EXPAND(type: Type, format: String, vararg axes: Array<String>): String {
         return format
     }
+}
+
+private object ClientLanguage {
+    fun selected(): String = Minecraft.getInstance().languageManager.selected
 }
