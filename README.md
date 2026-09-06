@@ -19,7 +19,7 @@ Get the [latest tested 1.21.1 development build](https://github.com/CesarPetresc
 3. Put `ElectricalAge-1.21.1-latest.jar` in the same `mods` folder. Install it and Kotlin for Forge on both the client and dedicated server when playing multiplayer.
 4. Start with a fresh world. Saves from the 1.7.10 and 1.12.2 versions are not migrated by this port.
 
-These are development prereleases. Keep backups of worlds used for testing. Jade and CC: Tweaked are optional; use their Minecraft 1.21.1 / NeoForge builds if you want their integrations. Development dependency versions are recorded in [gradle.properties](gradle.properties).
+These are development builds, published as the repository's rolling Latest release. Keep backups of worlds used for testing. Jade and CC: Tweaked are optional; use their Minecraft 1.21.1 / NeoForge builds if you want their integrations. Development dependency versions are recorded in [gradle.properties](gradle.properties).
 
 ## Build and test
 
@@ -60,7 +60,7 @@ The [headless test guide](tools/port/headless.md) explains the Linux server/rest
 - **Build and unit tests:** compile the mod and upload the JAR and test reports.
 - **MNA benchmarks:** run benchmark tests and upload statistics and reports.
 - **In-world smoke tests:** place machines and circuits, verify a saved-world restart, run the client, and upload screenshots and logs.
-- **Publish latest mod:** after all three jobs succeed on the current `main` commit, update the `latest-1.21.1` prerelease with the tested JAR and its SHA-256 checksum. Pull requests and other branches do not publish releases.
+- **Publish latest mod:** after build, benchmarks, and smoke tests both with and without Create succeed on the current `main` commit, update the `latest-1.21.1` release with the tested JAR and its SHA-256 checksum. Pull requests and other branches do not publish releases.
 
 The release notes identify the exact source commit and CI run. The download URL stays the same as newer passing builds replace it. Failed checks leave the previous release available. Individual build artifacts can also be downloaded from an Actions run; those artifacts may exist before the full suite finishes.
 

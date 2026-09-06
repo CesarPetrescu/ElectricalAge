@@ -406,6 +406,12 @@ public final class ClientSmokeTest {
         var tab = net.minecraft.core.registries.BuiltInRegistries.CREATIVE_MODE_TAB.stream()
             .filter(t -> t.getDisplayName().getString().equals("Electrical Age - " + name)).findFirst().orElse(null);
         try {
+            if (tab == null) throw new IllegalStateException("Missing creative category: " + name);
+            var pagesField = net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen.class.getDeclaredField("pages");
+            pagesField.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            var pages = (java.util.List<net.neoforged.neoforge.client.gui.CreativeTabsScreenPage>) pagesField.get(creative);
+            pages.stream().filter(page -> page.getVisibleTabs().contains(tab)).findFirst().ifPresent(creative::setCurrentPage);
             var m = net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen.class.getDeclaredMethod("selectTab", net.minecraft.world.item.CreativeModeTab.class);
             m.setAccessible(true);
             m.invoke(creative, tab);

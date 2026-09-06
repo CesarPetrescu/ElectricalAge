@@ -11,6 +11,7 @@ object CreativeCategories {
         val type = descriptor.javaClass.name
         val name = descriptor.javaClass.simpleName.lowercase(java.util.Locale.ROOT)
         if (name.contains("portablenan")) return Eln.creativeTabCreative
+        if (name.contains("rollingshaftmachine")) return Eln.creativeTabMachines
         if (descriptor is SimpleShaftDescriptor) return Eln.creativeTabMechanics
         if (name.contains("gridtransformer")) return Eln.creativeTabPowerElectronics
         if (type.contains(".groundcable.") || type.contains(".electricalcable.") ||
