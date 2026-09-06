@@ -53,6 +53,10 @@ public final class FixedFunction {
     /** The GL enable/disable flags and blend settings; copied on glPushAttrib. */
     static final class State implements Cloneable {
         boolean texture2d = true, lighting = true, cullFace = true, blend = false, depthTest = true, alphaTest = false, scissor = false, lineSmooth = false;
+        /** GL_TEXTURE_2D on 1.7.10's lightmap unit: off means the block light does not apply (glowing parts). */
+        boolean lightmap = true;
+        /** Which unit glEnable/glDisable(GL_TEXTURE_2D) addresses: 0 the texture, 1 the lightmap (OpenGlHelper.setActiveTexture). */
+        int activeTexture = 0;
         boolean depthMask = true;
         int blendSrc = GL11.GL_SRC_ALPHA, blendDst = GL11.GL_ONE_MINUS_SRC_ALPHA;
         float lineWidth = 1f;
@@ -91,7 +95,20 @@ public final class FixedFunction {
             packedOverlay = overlay;
             state = new State();
             attribStack.clear();
+            resetVertexState();
         }
+    }
+
+    /**
+     * The current normal (and texture coordinate) at GL's defaults, so a render that sets none
+     * does not inherit whatever the previous model's last face left behind.
+     */
+    private static void resetVertexState() {
+        nx = 0f;
+        ny = 0f;
+        nz = 1f;
+        u = 0f;
+        v = 0f;
     }
 
     /** Enters a GUI render: drawing goes straight through RenderSystem, in the GUI's pose. */
@@ -103,7 +120,13 @@ public final class FixedFunction {
             packedOverlay = OverlayTexture.NO_OVERLAY;
             state = new State();
             attribStack.clear();
+            resetVertexState();
         }
+    }
+
+    /** OpenGlHelper.setActiveTexture: 1.7.10 toggled the lightmap by disabling GL_TEXTURE_2D on its unit. */
+    static void activeTexture(int unit) {
+        state.activeTexture = unit;
     }
 
     /** Leaves the render entered with {@link #begin} / {@link #beginGui}, flushing the buffers. */
@@ -159,7 +182,9 @@ public final class FixedFunction {
     // ------------------------------------------------------------------ state
     static void enable(int cap, boolean on) {
         switch (cap) {
-            case GL11.GL_TEXTURE_2D -> state.texture2d = on;
+            case GL11.GL_TEXTURE_2D -> {
+                if (state.activeTexture == 1) state.lightmap = on; else state.texture2d = on;
+            }
             case GL11.GL_LIGHTING -> state.lighting = on;
             case GL11.GL_CULL_FACE -> state.cullFace = on;
             case GL11.GL_BLEND -> state.blend = on;
@@ -177,7 +202,7 @@ public final class FixedFunction {
 
     static boolean isEnabled(int cap) {
         return switch (cap) {
-            case GL11.GL_TEXTURE_2D -> state.texture2d;
+            case GL11.GL_TEXTURE_2D -> state.activeTexture == 1 ? state.lightmap : state.texture2d;
             case GL11.GL_LIGHTING -> state.lighting;
             case GL11.GL_CULL_FACE -> state.cullFace;
             case GL11.GL_BLEND -> state.blend;
@@ -281,7 +306,7 @@ public final class FixedFunction {
     }
 
     private static Batch current = null;
-    private static float u = 0f, v = 0f, nx = 0f, ny = 1f, nz = 0f;
+    private static float u = 0f, v = 0f, nx = 0f, ny = 0f, nz = 1f;   // GL defaults: normal toward the viewer
 
     // display lists
     private static final Map<Integer, List<Batch>> lists = new HashMap<>();
@@ -369,10 +394,13 @@ public final class FixedFunction {
         Matrix4f model = extra == null ? p.pose() : new Matrix4f(p.pose()).mul(extra);
         boolean textured = state.texture2d && state.texture != null;
         ResourceLocation tex = textured ? state.texture : WHITE;
-        int light = state.lighting ? packedLight : FULL_BRIGHT;
+        // the lightmap unit off (UtilsClient.disableLight) is full bright: glowing parts, GUI overlays
+        int light = state.lightmap ? packedLight : FULL_BRIGHT;
 
         if (buffers != null) {
+            // GL_LIGHTING on: the entity types, shaded by the normal. Off: no directional shading at all.
             RenderType type = lines ? RenderType.lines()
+                : !state.lighting ? ElnRenderTypes.unlit(tex, state.blend, state.cullFace)
                 : state.blend ? RenderType.entityTranslucent(tex)
                 : state.cullFace ? RenderType.entityCutout(tex) : RenderType.entityCutoutNoCull(tex);
             VertexConsumer vc = buffers.getBuffer(type);

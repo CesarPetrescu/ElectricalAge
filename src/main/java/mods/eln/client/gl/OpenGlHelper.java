@@ -12,6 +12,7 @@ public final class OpenGlHelper {
     public static int lastBrightnessX = 240, lastBrightnessY = 240;
 
     public static void setActiveTexture(int unit) {
+        FixedFunction.activeTexture(unit == lightmapTexUnit ? 1 : 0);
     }
 
     /** Lightmap coordinates are 0..240 in 1.7.10 terms (block, sky); pack them the way the light texture does. */

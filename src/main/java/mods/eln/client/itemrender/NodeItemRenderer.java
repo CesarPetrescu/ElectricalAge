@@ -73,6 +73,8 @@ public final class NodeItemRenderer extends BlockEntityWithoutLevelRenderer {
         }
         FixedFunction.begin(poseStack, buffers, light, overlay);
         try {
+            // Forge's inventory render of a flat custom icon turned GL_LIGHTING off around it: the sprite at its own colours
+            if (flatIcon) mods.eln.client.gl.GL11.glDisable(mods.eln.client.gl.GL11.GL_LIGHTING);
             renderer.renderItem(type, stack);
         } finally {
             FixedFunction.finish();
