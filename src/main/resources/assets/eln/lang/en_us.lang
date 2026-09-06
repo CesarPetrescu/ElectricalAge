@@ -175,17 +175,17 @@ empty=empty
 
 # src/main/java/mods/eln/Eln.java
 itemGroup.Eln=Electrical Age
-itemGroup.ElnCables=Electrical Age - Wires & Cables
-itemGroup.ElnCreative=Electrical Age - Creative Only
-itemGroup.ElnLighting=Electrical Age - Lighting
-itemGroup.ElnMachines=Electrical Age - Processing
-itemGroup.ElnMechanics=Electrical Age - Mechanics
-itemGroup.ElnOresMaterials=Electrical Age - Materials
+itemGroup.ElnCables=ELN - Wires & Cables
+itemGroup.ElnCreative=ELN - Creative Only
+itemGroup.ElnLighting=ELN - Lighting
+itemGroup.ElnMachines=ELN - Processing
+itemGroup.ElnMechanics=ELN - Mechanics
+itemGroup.ElnOresMaterials=ELN - Materials
 itemGroup.ElnOther=Electrical Age - Other
 itemGroup.ElnPowerDistribution=Electrical Age - Power Distribution
-itemGroup.ElnPowerElectronics=Electrical Age - Power
-itemGroup.ElnSignalProcessing=Electrical Age - Signals & Control
-itemGroup.ElnToolsArmor=Electrical Age - Tools & Armor
+itemGroup.ElnPowerElectronics=ELN - Power
+itemGroup.ElnSignalProcessing=ELN - Signals & Control
+itemGroup.ElnToolsArmor=ELN - Tools & Armor
 
 # src/main/java/mods/eln/gui/GuiVerticalVoltageSupplyBar.java
 Power_Supply_\:=Power Supply :

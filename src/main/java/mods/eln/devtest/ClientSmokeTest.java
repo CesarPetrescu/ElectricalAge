@@ -97,6 +97,7 @@ public final class ClientSmokeTest {
                 phase = Phase.SETUP;
             }
             case SETUP -> {
+                mc.getTutorial().setStep(net.minecraft.client.tutorial.TutorialSteps.NONE);
                 var server = mc.getSingleplayerServer();
                 server.execute(() -> setup(server));
                 phase = Phase.WORLD_SHOT;
@@ -404,7 +405,7 @@ public final class ClientSmokeTest {
     private void selectCreativeTab(Minecraft mc, String name) {
         if (!(mc.screen instanceof net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen creative)) return;
         var tab = net.minecraft.core.registries.BuiltInRegistries.CREATIVE_MODE_TAB.stream()
-            .filter(t -> t.getDisplayName().getString().equals("Electrical Age - " + name)).findFirst().orElse(null);
+            .filter(t -> t.getDisplayName().getString().equals("ELN - " + name)).findFirst().orElse(null);
         try {
             if (tab == null) throw new IllegalStateException("Missing creative category: " + name);
             var pagesField = net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen.class.getDeclaredField("pages");
@@ -415,6 +416,7 @@ public final class ClientSmokeTest {
             var m = net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen.class.getDeclaredMethod("selectTab", net.minecraft.world.item.CreativeModeTab.class);
             m.setAccessible(true);
             m.invoke(creative, tab);
+            org.lwjgl.glfw.GLFW.glfwSetCursorPos(mc.getWindow().getWindow(), 0, 0);
             Eln.LOGGER.info("{} creative tab '{}' selected", PREFIX, tab == null ? null : tab.getDisplayName().getString());
         } catch (Exception e) {
             fail("selecting the creative tab", e);

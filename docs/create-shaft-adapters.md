@@ -2,7 +2,7 @@
 
 Electrical Age includes optional support for Create 6.0.10 on NeoForge / Minecraft 1.21.1.
 Install Create alongside ELN and Kotlin for Forge to enable the two adapter blocks and their recipes.
-ELN still works without Create. The adapters appear under **Electrical Age - Mechanics**.
+ELN still works without Create. The adapters appear under **ELN - Mechanics**.
 
 | Adapter | Maximum mechanical output | Maximum output torque | Housing |
 | --- | --- | --- | --- |

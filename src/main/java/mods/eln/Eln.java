@@ -463,16 +463,16 @@ public class Eln {
     /** What used to be init. Registries are complete here. */
     private void commonSetup(FMLCommonSetupEvent event) {
         TR_GROUP("Eln", "Electrical Age");
-        TR_GROUP("ElnPowerElectronics", "Electrical Age - Power");
-        TR_GROUP("ElnSignalProcessing", "Electrical Age - Signals & Control");
-        TR_GROUP("ElnLighting", "Electrical Age - Lighting");
-        TR_GROUP("ElnCables", "Electrical Age - Wires & Cables");
-        TR_GROUP("ElnMechanics", "Electrical Age - Mechanics");
+        TR_GROUP("ElnPowerElectronics", "ELN - Power");
+        TR_GROUP("ElnSignalProcessing", "ELN - Signals & Control");
+        TR_GROUP("ElnLighting", "ELN - Lighting");
+        TR_GROUP("ElnCables", "ELN - Wires & Cables");
+        TR_GROUP("ElnMechanics", "ELN - Mechanics");
         TR_GROUP("ElnPowerDistribution", "Electrical Age - Power Distribution");
-        TR_GROUP("ElnToolsArmor", "Electrical Age - Tools & Armor");
-        TR_GROUP("ElnOresMaterials", "Electrical Age - Materials");
-        TR_GROUP("ElnMachines", "Electrical Age - Processing");
-        TR_GROUP("ElnCreative", "Electrical Age - Creative Only");
+        TR_GROUP("ElnToolsArmor", "ELN - Tools & Armor");
+        TR_GROUP("ElnOresMaterials", "ELN - Materials");
+        TR_GROUP("ElnMachines", "ELN - Processing");
+        TR_GROUP("ElnCreative", "ELN - Creative Only");
         TR_GROUP("ElnOther", "Electrical Age - Other");
         NeoForge.EVENT_BUS.register(new RoomThermalBlockEventsHandler());
         NeoForge.EVENT_BUS.register(new ElectricMinecartChargeReporter());
