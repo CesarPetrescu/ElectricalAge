@@ -52,9 +52,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          mkdir -p run/gametest
+          touch run/gametest/server.properties
           ./gradlew runGameTestServer --no-daemon --stacktrace 2>&1 | tee build/evidence/gametest.log
-          grep -E 'ELN_GAMETEST_PASS' build/evidence/gametest.log | sort -u | tee build/evidence/gametest-cases.txt
-          test "$(wc -l < build/evidence/gametest-cases.txt)" -ge 20
+          python3 tools/verify_gametests.py
       - name: Install headless graphics and audio dependencies
         if: ${{ always() && steps.build.outcome == 'success' }}
         shell: bash
@@ -71,7 +72,7 @@ jobs:
         working-directory: work/ports/1.21.1
         shell: bash
         run: python3 tools/client_smoke.py --packaged
-      - name: Record distributable and source hashes
+      - name: Record distributable and complete project source
         if: always()
         working-directory: work/ports/1.21.1
         shell: bash
@@ -80,6 +81,7 @@ jobs:
           git -C ../.. rev-parse HEAD > build/evidence/source-commit.txt
           find build/libs -name '*.jar' -exec sha256sum {} \; > build/evidence/jar-sha256.txt || true
           git -C ../.. archive HEAD:ports/1.21.1 -o "$PWD/build/eln-1.21.1-source.zip"
+          git -C ../.. archive HEAD -o "$PWD/build/ElectricalAge-full-project-source.zip"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -98,5 +100,6 @@ jobs:
           path: |
             work/ports/1.21.1/build/libs/*.jar
             work/ports/1.21.1/build/eln-1.21.1-source.zip
+            work/ports/1.21.1/build/ElectricalAge-full-project-source.zip
           retention-days: 30
           if-no-files-found: error
