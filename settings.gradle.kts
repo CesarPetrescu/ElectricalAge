@@ -1,17 +1,22 @@
 pluginManagement {
+    val kotlinVersion: String by settings
+    plugins {
+        // Must match the Kotlin runtime Kotlin for Forge ships (gradle.properties: kffVersion).
+        id("org.jetbrains.kotlin.jvm") version kotlinVersion
+        id("net.neoforged.moddev") version "2.0.146"
+    }
     repositories {
-        maven {
-            name = "GTNH Maven"
-            url = uri("https://nexus.gtnewhorizons.com/repository/public/")
-            mavenContent { includeGroupByRegex("com\\.gtnewhorizons.*") }
-        }
         gradlePluginPortal()
         mavenCentral()
+        maven {
+            name = "NeoForged"
+            url = uri("https://maven.neoforged.net/releases")
+        }
     }
 }
 
 plugins {
-    // Lets Gradle fetch the JDK 8 / JDK 17 toolchains the build needs.
+    // Provisions the JDK 21 toolchain when the host has none.
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 

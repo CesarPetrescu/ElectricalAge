@@ -1,0 +1,38 @@
+# Electrical Age on NeoForge. Expanded by processResources (see build.gradle.kts).
+modLoader="kotlinforforge"
+loaderVersion="[5,)"
+license="LGPL-3.0-only (code); CC BY-NC-SA 3.0 (graphics and models)"
+issueTrackerURL="https://github.com/age-series/ElectricalAge/issues"
+
+[[mods]]
+modId="${modId}"
+version="${version}"
+displayName="${modName}"
+displayURL="https://github.com/age-series/ElectricalAge"
+logoFile="assets/eln/logo.png"
+credits="The Age Series Team"
+authors="jrddunbr"
+description='''
+Electrical Age: a Minecraft mod offering the ability to perform large-scale in-game electrical simulations.
+'''
+
+[[dependencies.${modId}]]
+modId="neoforge"
+type="required"
+versionRange="[${neoVersion},)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.${modId}]]
+modId="minecraft"
+type="required"
+versionRange="[${minecraftVersion}]"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.${modId}]]
+modId="kotlinforforge"
+type="required"
+versionRange="[${kffVersion},)"
+ordering="BEFORE"
+side="BOTH"

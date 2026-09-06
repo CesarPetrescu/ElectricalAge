@@ -1,0 +1,27 @@
+# Files the 1.21.1 build compiles (Ant patterns, relative to src/main/java and src/main/kotlin).
+# Grow this list as files are ported; `./gradlew portStatus` prints the count.
+mods/eln/Eln.java
+mods/eln/registration/ElnRegistry.kt
+mods/eln/generic/IDescriptorItem.java
+mods/eln/generic/DescriptorItem.java
+mods/eln/generic/DescriptorBlockItem.java
+mods/eln/generic/GenericItemUsingDamage.java
+mods/eln/generic/GenericItemUsingDamageDescriptor.kt
+mods/eln/generic/GenericItemUsingDamageDescriptorWithComment.java
+mods/eln/generic/GenericItemBlockUsingDamage.java
+mods/eln/generic/GenericItemBlockUsingDamageDescriptor.java
+mods/eln/generic/SharedItem.java
+mods/eln/generic/GenericCreativeTab.java
+mods/eln/generic/CreativeTabPopulator.java
+mods/eln/client/itemrender/LegacyItemRender.kt
+mods/eln/misc/VoltageLevelColor.kt
+mods/eln/misc/RealisticEnum.kt
+mods/eln/misc/Tooltips.kt
+mods/eln/i18n/I18N.kt
+mods/eln/wiki/Data.java
+mods/eln/ore/OreDescriptor.kt
+mods/eln/ore/OreBlock.kt
+mods/eln/ore/OreItem.kt
+mods/eln/datagen/ElnDataGenerators.kt
+mods/eln/devtest/DevHooks.java
+mods/eln/devtest/ClientDevHooks.java
