@@ -40,7 +40,15 @@ class CreateAdapterEntity(type: BlockEntityType<*>, pos: BlockPos, state: BlockS
     override fun getShaft(dir: ShaftDirection) = if (dir in shaftConnectivity) shaft else null
     override fun setShaft(dir: ShaftDirection, net: ShaftNetwork?) { if (dir in shaftConnectivity) shaft = net }
     override fun isShaftElementDestructing() = disconnecting || isRemoved
-    override fun needPublish() { if (level?.isClientSide == false) { setChanged(); sendData() } }
+    override fun needPublish() {
+        val world = level as? net.minecraft.server.level.ServerLevel ?: return
+        if (disconnecting || isRemoved || !world.server.isRunning) return
+        val chunk = world.chunkSource.getChunkNow(worldPosition.x shr 4, worldPosition.z shr 4) ?: return
+        // Shaft rebuilds may notify us while adjacent chunks unload. setChanged() also checks
+        // comparator neighbours and can request chunks; this non-inventory block needs only saving/sync.
+        chunk.setUnsaved(true)
+        sendData()
+    }
     val outputSpeed get() = shaft?.rads ?: savedRads
 
     private fun mechanics(): AdapterDrive = drive ?: run {
