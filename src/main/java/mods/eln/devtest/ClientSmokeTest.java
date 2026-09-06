@@ -32,7 +32,7 @@ public final class ClientSmokeTest {
     private static final String PREFIX = "SMOKE";
     private static final int X = 512, Z = 512, GROUND = 64;
 
-    private enum Phase { OPEN, JOIN, SETUP, WORLD_SHOT, THIRD_PERSON_SHOT, GUI, GUI_SHOT, MACHINE_GUI, MACHINE_GUI_SHOT, INVENTORY, INVENTORY_SHOT, CREATIVE_TAB, CREATIVE_SHOT, DONE }
+    private enum Phase { OPEN, JOIN, SETUP, WORLD_SHOT, NIGHT_SHOT, THIRD_PERSON_SHOT, GUI, GUI_SHOT, MACHINE_GUI, MACHINE_GUI_SHOT, INVENTORY, INVENTORY_SHOT, CREATIVE_TAB, CREATIVE_SHOT, DONE }
 
     private final String save;
     private Phase phase = Phase.OPEN;
@@ -92,9 +92,21 @@ public final class ClientSmokeTest {
                 }
                 if (wait++ < 100) return;
                 shot(mc, "smoke-world");
+                // the same view at midnight: the lit lamp socket and the spot it projects are the block light
+                var server = mc.getSingleplayerServer();
+                server.execute(() -> server.overworld().setDayTime(18000));
+                phase = Phase.NIGHT_SHOT;
+                wait = 0;
+            }
+            case NIGHT_SHOT -> {
+                if (wait++ < 60) return;
+                shot(mc, "smoke-night");
                 // third person from behind, with a macerator and a cable lying on the floor: the in-hand and on-ground item transforms
                 var server = mc.getSingleplayerServer();
-                server.execute(() -> dropItems(server));
+                server.execute(() -> {
+                    server.overworld().setDayTime(6000);
+                    dropItems(server);
+                });
                 mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
                 phase = Phase.THIRD_PERSON_SHOT;
                 wait = 0;

@@ -42,6 +42,8 @@ public final class SmokeTest {
     private static final String PREFIX = "SMOKE";
     /** Far from spawn so the generated terrain does not interfere. */
     private static final int X = 512, Z = 512, GROUND = 64;
+    /** The lamp row: north of the circuit, south of the -PsmokeTest=all grid. */
+    private static final int LAMP_Z = Z - 3;
 
     private final boolean placing;
     private int ticks = 0;
@@ -66,6 +68,7 @@ public final class SmokeTest {
         // 20 ticks of settling before touching the world, then let the simulator run before reading.
         if (ticks == 20) {
             try {
+                forceLoad(world());
                 if (placing) place();
                 if (everything) placeEverything();
             } catch (Throwable t) {
@@ -84,6 +87,20 @@ public final class SmokeTest {
 
     private ServerLevel world() {
         return ServerLifecycleHooks.getCurrentServer().overworld();
+    }
+
+    /**
+     * Nobody is online, so without this the chunks the circuit sits in drop out one tick after
+     * each block access, and nothing in them ticks: the light block entity, the nodes' entities.
+     * Forced chunks (what /forceload does; the choice is saved with the world) are entity-ticking.
+     */
+    private void forceLoad(ServerLevel world) {
+        int minX = (X - 8) >> 4, maxX = (X + 8 + 16 * 6) >> 4;
+        int minZ = (Z - 8 - 27 * 6) >> 4, maxZ = (Z + 8) >> 4;
+        for (int cx = minX; cx <= maxX; cx++)
+            for (int cz = minZ; cz <= maxZ; cz++)
+                world.setChunkForced(cx, cz, true);
+        Eln.logger.info("{} forced chunks ({},{})..({},{})", PREFIX, minX, minZ, maxX, maxZ);
     }
 
     private void place() {
@@ -110,19 +127,39 @@ public final class SmokeTest {
         world.setBlock(new BlockPos(X + 2, GROUND, Z + 2), Blocks.STONE.defaultBlockState(), 3);
         placeTransparentNode(world, player, "48V Macerator", X + 2, Z + 2);
 
-        // The creative source defaults to 0 V; readConfigTool is the public setter.
-        SixNodeElement source = element(world, X, Z);
-        if (source == null) {
-            Eln.logger.error("{} FAIL no source element after placement", PREFIX);
+        setVoltage(world, player, X, Z, 50.0);
+        Eln.logger.info("{} placed source and cable, source set to 50 V", PREFIX);
+
+        // A lamp on its own row north of the circuit: source -> MV cable -> classic lamp socket with
+        // a 120 V bulb and a cable in its slots. Verified: the socket's block light (a node's light
+        // is live data, kept in the chunk's auxiliary light manager) and the light block it projects.
+        for (int dx = 0; dx <= 2; dx++) world.setBlock(new BlockPos(X + dx, GROUND, LAMP_Z), Blocks.STONE.defaultBlockState(), 3);
+        placeSixNode(world, player, "Electrical Source", X, LAMP_Z);
+        placeSixNode(world, player, "Medium Voltage Cable", X + 1, LAMP_Z);
+        placeSixNode(world, player, "Classic Lamp Socket", X + 2, LAMP_Z);
+        setVoltage(world, player, X, LAMP_Z, 120.0);
+        if (element(world, X + 2, LAMP_Z) instanceof mods.eln.sixnode.lampsocket.LampSocketElement socket) {
+            socket.getInventory().setItem(mods.eln.sixnode.lampsocket.LampSocketContainer.LAMP_SLOT_ID, Eln.findItemStack("120V Incandescent Light Bulb", 1));
+            socket.getInventory().setItem(mods.eln.sixnode.lampsocket.LampSocketContainer.CABLE_SLOT_ID, Eln.findItemStack("Medium Voltage Cable", 1));
+            socket.setPoweredByLampSupply(false);   // a socket is born wireless; this one is cabled
+            socket.inventoryChange(socket.getInventory());
+            Eln.logger.info("{} lamp socket loaded with a bulb and a cable", PREFIX);
+        } else {
+            Eln.logger.error("{} FAIL no lamp socket element after placement", PREFIX);
+        }
+        countOres(world);
+    }
+
+    /** The creative source defaults to 0 V; readConfigTool is the public setter. */
+    private void setVoltage(ServerLevel world, FakePlayer player, int x, int z, double voltage) {
+        SixNodeElement source = element(world, x, z);
+        if (!(source instanceof mods.eln.item.IConfigurable configurable)) {
+            Eln.logger.error("{} FAIL no source element at ({},{})", PREFIX, x, z);
             return;
         }
         CompoundTag cfg = new CompoundTag();
-        cfg.putDouble("voltage", 50.0);
-        if (source instanceof mods.eln.item.IConfigurable) {
-            ((mods.eln.item.IConfigurable) source).readConfigTool(cfg, player);
-        }
-        Eln.logger.info("{} placed source and cable, source set to 50 V", PREFIX);
-        countOres(world);
+        cfg.putDouble("voltage", voltage);
+        configurable.readConfigTool(cfg, player);
     }
 
     /** World generation is data now: the chunk the circuit sits in must contain the mod's ores. */
@@ -277,7 +314,43 @@ public final class SmokeTest {
         Eln.logger.info("{} {} nodes present, energised={} current flowing={}",
             PREFIX, (energised && current) ? "PASS" : "FAIL", energised, current);
         if (everything) Eln.logger.info("{} ALL {} nodes alive after {} ticks", PREFIX, NodeManager.instance.getNodeList().size(), ticks);
+        verifyLamp(world);
         runConsoleCommands(world);
+    }
+
+    /**
+     * The lit socket must light its own block through the light engine (the server's runs off the
+     * main thread, so this proves the auxiliary light manager path), and must have projected a light
+     * block whose state property carries the level.
+     */
+    private void verifyLamp(ServerLevel world) {
+        SixNodeElement socket = element(world, X + 2, LAMP_Z);
+        if (socket == null) {
+            Eln.logger.error("{} FAIL lamp socket missing after {}", PREFIX, placing ? "placement" : "restart");
+            return;
+        }
+        Eln.logger.info("{} lamp   meter: {}", PREFIX, socket.multiMeterString());
+        BlockPos socketPos = new BlockPos(X + 2, GROUND + 1, LAMP_Z);
+        int nodeLight = socket.sixNode.getLightValue();
+        var aux = world.getAuxLightManager(socketPos);
+        int auxLight = aux == null ? -1 : aux.getLightAt(socketPos);
+        int blockLight = world.getBrightness(net.minecraft.world.level.LightLayer.BLOCK, socketPos);
+        int lightBlocks = 0, spotLevel = 0, spotBrightness = 0;
+        BlockPos spot = null;
+        for (BlockPos p : BlockPos.betweenClosed(socketPos.offset(-3, -1, -3), socketPos.offset(3, 6, 3))) {
+            BlockState state = world.getBlockState(p);
+            if (state.getBlock() != Eln.lightBlock) continue;
+            lightBlocks++;
+            int level = state.getValue(mods.eln.lightblock.LightBlock.LIGHT);
+            if (level > spotLevel) {
+                spotLevel = level;
+                spot = p.immutable();
+                spotBrightness = world.getBrightness(net.minecraft.world.level.LightLayer.BLOCK, p);
+            }
+        }
+        boolean pass = nodeLight > 0 && auxLight == nodeLight && blockLight == nodeLight && spot != null && spotBrightness == spotLevel;
+        Eln.logger.info("{} {} lamp: node light={} aux={} block light at socket={}; {} light block(s), brightest {} at {} reads {}",
+            PREFIX, pass ? "PASS" : "FAIL", nodeLight, auxLight, blockLight, lightBlocks, spotLevel, spot, spotBrightness);
     }
 
     /** The /eln console, as the server console would run it; its output lands in the log. */

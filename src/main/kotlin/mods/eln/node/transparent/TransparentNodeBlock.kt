@@ -25,7 +25,7 @@ import mods.eln.misc.getBlockEntity
  * The block every transparent-node element lives in. The 1.7.10 metadata chose the block entity
  * subclass ([EntityMetaTag]) and the light opacity; it is the [META] state property now.
  */
-class TransparentNodeBlock : NodeBlock(nodeProperties().lightLevel { 0 }, 0), IMetaBlock {
+class TransparentNodeBlock : NodeBlock(nodeProperties(), 0), IMetaBlock {
 
     init {
         registerDefaultState(stateDefinition.any().setValue(META, EntityMetaTag.Basic.meta))

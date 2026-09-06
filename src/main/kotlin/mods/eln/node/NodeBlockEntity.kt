@@ -70,13 +70,10 @@ abstract class NodeBlockEntity(type: BlockEntityType<*>, pos: BlockPos, state: B
         } catch (e: IOException) {
             e.printStackTrace()
         }
-        /*	if(lastLight == 0xFF) //boot trololol
-        {
-			lastLight = 15;
-			world.checkLightFor(LightLayer.BLOCK, pos);
-		}*/if (lastLight != light) {
+        if (lastLight != light) {
             lastLight = light
-            world.lightEngine.checkBlock(blockPos)
+            // the chunk packet carried the light the server had; the publish frame carries changes since
+            world.getAuxLightManager(blockPos)?.setLightAt(blockPos, light)
         }
     }
 
@@ -85,6 +82,16 @@ abstract class NodeBlockEntity(type: BlockEntityType<*>, pos: BlockPos, state: B
     abstract fun isProvidingWeakPower(side: Direction?): Int
 
     var internalNode: Node? = null
+
+    /**
+     * Nodes simulate whether or not their chunk is loaded, so a lamp may have changed while its
+     * chunk was away: the chunk's light record is brought up to date with the node when it comes back.
+     */
+    override fun onLoad() {
+        if (world.isClientSide) return
+        val node = node ?: return
+        world.getAuxLightManager(blockPos)?.setLightAt(blockPos, node.lightValue)
+    }
 
     val node: Node?
         get() {
@@ -135,15 +142,6 @@ abstract class NodeBlockEntity(type: BlockEntityType<*>, pos: BlockPos, state: B
     open fun unoptimizedRenderBoundingBox(): AABB {
         return localRenderBoundingBox()
     }
-
-    val lightValue: Int
-        get() = if (world.isClientSide) {
-            if (lastLight == 0xFF) {
-                0
-            } else lastLight
-        } else {
-            node?.lightValue?: 0
-        }
 
     /** Reads a tile entity from NBT (1.7.10 name; 1.21 calls it loadAdditional). */
     open fun readFromNBT(nbt: CompoundTag) {}

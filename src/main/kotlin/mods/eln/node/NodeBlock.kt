@@ -60,11 +60,16 @@ abstract class NodeBlock(properties: Properties, blockItemNbr: Int) : Block(prop
         return RenderShape.INVISIBLE
     }
 
-    override fun getLightEmission(state: BlockState, world: BlockGetter, pos: BlockPos): Int {
-        val entity = world.getBlockEntity(pos)
-        if (entity !is NodeBlockEntity) return 0
-        return entity.lightValue
-    }
+    /**
+     * A node's light is live data, not a state property. The server's light engine runs off the
+     * main thread, where block entities are out of reach, and lights chunks straight from disk
+     * before their entities exist; the chunk's auxiliary light manager is what NeoForge gives
+     * for exactly that, so the node writes its light there and the block reads it back.
+     */
+    override fun hasDynamicLightEmission(state: BlockState): Boolean = true
+
+    override fun getLightEmission(state: BlockState, world: BlockGetter, pos: BlockPos): Int =
+        world.getAuxLightManager(pos)?.getLightAt(pos) ?: 0
 
     //client server
     open fun onBlockPlacedBy(world: Level, pos: BlockPos, front: Direction?, entityLiving: LivingEntity?, metadata: Int): Boolean {

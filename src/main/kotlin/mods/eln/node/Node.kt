@@ -18,7 +18,7 @@ abstract class Node : NodeBase() {
             if (light < 0) light = 0
             if (lastLight != light) {
                 lastLight = light
-                coordinate.world().lightEngine.checkBlock(coordinate.pos)
+                coordinate.world().getAuxLightManager(coordinate.pos)?.setLightAt(coordinate.pos, light)
                 needPublish = true
             }
         }
