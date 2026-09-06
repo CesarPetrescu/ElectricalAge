@@ -4,6 +4,7 @@ on:
   push:
     branches-ignore:
       - 'port/1.21.1'
+      - 'port/1.21.1-full-source'
 
 permissions:
   contents: read

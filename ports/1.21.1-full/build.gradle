@@ -15,9 +15,6 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
-// This is the COMPLETE Re-Wired source, not the five-block prototype or sim-core.
-// Eln_old.java was already excluded by the upstream 1.12 build; the reference
-// snapshot retains it. No newly failing machine is removed to make this green.
 def generateVersion = tasks.register('generateVersion', Copy) {
     from 'src/main/resources/Version.java'
     into layout.buildDirectory.dir('generated/version/mods/eln/misc')
@@ -30,10 +27,12 @@ sourceSets {
             srcDir layout.buildDirectory.dir('generated/version')
             exclude '**/Eln_old.java'
         }
-        kotlin { setSrcDirs(['src/main/java', 'src/main/kotlin']) }
+        kotlin {
+            setSrcDirs(['src/main/java', 'src/main/kotlin'])
+            srcDir layout.buildDirectory.dir('generated/version')
+        }
         resources {
             srcDir 'src/main/resources'
-            // Authoring sources and pre-modern metadata are preserved in the tree.
             exclude 'Version.java', 'mcmod.info', 'pack.mcmeta', '**/*.blend', '**/*.blend1', '**/*.psd'
         }
     }
@@ -57,8 +56,7 @@ neoForge {
     }
     mods { eln { sourceSet sourceSets.main } }
 }
-// A migration compile may fail. Never publish a tiny successful-looking mod
-// while deleting or stubbing the original gameplay. Release remains blocked.
+// Explicit release gate; current compilation also fails on genuine source errors.
 tasks.register('releaseParityGate') {
     doLast { throw new GradleException('Full-source port is not release-ready. See MIGRATION.md and compiler reports.') }
 }

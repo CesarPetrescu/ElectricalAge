@@ -19,17 +19,18 @@ jobs:
       source_sha: ${{ steps.source.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
-      - name: Apply reviewed mechanical migration once
+      - name: Apply reviewed member migration once
         shell: bash
         run: |
           set -euo pipefail
           python3 -m unittest discover -s ports/1.21.1-full/tools -p 'test_*.py' -v
-          if [[ ! -f ports/1.21.1-full/migrations/001-type-remap.json ]]; then
-            python3 ports/1.21.1-full/tools/rewrite_types.py --apply
+          if [[ ! -f ports/1.21.1-full/migrations/002-members.json ]]; then
+            python3 ports/1.21.1-full/tools/rewrite_members.py --apply
+            python3 ports/1.21.1-full/tools/verify_preservation.py
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
             git add ports/1.21.1-full/src ports/1.21.1-full/migrations
-            git commit -m 'port: migrate shared Minecraft and NeoForge type references in original source [skip ci]'
+            git commit -m 'port: migrate NBT, inventory and sided API members in original source [skip ci]'
             git push origin HEAD:refs/heads/port/1.21.1-full-source
           fi
       - name: Record exact source revision
@@ -51,23 +52,36 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           cache-read-only: false
+      - name: Verify complete original source and resource preservation
+        working-directory: ports/1.21.1-full
+        run: |
+          mkdir -p build/migration
+          python3 tools/verify_preservation.py | tee build/migration/preservation.json
       - name: Inspect actual target classpath
         working-directory: ports/1.21.1-full
         run: ./gradlew -I tools/export_api.init.gradle exportMigrationApi --no-daemon --console=plain
+      - name: Compile selected migrated inventory and persistence interfaces
+        id: api_probe
+        continue-on-error: true
+        working-directory: ports/1.21.1-full
+        run: python3 tools/compile_selected_api.py
       - name: Compile every original active Java and Kotlin source
         working-directory: ports/1.21.1-full
         shell: bash
         run: |
           mkdir -p build/migration
           git rev-parse HEAD > build/migration/source-commit.txt
-          python3 tools/compile_report.py --label round2
+          python3 tools/compile_report.py --label round3
+      - name: Enforce independent API probe
+        if: ${{ always() && steps.api_probe.outcome == 'failure' }}
+        run: exit 1
       - name: Export compiler report and complete migration project
         if: always()
         working-directory: ports/1.21.1-full
         shell: bash
         run: |
           mkdir -p build/migration
-          cat build/migration/round2/SUMMARY.md >> "$GITHUB_STEP_SUMMARY" || true
+          cat build/migration/round3/SUMMARY.md >> "$GITHUB_STEP_SUMMARY" || true
           git -C ../.. archive --format=zip HEAD:ports/1.21.1-full -o "$PWD/build/full-source-migration.zip"
           python3 -c "import zipfile; z=zipfile.ZipFile('build/full-source-migration.zip'); assert len(z.namelist()) > 4000, 'Incomplete source archive'"
       - uses: actions/upload-artifact@v4
