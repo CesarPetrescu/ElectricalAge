@@ -110,8 +110,8 @@ class WireMachineDescriptor(
     }
 
     override fun handleRenderType(item: ItemStack, type: mods.eln.client.itemrender.IItemRenderer.ItemRenderType): Boolean = true
-    override fun shouldUseRenderHelper(type: mods.eln.client.itemrender.IItemRenderer.ItemRenderType, item: ItemStack, helper: mods.eln.client.itemrender.IItemRenderer.ItemRendererHelper) =
-        type != mods.eln.client.itemrender.IItemRenderer.ItemRenderType.INVENTORY
+    // The inventory icon is the model too (the INVENTORY branch above draws it), so the block helper applies there as well.
+    override fun shouldUseRenderHelper(type: mods.eln.client.itemrender.IItemRenderer.ItemRenderType, item: ItemStack, helper: mods.eln.client.itemrender.IItemRenderer.ItemRendererHelper) = true
 }
 
 private enum class WireMachineNetwork(val id: Byte) {

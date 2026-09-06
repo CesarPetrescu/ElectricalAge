@@ -9,6 +9,7 @@ import mods.eln.registration.ElnRegistry
 import net.minecraft.data.PackOutput
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.packs.PackType
+import net.minecraft.world.item.ItemStack
 import net.neoforged.bus.api.SubscribeEvent
 import net.neoforged.fml.common.EventBusSubscriber
 import net.neoforged.neoforge.client.model.generators.BlockStateProvider
@@ -55,7 +56,14 @@ class ElnItemModelProvider(output: PackOutput, helper: ExistingFileHelper) : Ite
                 is DescriptorBlockItem<*> -> {
                     val model = modLoc("block/${id.path}")
                     if (existingFileHelper.exists(model, PackType.CLIENT_RESOURCES, ".json", "models")) withExistingParent(id.path, model)
-                    else if (item.descriptor is mods.eln.client.itemrender.IItemRenderer) nodeItem(id)
+                    else if (item.descriptor is mods.eln.client.itemrender.IItemRenderer) {
+                        val asBlock = mods.eln.client.itemrender.NodeItemRenderer.inventoryAsBlock(item.descriptor, ItemStack(item)) { texture ->
+                            existingFileHelper.exists(texture, PackType.CLIENT_RESOURCES)
+                        }
+                        if (asBlock && item.descriptor.iconName != null && !existingFileHelper.exists(modLoc("textures/blocks/${item.descriptor.iconName}.png"), PackType.CLIENT_RESOURCES))
+                            Eln.LOGGER.warn("datagen: node item {} has no sprite textures/blocks/{}.png; its model is the inventory icon", id, item.descriptor.iconName)
+                        nodeItem(id, asBlock)
+                    }
                 }
                 is net.minecraft.world.item.SpawnEggItem -> withExistingParent(id.path, mcLoc("item/template_spawn_egg"))
                 is net.minecraft.world.item.BucketItem ->
@@ -78,11 +86,13 @@ class ElnItemModelProvider(output: PackOutput, helper: ExistingFileHelper) : Ite
      * plus display transforms - a block's in hand and on the ground, none in the inventory, where
      * the descriptor draws its flat icon.
      */
-    private fun nodeItem(id: ResourceLocation) {
-        getBuilder(id.path)
+    private fun nodeItem(id: ResourceLocation, guiAsBlock: Boolean) {
+        val builder = getBuilder(id.path)
             .parent(net.neoforged.neoforge.client.model.generators.ModelFile.UncheckedModelFile("minecraft:builtin/entity"))
             .transforms()
-            .transform(net.minecraft.world.item.ItemDisplayContext.GUI).end()
+        if (guiAsBlock) builder.transform(net.minecraft.world.item.ItemDisplayContext.GUI).rotation(30f, 225f, 0f).scale(0.625f).end()
+        else builder.transform(net.minecraft.world.item.ItemDisplayContext.GUI).end()
+        builder
             .transform(net.minecraft.world.item.ItemDisplayContext.GROUND).translation(0f, 3f, 0f).scale(0.25f).end()
             .transform(net.minecraft.world.item.ItemDisplayContext.FIXED).scale(0.5f).end()
             .transform(net.minecraft.world.item.ItemDisplayContext.THIRD_PERSON_RIGHT_HAND).rotation(75f, 45f, 0f).translation(0f, 2.5f, 0f).scale(0.375f).end()

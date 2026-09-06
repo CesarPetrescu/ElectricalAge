@@ -46,7 +46,8 @@ public class GenericItemBlockUsingDamageDescriptor {
     }
 
     public void setDefaultIcon(String name) {
-        String iconName = name.replaceAll(" ", "").toLowerCase();
+        // 1.13+ resource paths are [a-z0-9/._-]: "Suspended Lamp Socket (noswing)" is suspendedlampsocket_noswing
+        String iconName = name.replaceAll(" ", "").toLowerCase().replaceAll("[()]", "_").replaceAll("_+$", "").replaceAll("[^a-z0-9/._-]", "_");
         if (Eln.uiIconsNoSymbols() &&
             getClass().getClassLoader().getResource("assets/eln/textures/blocks/" + iconName + "-ni.png") != null) {
             this.iconName = iconName + "-ni";

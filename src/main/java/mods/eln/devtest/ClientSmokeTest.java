@@ -32,7 +32,7 @@ public final class ClientSmokeTest {
     private static final String PREFIX = "SMOKE";
     private static final int X = 512, Z = 512, GROUND = 64;
 
-    private enum Phase { OPEN, JOIN, SETUP, WORLD_SHOT, GUI, GUI_SHOT, MACHINE_GUI, MACHINE_GUI_SHOT, INVENTORY, INVENTORY_SHOT, CREATIVE_TAB, CREATIVE_SHOT, DONE }
+    private enum Phase { OPEN, JOIN, SETUP, WORLD_SHOT, THIRD_PERSON_SHOT, GUI, GUI_SHOT, MACHINE_GUI, MACHINE_GUI_SHOT, INVENTORY, INVENTORY_SHOT, CREATIVE_TAB, CREATIVE_SHOT, DONE }
 
     private final String save;
     private Phase phase = Phase.OPEN;
@@ -79,26 +79,30 @@ public final class ClientSmokeTest {
                 phase = Phase.SETUP;
             }
             case SETUP -> {
-                ServerPlayer player = mc.getSingleplayerServer().getPlayerList().getPlayers().get(0);
-                player.setGameMode(GameType.CREATIVE);
-                // hover south of the circuit, looking north and down at it (the smoke floor sits well above the flat world's surface)
-                player.getAbilities().flying = true;
-                player.onUpdateAbilities();
-                player.teleportTo(player.serverLevel(), X + 2.5, GROUND + 1.5, Z + 4.5, 180f, 25f);
-                for (int i = 0; i < 9; i++) player.getInventory().setItem(i, ItemStack.EMPTY);
-                String[] hotbar = {"Low Voltage Cable", "Electrical Source", "Creative Power Resistor", "48V Macerator", "Copper Ingot", "Copper Cable", "Small Solar Panel", "Signal Cable", "Wrench"};
-                for (int i = 0; i < hotbar.length; i++) {
-                    ItemStack stack = Eln.findItemStack(hotbar[i], 1);
-                    if (stack != null) player.getInventory().setItem(i, stack);
-                }
-                player.inventoryMenu.broadcastChanges();
-                Eln.LOGGER.info("{} player placed at the circuit", PREFIX);
+                var server = mc.getSingleplayerServer();
+                server.execute(() -> setup(server));
                 phase = Phase.WORLD_SHOT;
                 wait = 0;
             }
             case WORLD_SHOT -> {
+                // the client owns its flight state; keep it hovering once the server has made it creative
+                if (mc.player.getAbilities().mayfly && !mc.player.getAbilities().flying) {
+                    mc.player.getAbilities().flying = true;
+                    mc.player.onUpdateAbilities();
+                }
                 if (wait++ < 100) return;
                 shot(mc, "smoke-world");
+                // third person from behind, with a macerator and a cable lying on the floor: the in-hand and on-ground item transforms
+                var server = mc.getSingleplayerServer();
+                server.execute(() -> dropItems(server));
+                mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
+                phase = Phase.THIRD_PERSON_SHOT;
+                wait = 0;
+            }
+            case THIRD_PERSON_SHOT -> {
+                if (wait++ < 60) return;
+                shot(mc, "smoke-third-person");
+                mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);
                 phase = Phase.GUI;
                 wait = 0;
             }
@@ -179,6 +183,37 @@ public final class ClientSmokeTest {
                 Eln.LOGGER.info("{} client done, stopping", PREFIX);
                 mc.stop();
             }
+        }
+    }
+
+    /** Server thread: creative, flying, at the circuit, looking north and down at it, the mod's items in the hotbar. */
+    private void setup(net.minecraft.server.MinecraftServer server) {
+        ServerPlayer player = server.getPlayerList().getPlayers().get(0);
+        player.setGameMode(GameType.CREATIVE);
+        player.getAbilities().flying = true;   // the smoke floor sits well above the flat world's surface
+        player.onUpdateAbilities();
+        player.teleportTo(player.serverLevel(), X + 2.5, GROUND + 1.5, Z + 4.5, 180f, 25f);
+        for (int i = 0; i < 9; i++) player.getInventory().setItem(i, ItemStack.EMPTY);
+        String[] hotbar = {"Low Voltage Cable", "Electrical Source", "Creative Power Resistor", "48V Macerator", "Copper Ingot", "Copper Cable", "Small Solar Panel", "Signal Cable", "Wrench"};
+        for (int i = 0; i < hotbar.length; i++) {
+            ItemStack stack = Eln.findItemStack(hotbar[i], 1);
+            if (stack != null) player.getInventory().setItem(i, stack);
+        }
+        player.inventoryMenu.broadcastChanges();
+        Eln.LOGGER.info("{} player placed at the circuit", PREFIX);
+    }
+
+    /** Server thread: a macerator and a cable lying on two stone blocks beside the circuit. */
+    private void dropItems(net.minecraft.server.MinecraftServer server) {
+        ServerPlayer player = server.getPlayerList().getPlayers().get(0);
+        var level = player.serverLevel();
+        level.setBlock(new BlockPos(X, GROUND, Z + 2), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), 3);
+        level.setBlock(new BlockPos(X + 4, GROUND, Z + 2), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), 3);
+        for (var drop : new Object[][]{{"48V Macerator", X + 0.5}, {"Low Voltage Cable", X + 4.5}}) {
+            var entity = new net.minecraft.world.entity.item.ItemEntity(level, (double) drop[1], GROUND + 1.2, Z + 2.5, Eln.findItemStack((String) drop[0], 1));
+            entity.setDeltaMovement(0, 0, 0);
+            entity.setPickUpDelay(10000);
+            level.addFreshEntity(entity);
         }
     }
 

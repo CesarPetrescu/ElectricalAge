@@ -1,4 +1,4 @@
-// 1.21.1	2026-09-06T09:29:06.156687222	Item Models: eln
+// 1.21.1	2026-09-06T10:17:43.003680156	Item Models: eln
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/100a_electrical_breaker.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/100a_switch.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/10a_diode.json
@@ -127,7 +127,7 @@ c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/aluminum_500_kcm
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/aluminum_750_kcmil_cable_1000v.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/aluminum_750_kcmil_cable_bare.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/aluminum_750_kcmil_cable_melted.json
-c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/aluminum_molten_metal_pile.json
+a2b23c3c751a8755b918e3065b7eefce745d2a8f assets/eln/models/item/aluminum_molten_metal_pile.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/aluminum_quadruplex_1_0_cable_600v.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/aluminum_quadruplex_1_0_cable_melted.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/aluminum_quadruplex_4_0_cable_600v.json
@@ -290,7 +290,7 @@ f6d6255a299ed2df5c6b6da80252479f667dec4e assets/eln/models/item/copper_cable.jso
 9828cac1b2f0d10e6ad8e61681326aa62c7059a1 assets/eln/models/item/copper_clutch_plate.json
 cccc5dbe1554fd40c6976de5664dd54c74e522ad assets/eln/models/item/copper_dust.json
 6a3f4c81f8c460c7cf87e70f7c916b73dc5ba32e assets/eln/models/item/copper_ingot.json
-c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/copper_molten_metal_pile.json
+a2b23c3c751a8755b918e3065b7eefce745d2a8f assets/eln/models/item/copper_molten_metal_pile.json
 173d8e28779805493fef537c2e659d01ee253d22 assets/eln/models/item/copper_ore.json
 211e4624393ff74fc02ef2d6b21231c1b7db716d assets/eln/models/item/copper_plate.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/copper_quadruplex_1_0_cable_600v.json
@@ -319,7 +319,7 @@ c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/dc-dc_converter.
 2d9d17fcdea5e5dcdcfba75c0f3b08f0f36e27ec assets/eln/models/item/dielectric.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/digital_display.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/digital_watch.json
-c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/direct_utility_pole.json
+a2b23c3c751a8755b918e3065b7eefce745d2a8f assets/eln/models/item/direct_utility_pole.json
 e3c160d8996f205794fce647f1b79865110378a8 assets/eln/models/item/electric_minecart.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/electrical_anemometer_sensor.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/electrical_daylight_sensor.json
@@ -339,7 +339,7 @@ c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/energy_meter.jso
 bb502eb46e72e39c7d21dd57a362ef943ded9793 assets/eln/models/item/energyconverter.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/experimental_battery.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/experimental_transporter.json
-c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/fabricator.json
+a2b23c3c751a8755b918e3065b7eefce745d2a8f assets/eln/models/item/fabricator.json
 6cbabb8768e1e1b262c23bd54ed3b1421ece334d assets/eln/models/item/falstad_import_tool.json
 cbe25243f6276ccec689438109ec97ac0d3dc301 assets/eln/models/item/fast_electrical_drill.json
 72ee6520f271c506d176d32c67ebcaf97f7e1f28 assets/eln/models/item/ferrite_ingot.json
@@ -358,7 +358,7 @@ e050a8589dbf097c978d9900e6d38bc925a887b0 assets/eln/models/item/gold_plate.json
 dc958e43bd1f9cb25bebe4bdfab559c438256ab9 assets/eln/models/item/gray_brush.json
 cd654aabd733359d1128f6b3710f9cbdc327f764 assets/eln/models/item/green_brush.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/grid_dc-dc_converter.json
-c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/grid_switch.json
+a2b23c3c751a8755b918e3065b7eefce745d2a8f assets/eln/models/item/grid_switch.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/ground_cable.json
 a17cf402236ddd890f4ff852f328ad56045c0df3 assets/eln/models/item/heavy_winding.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/high_current_cable.json
@@ -477,9 +477,9 @@ d9dc7b63a9ff5396556b59869227362704c608b3 assets/eln/models/item/portable_electri
 ac97af4a75d7640ac752bf4e50805ff2364e7c0b assets/eln/models/item/portable_electrical_mining_drill.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/portable_nan.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/power_capacitor.json
-c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/power_capacitor_84.json
+a2b23c3c751a8755b918e3065b7eefce745d2a8f assets/eln/models/item/power_capacitor_84.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/power_inductor.json
-c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/power_inductor_80.json
+a2b23c3c751a8755b918e3065b7eefce745d2a8f assets/eln/models/item/power_inductor_80.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/power_resistor.json
 3143800c51d01e51f916e24428ac205b0ef0a361 assets/eln/models/item/purple_brush.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/radial_motor.json
@@ -544,7 +544,7 @@ c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/suspended_lamp_s
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/tachometer.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/temperature_probe.json
 2c6adefec5f503a695849e0b29a47425927af57d assets/eln/models/item/the_nope_wand.json
-c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/thermal_heat_exchanger.json
+a2b23c3c751a8755b918e3065b7eefce745d2a8f assets/eln/models/item/thermal_heat_exchanger.json
 23bffbda2cec89de0e69c528350d861367eca2b5 assets/eln/models/item/thermal_insulation.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/thermal_probe.json
 5cbf1dd26dd3c8fccef4f9e87e93047f76bd3fce assets/eln/models/item/thermal_probe_chip.json
@@ -564,8 +564,8 @@ fba8fc3e18467337e77a4b67be77b87aefc08451 assets/eln/models/item/tungsten_turbine
 6b150e7c724199c75b12ee4344fb0f82195f734d assets/eln/models/item/turbo_electrical_drill.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/tutorial_sign.json
 4eb0d0401c45ffec7c6ee2e4778539bd9c2f8f18 assets/eln/models/item/unreleasedium.json
-c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/utility_pole.json
-c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/utility_pole_w_dc-dc_converter.json
+a2b23c3c751a8755b918e3065b7eefce745d2a8f assets/eln/models/item/utility_pole.json
+a2b23c3c751a8755b918e3065b7eefce745d2a8f assets/eln/models/item/utility_pole_w_dc-dc_converter.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/variable_dc-dc_converter.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/variable_inductor.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/very_high_voltage_cable.json
@@ -580,9 +580,9 @@ c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/voltage_probe.js
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/water_turbine.json
 60944bc528cfdef884a10a20c275b5170f74722b assets/eln/models/item/white_brush.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/wind_turbine.json
-c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/wire_combiner.json
-c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/wire_insulator.json
-c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/wire_roller.json
+a2b23c3c751a8755b918e3065b7eefce745d2a8f assets/eln/models/item/wire_combiner.json
+a2b23c3c751a8755b918e3065b7eefce745d2a8f assets/eln/models/item/wire_insulator.json
+a2b23c3c751a8755b918e3065b7eefce745d2a8f assets/eln/models/item/wire_roller.json
 f6d6255a299ed2df5c6b6da80252479f667dec4e assets/eln/models/item/wire_scraps.json
 1daf98ed20b7bee611e8cee4495d0a53511ddbc8 assets/eln/models/item/wire_snips.json
 e3df4f3d4661e531c3e37c6395ec4147bafe1afa assets/eln/models/item/wireless_analyser.json
