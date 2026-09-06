@@ -24,3 +24,5 @@ mods/eln/**
 !mods/eln/entity/ReplicatorModel.kt
 # --- unused: NodeBlockItem was the pre-Flattening ItemBlock of the node blocks (nothing references it)
 !mods/eln/node/NodeBlockItem.kt
+# --- unused upstream scaffolding: a metadata ItemBlock nothing instantiates
+!mods/eln/generic/GenericItemBlock.java

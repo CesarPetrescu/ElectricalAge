@@ -6,7 +6,7 @@ import mods.eln.generic.GenericItemUsingDamageDescriptor;
 import mods.eln.item.HeatingCorpElement;
 import mods.eln.misc.Utils;
 import mods.eln.node.transparent.TransparentNodeElementInventory;
-import net.minecraft.client.gui.components.Button;
+import mods.eln.gui.GuiButtonEln;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
@@ -17,7 +17,7 @@ public class ElectricalFurnaceGuiDraw extends GuiContainerEln {
 
     private TransparentNodeElementInventory inventory;
     ElectricalFurnaceRender render;
-    Button buttonGrounded, autoShutDown;
+    GuiButtonEln buttonGrounded, autoShutDown;
     GuiVerticalTrackBarHeat vuMeterTemperature;
 
     GuiVerticalVoltageSupplyBar supplyBar;

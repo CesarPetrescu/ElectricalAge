@@ -217,8 +217,8 @@ public class ElectricalFurnaceElement extends TransparentNodeElement {
                 stream.writeShort(-1);
                 stream.writeShort(-1);
             } else {
-                stream.writeShort(Item.getIdFromItem(stack.getItem()));
-                stream.writeShort(stack.getItemDamage());
+                stream.writeShort(mods.eln.misc.McBridge.itemId(stack.getItem()));
+                stream.writeShort(0); // the 1.7.10 damage value; items are flat now
             }
 
             stream.writeShort((int) heatingCorpResistor.getPower());
@@ -285,7 +285,7 @@ public class ElectricalFurnaceElement extends TransparentNodeElement {
         Map<String, String> info = new HashMap<String, String>();
         info.put(I18N.tr("Temperature"), plotAmbientCelsius("", thermalLoad.temperatureCelsius));
         if (!McBridge.isNothing(inventory.getItem(heatingCorpSlotId))) {
-            info.put(I18N.tr("Heating element"), inventory.getItem(heatingCorpSlotId).getDisplayName());
+            info.put(I18N.tr("Heating element"), inventory.getItem(heatingCorpSlotId).getHoverName().getString());
         } else {
             info.put(I18N.tr("Heating element"), I18N.tr("None"));
         }

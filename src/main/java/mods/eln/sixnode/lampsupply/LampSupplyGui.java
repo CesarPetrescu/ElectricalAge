@@ -108,7 +108,7 @@ public class LampSupplyGui extends GuiContainerEln {
             lineNumber = 0;
             for (String line : tr("Toggles the output each time\nan emitter's value rises.\nUseful to allow multiple buttons\nto control the same light.").split("\n"))
                 buttonToogle.setComment(lineNumber++, line);
-            y += buttonToogle.height + 6;
+            y += buttonToogle.getHeight() + 6;
         }
     }
 

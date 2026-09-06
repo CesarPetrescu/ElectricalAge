@@ -1,5 +1,6 @@
 package mods.eln.wiki;
 
+import mods.eln.gui.Gui;
 import mods.eln.gui.GuiHelper;
 import mods.eln.gui.IGuiObject;
 import mods.eln.gui.IGuiObject.IGuiObjectObserver;
@@ -16,8 +17,8 @@ public class GuiGroup extends Gui implements IGuiObject, IGuiObjectObserver {
     int offX, offY;
 
     public GuiGroup(int x, int y, int w, int h, GuiHelper helper) {
-        this.getX() = x;
-        this.getY() = y;
+        this.posX = x;
+        this.posY = y;
         this.h = h;
         this.w = w;
         this.offX = x;
@@ -68,23 +69,17 @@ public class GuiGroup extends Gui implements IGuiObject, IGuiObjectObserver {
         x -= getxOffset();
         y -= getYOffset();
         GL11.glPushMatrix();
-        int displayWidth = Minecraft.getInstance().displayWidth;
-        int displayHeight = Minecraft.getInstance().displayHeight;
-        float ratioY = ((float) displayHeight) / this.helper.screen.height;
-        float ratioX = ((float) displayWidth) / this.helper.screen.width;
-        float ratio = Math.max(ratioY, ratioX);
-
-        GL11.glScissor(displayWidth - (int) ((posX + w) * ratio), displayHeight - (int) ((posY + h) * ratio), (int) (w * ratio), (int) (h * ratio));
-        GL11.glEnable(GL11.GL_SCISSOR_TEST);
-        //	GL11.glEnable(GL11.GL_SCISSOR_BOX);
+        // 1.21: the scissor box is in GUI coordinates (GuiGraphics.enableScissor handles the window scale).
+        int sx = (this.helper.screen.width - this.helper.xSize) / 2 + posX;
+        int sy = (this.helper.screen.height - this.helper.ySize) / 2 + posY;
+        mods.eln.gui.Gui.graphics().enableScissor(sx, sy, sx + w, sy + h);
 
         GL11.glTranslatef(getxOffset(), getYOffset(), 0f);
 
         for (IGuiObject o : objectList) {
             o.idraw(x, y, f);
         }
-        GL11.glDisable(GL11.GL_SCISSOR_TEST);
-        //GL11.glDisable(GL11.GL_SCISSOR_BOX);
+        mods.eln.gui.Gui.graphics().disableScissor();
         GL11.glPopMatrix();
     }
 
@@ -94,12 +89,6 @@ public class GuiGroup extends Gui implements IGuiObject, IGuiObjectObserver {
         x -= getxOffset();
         y -= getYOffset();
         GL11.glPushMatrix();
-        int displayWidth = Minecraft.getInstance().displayWidth;
-        int displayHeight = Minecraft.getInstance().displayHeight;
-        float ratioY = ((float) displayHeight) / this.helper.screen.height;
-        float ratioX = ((float) displayWidth) / this.helper.screen.width;
-        float ratio = Math.max(ratioY, ratioX);
-
         //	GL11.glScissor(displayWidth-(int)((posX+w)*ratio),displayHeight-(int)((posY+h)*ratio),(int)(w*ratio),(int)(h*ratio));
         //	GL11.glEnable(GL11.GL_SCISSOR_TEST);
         //	GL11.glEnable(GL11.GL_SCISSOR_BOX);

@@ -3,14 +3,14 @@ package mods.eln.sixnode.electricalrelay;
 import mods.eln.gui.GuiHelper;
 import mods.eln.gui.GuiScreenEln;
 import mods.eln.gui.IGuiObject;
-import net.minecraft.client.gui.components.Button;
+import mods.eln.gui.GuiButtonEln;
 import net.minecraft.world.entity.player.Player;
 
 import static mods.eln.i18n.I18N.tr;
 
 public class ElectricalRelayGui extends GuiScreenEln {
 
-    Button toggleDefaultOutput;
+    GuiButtonEln toggleDefaultOutput;
     ElectricalRelayRender render;
 
     public ElectricalRelayGui(Player player, ElectricalRelayRender render) {

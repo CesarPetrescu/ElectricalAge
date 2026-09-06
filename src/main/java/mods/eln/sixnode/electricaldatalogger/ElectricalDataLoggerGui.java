@@ -7,7 +7,7 @@ import mods.eln.gui.GuiTextFieldEln.GuiTextFieldElnObserver;
 import mods.eln.gui.IGuiObject;
 import mods.eln.misc.FC;
 import mods.eln.misc.UtilsClient;
-import net.minecraft.client.gui.components.Button;
+import mods.eln.gui.GuiButtonEln;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.Container;
 import mods.eln.client.gl.GL11;
@@ -19,7 +19,7 @@ import static mods.eln.i18n.I18N.tr;
 
 public class ElectricalDataLoggerGui extends GuiContainerEln implements GuiTextFieldElnObserver {
 
-    Button resetBt, voltageType, energyType, currentType, powerType, celsiusType, temperatureType, humidityType, percentType, noType, zeroLineToggle, config, printBt, pause;
+    GuiButtonEln resetBt, voltageType, energyType, currentType, powerType, celsiusType, temperatureType, humidityType, percentType, noType, zeroLineToggle, config, printBt, pause;
     GuiTextFieldEln samplingPeriod, maxValue, minValue, yCursorValue;
     ElectricalDataLoggerRender render;
     private static final int GUI_WIDTH = 176;
@@ -234,8 +234,8 @@ public class ElectricalDataLoggerGui extends GuiContainerEln implements GuiTextF
             pause.displayString = FC.BRIGHT_GREEN + "Running";
         zeroLineToggle.displayString = render.log.showZeroLine ? tr("0 Line On") : tr("0 Line Off");
 
-        boolean a = inventorySlots.getSlot(ElectricalDataLoggerContainer.paperSlotId).getStack() != null;
-        boolean b = inventorySlots.getSlot(ElectricalDataLoggerContainer.printSlotId).getStack() == null;
+        boolean a = getMenu().getSlot(ElectricalDataLoggerContainer.paperSlotId).hasItem();
+        boolean b = getMenu().getSlot(ElectricalDataLoggerContainer.printSlotId).hasItem() == false;
         printBt.enabled = a && b;
     }
 
@@ -247,7 +247,7 @@ public class ElectricalDataLoggerGui extends GuiContainerEln implements GuiTextF
         if (state == State.display) {
 
             GL11.glPushMatrix();
-            GL11.glTranslatef(guiLeft + 8, guiTop + GRAPH_TOP, 0);
+            GL11.glTranslatef(getGuiLeft() + 8, getGuiTop() + GRAPH_TOP, 0);
             GL11.glScalef(50, 50, 1f);
 
             GL11.glColor4f(0.15f, 0.15f, 0.15f, 1.0f);

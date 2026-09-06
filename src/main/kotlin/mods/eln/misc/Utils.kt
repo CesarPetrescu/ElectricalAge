@@ -1180,6 +1180,16 @@ object Utils {
         return cmp
     }
 
+    /** 1.7.10's `FurnaceRecipes.smelting().getSmeltingResult(stack)`: matched by ingredient in the recipe manager (either side). */
+    @JvmStatic
+    fun getSmeltingResult(input: ItemStack?): ItemStack {
+        if (input == null || input.isEmpty) return ItemStack.EMPTY
+        val manager = McRecipes.manager() ?: return ItemStack.EMPTY
+        return manager.getAllRecipesFor(net.minecraft.world.item.crafting.RecipeType.SMELTING)
+            .firstOrNull { it.value().ingredients.firstOrNull()?.test(input) == true }
+            ?.value()?.getResultItem(McRegistries.access())?.copy() ?: ItemStack.EMPTY
+    }
+
     fun getMapFile(name: String): File {
         val server = ServerLifecycleHooks.getCurrentServer() ?: throw IllegalStateException("no server")
         return server.getWorldPath(net.minecraft.world.level.storage.LevelResource(name)).toFile()

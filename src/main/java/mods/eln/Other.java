@@ -19,9 +19,9 @@ public class Other {
     public static final String modIdCc = "computercraft";
 
     public static void check() {
-        ic2Loaded = ModList.isModLoaded(modIdIc2);
-        ocLoaded = ModList.isModLoaded(modIdOc);
-        ccLoaded = ModList.isModLoaded(modIdCc);
+        ic2Loaded = ModList.get().isLoaded(modIdIc2);
+        ocLoaded = ModList.get().isLoaded(modIdOc);
+        ccLoaded = ModList.get().isLoaded(modIdCc);
         // The RF bridge now speaks Forge Energy, which ships with Forge itself.
         teLoaded = true;
     }

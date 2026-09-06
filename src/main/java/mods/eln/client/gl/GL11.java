@@ -86,7 +86,7 @@ public final class GL11 {
 
     // immediate mode
     public static void glBegin(int mode) { FixedFunction.begin(mode); }
-    public static void glEnd() { FixedFunction.end(); }
+    public static void glEnd() { FixedFunction.endPrimitive(); }
     public static void glVertex2f(float x, float y) { FixedFunction.vertex(x, y, 0f); }
     public static void glVertex2d(double x, double y) { FixedFunction.vertex((float) x, (float) y, 0f); }
     public static void glVertex3f(float x, float y, float z) { FixedFunction.vertex(x, y, z); }

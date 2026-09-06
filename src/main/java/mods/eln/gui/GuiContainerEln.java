@@ -156,7 +156,7 @@ public abstract class GuiContainerEln extends AbstractContainerScreen<AbstractCo
             super.render(graphics, x, y, f);
             renderTooltip(graphics, x, y);
         } finally {
-            FixedFunction.end();
+            FixedFunction.finish();
             Gui.end();
         }
     }

@@ -8,8 +8,9 @@ import mods.eln.misc.RecipesList;
 import mods.eln.misc.Utils;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,36 +52,34 @@ public class ItemDefault extends Default {
 
             self = new GuiItemStack(6, y, stack, helper);
             extender.add(self);
-            extender.add(new GuiLabel(6 + 21, y + 3, stack.getHoverName()));
+            extender.add(new GuiLabel(6 + 21, y + 3, stack.getHoverName().getString()));
             y += 24;
 
             if (plugIn != null) y = plugIn.top(y, extender, stack);
 
-            List<Recipe> recipeOutList = new ArrayList<Recipe>();
-            List<Recipe> recipeInList = new ArrayList<Recipe>();
-            if (!McBridge.isNothing(stack)) {
-                for (Object o : ForgeRegistries.RECIPES) {
+            List<CraftingRecipe> recipeOutList = new ArrayList<CraftingRecipe>();
+            List<CraftingRecipe> recipeInList = new ArrayList<CraftingRecipe>();
+            // 1.13+: crafting recipes are data, held by the recipe manager (the client's while in a world).
+            net.minecraft.world.item.crafting.RecipeManager manager = mods.eln.misc.McRecipes.manager();
+            if (!McBridge.isNothing(stack) && manager != null) {
+                for (RecipeHolder<CraftingRecipe> holder : manager.getAllRecipesFor(RecipeType.CRAFTING)) {
                     try {
-                        if (o instanceof Recipe) {
-                            Recipe r = (Recipe) o;
+                        CraftingRecipe r = holder.value();
 
-                            ItemStack out = r.getRecipeOutput();
-                            if (out != null && out.getItem() == stack.getItem() && out.getItemDamage() == stack.getItemDamage()) {
-                                recipeOutList.add(r);
-                            }
-
-                            for (ItemStack rStack : Utils.getRecipeInputs(r)) {
-                                if (!McBridge.isNothing(rStack) && rStack.getItem() == stack.getItem() && rStack.getItemDamage() == stack.getItemDamage()) {
-                                    recipeInList.add(r);
-                                    break;
-                                }
-                            }
+                        ItemStack out = r.getResultItem(mods.eln.misc.McRegistries.access());
+                        if (out != null && out.getItem() == stack.getItem()) {
+                            recipeOutList.add(r);
                         }
 
+                        for (ItemStack rStack : Utils.getRecipeInputs(r)) {
+                            if (!McBridge.isNothing(rStack) && rStack.getItem() == stack.getItem()) {
+                                recipeInList.add(r);
+                                break;
+                            }
+                        }
                     } catch (Exception e) {
                         // TODO: handle exception
                     }
-
                 }
             }
             int counter = 0;
@@ -92,7 +91,7 @@ public class ItemDefault extends Default {
                 y += 12;
 
                 counter = -1;
-                for (Recipe r : recipeOutList) {
+                for (CraftingRecipe r : recipeOutList) {
                     if (counter == 0) y += 60;
                     if (counter == -1) counter = 0;
                     ItemStack[][] stacks = Utils.getItemStackGrid(r);
@@ -118,7 +117,7 @@ public class ItemDefault extends Default {
                 extender.add(new GuiLabel(6, y, tr("Can be used to craft:")));
                 y += 12;
                 counter = -1;
-                for (Recipe r : recipeInList) {
+                for (CraftingRecipe r : recipeInList) {
                     if (counter == 0) y += 60;
                     if (counter == -1) counter = 0;
 
@@ -133,7 +132,7 @@ public class ItemDefault extends Default {
                             }
                         }
 
-                        GuiItemStack gui = new GuiItemStack((int) (3.5 * 18) + 6 + counter * 105, 1 * 18 + y, r.getRecipeOutput(), helper);
+                        GuiItemStack gui = new GuiItemStack((int) (3.5 * 18) + 6 + counter * 105, 1 * 18 + y, r.getResultItem(mods.eln.misc.McRegistries.access()), helper);
                         extender.add(gui);
 
                         counter = (counter + 1) % 2;

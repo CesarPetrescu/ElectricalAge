@@ -112,7 +112,7 @@ public abstract class GuiScreenEln extends Screen implements GuiTextFieldElnObse
             postDraw(f, x, y);
             helper.draw2(x, y);
         } finally {
-            FixedFunction.end();
+            FixedFunction.finish();
             Gui.end();
         }
     }

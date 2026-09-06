@@ -70,21 +70,14 @@ public class BatteryChargerRender extends SixNodeElementRender {
     public void drawEntityItem(ItemEntity entityItem, double x, double y, double z, float roty, float scale) {
         if (entityItem == null) return;
 
-        entityItem.hoverStart = 0.0f;
-        entityItem.getYRot() = 0.0f;
-        entityItem.motionX = 0.0;
-        entityItem.motionY = 0.0;
-        entityItem.motionZ = 0.0;
-        //scale *= 10;
-        EntityRenderer var10;
-        var10 = Minecraft.getInstance().getEntityRenderDispatcher().getEntityRenderObject(entityItem);
+        // 1.21: the item model is drawn in place through the ItemRenderer (see FixedFunction.drawItem).
         GL11.glPushMatrix();
         GL11.glTranslatef((float) x, (float) y, (float) z);
         GL11.glRotatef(90, 0f, 1f, 0f);
         GL11.glRotatef(roty, 0, 1, 0);
         GL11.glScalef(scale, scale, scale);
         GL11.glTranslatef(0.0f, -0.25f, 0.0f);
-        var10.doRender(entityItem, 0, 0, 0, 0, 0);
+        mods.eln.client.gl.FixedFunction.drawItem(entityItem.getItem(), net.minecraft.world.item.ItemDisplayContext.GROUND);
         GL11.glPopMatrix();
     }
 

@@ -93,11 +93,10 @@ public class ElectricalAntennaTxSlowProcess implements IProcess {
                 element.rxCoord = node.coordinate;
                 element.rxElement = (ElectricalAntennaRxElement) node.element;
             }
-            List list = world.getEntitiesWithinAABBExcludingEntity((Entity) null, Coordinate.getAxisAlignedBB(element.node.coordinate, coord));
+            List<Entity> list = world.getEntities((Entity) null, Coordinate.getAxisAlignedBB(element.node.coordinate, coord));
 
-            for (Object o : list) {
-                Entity e = (Entity) o;
-                e.setFire((int) (Math.pow(element.powerResistor.getPower() / 100.0, 2) + 0.5));
+            for (Entity e : list) {
+                e.setRemainingFireTicks((int) (Math.pow(element.powerResistor.getPower() / 100.0, 2) + 0.5) * 20);
             }
         }
 

@@ -311,7 +311,7 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
     }
 
     @Override
-    public void writeToNBT(NBTTagCompound nbt) {
+    public void writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
         int idx = 0;
         for (Entry e : entries) {
@@ -327,7 +327,7 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
     }
 
     @Override
-    public void readFromNBT(@NotNull NBTTagCompound nbt) {
+    public void readFromNBT(@NotNull CompoundTag nbt) {
         int idx = 0;
         for (Entry e : entries) {
             channelRemove(this, idx++, e.powerChannel);
@@ -447,21 +447,21 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
     }
 
     @Override
-    public void readConfigTool(NBTTagCompound compound, Player invoker) {
+    public void readConfigTool(CompoundTag compound, Player invoker) {
         if(compound.contains("powerChannels")) {
-            NBTTagList list = compound.getList("powerChannels", 8);
+            ListTag list = compound.getList("powerChannels", 8);
             for(int idx = 0; idx < descriptor.channelCount && idx < list.size(); idx++) {
                 channelRemove(this, idx, entries.get(idx).powerChannel);
-                entries.get(idx).powerChannel = list.getStringTagAt(idx);
+                entries.get(idx).powerChannel = list.getString(idx);
                 channelRegister(this, idx, entries.get(idx).powerChannel);
             }
             needPublish();
         }
         if(compound.contains("wirelessChannels")) {
-            NBTTagList list = compound.getList("wirelessChannels", 8);
+            ListTag list = compound.getList("wirelessChannels", 8);
             for(int idx = 0; idx < descriptor.channelCount && idx < list.size(); idx++) {
                 channelRemove(this, idx, entries.get(idx).wirelessChannel);
-                entries.get(idx).wirelessChannel = list.getStringTagAt(idx);
+                entries.get(idx).wirelessChannel = list.getString(idx);
                 channelRegister(this, idx, entries.get(idx).wirelessChannel);
             }
             needPublish();
@@ -478,13 +478,13 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
     }
 
     @Override
-    public void writeConfigTool(NBTTagCompound compound, Player invoker) {
-        NBTTagList powerList = new NBTTagList();
-        NBTTagList wirelessList = new NBTTagList();
+    public void writeConfigTool(CompoundTag compound, Player invoker) {
+        ListTag powerList = new ListTag();
+        ListTag wirelessList = new ListTag();
         int[] aggregators = new int[descriptor.channelCount];
         for(int idx = 0; idx < descriptor.channelCount; idx++) {
-            powerList.add(new NBTTagString(entries.get(idx).powerChannel));
-            wirelessList.add(new NBTTagString(entries.get(idx).wirelessChannel));
+            powerList.add(StringTag.valueOf(entries.get(idx).powerChannel));
+            wirelessList.add(StringTag.valueOf(entries.get(idx).wirelessChannel));
             aggregators[idx] = entries.get(idx).aggregator;
         }
         compound.put("powerChannels", powerList);

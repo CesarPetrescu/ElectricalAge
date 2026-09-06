@@ -1,5 +1,6 @@
 package mods.eln.sixnode.electricaldatalogger;
 
+import mods.eln.misc.McBridge;
 import mods.eln.generic.GenericItemUsingDamageDescriptor;
 import mods.eln.misc.UtilsClient;
 import net.minecraft.world.item.ItemStack;
@@ -18,7 +19,7 @@ public class DataLogsPrintDescriptor extends GenericItemUsingDamageDescriptor {
     public void initializeStack(ItemStack stack, DataLogs logs) {
         CompoundTag nbt = new CompoundTag();
         logs.writeToNBT(nbt, "");//.putByteArray("logs", logs.copyLog());
-        stack.setTagCompound(nbt);
+        McBridge.setTagCompound(stack, nbt);
     }
 
     @Override
@@ -36,7 +37,7 @@ public class DataLogsPrintDescriptor extends GenericItemUsingDamageDescriptor {
 
     @Override
     public void renderItem(ItemRenderType type, ItemStack item, Object... data) {
-        CompoundTag nbt = item.getTagCompound();
+        CompoundTag nbt = McBridge.getTagCompound(item);
         //byte [] logsArray = nbt.getByteArray("logs");
         //if(logsArray != null) {
 

@@ -89,7 +89,7 @@ public class GuiHelper {
         return o;
     }
 
-	/*public void drawHoveringText(List list, int x, int y, Font fontRenderer, GuiContainerEln cont) {
+	/*public void drawHoveringText(List list, int x, int y, Font font, GuiContainerEln cont) {
         drawHoveringText(list, screen.width / 2 - xSize / 2 + x, screen.height / 2 - ySize / 2 + y, Minecraft.getInstance().font);
 	}*/
 
@@ -240,16 +240,16 @@ public class GuiHelper {
         g.fillGradient(Math.min(par1, par3), Math.min(par2, par4), Math.max(par1, par3), Math.max(par2, par4), par5, par6);
     }
 
-    public int getHoveringTextWidth(List<String> comment, Font fontRenderer) {
+    public int getHoveringTextWidth(List<String> comment, Font font) {
         int strWidth = 0;
         for (String str : comment) {
-            int size = fontRenderer.width(str);
+            int size = font.width(str);
             if (size > strWidth) strWidth = size;
         }
         return strWidth + 5;
     }
 
-    public int getHoveringTextHeight(List<String> comment, Font fontRenderer) {
+    public int getHoveringTextHeight(List<String> comment, Font font) {
         return comment.size() * 9 - 4;
     }
 

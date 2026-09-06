@@ -75,7 +75,7 @@ public final class ClientGuiHandler {
 
     @SubscribeEvent
     public static void onRegisterScreens(RegisterMenuScreensEvent event) {
-        event.register(GuiHandler.MENU.get(), (menu, inventory, title) -> {
+        event.<AbstractContainerMenu, AbstractContainerScreen<AbstractContainerMenu>>register(GuiHandler.MENU.get(), (menu, inventory, title) -> {
             Screen s = pendingScreen;
             pendingScreen = null;
             if (s instanceof AbstractContainerScreen<?> screen && screen.getMenu() == menu) {

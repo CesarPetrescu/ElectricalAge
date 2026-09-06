@@ -45,11 +45,11 @@ public class WaterTurbineSlowProcess implements IProcess, INBTTReady {
         double time = 0;
         if (turbine.waterCoord.getBlockExist()) {
             Block block = turbine.waterCoord.getBlock();
-            int blockMeta = turbine.waterCoord.getMeta();
-            //Utils.println("WATER : " + b + "    " + turbine.waterCoord.getMeta());
-            if (block != Blocks.FLOWING_WATER && block != Blocks.WATER) return -1;
-            if (blockMeta == 0) return 0;
-            time = Utils.getDayTime(turbine.world());
+            // 1.13+: the water level is the fluid state; a source block (level 0 in 1.7.10 terms) gives no flow.
+            net.minecraft.world.level.material.FluidState fluid = turbine.waterCoord.getBlockState().getFluidState();
+            if (block != Blocks.WATER) return -1;
+            if (fluid.isSource()) return 0;
+            time = Utils.getWorldTime(turbine.world());
         }
 
         double timeFactor = 1 + 0.2 * Math.sin((time - 0.20) * Math.PI * 2);

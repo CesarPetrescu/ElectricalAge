@@ -11,8 +11,8 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
-import mods.eln.client.gl.GL11;
+import net.neoforged.neoforge.client.event.RenderGuiEvent;
+import net.minecraft.client.gui.GuiGraphics;
 
 public class TutorialSignOverlay {
 
@@ -24,7 +24,8 @@ public class TutorialSignOverlay {
     }
 
     @SubscribeEvent
-    public void render(RenderGameOverlayEvent.Text event) {
+    /** 1.7.10 drew the sign text in the overlay "text" pass; 1.21 draws HUD text on the GuiGraphics after the HUD. */
+    public void render(RenderGuiEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
 
@@ -66,14 +67,15 @@ public class TutorialSignOverlay {
         if (best != null) {
             oldRender = best;
             oldRender.lightInterpol.setTarget(1f);
-            GL11.glPushMatrix();
-            GL11.glScalef(0.5f, 0.5f, 0.5f);
+            GuiGraphics graphics = event.getGuiGraphics();
+            graphics.pose().pushPose();
+            graphics.pose().scale(0.5f, 0.5f, 0.5f);
             int y = 0;
             for (String str : best.texts) {
-                Minecraft.getInstance().font.drawString(str, 10/* event.resolution.getScaledWidth() / 2 - 50*/, 10 + y, 0xFFFFFF);
+                graphics.drawString(Minecraft.getInstance().font, str, 10/* event.resolution.getScaledWidth() / 2 - 50*/, 10 + y, 0xFFFFFF, false);
                 y += 10;
             }
-            GL11.glPopMatrix();
+            graphics.pose().popPose();
         }
     }
 }

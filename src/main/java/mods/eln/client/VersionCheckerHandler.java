@@ -4,11 +4,8 @@ import net.neoforged.neoforge.common.NeoForge;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import net.minecraftforge.fml.client.FMLClientHandler;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.event.tick.ClientTickEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 import mods.eln.Eln;
 import mods.eln.misc.FC;
 import mods.eln.misc.Version;
@@ -24,7 +21,7 @@ import java.net.URL;
  * Check the current mod version with the last stable version when the map is loaded
  * by the client.<br>
  * Singleton class. Uses the {@link ClientTickEvent.Post} and must be registered by
- * the caller on the {@link FMLCommonHandler} bus.
+ * the caller on the NeoForge event bus.
  *
  * @author metc
  */
@@ -46,11 +43,11 @@ public class VersionCheckerHandler {
 
     @SubscribeEvent
     public void tick(ClientTickEvent.Post event) {
-        if (!ready || event.phase == Phase.START)
+        if (!ready)
             return;
 
-        final Minecraft m = FMLClientHandler.instance().getClient();
-        final ClientLevel world = m.level();
+        final Minecraft m = Minecraft.getInstance();
+        final ClientLevel world = m.level;
 
         if (m == null || world == null)
             return;
@@ -63,8 +60,8 @@ public class VersionCheckerHandler {
             //m.player.sendMessage(Component.literal(Version.printColor()));
             System.out.println(Version.printColor());
             String elnVers = "Electrical Age";
-            m.player.sendMessage(Component.literal(elnVers));
-            m.player.sendMessage(Component.literal(versionMsg));
+            m.player.sendSystemMessage(Component.literal(elnVers));
+            m.player.sendSystemMessage(Component.literal(versionMsg));
         }
 
         NeoForge.EVENT_BUS.unregister(this);

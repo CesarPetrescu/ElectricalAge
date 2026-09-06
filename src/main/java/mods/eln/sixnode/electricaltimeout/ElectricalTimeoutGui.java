@@ -4,7 +4,7 @@ import mods.eln.gui.GuiHelper;
 import mods.eln.gui.GuiScreenEln;
 import mods.eln.gui.GuiTextFieldEln;
 import mods.eln.gui.IGuiObject;
-import net.minecraft.client.gui.components.Button;
+import mods.eln.gui.GuiButtonEln;
 import net.minecraft.world.entity.player.Player;
 
 import java.text.NumberFormat;
@@ -14,7 +14,7 @@ import static mods.eln.i18n.I18N.tr;
 
 public class ElectricalTimeoutGui extends GuiScreenEln {
 
-    Button set, reset;
+    GuiButtonEln set, reset;
     GuiTextFieldEln timeoutValue;
     ElectricalTimeoutRender render;
 

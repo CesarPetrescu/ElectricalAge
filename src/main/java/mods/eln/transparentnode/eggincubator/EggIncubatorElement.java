@@ -77,15 +77,15 @@ public class EggIncubatorElement extends TransparentNodeElement {
                 descriptor.setState(powerResistor, true);
                 if (energy <= 0) {
                     inventory.removeItem(EggIncubatorContainer.EggSlotId, 1);
-                    Chicken chicken = new Chicken(node.coordinate.world());
-                    chicken.setGrowingAge(-24000);
+                    Chicken chicken = new Chicken(net.minecraft.world.entity.EntityType.CHICKEN, node.coordinate.world());
+                    chicken.setAge(-24000);
                     Mob entityliving = (Mob) chicken;
-                    entityliving.moveTo(node.coordinate.x + 0.5, node.coordinate.y + 0.5, node.coordinate.z + 0.5, Mth.wrapDegrees(node.coordinate.world().rand.nextFloat() * 360.0F), 0.0F);
-                    entityliving.rotationYawHead = entityliving.getYRot();
-                    entityliving.renderYawOffset = entityliving.getYRot();
+                    entityliving.moveTo(node.coordinate.x + 0.5, node.coordinate.y + 0.5, node.coordinate.z + 0.5, Mth.wrapDegrees(node.coordinate.world().random.nextFloat() * 360.0F), 0.0F);
+                    entityliving.yHeadRot = entityliving.getYRot();
+                    entityliving.yBodyRot = entityliving.getYRot();
                     //entityliving.func_110161_a((EntityLivingData)null); 1.6.4
                     node.coordinate.world().addFreshEntity(entityliving);
-                    entityliving.playLivingSound();
+                    entityliving.playAmbientSound();
                     //node.coordonate.world().addFreshEntity());
                     resetEnergy();
 

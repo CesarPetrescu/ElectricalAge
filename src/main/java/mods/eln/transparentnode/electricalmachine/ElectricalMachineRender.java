@@ -44,7 +44,7 @@ public class ElectricalMachineRender extends TransparentNodeElementRender {
         drawHandle = this.descriptor.newDrawHandle();
 
         if (this.descriptor.runningSound != null) {
-            addLoopedSound(new LoopedSound(this.descriptor.runningSound, coordinate(), SoundInstance.AttenuationType.LINEAR) {
+            addLoopedSound(new LoopedSound(this.descriptor.runningSound, coordinate(), SoundInstance.Attenuation.LINEAR) {
                 @Override
                 public float getPitch() {
                     return powerFactor;

@@ -72,7 +72,7 @@ public class AutoMinerRender extends TransparentNodeElementRender {
             ledsPState[idx] = Math.random() > 0.5;
         }
 
-        addLoopedSound(new LoopedSound("eln:autominer", coordinate(), SoundInstance.AttenuationType.LINEAR) {
+        addLoopedSound(new LoopedSound("eln:autominer", coordinate(), SoundInstance.Attenuation.LINEAR) {
             @Override
             public float getVolume() {
                 if (powerOk &&
@@ -134,7 +134,7 @@ public class AutoMinerRender extends TransparentNodeElementRender {
             GL11.glScalef(1 / 128f, -1 / 128f, 1);
             int idx = 0;
             for (String log : logs) {
-                Minecraft.getInstance().font.drawString(idx == 0 ? FC.BRIGHT_GREEN + "> " +
+                mods.eln.client.gl.FixedFunction.drawString(Minecraft.getInstance().font, idx == 0 ? FC.BRIGHT_GREEN + "> " +
                     log.substring(2) : FC.DARK_GREEN + log, 80, 1 + idx, 0xFFD0D0D0 /*No effect...*/);
                 idx += 8;
             }
@@ -199,7 +199,7 @@ public class AutoMinerRender extends TransparentNodeElementRender {
                         camAlpha = (float) (Math.PI / 2);
                         break;
                 }
-                render.generate(this.getBlockEntity().getLevel(), getTileEntity().getBlockPos().getX() + 0.5,
+                render.generate(this.getTileEntity().getLevel(), getTileEntity().getBlockPos().getX() + 0.5,
                     getTileEntity().getBlockPos().getY() + 0.5 - (Math.max(0, pipeLength - 5)),
                     getTileEntity().getBlockPos().getZ() + 0.5, -(float) (Math.PI * 1 / 2) + camAlpha, -(float) (Math.PI / 2));
             }

@@ -5,7 +5,7 @@ import mods.eln.gui.GuiScreenEln;
 import mods.eln.gui.GuiTextFieldEln;
 import mods.eln.gui.IGuiObject;
 import mods.eln.misc.Utils;
-import net.minecraft.client.gui.components.Button;
+import mods.eln.gui.GuiButtonEln;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
@@ -42,7 +42,7 @@ public class Search extends GuiScreenEln {
     }
 
 
-    Button toogleDefaultOutput;
+    GuiButtonEln toogleDefaultOutput;
     GuiTextFieldEln searchText;
 
     @Override

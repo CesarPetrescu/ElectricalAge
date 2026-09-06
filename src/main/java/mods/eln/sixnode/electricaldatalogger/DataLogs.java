@@ -183,16 +183,16 @@ public class DataLogs implements INBTTReady {
 
         GL11.glPushMatrix();
         GL11.glScalef(scale, scale, 1f);
-        //fontrenderer.drawString("Time", (int)( 0.5f / scale), (int)(0.8f / scale), 0);
+        //mods.eln.client.gl.FixedFunction.drawString(fontrenderer, "Time", (int)( 0.5f / scale), (int)(0.8f / scale), 0);
         int yLabelX = (int) (rightEdge / scale) + 2;
-        fontrenderer.drawString(yTop, yLabelX, (int) (0f / scale), 0);
-        fontrenderer.drawString(yMid, yLabelX, (int) ((margeY / 2 - 0.05f) / scale), 0);
-        fontrenderer.drawString(yBottom, yLabelX, (int) ((margeY - 0.08f) / scale), 0);
+        mods.eln.client.gl.FixedFunction.drawString(fontrenderer, yTop, yLabelX, (int) (0f / scale), 0);
+        mods.eln.client.gl.FixedFunction.drawString(fontrenderer, yMid, yLabelX, (int) ((margeY / 2 - 0.05f) / scale), 0);
+        mods.eln.client.gl.FixedFunction.drawString(fontrenderer, yBottom, yLabelX, (int) ((margeY - 0.08f) / scale), 0);
 
-        fontrenderer.drawString(tStart, (int) (0f / scale), (int) ((margeY + 0.03) / scale), 0);
+        mods.eln.client.gl.FixedFunction.drawString(fontrenderer, tStart, (int) (0f / scale), (int) ((margeY + 0.03) / scale), 0);
         int rightTimeX = (int) (margeX / scale) - fontrenderer.width(tEnd) - 2;
-        fontrenderer.drawString(tEnd, rightTimeX, (int) ((margeY + 0.03) / scale), 0);
-        //fontrenderer.drawString("Time", (int)(0.5f / scale), (int)(0.8f / scale), 0);
+        mods.eln.client.gl.FixedFunction.drawString(fontrenderer, tEnd, rightTimeX, (int) ((margeY + 0.03) / scale), 0);
+        //mods.eln.client.gl.FixedFunction.drawString(fontrenderer, "Time", (int)(0.5f / scale), (int)(0.8f / scale), 0);
         GL11.glPopMatrix();
         //startT = System.nanoTime() - startT;
         //Utils.println("startT : " + startT);

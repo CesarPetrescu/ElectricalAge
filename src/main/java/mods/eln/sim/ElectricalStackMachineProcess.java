@@ -64,7 +64,7 @@ public class ElectricalStackMachineProcess implements IProcess {
     public void process(double time) {
         ItemStack itemStackIn = inventory.getItem(inputSlotId);
 
-        boolean itemTypeChanged = McBridge.isNothing(itemStackIn) && !McBridge.isNothing(itemStackInOld) || !McBridge.isNothing(itemStackIn) && McBridge.isNothing(itemStackInOld) || !McBridge.isNothing(itemStackIn) && !itemStackIn.getTranslationKey().equals(itemStackInOld.getTranslationKey());
+        boolean itemTypeChanged = McBridge.isNothing(itemStackIn) && !McBridge.isNothing(itemStackInOld) || !McBridge.isNothing(itemStackIn) && McBridge.isNothing(itemStackInOld) || !McBridge.isNothing(itemStackIn) && !itemStackIn.getDescriptionId().equals(itemStackInOld.getDescriptionId());
 
         if (itemTypeChanged || (!smeltCan()) || !smeltInProcess) {
             smeltInit();

@@ -7,6 +7,6 @@ import net.minecraft.world.Container;
 public class ElectricalBreakerContainer extends BasicContainer {
 
     public ElectricalBreakerContainer(Player player, Container inventory) {
-        super(player, inventory, new net.minecraft.level().inventory.Slot[]{});
+        super(player, inventory, new net.minecraft.world.inventory.Slot[]{});
     }
 }

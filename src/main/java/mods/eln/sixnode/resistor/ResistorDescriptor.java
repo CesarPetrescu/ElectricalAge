@@ -62,7 +62,7 @@ public class ResistorDescriptor extends SixNodeDescriptor {
     }
 
     @Override
-    public void setParent(net.minecraft.level().item.Item item, int damage) {
+    public void setParent(net.minecraft.world.item.Item item, int damage) {
         super.setParent(item, damage);
         Data.addEnergy(newItemStack());
     }

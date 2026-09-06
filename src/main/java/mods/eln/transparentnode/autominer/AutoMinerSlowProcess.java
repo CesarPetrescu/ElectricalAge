@@ -14,7 +14,6 @@ import mods.eln.ore.OreColorMapping;
 import mods.eln.sim.IProcess;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.ChestBlock;
-import net.minecraft.block.BlockOre;
 import net.minecraft.world.level.block.RedStoneOreBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.Container;
@@ -101,14 +100,13 @@ public class AutoMinerSlowProcess implements IProcess, INBTTReady {
                         drillCount++;
 
                         Block block = McBridge.getBlock(jobCoord.world(), jobCoord.x, jobCoord.y, jobCoord.z);
-                        int meta = McBridge.getBlockMetadata(jobCoord.world(), jobCoord.x, jobCoord.y, jobCoord.z);
+                        net.minecraft.world.level.block.state.BlockState state = McBridge.getBlockState(jobCoord.world(), jobCoord.x, jobCoord.y, jobCoord.z);
                         if (silkTouch) {
-                            itemsToDrop.add(new ItemStack(block, 1, meta));
+                            itemsToDrop.add(new ItemStack(block, 1));
                         } else {
-                            NonNullList<ItemStack> drops = NonNullList.create();
-                            block.getDrops(drops, jobCoord.world(), jobCoord.getBlockPos(),
-                                McBridge.getBlockState(jobCoord.world(), jobCoord.x, jobCoord.y, jobCoord.z), 0);
-                            itemsToDrop.addAll(drops);
+                            // 1.13+: drops come from the block's loot table (no tool: fortune 0).
+                            itemsToDrop.addAll(Block.getDrops(state, (net.minecraft.server.level.ServerLevel) jobCoord.world(), jobCoord.getPos(),
+                                jobCoord.world().getBlockEntity(jobCoord.getPos())));
                         }
 
                         // Use cobblestone instead of air, everywhere except the mining shaft.
@@ -217,11 +215,11 @@ public class AutoMinerSlowProcess implements IProcess, INBTTReady {
         Container inventoryEntity = null;
         Coordinate outputLocation = new Coordinate(1, -1, 0, miner.world());
         outputLocation.applyTransformation(miner.front, miner.coordinate());
-        if (outputLocation.getBlockEntity() instanceof Container) {
-            inventoryEntity = (Container) outputLocation.getBlockEntity();
+        if (outputLocation.getTileEntity() instanceof Container) {
+            inventoryEntity = (Container) outputLocation.getTileEntity();
             Block inventoryBlock = McBridge.getBlock(miner.world(), outputLocation.x, outputLocation.y, outputLocation.z);
             if(inventoryBlock instanceof ChestBlock) {
-                Container possibleDoubleInventoryEntity = ((ChestBlock)inventoryBlock).getLockableContainer(miner.world(), outputLocation.getBlockPos());
+                Container possibleDoubleInventoryEntity = ChestBlock.getContainer((ChestBlock) inventoryBlock, McBridge.getBlockState(miner.world(), outputLocation.x, outputLocation.y, outputLocation.z), miner.world(), outputLocation.getPos(), false);
                 if (possibleDoubleInventoryEntity != null) {
                     inventoryEntity = possibleDoubleInventoryEntity;
                 }
@@ -236,8 +234,8 @@ public class AutoMinerSlowProcess implements IProcess, INBTTReady {
 
     private boolean isMinable(Block block) {
         return block != Blocks.AIR
-            && (block) != Blocks.FLOWING_WATER && (block) != Blocks.WATER
-            && (block) != Blocks.FLOWING_LAVA && (block) != Blocks.LAVA
+            && (block) != Blocks.WATER && (block) != Blocks.WATER
+            && (block) != Blocks.LAVA && (block) != Blocks.LAVA
             && (block) != Blocks.OBSIDIAN && (block) != Blocks.BEDROCK;
     }
 
@@ -318,8 +316,8 @@ public class AutoMinerSlowProcess implements IProcess, INBTTReady {
 
                     Block block = McBridge.getBlock(jobCoord.world(), jobCoord.x, jobCoord.y, jobCoord.z);
                     if (block != Blocks.AIR
-                        && block != Blocks.FLOWING_WATER && block != Blocks.WATER
-                        && block != Blocks.FLOWING_LAVA && block != Blocks.LAVA) {
+                        && block != Blocks.WATER && block != Blocks.WATER
+                        && block != Blocks.LAVA && block != Blocks.LAVA) {
                         if (block != Blocks.OBSIDIAN && block != Blocks.BEDROCK) {
                             jobFind = true;
                             setJob(jobType.ore);
@@ -364,10 +362,11 @@ public class AutoMinerSlowProcess implements IProcess, INBTTReady {
 
     private boolean checkIsOre(Coordinate coordinate) {
         Block block = McBridge.getBlock(coordinate.world(), coordinate.x, coordinate.y, coordinate.z);
-        if (block instanceof BlockOre) return true;
+        // 1.13+: vanilla ores are plain blocks (DropExperienceBlock); the `c:ores` tag covers vanilla and modded ores.
+        if (block.defaultBlockState().is(net.neoforged.neoforge.common.Tags.Blocks.ORES)) return true;
         if (block instanceof OreBlock) return true;
         if (block instanceof RedStoneOreBlock) return true;
-        return OreColorMapping.getMap()[Block.getIdFromBlock(block) + (McBridge.getBlockMetadata(coordinate.world(), coordinate.x, coordinate.y, coordinate.z) << 12)] != 0;
+        return OreColorMapping.getMap()[net.minecraft.core.registries.BuiltInRegistries.BLOCK.getId(block) + (McBridge.getBlockMetadata(coordinate.world(), coordinate.x, coordinate.y, coordinate.z) << 12)] != 0;
     }
 
     public void onBreakElement() {

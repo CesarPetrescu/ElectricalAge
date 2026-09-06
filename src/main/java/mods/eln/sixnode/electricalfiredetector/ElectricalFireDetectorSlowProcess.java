@@ -109,7 +109,7 @@ public class ElectricalFireDetectorSlowProcess implements IProcess {
                                 detectionBBCenter.x + dx + 0.5, detectionBBCenter.y + dy + 0.5, detectionBBCenter.z + dz + 0.5);
 
                             for (BlockState b : blockList)
-                                if (b.isOpaqueCube()) {
+                                if (b.isSolidRender(coord.world(), net.minecraft.core.BlockPos.ZERO)) {
                                     fireDetected = false;
                                     break;
                                 }

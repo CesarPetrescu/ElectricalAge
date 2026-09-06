@@ -8,7 +8,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.oredict.OreDictionary;
+import net.minecraft.tags.BlockTags;
 import mods.eln.client.gl.GL11;
 
 import java.util.Collections;
@@ -85,22 +85,13 @@ public class TreeResinCollectorDescriptor extends SixNodeDescriptor {
         Collections.addAll(list, tr("Produces Tree Resin over\ntime when put on a tree.").split("\n"));
     }
 
+    /** The 1.7.10 "treeWood"/"logWood" dictionary names are the `minecraft:logs` block tag. */
     public static boolean isWood(Block b) {
-        for (ItemStack s : OreDictionary.getOres("treeWood")) {
-            if (s.getItem() == Item.getItemFromBlock(b)) return true;
-        }
-        for (ItemStack s : OreDictionary.getOres("logWood")) {
-            if (s.getItem() == Item.getItemFromBlock(b)) return true;
-        }
-
-        return false;
+        return b.defaultBlockState().is(BlockTags.LOGS);
     }
 
     public static boolean isLeaf(Block b) {
-        for (ItemStack s : OreDictionary.getOres("treeLeaves")) {
-            if (s.getItem() == Item.getItemFromBlock(b)) return true;
-        }
-        return false;
+        return b.defaultBlockState().is(BlockTags.LEAVES);
     }
 
     @Override

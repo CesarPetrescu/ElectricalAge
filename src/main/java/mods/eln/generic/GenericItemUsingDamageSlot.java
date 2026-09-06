@@ -37,8 +37,7 @@ public class GenericItemUsingDamageSlot extends SlotWithSkin implements ISlotWit
      */
     public boolean mayPlace(ItemStack itemStack) {
         //	if(itemStack.getItem() != item) return false;
-        if ((itemStack.getItem() instanceof GenericItemUsingDamage) == false) return false;
-        GenericItemUsingDamageDescriptor descriptor = ((GenericItemUsingDamage) itemStack.getItem()).getDescriptor(itemStack);
+        GenericItemUsingDamageDescriptor descriptor = GenericItemUsingDamageDescriptor.getDescriptor(itemStack);
         if (descriptor == null) return false;
 
         for (Class classFilter : descriptorClassList) {

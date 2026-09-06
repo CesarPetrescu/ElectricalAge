@@ -47,7 +47,7 @@ public class WaterTurbineDescriptor extends TransparentNodeDescriptor {
 
     Coordinate waterCoord;
 
-    public void setParent(net.minecraft.level().item.Item item, int damage) {
+    public void setParent(net.minecraft.world.item.Item item, int damage) {
         super.setParent(item, damage);
         Data.addEnergy(newItemStack());
     }
@@ -122,7 +122,7 @@ public class WaterTurbineDescriptor extends TransparentNodeDescriptor {
 
     public Coordinate getWaterCoordonate(Level w) {
         Coordinate coord = new Coordinate(waterCoord);
-        coord.setDimension(w.provider.getDimension());
+        coord.setDimension(mods.eln.misc.DimensionIds.id(w));
         return coord;
     }
 

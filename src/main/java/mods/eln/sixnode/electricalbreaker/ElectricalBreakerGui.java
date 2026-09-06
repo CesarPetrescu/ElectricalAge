@@ -1,7 +1,7 @@
 package mods.eln.sixnode.electricalbreaker;
 
 import mods.eln.gui.*;
-import net.minecraft.client.gui.components.Button;
+import mods.eln.gui.GuiButtonEln;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.Container;
 
@@ -12,7 +12,7 @@ import static mods.eln.i18n.I18N.tr;
 
 public class ElectricalBreakerGui extends GuiContainerEln {
 
-    Button toogleSwitch;
+    GuiButtonEln toogleSwitch;
     GuiTextFieldEln setUmin, setUmax;
     ElectricalBreakerRender render;
 

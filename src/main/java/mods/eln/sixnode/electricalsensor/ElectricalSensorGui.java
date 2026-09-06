@@ -1,7 +1,7 @@
 package mods.eln.sixnode.electricalsensor;
 
 import mods.eln.gui.*;
-import net.minecraft.client.gui.components.Button;
+import mods.eln.gui.GuiButtonEln;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.Container;
 
@@ -12,7 +12,7 @@ import static mods.eln.i18n.I18N.tr;
 
 public class ElectricalSensorGui extends GuiContainerEln {
 
-    Button validate, voltageType, currentType, powerType, dirType;
+    GuiButtonEln validate, voltageType, currentType, powerType, dirType;
     GuiTextFieldEln lowValue, highValue;
     ElectricalSensorRender render;
 

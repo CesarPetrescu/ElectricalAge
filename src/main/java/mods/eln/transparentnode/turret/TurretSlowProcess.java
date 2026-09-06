@@ -20,7 +20,6 @@ import net.minecraft.world.damagesource.DamageSource;
 import java.util.List;
 import java.util.Random;
 
-import static scala.Console.println;
 
 
 public class TurretSlowProcess extends StateMachine {
@@ -206,7 +205,7 @@ public class TurretSlowProcess extends StateMachine {
                         entity.getX(), entity.getY() + entity.getEyeHeight(), entity.getZ());
                     boolean visible = true;
                     for (BlockState b : blockList)
-                        if (b.isOpaqueCube()) {
+                        if (b.isSolidRender(coord.world(), net.minecraft.core.BlockPos.ZERO)) {
                             visible = false;
                             break;
                         }
@@ -305,7 +304,7 @@ public class TurretSlowProcess extends StateMachine {
             List<BlockState> blockList = Utils.traceRay(coord.world(), coord.x + 0.5, coord.y + 0.5, coord.z + 0.5,
                 target.getX(), target.getY() + target.getEyeHeight(), target.getZ());
             for (BlockState b : blockList)
-                if (b.isOpaqueCube())
+                if (b.isSolidRender(coord.world(), net.minecraft.core.BlockPos.ZERO))
                     return new SeekingState();
 
             if (element.getGunPosition() == 1 && element.isTargetReached() &&
@@ -330,7 +329,7 @@ public class TurretSlowProcess extends StateMachine {
         @Override
         public void enter() {
             if (target != null) {
-                target.hurtResistantTime = 0;
+                target.invulnerableTime = 0;
                 target.hurt(mods.eln.misc.ElnDamage.turret(target), 5);
                 element.shoot();
                 element.play(new SoundCommand("eln:lasergun"));

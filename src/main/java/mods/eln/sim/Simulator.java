@@ -2,9 +2,7 @@ package mods.eln.sim;
 
 import net.neoforged.neoforge.common.NeoForge;
 
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import mods.eln.Eln;
 import mods.eln.environment.RoomThermalManager;
@@ -356,8 +354,7 @@ public class Simulator /* ,IPacketHandler */ {
     public boolean pleaseCrash = false;
 
     @SubscribeEvent
-    public void tick(ServerTickEvent.Post event) {
-        if (event.phase != Phase.START) return;
+    public void tick(ServerTickEvent.Pre event) {
         if (pleaseCrash) throw new StackOverflowError();
         long stackStart;
 

@@ -1,6 +1,7 @@
 package mods.eln.wiki;
 
 import mods.eln.misc.McBridge;
+import mods.eln.gui.Gui;
 import mods.eln.gui.GuiHelper;
 import mods.eln.gui.IGuiObject;
 import mods.eln.misc.UtilsClient;
@@ -17,8 +18,8 @@ import java.util.List;
 public class GuiItemStack extends Gui implements IGuiObject {
 
     public GuiItemStack(int x, int y, ItemStack stack, GuiHelper helper) {
-        this.getX() = x;
-        this.getY() = y;
+        this.posX = x;
+        this.posY = y;
         h = 18;
         w = 18;
         this.stack = stack;
@@ -103,7 +104,10 @@ public class GuiItemStack extends Gui implements IGuiObject {
             int px, py;
             px = posX;
             py = posY;
-            List list = stack.getTooltip(Minecraft.getInstance().player, TooltipFlag.TooltipFlags.NORMAL);
+            List<String> list = new java.util.ArrayList<>();
+            for (net.minecraft.network.chat.Component line : stack.getTooltipLines(net.minecraft.world.item.Item.TooltipContext.of(Minecraft.getInstance().level), Minecraft.getInstance().player, TooltipFlag.NORMAL)) {
+                list.add(line.getString());
+            }
             helper.drawHoveringText(list, x, y, Minecraft.getInstance().font);
         }
     }
@@ -142,8 +146,8 @@ public class GuiItemStack extends Gui implements IGuiObject {
     @Override
     public void translate(int x, int y) {
 
-        this.getX() += x;
-        this.getY() += y;
+        this.posX += x;
+        this.posY += y;
     }
 
 

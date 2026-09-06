@@ -6,7 +6,6 @@ import mods.eln.gui.GuiHelperContainer;
 import mods.eln.gui.IGuiObject;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.Container;
-import java.io.IOException;
 
 public class HubGui extends GuiContainerEln {
 
@@ -121,10 +120,11 @@ public class HubGui extends GuiContainerEln {
         }
     }
 
-    protected void mouseClicked(int x, int y, int code) throws IOException {
-        super.mouseClicked(x, y, code);
-        x -= width / 2 - xSize / 2;
-        y -= height / 2 - ySize / 2;
+    @Override
+    public boolean mouseClicked(double mx, double my, int code) {
+        boolean handled = super.mouseClicked(mx, my, code);
+        int x = (int) mx - (width / 2 - getXSize() / 2);
+        int y = (int) my - (height / 2 - getYSize() / 2);
 
         if (isInto(x, y, h0, v5, h2, v6) || isInto(x, y, h1, v5, h2, v7))
             render.clientSetByte(HubElement.clientConnectionGridToggle, (byte) 2);
@@ -138,6 +138,7 @@ public class HubGui extends GuiContainerEln {
             render.clientSetByte(HubElement.clientConnectionGridToggle, (byte) 4);
         if (isInto(x, y, h3, v0, h4, v7))
             render.clientSetByte(HubElement.clientConnectionGridToggle, (byte) 5);
+        return handled;
     }
 
     boolean isInto(int x, int y, int x0, int y0, int x1, int y1) {

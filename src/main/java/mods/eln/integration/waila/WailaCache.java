@@ -25,7 +25,7 @@ public class WailaCache {
         .build(
             cacheLoader(
                 key -> {
-                    Eln.elnNetwork.sendToServer(new TransparentNodeRequestPacket(key));
+                    mods.eln.network.ElnNetwork.sendToServer(new TransparentNodeRequestPacket(key));
                     return null;
                 }
             )
@@ -37,7 +37,7 @@ public class WailaCache {
         .build(
             cacheLoader(
                 key -> {
-                    Eln.elnNetwork.sendToServer(new SixNodeWailaRequestPacket(key.getCoord(), key.getSide()));
+                    mods.eln.network.ElnNetwork.sendToServer(new SixNodeWailaRequestPacket(key.getCoord(), key.getSide()));
                     return null;
                 }
             )
@@ -49,7 +49,7 @@ public class WailaCache {
         .build(
             cacheLoader(
                 key -> {
-                    Eln.elnNetwork.sendToServer(new GhostNodeWailaRequestPacket(key));
+                    mods.eln.network.ElnNetwork.sendToServer(new GhostNodeWailaRequestPacket(key));
                     return null;
                 }
             )

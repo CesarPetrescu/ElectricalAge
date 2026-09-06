@@ -20,7 +20,7 @@ class TransparentNodeRender : BlockEntityRenderer<TransparentNodeEntity> {
             elementRender.draw()
             GL11.glPopMatrix()
         } finally {
-            FixedFunction.end()
+            FixedFunction.finish()
         }
     }
 

@@ -2,12 +2,9 @@ package mods.eln.client;
 
 import net.neoforged.neoforge.common.NeoForge;
 
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.event.tick.ClientTickEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent.Type;
-import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
-import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 import mods.eln.Eln;
 import mods.eln.misc.Utils;
 import mods.eln.ore.OreScannerManager;
@@ -28,8 +25,8 @@ public class ConnectionListener {
     static int timer = 0;
 
     @SubscribeEvent
-    public void onConnectedToServerEvent(ClientConnectedToServerEvent event) {
-        Utils.println("Connected to server " + FMLCommonHandler.instance().getEffectiveSide());
+    public void onConnectedToServerEvent(ClientPlayerNetworkEvent.LoggingIn event) {
+        Utils.println("Connected to server " + Utils.INSTANCE.getSide());
         OreScannerManager.regenOreScannerFactors();
 
         timer = 20;
@@ -37,15 +34,13 @@ public class ConnectionListener {
     }
 
     @SubscribeEvent
-    public void onDisconnectedFromServerEvent(ClientDisconnectionFromServerEvent event) {
-        Utils.println("Disconnected from server " + FMLCommonHandler.instance().getEffectiveSide());
-        Minecraft.getInstance().addScheduledTask(UtilsClient::glDeleteListsAllSafe);
+    public void onDisconnectedFromServerEvent(ClientPlayerNetworkEvent.LoggingOut event) {
+        Utils.println("Disconnected from server " + Utils.INSTANCE.getSide());
+        Minecraft.getInstance().execute(UtilsClient::glDeleteListsAllSafe);
     }
 
     @SubscribeEvent
     public void tick(ClientTickEvent.Post event) {
-        if (event.type != Type.CLIENT) return;
-
         if (newConnection) {
             if (timer-- != 0) return;
 

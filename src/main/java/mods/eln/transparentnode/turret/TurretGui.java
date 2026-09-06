@@ -4,14 +4,14 @@ import mods.eln.gui.GuiContainerEln;
 import mods.eln.gui.GuiHelperContainer;
 import mods.eln.gui.GuiVerticalTrackBar;
 import mods.eln.gui.IGuiObject;
-import net.minecraft.client.gui.components.Button;
+import mods.eln.gui.GuiButtonEln;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.Container;
 
 import static mods.eln.i18n.I18N.tr;
 
 public class TurretGui extends GuiContainerEln {
-    private Button killOrSpareButton;
+    private GuiButtonEln killOrSpareButton;
     private GuiVerticalTrackBar chargePower;
     private final TurretRender render;
 

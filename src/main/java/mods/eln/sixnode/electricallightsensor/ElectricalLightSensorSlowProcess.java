@@ -32,10 +32,10 @@ public class ElectricalLightSensorSlowProcess implements IProcess {
             //	Utils.println("Light : " + light);
             Level world = coord.world();
             //if(element.descriptor.dayLightOnly) {
-            if (world.provider.hasSkyLight()) {
-                int i1 = world.getBrightness(LightLayer.SKY, coord.getBlockPos()) - world.getSkylightSubtracted();
+            if (world.dimensionType().hasSkyLight()) {
+                int i1 = world.getBrightness(LightLayer.SKY, coord.getPos()) - world.getSkyDarken();
                 i1 = Math.max(0, i1);
-                float f = world.getCelestialAngleRadians(1.0F);
+                float f = world.getSunAngle(1.0F);
 
                 if (f < (float) Math.PI) {
                     f += (0.0F - f) * 0.2F;

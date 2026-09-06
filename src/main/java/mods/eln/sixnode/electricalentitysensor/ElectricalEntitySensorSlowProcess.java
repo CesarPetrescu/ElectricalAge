@@ -81,7 +81,7 @@ public class ElectricalEntitySensorSlowProcess implements IProcess, INBTTReady {
                     boolean view = true;
 
                     for (BlockState b : blockList) {
-                        if (b.isOpaqueCube()) {
+                        if (b.isSolidRender(coord.world(), net.minecraft.core.BlockPos.ZERO)) {
                             view = false;
                             break;
                         }

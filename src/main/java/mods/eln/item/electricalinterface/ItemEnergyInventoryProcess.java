@@ -1,6 +1,5 @@
 package mods.eln.item.electricalinterface;
 
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import mods.eln.Eln;
 import mods.eln.misc.Utils;
 import mods.eln.sim.IProcess;
@@ -89,7 +88,8 @@ public class ItemEnergyInventoryProcess implements IProcess {
         energyUpdateTimout += energyUpdatePeriod;
         time = energyUpdatePeriod;
 
-        MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
+        MinecraftServer server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+        if (server == null) return;
 
         ArrayList<Element> list = new ArrayList<Element>();
 
@@ -97,7 +97,7 @@ public class ItemEnergyInventoryProcess implements IProcess {
             ServerPlayer player = (ServerPlayer) obj;
             list.clear();
 
-            for (ItemStack stack : player.inventory.armorInventory) {
+            for (ItemStack stack : player.getInventory().armor) {
 
                 Object o = Utils.getItemObject(stack);
 
@@ -108,7 +108,7 @@ public class ItemEnergyInventoryProcess implements IProcess {
                 }
             }
 
-            for (ItemStack stack : player.inventory.mainInventory) {
+            for (ItemStack stack : player.getInventory().items) {
                 Object o = Utils.getItemObject(stack);
 
                 if (o instanceof IItemEnergyBattery) {

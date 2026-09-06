@@ -1,12 +1,12 @@
 package mods.eln.transparentnode.electricalfurnace;
 
 import mods.eln.misc.McBridge;
+import mods.eln.misc.Utils;
 import mods.eln.generic.GenericItemUsingDamageDescriptor;
 import mods.eln.item.ThermalIsolatorElement;
 import mods.eln.node.transparent.TransparentNodeElementInventory;
 import mods.eln.sim.IProcess;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.item.crafting.FurnaceRecipes;
 
 public class ElectricalFurnaceProcess implements IProcess {
 
@@ -96,14 +96,14 @@ public class ElectricalFurnaceProcess implements IProcess {
             ItemStack var1 = getSmeltResult();
             if (var1 == null) return false;
             if (McBridge.isNothing(inventory.getItem(ElectricalFurnaceElement.outSlotId))) return true;
-            if (!inventory.getItem(ElectricalFurnaceElement.outSlotId).isItemEqual(var1)) return false;
+            if (!McBridge.isItemEqual(inventory.getItem(ElectricalFurnaceElement.outSlotId), var1)) return false;
             int result = inventory.getItem(ElectricalFurnaceElement.outSlotId).getCount() + var1.getCount();
             return (result <= inventory.getMaxStackSize() && result <= var1.getMaxStackSize());
         }
     }
 
     public ItemStack getSmeltResult() {
-        return FurnaceRecipes.instance().getSmeltingResult(inventory.getItem(ElectricalFurnaceElement.inSlotId));
+        return Utils.getSmeltingResult(inventory.getItem(ElectricalFurnaceElement.inSlotId));
     }
 
     /**
@@ -115,7 +115,7 @@ public class ElectricalFurnaceProcess implements IProcess {
 
             if (McBridge.isNothing(inventory.getItem(ElectricalFurnaceElement.outSlotId))) {
                 inventory.setItem(ElectricalFurnaceElement.outSlotId, var1.copy());
-            } else if (inventory.getItem(ElectricalFurnaceElement.outSlotId).isItemEqual(var1)) {
+            } else if (McBridge.isItemEqual(inventory.getItem(ElectricalFurnaceElement.outSlotId), var1)) {
                 inventory.removeItem(ElectricalFurnaceElement.outSlotId, -var1.getCount());
             }
 

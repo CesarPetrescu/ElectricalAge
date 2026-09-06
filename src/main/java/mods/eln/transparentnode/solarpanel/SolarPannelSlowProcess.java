@@ -75,8 +75,8 @@ public class SolarPannelSlowProcess implements IProcess {
         }
         int count = 0;
         ///world.getChunkProvider().chunkExists(var1, var2)
-        while (world.isBlockLoaded(new BlockPos((int) x, (int) y, (int) z))) {
-            double opacity = world.getBlockLightOpacity(new BlockPos((int) x, (int) y, (int) z));
+        while (world.isLoaded(new BlockPos((int) x, (int) y, (int) z))) {
+            double opacity = McBridge.getBlockState(world, (int) x, (int) y, (int) z).getLightBlock(world, new BlockPos((int) x, (int) y, (int) z));
             light *= (255 - opacity) / 255;
             if (light == 0.0) {
                 break;
@@ -92,7 +92,7 @@ public class SolarPannelSlowProcess implements IProcess {
     }
 
     public static double getSolarAlpha(Level world) {
-        double alpha = world.getCelestialAngleRadians(0f);
+        double alpha = world.getSunAngle(0f);
         if (alpha < Math.PI / 2 * 3) {
             alpha += Math.PI / 2;
         } else {

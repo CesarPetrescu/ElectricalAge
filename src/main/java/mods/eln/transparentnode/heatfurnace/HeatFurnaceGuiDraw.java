@@ -4,7 +4,7 @@ import mods.eln.misc.McBridge;
 import mods.eln.gui.*;
 import mods.eln.misc.Utils;
 import mods.eln.node.transparent.TransparentNodeElementInventory;
-import net.minecraft.client.gui.components.Button;
+import mods.eln.gui.GuiButtonEln;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.Container;
 
@@ -14,7 +14,7 @@ public class HeatFurnaceGuiDraw extends GuiContainerEln {
 
     private TransparentNodeElementInventory inventory;
     HeatFurnaceRender render;
-    Button externalControl, takeFuel;
+    GuiButtonEln externalControl, takeFuel;
     GuiVerticalTrackBar vuMeterGain;
     GuiVerticalTrackBarHeat vuMeterHeat;
 

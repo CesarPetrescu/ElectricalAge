@@ -339,7 +339,10 @@ public class Eln {
         clientLiveDataManager = new LiveDataManager();
 
         packetHandler = new PacketHandler();
-        ElnNetwork.setRawHandler(packetHandler::onPayload);
+        ElnNetwork.setRawHandler((data, context) -> {
+            packetHandler.onPayload(data, context);
+            return kotlin.Unit.INSTANCE;
+        });
         GuiHandler.register();
 
         creativeTabPowerElectronics = GenericCreativeTab.create("ElnPowerElectronics", Items.REDSTONE);

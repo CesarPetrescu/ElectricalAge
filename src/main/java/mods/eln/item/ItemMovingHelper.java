@@ -69,7 +69,7 @@ public abstract class ItemMovingHelper {
             int diff = now - desired;
             Utils.println(String.format("IMH.m: moving %d items", diff));
             if(diff > 0) {
-                if (src.addItemStackToInventory(newStackOfSize(diff))) {
+                if (src.add(newStackOfSize(diff))) {
                     if(desired == 0) {
                         dst.setItem(dstSlot, ItemStack.EMPTY);
                     } else {
@@ -92,37 +92,18 @@ public abstract class ItemMovingHelper {
         }
     }
 
+    /**
+     * 1.7.10 hand-built a slot packet; the player's container menu broadcasts its changed slots
+     * to the client each tick (and now, on demand).
+     */
     public static void syncItemInSlot(Inventory inv, int slot) {
-        ServerPlayer playerMP = (ServerPlayer) inv.player;
-        AbstractContainerMenu container =  playerMP.containerMenu;
-
-        playerMP.connection.sendPacket(
-            new ClientboundContainerSetSlotPacket(
-                container.windowId,
-                container.getSlotFromInventory(inv, slot).index,
-                inv.getItem(slot)
-            )
-        );
-
         inv.setChanged();
+        ((ServerPlayer) inv.player).containerMenu.broadcastChanges();
     }
 
     public static void syncEntireInventory(Player player) {
-        Container inv = player.inventory;
-        ServerPlayer playerMP = (ServerPlayer) player;
-
-        for(int idx = 0; idx < inv.getContainerSize(); idx++) {
-            AbstractContainerMenu container = playerMP.containerMenu;
-            playerMP.connection.sendPacket(
-                new ClientboundContainerSetSlotPacket(
-                    container.windowId,
-                    container.getSlotFromInventory(inv, idx).index,
-                    inv.getItem(idx)
-                )
-            );
-        }
-
-        inv.setChanged();
+        player.getInventory().setChanged();
+        ((ServerPlayer) player).containerMenu.broadcastChanges();
     }
 
 }

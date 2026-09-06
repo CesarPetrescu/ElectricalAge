@@ -32,7 +32,7 @@ class SixNodeRender : BlockEntityRenderer<SixNodeEntity> {
             }
             GL11.glPopMatrix()
         } finally {
-            FixedFunction.end()
+            FixedFunction.finish()
         }
         Minecraft.getInstance().profiler.pop()
     }

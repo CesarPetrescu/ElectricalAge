@@ -83,7 +83,7 @@ public class ConfigCopyToolDescriptor extends GenericItemUsingDamageDescriptor {
                     if (thisCableDesc instanceof UtilityCableDescriptor) {
                         double cableLength = ((UtilityCableDescriptor) thisCableDesc).getRemainingLengthMeters(stackInSlot);
                         UtilityCableItemMovingHelper itemMover = new UtilityCableItemMovingHelper((UtilityCableDescriptor) thisCableDesc, cableLength);
-                        itemMover.move(invoker.inventory, inv, slot, 0);
+                        itemMover.move(invoker.getInventory(), inv, slot, 0);
                     } else {
                         (new ItemMovingHelper() {
                             @Override
@@ -95,7 +95,7 @@ public class ConfigCopyToolDescriptor extends GenericItemUsingDamageDescriptor {
                             public ItemStack newStackOfSize(int items) {
                                 return thisCableDesc.newItemStack(items);
                             }
-                        }).move(invoker.inventory, inv, slot, 0);
+                        }).move(invoker.getInventory(), inv, slot, 0);
                     }
                 }
             }
@@ -108,7 +108,7 @@ public class ConfigCopyToolDescriptor extends GenericItemUsingDamageDescriptor {
                         double cableLength = IUtilityCableInventory.DEFAULT_REQUIRED_LENGTH;
                         if (compound.contains(name + "Length")) cableLength = compound.getDouble(name + "Length");
                         UtilityCableItemMovingHelper itemMover = new UtilityCableItemMovingHelper((UtilityCableDescriptor) cableDesc, cableLength);
-                        itemMover.move(invoker.inventory, inv, slot, amt);
+                        itemMover.move(invoker.getInventory(), inv, slot, amt);
                     } else {
                         (new ItemMovingHelper() {
                             @Override
@@ -120,7 +120,7 @@ public class ConfigCopyToolDescriptor extends GenericItemUsingDamageDescriptor {
                             public ItemStack newStackOfSize(int items) {
                                 return cableDesc.newItemStack(items);
                             }
-                        }).move(invoker.inventory, inv, slot, amt);
+                        }).move(invoker.getInventory(), inv, slot, amt);
                     }
                 }
             }
@@ -187,7 +187,7 @@ public class ConfigCopyToolDescriptor extends GenericItemUsingDamageDescriptor {
                     public ItemStack newStackOfSize(int items) {
                         return desc.newItemStack(items);
                     }
-                }).move(invoker.inventory, inv, slot, 0);
+                }).move(invoker.getInventory(), inv, slot, 0);
             }
 
             // MOVE THE NEW ITEM INTO THE DESTINATION INVENTORY (OUT OF THE PLAYER INVENTORY)
@@ -204,7 +204,7 @@ public class ConfigCopyToolDescriptor extends GenericItemUsingDamageDescriptor {
                         public ItemStack newStackOfSize(int items) {
                             return newDesc.newItemStack(items);
                         }
-                    }).move(invoker.inventory, inv, slot, amt);
+                    }).move(invoker.getInventory(), inv, slot, amt);
                 }
             }
 
@@ -246,20 +246,20 @@ public class ConfigCopyToolDescriptor extends GenericItemUsingDamageDescriptor {
                     public ItemStack newStackOfSize(int items) {
                         return new ItemStack(current.getItem(), items);
                     }
-                }).move(invoker.inventory, inv, slot, 0);
+                }).move(invoker.getInventory(), inv, slot, 0);
             }
             if(itemId >= 0) {
                 (new ItemMovingHelper() {
                     @Override
                     public boolean acceptsStack(ItemStack stack) {
-                        return Item.getIdFromItem(stack.getItem()) == itemId;
+                        return mods.eln.misc.McBridge.itemId(stack.getItem()) == itemId;
                     }
 
                     @Override
                     public ItemStack newStackOfSize(int items) {
-                        return new ItemStack(Item.getItemById(itemId), items);
+                        return new ItemStack(mods.eln.misc.McBridge.itemById(itemId), items);
                     }
-                }).move(invoker.inventory, inv, slot, amt);
+                }).move(invoker.getInventory(), inv, slot, amt);
             }
             return true;
         }
@@ -272,9 +272,9 @@ public class ConfigCopyToolDescriptor extends GenericItemUsingDamageDescriptor {
             compound.putInt(name, -1);
             compound.putInt(name + "Amt", 0);
         } else {
-            Eln.logger.info("CCT Copy: " + name + " " + Item.getIdFromItem(stack.getItem()));
+            Eln.logger.info("CCT Copy: " + name + " " + mods.eln.misc.McBridge.itemId(stack.getItem()));
             Eln.logger.info("CCT Copy: " + name + "Amt: " + stack.getCount());
-            compound.putInt(name, Item.getIdFromItem(stack.getItem()));
+            compound.putInt(name, mods.eln.misc.McBridge.itemId(stack.getItem()));
             compound.putInt(name + "Amt", stack.getCount());
         }
     }

@@ -106,7 +106,8 @@ public final class FixedFunction {
         }
     }
 
-    public static void end() {
+    /** Leaves the render entered with {@link #begin} / {@link #beginGui}, flushing the buffers. */
+    public static void finish() {
         if (--depth == 0) {
             if (buffers instanceof MultiBufferSource.BufferSource bs) bs.endBatch();
             buffers = null;
@@ -223,6 +224,15 @@ public final class FixedFunction {
      * Draws a line of text at the current matrix (1.7.10's FontRenderer.drawString inside a
      * render pass): in the world through the buffer source, in a GUI through the GuiGraphics pose.
      */
+    /** 1.7.10's `FontRenderer.drawString(text, x, y, color)` (no shadow). */
+    public static void drawString(net.minecraft.client.gui.Font font, String text, float x, float y, int color) {
+        drawString(font, text, x, y, color, false);
+    }
+
+    public static void drawStringShadow(net.minecraft.client.gui.Font font, String text, float x, float y, int color) {
+        drawString(font, text, x, y, color, true);
+    }
+
     public static void drawString(net.minecraft.client.gui.Font font, String text, float x, float y, int color, boolean shadow) {
         if (pose == null) return;
         MultiBufferSource source = buffers;
@@ -304,7 +314,8 @@ public final class FixedFunction {
         current.vertices.add(new float[]{x, y, z, u, v, nx, ny, nz, state.r, state.g, state.b, state.a});
     }
 
-    static void end() {
+    /** glEnd: closes the primitive opened by {@link #begin(int)}. */
+    static void endPrimitive() {
         if (current == null) return;
         Batch batch = current;
         current = null;

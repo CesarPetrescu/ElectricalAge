@@ -182,8 +182,8 @@ public class WirelessUtils {
                     Level w = c.world();
 
                     virtualDistance +=
-                        b.isOpaqueCube() &&
-                        !b.getBlock().isAir(b, w, c.getBlockPos()) ?
+                        b.isSolidRender(w, c.getPos()) &&
+                        !b.isAir() ?
                         2.0 : 0.0;
                 }
             }

@@ -49,7 +49,7 @@ public class ThermalDissipatorPassiveDescriptor extends TransparentNodeDescripto
         load.set(thermalRs, thermalRp, thermalC);
     }
 
-    public void setParent(net.minecraft.level().item.Item item, int damage) {
+    public void setParent(net.minecraft.world.item.Item item, int damage) {
         super.setParent(item, damage);
         Data.addThermal(newItemStack());
     }

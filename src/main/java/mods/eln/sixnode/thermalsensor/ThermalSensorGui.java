@@ -2,7 +2,7 @@ package mods.eln.sixnode.thermalsensor;
 
 import mods.eln.gui.*;
 import mods.eln.sixnode.electricalsensor.ElectricalSensorElement;
-import net.minecraft.client.gui.components.Button;
+import mods.eln.gui.GuiButtonEln;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.Container;
 
@@ -13,7 +13,7 @@ import static mods.eln.i18n.I18N.tr;
 
 public class ThermalSensorGui extends GuiContainerEln {
 
-    Button validate, temperatureType, powerType;
+    GuiButtonEln validate, temperatureType, powerType;
     GuiTextFieldEln lowValue, highValue;
     ThermalSensorRender render;
 
