@@ -17,7 +17,7 @@ def main():
         require(suite.tag=='testsuite','Unexpected JUnit report shape')
         total+=int(suite.get('tests','0'))
         require(all(int(suite.get(k,'0'))==0 for k in ('failures','errors','skipped')),f'Unsuccessful tests: {path}')
-    require(total>=510,f'Test count dropped: {total}, expected at least 510')
+    require(total>=517,f'Test count dropped: {total}, expected at least 517')
     validate(ROOT/'src/main/resources')
     for source in (ROOT/'sim-core/src/main/java').rglob('*.java'):
         text=source.read_text(encoding='utf-8')

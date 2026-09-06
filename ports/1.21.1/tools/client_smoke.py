@@ -30,7 +30,8 @@ with log.open('w') as stream:
             text=log.read_text(errors='replace')
             match=re.search(r'ELN_CLIENT_READY obj_quads=(\d+) item_quads=(\d+)',text)
             packaged_ok=not args.packaged or 'ELN_PACKAGED_RUNTIME_OK origin=' in text
-            if match and all(int(n)>0 for n in match.groups()) and packaged_ok:
+            network_ok='ELN_NETWORK_MODELS_READY states=48 items=4' in text
+            if match and all(int(n)>0 for n in match.groups()) and packaged_ok and network_ok:
                 time.sleep(8);ready=process.poll() is None;break
             time.sleep(2)
     finally:
@@ -51,7 +52,7 @@ text=log.read_text(errors='replace');print(text[-14000:])
 if not ready: raise SystemExit('Client did not reach title screen with both real OBJ models baked')
 if list(run.rglob('crash-*.txt')): raise SystemExit('Client generated a crash report')
 for line in text.splitlines():
-    if re.search(r'(?:missing|failed|unable|exception|error)',line,re.I) and re.search(r'eln:(?:block|item|models|textures)|circuit_bench',line):
+    if re.search(r'(?:missing|failed|unable|exception|error)',line,re.I) and re.search(r'eln:(?:block|item|models|textures)|circuit_bench|resistive_wire|resistive_load|voltage_source',line):
         raise SystemExit('ELN resource failure: '+line)
 (evidence/f'client-{kind}-result.txt').write_text(f'PASS: {kind} client; title screen; nonmissing block/item OBJ quads; alive after readiness. Intentional termination, not gameplay proof.\n')
 print(f'CLIENT_PROBE_PASS {kind}')

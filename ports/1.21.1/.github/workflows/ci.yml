@@ -1,0 +1,72 @@
+# Active when this standalone project is the repository root. In the parent ElectricalAge
+# repository, the outer .github/workflows/eln-1.21.1.yml runs the same checks instead.
+name: Standalone Electrical Age 1.21.1
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+concurrency:
+  group: eln-standalone-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Fresh build and real tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/evidence run/gametest
+          touch run/gametest/server.properties
+          git rev-parse HEAD | tee build/evidence/source-commit.txt
+          java -version 2>&1 | tee build/evidence/java.txt
+          python3 -m unittest discover -s tools -p 'test_*.py' -v 2>&1 | tee build/evidence/tool-tests.log
+          python3 tools/validate_obj.py | tee build/evidence/obj-validation.txt
+          python3 tools/validate_resources.py | tee build/evidence/resource-validation.txt
+          ./gradlew :sim-core:cleanTest :sim-core:test build --no-build-cache --no-daemon --stacktrace 2>&1 | tee build/evidence/build.log
+          python3 tools/verify.py
+          ./gradlew runGameTestServer --no-daemon --stacktrace 2>&1 | tee build/evidence/gametest.log
+          python3 tools/verify_gametests.py
+      - name: Client and exact packaged-JAR checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends xvfb xauth x11-xserver-utils libgl1-mesa-dri libopenal1 libflite1
+          python3 tools/client_smoke.py
+          python3 tools/client_smoke.py --packaged
+      - name: Source snapshot and hashes
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p build/evidence
+          git archive HEAD -o build/eln-project-source.zip
+          find build/libs -name '*.jar' -exec sha256sum {} \; > build/evidence/jar-sha256.txt || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eln-evidence
+          path: |
+            build/evidence/
+            sim-core/build/test-results/
+            sim-core/build/reports/tests/
+            run/**/logs/
+            run/**/crash-reports/
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: eln-tested-project-and-jars
+          path: |
+            build/libs/*.jar
+            build/eln-project-source.zip
+          if-no-files-found: error
+          retention-days: 30

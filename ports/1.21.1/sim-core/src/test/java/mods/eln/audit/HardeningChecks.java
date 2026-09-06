@@ -7,6 +7,8 @@ import mods.eln.sim.mna.*;
 import mods.eln.sim.mna.state.*;
 import mods.eln.sim.mna.component.*;
 import mods.eln.sim.mna.misc.ISubSystemProcessI;
+import mods.eln.sim.mna.misc.ISubSystemProcessFlush;
+import mods.eln.sim.persistence.StateData;
 
 /** Dependency-free tests, also executed as individual real JUnit dynamic cases. */
 public final class HardeningChecks {
@@ -40,7 +42,23 @@ public final class HardeningChecks {
             cases.put("inductance-"+value,()->rejects(()->new Inductor("l").setL(value)));
         }
         cases.put("voltage-nan-rejected",()->rejects(()->new VoltageSource("v").setU(Double.NaN)));
+        cases.put("source-state-read-is-atomic",()->{VoltageSource source=new VoltageSource("v").setU(3);source.getCurrentState().state=-.25;StateData bad=new Values(Map.of("vU",6.0,"vIstate",Double.NaN));rejects(()->source.readState(bad,""));near(3,source.getU());near(.25,source.getCurrent());});
+        cases.put("inductor-nonfinite-restore-rejected",()->{Inductor inductor=new Inductor("l");inductor.getCurrentState().state=.5;rejects(()->inductor.readState(new Values(Map.of("lIstate",Double.POSITIVE_INFINITY)),""));near(.5,inductor.getCurrent());});
+        cases.put("forged-state-id-rejected",()->{SubSystem s=new SubSystem(null,.05);VoltageState a=new VoltageState(),b=new VoltageState();s.addState(a);s.addState(b);s.addComponent(new Resistor(a,null).setR(1));s.addComponent(new Resistor(b,null).setR(1));s.generateMatrix();a.setId(b.getId());rejects(()->s.addToI(a,1));s.breakSystem();});
+        cases.put("failed-regeneration-invalidates-pending-flush",()->{SubSystem s=new SubSystem(null,.05);VoltageState n=new VoltageState();n.setU(7);s.addState(n);s.addComponent(new Resistor(n,null).setR(1));s.stepCalc();s.component.clear();rejects(s::generateMatrix);rejects(s::stepFlush);near(7,n.getU());s.breakSystem();});
+        cases.put("null-rhs-process-rejected",()->{SubSystem s=new SubSystem(null,.05);rejects(()->s.addProcess((ISubSystemProcessI)null));s.breakSystem();});
+        cases.put("null-flush-process-rejected",()->{SubSystem s=new SubSystem(null,.05);rejects(()->s.addProcess((ISubSystemProcessFlush)null));s.breakSystem();});
+        cases.put("closed-system-rejects-callback-registration",()->{SubSystem s=new SubSystem(null,.05);s.breakSystem();rejects(()->s.addProcess((ISubSystemProcessI)x->{}));rejects(()->s.addProcess((ISubSystemProcessFlush)()->{}));});
         return cases;
+    }
+    /** Persistence-interface fixture, not a Minecraft/NBT replacement. */
+    private static final class Values implements StateData {
+        private final Map<String,Double> numbers;
+        Values(Map<String,Double> numbers){this.numbers=numbers;}
+        public double getDouble(String key){return numbers.getOrDefault(key,0.0);}
+        public void setDouble(String key,double value){throw new UnsupportedOperationException();}
+        public boolean getBoolean(String key){return false;}
+        public void setBoolean(String key,boolean value){throw new UnsupportedOperationException();}
     }
     public static void main(String[] args) {
         int passed=0,failed=0;

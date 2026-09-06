@@ -79,8 +79,13 @@ public class VoltageSource extends Bipole implements ISubSystemProcessI, StateSe
     @Override
     public void readState(StateData nbt, String str) {
         str += name;
-        setU(nbt.getDouble(str + "U"));
-        currentState.state = (nbt.getDouble(str + "Istate"));
+        // Validate the complete record before mutating either field.
+        double voltage = nbt.getDouble(str + "U");
+        double current = nbt.getDouble(str + "Istate");
+        if (!Double.isFinite(voltage) || !Double.isFinite(current))
+            throw new IllegalArgumentException("Source state must be finite");
+        setU(voltage);
+        currentState.state = current;
     }
 
     @Override

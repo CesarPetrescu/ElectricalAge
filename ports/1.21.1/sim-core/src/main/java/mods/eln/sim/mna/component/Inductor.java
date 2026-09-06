@@ -84,7 +84,9 @@ public class Inductor extends Bipole implements ISubSystemProcessI, StateSeriali
     @Override
     public void readState(StateData nbt, String str) {
         str += name;
-        currentState.state = (nbt.getDouble(str + "Istate"));
+        double current = nbt.getDouble(str + "Istate");
+        if (!Double.isFinite(current)) throw new IllegalArgumentException("Inductor current must be finite");
+        currentState.state = current;
     }
 
     @Override

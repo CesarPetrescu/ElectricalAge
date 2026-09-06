@@ -124,13 +124,17 @@ public class SubSystem {
     }
 
     public void addProcess(ISubSystemProcessI p) {
-        if (!processI.contains(p)) processI.add(p);
+        requireActive();
+        if (p == null) throw new IllegalArgumentException("Null subsystem process");
+        if (!processI.contains(p)) { processI.add(p); calculated = false; }
     }
 
     //double[][] getDataRef()
 
     public void generateMatrix() {
         requireActive();
+        // A failed explicit rebuild must not leave a previous calculation publishable.
+        invalidate();
         stateCount = states.size();
 
         // Profiler p = new Profiler();
@@ -181,7 +185,8 @@ public class SubSystem {
     }
 
     private int stateIndex(State state) {
-        if (state.getSubSystem() != this || state.getId() < 0 || state.getId() >= stateCount)
+        if (state.getSubSystem() != this || state.getId() < 0 || state.getId() >= stateCount
+                || state.getId() >= states.size() || states.get(state.getId()) != state)
             throw new IllegalArgumentException("State does not belong to this matrix");
         return state.getId();
     }
@@ -355,7 +360,9 @@ public class SubSystem {
     }
 
     public void addProcess(ISubSystemProcessFlush p) {
-        if (!processF.contains(p)) processF.add(p);
+        requireActive();
+        if (p == null) throw new IllegalArgumentException("Null subsystem process");
+        if (!processF.contains(p)) { processF.add(p); calculated = false; }
     }
 
     public void removeProcess(ISubSystemProcessFlush p) {

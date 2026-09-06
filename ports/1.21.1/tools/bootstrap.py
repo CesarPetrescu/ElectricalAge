@@ -2,6 +2,10 @@
 """One-time deterministic source extraction. Does not fetch anything or edit legacy sources.
 CI supplies exact Git checkouts. Generated, human-readable sources are committed on the port branch.
 """
+# Retained only as an extraction record. Running it on this project would overwrite fixes.
+if __name__ == '__main__':
+    raise SystemExit('Historical bootstrap is disabled. Sources are already checked in; build with gradlew.')
+
 from pathlib import Path
 import argparse, gzip, hashlib, json, shutil, struct, subprocess
 

@@ -33,6 +33,11 @@ public final class PersistenceGameTests {
         boolean rejected=false;
         try { restored.readState(adapter,"p_"); } catch (IllegalArgumentException expected) { rejected=true; }
         helper.assertTrue(rejected,"Invalid component value was accepted");
+        tag.putDouble("p_sourceU",6.0);
+        tag.putDouble("p_sourceIstate",Double.NaN);
+        rejected=false;
+        try { restored.readState(adapter,"p_"); } catch (IllegalArgumentException expected) { rejected=true; }
+        helper.assertTrue(rejected && restored.getU()==3.3 && restored.getI()==.25,"Bad current partially mutated source state");
         helper.succeed();System.out.println("ELN_GAMETEST_PASS component_nbt_adapter");
     }
     @GameTest(template="empty",timeoutTicks=60)
