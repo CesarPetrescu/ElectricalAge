@@ -1,0 +1,233 @@
+{
+  "rewired_commit": "3a0088b384aa4111c3a7f984d4cbc5f4ff142ed9",
+  "mdk_commit": "70d335c962ee8a773b38fb0690c7e7f30d1bafa6",
+  "audit_candidate_commit": "5d72a6c65ef72e112a0f4fdb91fb7c33df446ba7",
+  "scope": "Audited QR and RHS/lifecycle corrections retained; no claim that all 1.12 audit changes or all upstream features have been ported.",
+  "sources": [
+    {
+      "from": "mods/eln/sim/mna/RootSystem.java",
+      "input_sha256": "bebc782a1341b437168ea7f05479e6a6e16e8b2f55cddf50293eb5a82509a8fd",
+      "to": "sim-core/src/main/java/mods/eln/sim/mna/RootSystem.java",
+      "output_sha256": "e251627d78617c8a954c7ae6c39103de9b72d5fc5e1b582ab75370c661698f9a"
+    },
+    {
+      "from": "mods/eln/sim/mna/SubSystem.java",
+      "input_sha256": "a06b6a05f359a207cd5bd513c1d2dce9f66ffa9d7dd4b75ba18df8f665791a52",
+      "to": "sim-core/src/main/java/mods/eln/sim/mna/SubSystem.java",
+      "output_sha256": "3d824f4403a26e75a0c0fc676d0829d300226db0ba87be3255f266ade1477ac0"
+    },
+    {
+      "from": "mods/eln/sim/mna/component/Bipole.java",
+      "input_sha256": "548d45d44c52a9cde10e89b2dd2ac198e654d2a6db5cdefdd4c058ef03e50c0e",
+      "to": "sim-core/src/main/java/mods/eln/sim/mna/component/Bipole.java",
+      "output_sha256": "548d45d44c52a9cde10e89b2dd2ac198e654d2a6db5cdefdd4c058ef03e50c0e"
+    },
+    {
+      "from": "mods/eln/sim/mna/component/Capacitor.java",
+      "input_sha256": "2d78192a382689f781596cdd6b2ced609454881ccc03ee9d41ce2fd3f828f6e9",
+      "to": "sim-core/src/main/java/mods/eln/sim/mna/component/Capacitor.java",
+      "output_sha256": "2d78192a382689f781596cdd6b2ced609454881ccc03ee9d41ce2fd3f828f6e9"
+    },
+    {
+      "from": "mods/eln/sim/mna/component/Component.java",
+      "input_sha256": "4d53a37e2b50f1be958f0738eedffca27eaf49f43ff9191017f3fc3b4b8741b6",
+      "to": "sim-core/src/main/java/mods/eln/sim/mna/component/Component.java",
+      "output_sha256": "4d53a37e2b50f1be958f0738eedffca27eaf49f43ff9191017f3fc3b4b8741b6"
+    },
+    {
+      "from": "mods/eln/sim/mna/component/Delay.java",
+      "input_sha256": "2a981ec2da797ac92bb45918c3c945b980535334aef709a15f857b93b67241d8",
+      "to": "sim-core/src/main/java/mods/eln/sim/mna/component/Delay.java",
+      "output_sha256": "2a981ec2da797ac92bb45918c3c945b980535334aef709a15f857b93b67241d8"
+    },
+    {
+      "from": "mods/eln/sim/mna/component/DelayInterSystem.java",
+      "input_sha256": "8584a23631ad44a52592a1435a942a293b8113277c35dcae6013066b5acd0612",
+      "to": "sim-core/src/main/java/mods/eln/sim/mna/component/DelayInterSystem.java",
+      "output_sha256": "8584a23631ad44a52592a1435a942a293b8113277c35dcae6013066b5acd0612"
+    },
+    {
+      "from": "mods/eln/sim/mna/component/DelayInterSystem2.java",
+      "input_sha256": "3670aaae50cb7c535b15ced56ccf20c580b74280b8728be7d4c3e3012c909881",
+      "to": "sim-core/src/main/java/mods/eln/sim/mna/component/DelayInterSystem2.java",
+      "output_sha256": "3670aaae50cb7c535b15ced56ccf20c580b74280b8728be7d4c3e3012c909881"
+    },
+    {
+      "from": "mods/eln/sim/mna/component/IAbstractor.java",
+      "input_sha256": "84f51e747a985c67334313adc42390d8aad8453e009fd90586f8b4d8558e03ca",
+      "to": "sim-core/src/main/java/mods/eln/sim/mna/component/IAbstractor.java",
+      "output_sha256": "84f51e747a985c67334313adc42390d8aad8453e009fd90586f8b4d8558e03ca"
+    },
+    {
+      "from": "mods/eln/sim/mna/component/Inductor.java",
+      "input_sha256": "91ad3287eae7bc746d17d53cf56eb6eb4c7f765b1916ca17d801488f4dff12c8",
+      "to": "sim-core/src/main/java/mods/eln/sim/mna/component/Inductor.java",
+      "output_sha256": "0a51122bf2ed0772f427e4dce8e206ee563869e1e1eddd5cfb421b19a1f7c6ff"
+    },
+    {
+      "from": "mods/eln/sim/mna/component/InterSystem.java",
+      "input_sha256": "6b9a3fd8c430a7a5e9df434346efed9415fbeecf7e7cce257d60f3e8d0b0f1fb",
+      "to": "sim-core/src/main/java/mods/eln/sim/mna/component/InterSystem.java",
+      "output_sha256": "6b9a3fd8c430a7a5e9df434346efed9415fbeecf7e7cce257d60f3e8d0b0f1fb"
+    },
+    {
+      "from": "mods/eln/sim/mna/component/InterSystemAbstraction.java",
+      "input_sha256": "be83236f73c01ae66c1d3cf8b16f796f831abaaf393f0886623c90608d40652e",
+      "to": "sim-core/src/main/java/mods/eln/sim/mna/component/InterSystemAbstraction.java",
+      "output_sha256": "be83236f73c01ae66c1d3cf8b16f796f831abaaf393f0886623c90608d40652e"
+    },
+    {
+      "from": "mods/eln/sim/mna/component/Line.java",
+      "input_sha256": "e03e3ca94f0932e5855dde11210e1764d1e2fa11fe6e8584325872d3318afd84",
+      "to": "sim-core/src/main/java/mods/eln/sim/mna/component/Line.java",
+      "output_sha256": "e03e3ca94f0932e5855dde11210e1764d1e2fa11fe6e8584325872d3318afd84"
+    },
+    {
+      "from": "mods/eln/sim/mna/component/Monopole.java",
+      "input_sha256": "7b1bd36ec1ce672ca575b378d44b4029fb419a91b94daedddc963a8f16802aae",
+      "to": "sim-core/src/main/java/mods/eln/sim/mna/component/Monopole.java",
+      "output_sha256": "7b1bd36ec1ce672ca575b378d44b4029fb419a91b94daedddc963a8f16802aae"
+    },
+    {
+      "from": "mods/eln/sim/mna/component/PowerSource.java",
+      "input_sha256": "a3b66bc7b3e844d0b66c9bd6c6c3d1fb3063c9a60a8eb18c94e9a937efdc5bf3",
+      "to": "sim-core/src/main/java/mods/eln/sim/mna/component/PowerSource.java",
+      "output_sha256": "1b391c9bccf2ec682df64b40988166652579aa4a7583f73f20f9799c71648e95"
+    },
+    {
+      "from": "mods/eln/sim/mna/component/Resistor.java",
+      "input_sha256": "47ba9f385cf5d148cf2c51143b1b96eeb7aec426bd6a101b532b86d48c8a9f72",
+      "to": "sim-core/src/main/java/mods/eln/sim/mna/component/Resistor.java",
+      "output_sha256": "47ba9f385cf5d148cf2c51143b1b96eeb7aec426bd6a101b532b86d48c8a9f72"
+    },
+    {
+      "from": "mods/eln/sim/mna/component/ResistorSwitch.java",
+      "input_sha256": "fdd93262f6ccce2df421e27c2758110cee49edd8dfe406cfd7fedd27e101951f",
+      "to": "sim-core/src/main/java/mods/eln/sim/mna/component/ResistorSwitch.java",
+      "output_sha256": "5246505f32c245007c8f22d42df8fa4a6944582f4325b352d0968171f7b0aa84"
+    },
+    {
+      "from": "mods/eln/sim/mna/component/Transformer.java",
+      "input_sha256": "647533cfdd37f188916296cd528175a8a9c8dee04ef8f177ededa44bdb9a6533",
+      "to": "sim-core/src/main/java/mods/eln/sim/mna/component/Transformer.java",
+      "output_sha256": "647533cfdd37f188916296cd528175a8a9c8dee04ef8f177ededa44bdb9a6533"
+    },
+    {
+      "from": "mods/eln/sim/mna/component/VoltageSource.java",
+      "input_sha256": "a51b776ce4d1f594cbfa7bfedbd284d6a1413dc783159f79b4f74871b77df441",
+      "to": "sim-core/src/main/java/mods/eln/sim/mna/component/VoltageSource.java",
+      "output_sha256": "070cc65229274dad3ae5b2892e31c1c482967974b2e5d94d253ca49889e87bcd"
+    },
+    {
+      "from": "mods/eln/sim/mna/misc/IDestructor.java",
+      "input_sha256": "bedb27612da6d478395c711e70df3cbed975908ed8625dc94462105f5b7f3b01",
+      "to": "sim-core/src/main/java/mods/eln/sim/mna/misc/IDestructor.java",
+      "output_sha256": "bedb27612da6d478395c711e70df3cbed975908ed8625dc94462105f5b7f3b01"
+    },
+    {
+      "from": "mods/eln/sim/mna/misc/IRootSystemPreStepProcess.java",
+      "input_sha256": "303fef7900f82c340734c5833e6e2dd9af57730131b72ff2459c9477a0be22fa",
+      "to": "sim-core/src/main/java/mods/eln/sim/mna/misc/IRootSystemPreStepProcess.java",
+      "output_sha256": "303fef7900f82c340734c5833e6e2dd9af57730131b72ff2459c9477a0be22fa"
+    },
+    {
+      "from": "mods/eln/sim/mna/misc/ISubSystemProcessFlush.java",
+      "input_sha256": "f062d309c7ec55dfe13241452f1374d0a0544af807a1b189141d5cfc2b462ea9",
+      "to": "sim-core/src/main/java/mods/eln/sim/mna/misc/ISubSystemProcessFlush.java",
+      "output_sha256": "f062d309c7ec55dfe13241452f1374d0a0544af807a1b189141d5cfc2b462ea9"
+    },
+    {
+      "from": "mods/eln/sim/mna/misc/ISubSystemProcessI.java",
+      "input_sha256": "6e0e1a05787f2433b9fcb8669135eba33e7345c3a2e683fe819b759cae4bb725",
+      "to": "sim-core/src/main/java/mods/eln/sim/mna/misc/ISubSystemProcessI.java",
+      "output_sha256": "6e0e1a05787f2433b9fcb8669135eba33e7345c3a2e683fe819b759cae4bb725"
+    },
+    {
+      "from": "mods/eln/sim/mna/misc/Matrix.java",
+      "input_sha256": "664b6aa6b94c2a6c29bc21c5351247e508b4e6dfc8fe8b95c4ee929fce13ea89",
+      "to": "sim-core/src/main/java/mods/eln/sim/mna/misc/Matrix.java",
+      "output_sha256": "f72f3046526e17dc50a34d4b692d661d5331cd4475b1555026ba93a4b726c558"
+    },
+    {
+      "from": "mods/eln/sim/mna/misc/MnaConst.java",
+      "input_sha256": "0e62283aecbb4a630cadf7d093a00b2488cede84852bb23dac3571131519377e",
+      "to": "sim-core/src/main/java/mods/eln/sim/mna/misc/MnaConst.java",
+      "output_sha256": "0e62283aecbb4a630cadf7d093a00b2488cede84852bb23dac3571131519377e"
+    },
+    {
+      "from": "mods/eln/sim/mna/process/PowerSourceBipole.java",
+      "input_sha256": "4f3f63a245e38e9d68b92132a72ba4d2f4107255367bfe51bb4c018c1c665c19",
+      "to": "sim-core/src/main/java/mods/eln/sim/mna/process/PowerSourceBipole.java",
+      "output_sha256": "c1f16b321be843f87b48d84fe15a7b329a1c52b36a42d286a00ba51a2d0f417a"
+    },
+    {
+      "from": "mods/eln/sim/mna/process/TransformerInterSystemProcess.java",
+      "input_sha256": "b320dd98f3fd3fb178e0210981fc4d9df7564b7d4c2af3fadea3ffd02a1a5ae1",
+      "to": "sim-core/src/main/java/mods/eln/sim/mna/process/TransformerInterSystemProcess.java",
+      "output_sha256": "b320dd98f3fd3fb178e0210981fc4d9df7564b7d4c2af3fadea3ffd02a1a5ae1"
+    },
+    {
+      "from": "mods/eln/sim/mna/state/CurrentState.java",
+      "input_sha256": "61ec29f067efc541e9760d1bd649ea4ec81aa90cc9c7b5440aaab8aee9211b02",
+      "to": "sim-core/src/main/java/mods/eln/sim/mna/state/CurrentState.java",
+      "output_sha256": "61ec29f067efc541e9760d1bd649ea4ec81aa90cc9c7b5440aaab8aee9211b02"
+    },
+    {
+      "from": "mods/eln/sim/mna/state/State.java",
+      "input_sha256": "c2275f83893b9a89a7d34e4ae3835dbadc909da5bdb8022ceb0d1fbbbc9d5dd1",
+      "to": "sim-core/src/main/java/mods/eln/sim/mna/state/State.java",
+      "output_sha256": "c2275f83893b9a89a7d34e4ae3835dbadc909da5bdb8022ceb0d1fbbbc9d5dd1"
+    },
+    {
+      "from": "mods/eln/sim/mna/state/VoltageState.java",
+      "input_sha256": "d585099f02adc9348e5843010596e2cbc6372d5bdae13380c8aa91d15e85d24b",
+      "to": "sim-core/src/main/java/mods/eln/sim/mna/state/VoltageState.java",
+      "output_sha256": "d585099f02adc9348e5843010596e2cbc6372d5bdae13380c8aa91d15e85d24b"
+    },
+    {
+      "from": "mods/eln/sim/mna/state/VoltageStateLineReady.java",
+      "input_sha256": "d5aa1479cc187a86eeadf84fbdf32386a57cee358e07fe9ae1ff46a3a9457141",
+      "to": "sim-core/src/main/java/mods/eln/sim/mna/state/VoltageStateLineReady.java",
+      "output_sha256": "d5aa1479cc187a86eeadf84fbdf32386a57cee358e07fe9ae1ff46a3a9457141"
+    },
+    {
+      "from": "mods/eln/sim/ElectricalLoad.java",
+      "input_sha256": "8042f89c92971d48c63eee09f0bff2e60dd0e4563e2aab3d6b5d9a5f939e8848",
+      "to": "sim-core/src/main/java/mods/eln/sim/ElectricalLoad.java",
+      "output_sha256": "8042f89c92971d48c63eee09f0bff2e60dd0e4563e2aab3d6b5d9a5f939e8848"
+    },
+    {
+      "from": "mods/eln/sim/ElectricalConnection.java",
+      "input_sha256": "6e75ade14437bc64fb6d238a326f7046c87fcbf199d7b22d4524cecc3c4b6c43",
+      "to": "sim-core/src/main/java/mods/eln/sim/ElectricalConnection.java",
+      "output_sha256": "6e75ade14437bc64fb6d238a326f7046c87fcbf199d7b22d4524cecc3c4b6c43"
+    },
+    {
+      "from": "mods/eln/misc/Profiler.java",
+      "input_sha256": "c99f3b1bff1998e0a1700ef70ae068a9715fe51449f6103a588650fc42ae4cb8",
+      "to": "sim-core/src/main/java/mods/eln/misc/Profiler.java",
+      "output_sha256": "c99f3b1bff1998e0a1700ef70ae068a9715fe51449f6103a588650fc42ae4cb8"
+    },
+    {
+      "from": "mods/eln/misc/FunctionTable.java",
+      "input_sha256": "985b678bce155277838602a8ebf5cf3a572f55e1262e459db25a1ab03ce424ee",
+      "to": "sim-core/src/main/java/mods/eln/misc/FunctionTable.java",
+      "output_sha256": "985b678bce155277838602a8ebf5cf3a572f55e1262e459db25a1ab03ce424ee"
+    },
+    {
+      "from": "mods/eln/misc/IFunction.java",
+      "input_sha256": "45e3bb64c060a22cf845a9e8790a49558b7bd5291f58bebacc7b0b00b74fcfb1",
+      "to": "sim-core/src/main/java/mods/eln/misc/IFunction.java",
+      "output_sha256": "45e3bb64c060a22cf845a9e8790a49558b7bd5291f58bebacc7b0b00b74fcfb1"
+    }
+  ],
+  "asset": {
+    "source": "assets/eln/model/voltagesource",
+    "attribution": "Electrical Age team",
+    "license": "CC-BY-NC-SA-3.0",
+    "change": "Uniform fit and translation of OBJ vertices; material texture reference adapted for NeoForge; PNG unchanged.",
+    "obj_sha256": "be212786da42d169dd27138c17a9487b3df7b76737c27f0b2b5294dd6d838224",
+    "texture_sha256": "69b91119577167b42a9b565778dcedb8123dfaf761a6153ac73386994145f8eb",
+    "scale": 0.8
+  }
+}
