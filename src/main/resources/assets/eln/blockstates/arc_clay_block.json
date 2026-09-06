@@ -1,7 +1,5 @@
 {
   "variants": {
-    "normal": {
-      "model": "eln:arc_clay_block"
-    }
+    "": { "model": "eln:block/arc_clay_block" }
   }
 }

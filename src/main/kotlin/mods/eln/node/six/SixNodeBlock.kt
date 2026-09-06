@@ -9,6 +9,7 @@ import mods.eln.misc.Utils.println
 import mods.eln.misc.Utils.updateAllLightTypes
 import mods.eln.node.NodeBase
 import mods.eln.node.NodeBlock
+import net.minecraft.world.InteractionHand
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction as EnumFacing
 import net.minecraft.server.level.ServerPlayer
@@ -247,9 +248,38 @@ class SixNodeBlock : NodeBlock(nodeProperties().strength(0.3f, 1.0f), 0) {
         return if (hit.type == HitResult.Type.MISS) null else hit
     }
 
+    /**
+     * 1.7.10's ray trace answered with the block face an element sits on; 1.21's answers with the
+     * face of the element's slab that was hit (the top of a floor element is UP). This maps a hit
+     * back to the element: the enabled side whose slab holds the hit point, else the hit face.
+     */
+    fun elementSide(hitSide: Direction, vx: Float, vy: Float, vz: Float, enabled: (Direction) -> Boolean): Direction {
+        val e = 1e-3f
+        val candidates = listOf(
+            Direction.XN to (vx <= 0.2f + e), Direction.XP to (vx >= 0.8f - e),
+            Direction.YN to (vy <= 0.2f + e), Direction.YP to (vy >= 0.8f - e),
+            Direction.ZN to (vz <= 0.2f + e), Direction.ZP to (vz >= 0.8f - e)
+        )
+        if (enabled(hitSide) && candidates.first { it.first == hitSide }.second) return hitSide
+        for ((direction, inside) in candidates) if (inside && enabled(direction)) return direction
+        return hitSide
+    }
+
+    override fun onBlockActivated(world: Level, pos: BlockPos, state: BlockState, entityPlayer: Player, hand: InteractionHand, side: EnumFacing, vx: Float, vy: Float, vz: Float): Boolean {
+        val entity = world.getBlockEntity(pos) as? SixNodeEntity ?: return false
+        val enabled: (Direction) -> Boolean = if (world.isClientSide) entity::getSyncronizedSideEnable
+        else { d -> (entity.node as? SixNode)?.getSideEnable(d) ?: false }
+        val elementSide = if (nodeHasCache(world, pos.x, pos.y, pos.z) || hasVolume(world, pos.x, pos.y, pos.z)) fromFacing(side)
+        else elementSide(fromFacing(side), vx, vy, vz, enabled)
+        return entity.onBlockActivated(entityPlayer, elementSide, vx, vy, vz)
+    }
+
     private fun resolveBreakDirection(world: Level, pos: BlockPos, entityPlayer: Player, sixNode: SixNode): Direction? {
         val ray = collisionRayTrace(world, pos, entityPlayer)
-        val rayDirection = ray?.let { fromFacing(it.direction) }
+        val rayDirection = ray?.let {
+            val (vx, vy, vz) = NodeBlock.hitFractions(it, pos)
+            elementSide(fromFacing(it.direction), vx, vy, vz) { d -> sixNode.getSideEnable(d) }
+        }
         if (rayDirection != null && sixNode.getSideEnable(rayDirection)) {
             return rayDirection
         }

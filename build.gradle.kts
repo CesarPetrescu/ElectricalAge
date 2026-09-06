@@ -120,6 +120,7 @@ neoForge {
             if (project.hasProperty("smokeTest")) systemProperty("eln.smokeTest", project.property("smokeTest").toString())
             if (project.hasProperty("stopAfterStart")) systemProperty("eln.stopAfterStart", project.property("stopAfterStart").toString())
             if (project.hasProperty("stopAtTitle")) systemProperty("eln.stopAtTitle", "true")
+            if (project.hasProperty("smokeClient")) systemProperty("eln.smokeClient", project.property("smokeClient").toString())
         }
     }
 

@@ -53,13 +53,43 @@ class ElnItemModelProvider(output: PackOutput, helper: ExistingFileHelper) : Ite
             when (item) {
                 is DescriptorItem<*> -> flatItem(id, item.descriptor.iconPath, item.descriptor.voltageLevelColor)
                 is DescriptorBlockItem<*> -> {
-                    // Node items (six-node, transparent-node) are drawn by their descriptor's
-                    // renderer, not a JSON model; only blocks with a generated block model get one.
                     val model = modLoc("block/${id.path}")
                     if (existingFileHelper.exists(model, PackType.CLIENT_RESOURCES, ".json", "models")) withExistingParent(id.path, model)
+                    else if (item.descriptor is mods.eln.client.itemrender.IItemRenderer) nodeItem(id)
+                }
+                is net.minecraft.world.item.SpawnEggItem -> withExistingParent(id.path, mcLoc("item/template_spawn_egg"))
+                is net.minecraft.world.item.BucketItem ->
+                    withExistingParent(id.path, ResourceLocation.fromNamespaceAndPath("neoforge", "item/bucket"))
+                        .customLoader { parent, helper -> net.neoforged.neoforge.client.model.generators.loaders.DynamicFluidContainerModelBuilder.begin(parent, helper).fluid(item.content) }
+                        .end()
+                is net.minecraft.world.item.BlockItem -> {
+                    // the single-node blocks (energy converter, dev conduit) are invisible blocks drawn by their tile
+                    val model = modLoc("block/${id.path}")
+                    if (existingFileHelper.exists(model, PackType.CLIENT_RESOURCES, ".json", "models")) withExistingParent(id.path, model)
+                    else withExistingParent(id.path, modLoc("block/invisible"))
                 }
             }
         }
+    }
+
+    /**
+     * A node item (six-node or transparent-node placer): drawn by [mods.eln.client.itemrender.NodeItemRenderer]
+     * through the descriptor's own render body, so the model is vanilla's built-in entity model
+     * plus display transforms - a block's in hand and on the ground, none in the inventory, where
+     * the descriptor draws its flat icon.
+     */
+    private fun nodeItem(id: ResourceLocation) {
+        getBuilder(id.path)
+            .parent(net.neoforged.neoforge.client.model.generators.ModelFile.UncheckedModelFile("minecraft:builtin/entity"))
+            .transforms()
+            .transform(net.minecraft.world.item.ItemDisplayContext.GUI).end()
+            .transform(net.minecraft.world.item.ItemDisplayContext.GROUND).translation(0f, 3f, 0f).scale(0.25f).end()
+            .transform(net.minecraft.world.item.ItemDisplayContext.FIXED).scale(0.5f).end()
+            .transform(net.minecraft.world.item.ItemDisplayContext.THIRD_PERSON_RIGHT_HAND).rotation(75f, 45f, 0f).translation(0f, 2.5f, 0f).scale(0.375f).end()
+            .transform(net.minecraft.world.item.ItemDisplayContext.THIRD_PERSON_LEFT_HAND).rotation(75f, 45f, 0f).translation(0f, 2.5f, 0f).scale(0.375f).end()
+            .transform(net.minecraft.world.item.ItemDisplayContext.FIRST_PERSON_RIGHT_HAND).rotation(0f, 45f, 0f).scale(0.4f).end()
+            .transform(net.minecraft.world.item.ItemDisplayContext.FIRST_PERSON_LEFT_HAND).rotation(0f, 225f, 0f).scale(0.4f).end()
+            .end()
     }
 
     /**

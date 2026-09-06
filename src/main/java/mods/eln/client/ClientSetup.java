@@ -38,9 +38,18 @@ public final class ClientSetup {
             context -> new ReplicatorRender(context, new SilverfishModel<>(context.bakeLayer(ModelLayers.SILVERFISH)), 0.3f));
     }
 
-    /** The mod's fluids: still/flowing sprites and tint, what 1.7.10's Fluid carried itself. */
+    /** The mod's fluids: still/flowing sprites and tint, what 1.7.10's Fluid carried itself. Node items: their descriptor draws them. */
     @SubscribeEvent
     public static void onRegisterClientExtensions(net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent event) {
+        var nodeItems = mods.eln.registration.ElnRegistry.getRegisteredItems().values().stream()
+            .filter(item -> item instanceof mods.eln.generic.DescriptorBlockItem<?> d && d.descriptor instanceof mods.eln.client.itemrender.IItemRenderer)
+            .toArray(net.minecraft.world.item.Item[]::new);
+        event.registerItem(new net.neoforged.neoforge.client.extensions.common.IClientItemExtensions() {
+            @Override
+            public net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                return mods.eln.client.itemrender.NodeItemRenderer.get();
+            }
+        }, nodeItems);
         for (mods.eln.fluid.FluidRegistration.Entry entry : mods.eln.fluid.FluidRegistration.getEntries().values()) {
             String name = entry.getDef().name();
             int tint = entry.getDef().getColor() | 0xFF000000;

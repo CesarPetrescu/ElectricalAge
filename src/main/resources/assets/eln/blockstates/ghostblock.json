@@ -1,13 +1,5 @@
 {
-  "variants": {
-    "shape=0": {
-      "model": "eln:invisible"
-    },
-    "shape=1": {
-      "model": "eln:invisible"
-    },
-    "shape=2": {
-      "model": "eln:invisible"
-    }
-  }
+  "multipart": [
+    { "apply": { "model": "eln:block/invisible" } }
+  ]
 }

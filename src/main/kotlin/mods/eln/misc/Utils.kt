@@ -1102,12 +1102,17 @@ object Utils {
         return tags
     }
 
+    /**
+     * Whether a block-access is the client's; 1.21 hands blocks a chunk, a path-finding region or
+     * (client) the section compiler's render region as often as a Level.
+     */
     @JvmStatic
-    fun isRemote(world: BlockGetter): Boolean {
-        if (world !is Level) {
-            fatal()
-        }
-        return (world as Level).isClientSide
+    fun isRemote(world: BlockGetter): Boolean = when (world) {
+        is Level -> world.isClientSide
+        is net.minecraft.world.level.LevelReader -> world.isClientSide
+        is net.minecraft.world.level.chunk.LevelChunk -> world.level!!.isClientSide
+        is net.minecraft.world.level.BlockAndTintGetter -> true   // RenderChunkRegion and the like: chunk rendering
+        else -> false   // PathNavigationRegion: server-side path finding
     }
 
     @JvmStatic
