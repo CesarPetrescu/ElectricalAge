@@ -309,7 +309,7 @@ class UtilityCableDescriptor(
 
     override fun renderItem(type: ItemRenderType, item: ItemStack, vararg data: Any) {
         super.renderItem(type, item, *data)
-        if (type != ItemRenderType.INVENTORY) return
+        if (type != ItemRenderType.INVENTORY || mods.eln.generic.GenericCreativeTab.isTabIcon(item)) return
 
         val font = Minecraft.getInstance().font
         val overlay = compactLengthLabel(item)

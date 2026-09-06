@@ -44,6 +44,7 @@ Efficiency=效率
 Electrical_cable_slot=导线
 End_of_life=即将损坏
 Energy=能量
+Engaged=激活中
 Entity_filter_slot=生物筛选组件
 External_control=外部控制中
 Falstad_import\:_clipboard_is_not_valid_Falstad_data.=Falstad导入: 剪贴板不是有效的Falstad数据。
@@ -55,6 +56,8 @@ Generating=发电中
 Good=好
 Has_a_signal_output.=有一个信号输出
 Has_some_caveats\:=有一些注意事项:
+Hold_[ctrl]_for_realism_details=按住 [ctrl] 查看拟真详情
+Hold_[shift]_for_details=按住 [shift] 查看详情
 Inductance=电感
 Inductance\:_%1$H=电感: %1$H
 Input=输入
@@ -77,7 +80,6 @@ Measured_temperature\ncorresponding\nto_0%_output=对应0%输出的\n测量温�
 Measured_temperature\ncorresponding\nto_100%_output=对应100%输出的\n测量温度
 Measured_value\ncorresponding\nto_0%_output=对应0%输出的\n测量值
 Measured_value\ncorresponding\nto_100%_output=对应100%输出的\n测量值
-Melted=Melted
 Melted_%1$_requires_replacement=Melted %1$ requires replacement
 Mode=模式
 Needs_%1$_Winding=Needs %1$ Winding
@@ -102,6 +104,7 @@ ON=开
 Off=关
 On=开
 Open=打开
+Operational=Operational
 Output=输出
 Output_voltage=输出电压
 P\:_%1$_S\:_%2$=P: %1$ S: %2$
@@ -176,13 +179,13 @@ itemGroup.ElnCables=电力时代 - 导线
 itemGroup.ElnCreative=电力时代 - 创造
 itemGroup.ElnLighting=电力时代 - 照明
 itemGroup.ElnMachines=电力时代 - 机器
+itemGroup.ElnMechanics=Electrical Age - Mechanics
 itemGroup.ElnOresMaterials=电力时代 - 矿石与材料
 itemGroup.ElnOther=电力时代 - 其他
 itemGroup.ElnPowerDistribution=电力时代 - 配电
 itemGroup.ElnPowerElectronics=电力时代 - 电力电子
 itemGroup.ElnSignalProcessing=电力时代 - 信号处理
 itemGroup.ElnToolsArmor=电力时代 - 工具与护甲
-mod.meta.desc=你的基地,因使用电力产生红热的光芒!!
 
 # src/main/java/mods/eln/gui/GuiVerticalVoltageSupplyBar.java
 Power_Supply_\:=功率供应 :
@@ -209,6 +212,8 @@ Useful_to_prevent_over-voltage\nof_Batteries=用于防止电池过压
 # src/main/java/mods/eln/item/SolarTrackerDescriptor.java
 Solar_panel_upgrade=太阳能板升级
 
+# src/main/java/mods/eln/item/regulator/RegulatorSlot.java
+
 # src/main/java/mods/eln/sixnode/TreeResinCollector/TreeResinCollectorDescriptor.java
 Produces_Tree_Resin_over\ntime_when_put_on_a_tree.=放置在树上后\n会随时间推移产生树脂。
 This_block_can_only_be_placed_on_the_side_of_a_tree!=只能在树的侧面放置！
@@ -226,6 +231,8 @@ __*_It_exposes_a_nominal_mains_class_instead_of_wall-plug_details=  * 它暴露�
 # src/main/java/mods/eln/sixnode/batterycharger/BatteryChargerElement.java
 Charge_Current=充电电流
 
+# src/main/java/mods/eln/sixnode/batterycharger/BatteryChargerGui.java
+
 # src/main/java/mods/eln/sixnode/diode/DiodeDescriptor.java
 Electrical_current_can_only\nflow_through_the_diode\nfrom_anode_to_cathode=电流只能从正极流向负极
 Works,_with_the_caveat_that_it's_delayed_a_sim_tick=有效，但需要注意的是，它会延迟一个模拟时钟周期。
@@ -238,7 +245,6 @@ Emits_an_acoustic_alarm_if\nthe_input_signal_is_high=当输入信号为高电平
 Intended_field_supply\:_%1$V=预期磁场供电: %1$V
 
 # src/main/java/mods/eln/sixnode/electricalalarm/ElectricalAlarmElement.java
-Engaged=激活中
 Input_Voltage=输入电压
 
 # src/main/java/mods/eln/sixnode/electricalalarm/ElectricalAlarmGui.java
@@ -301,6 +307,10 @@ Displays_signal_value.=显示信号值。
 Max=最大
 Min=最小
 
+# src/main/java/mods/eln/sixnode/electricaldigitaldisplay/ElectricalDigitalDisplayGui.java
+
+# src/main/java/mods/eln/sixnode/electricalentitysensor/ElectricalEntitySensorContainer.java
+
 # src/main/java/mods/eln/sixnode/electricalentitysensor/ElectricalEntitySensorDescriptor.java
 Output_voltage_increases\nif_entities_are_moving_around.=当周围有实体移动时\n输出电压增加。
 
@@ -331,6 +341,8 @@ Provides_an_electrical_voltage\nwhich_is_proportional_to\nthe_intensity_of_dayli
 # src/main/java/mods/eln/sixnode/electricallightsensor/ElectricalLightSensorElement.java
 Light_level=光照等级
 
+# src/main/java/mods/eln/sixnode/electricalmath/ElectricalMathContainer.java
+
 # src/main/java/mods/eln/sixnode/electricalmath/ElectricalMathDescriptor.java
 Applicable_boolean_operators\:=适用的布尔运算符:
 Applicable_functions\:=适用的函数:
@@ -352,6 +364,8 @@ Waiting_for_completion...=请稍后...
 # src/main/java/mods/eln/sixnode/electricalredstoneinput/ElectricalRedstoneInputDescriptor.java
 Converts_Redstone_signal\nto_an_electrical_voltage.=将红石信号\n转换为电压。
 
+# src/main/java/mods/eln/sixnode/electricalredstoneinput/ElectricalRedstoneInputElement.java
+
 # src/main/java/mods/eln/sixnode/electricalredstoneoutput/ElectricalRedstoneOutputDescriptor.java
 Converts_electrical_voltage\ninto_a_Redstone_signal.=将电压\n转换为红石信号。
 
@@ -365,6 +379,8 @@ Control_voltage\:_%1$V=控制电压: %1$V
 # src/main/java/mods/eln/sixnode/electricalrelay/ElectricalRelayElement.java
 
 # src/main/java/mods/eln/sixnode/electricalrelay/ElectricalRelayGui.java
+
+# src/main/java/mods/eln/sixnode/electricalsensor/ElectricalSensorContainer.java
 
 # src/main/java/mods/eln/sixnode/electricalsensor/ElectricalSensorDescriptor.java
 Can_measure_Voltage/Power/Current=可测量电压/功率/电流
@@ -388,8 +404,6 @@ Provides_an_ideal_voltage_source\nwithout_energy_or_power_limitation.=提供理�
 Can_break_an_electrical_circuit\ninterrupting_the_current.=可以断开电路\n以中断电流。
 Current_rating\:_%1$A=额定电流: %1$A
 Voltage_rating\:_%1$V=额定电压: %1$V
-
-# src/main/java/mods/eln/sixnode/electricalswitch/ElectricalSwitchElement.java
 
 # src/main/java/mods/eln/sixnode/electricaltimeout/ElectricalTimeoutDescriptor.java
 Upon_application_of_a_high_signal,\nthe_timer_maintains_the_output_high_for\na_configurable_interval._Can_be_re-triggered.=当施加高电平信号时，\n定时器在可配置的时间间隔内\n保持输出为高电平。可重新触发。
@@ -439,8 +453,6 @@ You_can_set_an_initial\namount_of_available_energy.\nWhen_the_counter_arrives_at
 is_off=电路断开
 is_on=电路连通
 value_in_kJ=单位是kJ
-
-# src/main/java/mods/eln/sixnode/groundcable/GroundCableContainer.java
 
 # src/main/java/mods/eln/sixnode/groundcable/GroundCableDescriptor.java
 Acts_as_a_ground_reference.=作为接地参考点
@@ -495,12 +507,12 @@ It's_a_resistor=这是一个电阻
 # src/main/java/mods/eln/sixnode/resistor/ResistorElement.java
 
 # src/main/java/mods/eln/sixnode/thermalcable/ThermalCableDescriptor.java
-High_parallel_resistance\n_->_Low_power_dissipation.=高并联热阻\n -> 低热损。
-Low_serial_resistance\n_->_High_conductivity.=低串联热阻\n -> 高热导。
-Min._temperature\:_%1$°C=最低温度: %1$°C
-Parallel_resistance\:_%1$K/W=并联热阻: %1$K/W
-Serial_resistance\:_%1$K/W=串联热阻: %1$K/W
-The_thermal_simulator_doesn't_properly_manage_heat=热量模拟器无法正确管理热量
+High_parallel_resistance\n_->_Low_power_dissipation.=High parallel resistance\n -> Low power dissipation.
+Low_serial_resistance\n_->_High_conductivity.=Low serial resistance\n -> High conductivity.
+Min._temperature\:_%1$°C=Min. temperature: %1$°C
+Parallel_resistance\:_%1$K/W=Parallel resistance: %1$K/W
+Serial_resistance\:_%1$K/W=Serial resistance: %1$K/W
+The_thermal_simulator_doesn't_properly_manage_heat=The thermal simulator doesn't properly manage heat
 
 # src/main/java/mods/eln/sixnode/thermalcable/ThermalCableElement.java
 Thermic_power=热功率
@@ -538,9 +550,9 @@ Repeats_all_wireless_signals_in_range=转发范围内所有无线信号
 It_should_require_power_to_receive_and_propagate_the_signal_realistically=现实中它应该需要供电以接收和传播信号
 Receive_signal_voltage_on_selected_wireless_signal_channel=接收选定无线信号频道的信号电压
 
-# src/main/java/mods/eln/sixnode/wirelesssignal/rx/WirelessSignalRxElement.java
-
 # src/main/java/mods/eln/sixnode/wirelesssignal/rx/WirelessSignalRxGui.java
+
+# src/main/java/mods/eln/sixnode/wirelesssignal/source/WirelessSignalSourceDescriptor.java
 
 # src/main/java/mods/eln/sixnode/wirelesssignal/tx/WirelessSignalTxDescriptor.java
 Sends_signal_voltage_on_selected_wireless_signal_channel=在选定无线信号频道上发送信号电压
@@ -597,8 +609,6 @@ Actual\:_%1$=实际值: %1$
 Auto_shutdown=自动启停
 Manual_shutdown=手动启停
 Set_point\:_%1$=设定值: %1$
-
-# src/main/java/mods/eln/transparentnode/electricalmachine/ElectricalMachineContainer.java
 
 # src/main/java/mods/eln/transparentnode/electricalmachine/ElectricalMachineDescriptor.java
 Cost=消耗
@@ -682,8 +692,6 @@ Temperature_difference\:_%1$°C=温度差: %1$°C
 # src/main/java/mods/eln/transparentnode/turbine/TurbineElement.java
 Nominal=额定
 
-# src/main/java/mods/eln/transparentnode/turret/TurretContainer.java
-
 # src/main/java/mods/eln/transparentnode/turret/TurretDescriptor.java
 CAUTION\:_Cables_can_get_quite_hot!=注意: 导线可能会变得非常热!
 Laser_charge_power\:_%1$W...%2$kW=激光充电功率: %1$W...%2$kW
@@ -751,20 +759,9 @@ Created_by\:=合成方式:
 Is_not_a_crafting_material!=不能合成其他物品!
 Recipe\:=配方:
 
-# src/main/kotlin/mods/eln/Achievements.kt
-Electrical_Age_[WIP]=电力时代Electrical Age
-achievement.craft_50v_macerator=初入粉碎之法
-achievement.craft_50v_macerator.desc=合成一个粉碎机(50v)
-achievement.open_guide=打开内置Wiki
-achievement.open_guide.desc=内置Wiki的能量,超乎你想象
-
 # src/main/kotlin/mods/eln/block/ArcClayBlock.kt
 tile.arc_clay_block.name=铝块
 tile.arc_metal_block.name=钢块
-
-# src/main/kotlin/mods/eln/craft/CraftingRecipes.kt
-entity.EAReplicator.name=复制机
-entity.ElectricMinecart.name=电动矿车
 
 # src/main/kotlin/mods/eln/falstad/FalstadImporter.kt
 %1$x%2$_blocks=%1$x%2$方块
@@ -862,6 +859,31 @@ Left=左
 Right=右
 Transfer=转换
 
+# src/main/kotlin/mods/eln/integration/create/CreateAdapterClient.kt
+Automatic_retry\:_off=Automatic retry: off
+Automatic_retry\:_on_(5_seconds)=Automatic retry: on (5 seconds)
+Change_gear=Change gear
+Disengage_before_changing_gear.=Disengage before changing gear.
+Disengaged=Disengaged
+Engage_/_disengage=Engage / disengage
+Input\:_%1$_RPM_|_Gear\:_%2$\:1=Input: %1$ RPM | Gear: %2$:1
+Output\:_%1$_rad/s_(%2$_RPM)=Output: %1$ rad/s (%2$ RPM)
+Power\:_%1$_W_|_Stress\:_%2$_SU=Power: %1$ W | Stress: %2$ SU
+Reset_fault=Reset fault
+Target\:_%1$_rad/s=Target: %1$ rad/s
+Toggle_automatic_retry=Toggle automatic retry
+Tripped\:_Create_overstressed=Tripped: Create overstressed
+Tripped\:_target_exceeds_240_rad/s=Tripped: target exceeds 240 rad/s
+Waiting_for_Create_rotation=Waiting for Create rotation
+
+# src/main/kotlin/mods/eln/integration/create/CreateAdapterEntity.kt
+Create_Shaft_Adapter=Create Shaft Adapter
+Industrial_Create_Shaft_Adapter=Industrial Create Shaft Adapter
+
+# src/main/kotlin/mods/eln/integration/create/CreateIntegration.kt
+Create_Shaft_Adapter.name=Create Shaft Adapter
+Industrial_Create_Shaft_Adapter.name=Industrial Create Shaft Adapter
+
 # src/main/kotlin/mods/eln/item/BrushDescriptor.kt
 Brush_is_dry=刷子干了
 Can_paint_%1$_blocks=可以继续漆%1$个方块
@@ -935,8 +957,6 @@ Stored_Energy\:_%1$J_(%2$%)=储存能量: %1$J (%2$%)
 # src/main/kotlin/mods/eln/item/electricalitem/ElectricalPickaxe.kt
 Opens_holes._Right-click_to_open_smaller_holes.=挖3*3，右键切换1*1模式
 
-# src/main/kotlin/mods/eln/item/electricalitem/PortableOreScannerItem.kt
-
 # src/main/kotlin/mods/eln/item/lampitem/LampDescriptor.kt
 Current_lifetime\:_%1$h=当前寿命: %1$h
 Nominal_brightness\:_%1$=额定亮度: %1$
@@ -1004,9 +1024,7 @@ Life_Left=剩余寿命
 Requires_a_turbine_blade_to_operate.=需要涡轮叶片才能运行。
 Turbine_blade_slot=涡轮叶片
 
-# src/main/kotlin/mods/eln/misc/UtilsClient.kt
-Hold_[ctrl]_for_realism_details=按住 [ctrl] 查看拟真详情
-Hold_[shift]_for_details=按住 [shift] 查看详情
+# src/main/kotlin/mods/eln/misc/Tooltips.kt
 
 # src/main/kotlin/mods/eln/misc/Version.kt
 mod.name=电力时代
@@ -1015,6 +1033,9 @@ mod.name=电力时代
 
 # src/main/kotlin/mods/eln/railroad/ElectricMinecartChargeReporter.kt
 Cart_Energy\:_=矿车能量:
+
+# src/main/kotlin/mods/eln/registration/EntityRegistration.kt
+entity.EAReplicator.name=复制机
 
 # src/main/kotlin/mods/eln/registration/ItemRegistration.kt
 120V_Carbon_Light_Bulb.name=碳丝灯泡(120V)
@@ -1217,7 +1238,7 @@ unreleasedium.name=铀(未释放)
 useless=无用
 
 # src/main/kotlin/mods/eln/registration/SingleNodeRegistration.kt
-tile.eln.Conduit.name=埋管块
+tile.eln.ConduitSingle.name=eln.ConduitSingle
 tile.eln.ElnProbe.name=电力时代电脑传感器
 tile.eln.EnergyConverter.name=能量转换器
 
@@ -1544,6 +1565,7 @@ Lead_Fuse_for_high_voltage_cables.name=铅保险丝(高压)
 Lead_Fuse_for_low_voltage_cables.name=铅保险丝(低压)
 Lead_Fuse_for_medium_voltage_cables.name=铅保险丝(中压)
 Lead_Fuse_for_very_high_voltage_cables.name=铅保险丝(超高压)
+Legacy_Signal_Switch.name=Legacy Signal Switch
 Long_Suspended_Lamp_Socket.name=灯座(吊挂,长)
 Long_Suspended_Lamp_Socket_(No_Swing).name=灯座(吊挂,长,无摆动)
 Low_Current_Cable.name=导线(5A,600kW)
@@ -1954,10 +1976,7 @@ Biome_temperature=生物群系温度
 This_DC/DC_has_unrealistic_capacitance_effects_and_can_sink/source_power_that_violates_Newton's_laws=此变压器有不真实的电容效应，可以吸收/输出违反牛顿定律的功率
 
 # src/main/kotlin/mods/eln/transparentnode/DcDcWinding.kt
-%1$\:_%2$=%1$: %2$
-Broken=Broken
-Incomplete=Incomplete
-Operational=Operational
+Melted=Melted
 Primary_and_secondary_windings_must_match_(%1$_vs_%2$)=Primary and secondary windings must match (%1$ vs %2$)
 
 # src/main/kotlin/mods/eln/transparentnode/Fabricator.kt
@@ -1988,8 +2007,6 @@ Nom._Resistance\:_%1$=额定电阻: %1$
 Set_resistance_with_coal_dust=用碳粉增加电阻
 __*_Resistance_is_not_impacted_by_temperature=  * 电阻不受温度影响
 __*_Signal_input_doesn't_require_power=  * 信号输入不需要电源
-
-# src/main/kotlin/mods/eln/transparentnode/LegacyDcDc.kt
 
 # src/main/kotlin/mods/eln/transparentnode/NixieTube.kt
 Blank=黯淡

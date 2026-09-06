@@ -19,6 +19,12 @@ import java.util.Map;
  */
 public final class GenericCreativeTab {
     private static final Map<CreativeModeTab, ItemStack> ICONS = new HashMap<>();
+    private static net.minecraft.resources.ResourceLocation previousTab;
+
+    public static boolean isTabIcon(ItemStack stack) {
+        return stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
+            net.minecraft.world.item.component.CustomData.EMPTY).copyTag().getBoolean("eln_tab_icon");
+    }
 
     private GenericCreativeTab() {
     }
@@ -30,7 +36,10 @@ public final class GenericCreativeTab {
     /** {@code label} is the 1.7.10 tab label; its lang key stays {@code itemGroup.<label>}. */
     public static CreativeModeTab create(String label, ItemStack icon) {
         CreativeModeTab[] self = new CreativeModeTab[1];
-        CreativeModeTab tab = CreativeModeTab.builder()
+        CreativeModeTab.Builder builder = CreativeModeTab.builder();
+        if (previousTab != null) builder.withTabsBefore(previousTab);
+        previousTab = ElnRegistry.registryName(label);
+        CreativeModeTab tab = builder
             .title(Component.translatable("itemGroup." + label))
             .icon(() -> {
                 ItemStack stack = ICONS.get(self[0]);
@@ -43,6 +52,14 @@ public final class GenericCreativeTab {
     }
 
     public static void setIcon(CreativeModeTab tab, ItemStack stack) {
-        ICONS.put(tab, stack == null ? ItemStack.EMPTY : stack.copy());
+        ItemStack icon = stack == null ? ItemStack.EMPTY : stack.copy();
+        if (!icon.isEmpty()) {
+            icon.setCount(1);
+            var data = icon.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
+                net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
+            data.putBoolean("eln_tab_icon", true);
+            icon.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.of(data));
+        }
+        ICONS.put(tab, icon);
     }
 }

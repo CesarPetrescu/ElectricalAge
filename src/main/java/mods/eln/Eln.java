@@ -167,6 +167,7 @@ public class Eln {
     public static CreativeModeTab creativeTabToolsArmor;
     public static CreativeModeTab creativeTabOresMaterials;
     public static CreativeModeTab creativeTabMachines;
+    public static CreativeModeTab creativeTabMechanics;
     public static CreativeModeTab creativeTabCreative;
     public static CreativeModeTab creativeTabOther;
     public static Item swordCopper, hoeCopper, shovelCopper, pickaxeCopper, axeCopper;
@@ -362,14 +363,15 @@ public class Eln {
         });
         GuiHandler.register();
 
-        creativeTabPowerElectronics = GenericCreativeTab.create("ElnPowerElectronics", Items.REDSTONE);
         creativeTabCables = GenericCreativeTab.create("ElnCables", Items.STRING);
-        creativeTabPowerDistribution = GenericCreativeTab.create("ElnPowerDistribution", Items.STRING);
+        creativeTabPowerDistribution = creativeTabCables;
         creativeTabSignalProcessing = GenericCreativeTab.create("ElnSignalProcessing", Items.COMPARATOR);
-        creativeTabLighting = GenericCreativeTab.create("ElnLighting", Blocks.REDSTONE_LAMP);
-        creativeTabToolsArmor = GenericCreativeTab.create("ElnToolsArmor", Items.IRON_PICKAXE);
-        creativeTabOresMaterials = GenericCreativeTab.create("ElnOresMaterials", Items.IRON_INGOT);
+        creativeTabPowerElectronics = GenericCreativeTab.create("ElnPowerElectronics", Items.REDSTONE);
+        creativeTabMechanics = GenericCreativeTab.create("ElnMechanics", Items.ANVIL);
         creativeTabMachines = GenericCreativeTab.create("ElnMachines", Blocks.DISPENSER);
+        creativeTabLighting = GenericCreativeTab.create("ElnLighting", Blocks.REDSTONE_LAMP);
+        creativeTabOresMaterials = GenericCreativeTab.create("ElnOresMaterials", Items.IRON_INGOT);
+        creativeTabToolsArmor = GenericCreativeTab.create("ElnToolsArmor", Items.IRON_PICKAXE);
         creativeTabCreative = GenericCreativeTab.create("ElnCreative", Items.NETHER_STAR);
         creativeTabOther = creativeTabOresMaterials;
         creativeTab = creativeTabOther;
@@ -458,15 +460,16 @@ public class Eln {
     /** What used to be init. Registries are complete here. */
     private void commonSetup(FMLCommonSetupEvent event) {
         TR_GROUP("Eln", "Electrical Age");
-        TR_GROUP("ElnPowerElectronics", "Electrical Age - Power Electronics");
-        TR_GROUP("ElnSignalProcessing", "Electrical Age - Signal Processing");
+        TR_GROUP("ElnPowerElectronics", "Electrical Age - Power");
+        TR_GROUP("ElnSignalProcessing", "Electrical Age - Signals & Control");
         TR_GROUP("ElnLighting", "Electrical Age - Lighting");
-        TR_GROUP("ElnCables", "Electrical Age - Cables");
+        TR_GROUP("ElnCables", "Electrical Age - Wires & Cables");
+        TR_GROUP("ElnMechanics", "Electrical Age - Mechanics");
         TR_GROUP("ElnPowerDistribution", "Electrical Age - Power Distribution");
         TR_GROUP("ElnToolsArmor", "Electrical Age - Tools & Armor");
-        TR_GROUP("ElnOresMaterials", "Electrical Age - Ores & Materials");
-        TR_GROUP("ElnMachines", "Electrical Age - Machines");
-        TR_GROUP("ElnCreative", "Electrical Age - Creative");
+        TR_GROUP("ElnOresMaterials", "Electrical Age - Materials");
+        TR_GROUP("ElnMachines", "Electrical Age - Processing");
+        TR_GROUP("ElnCreative", "Electrical Age - Creative Only");
         TR_GROUP("ElnOther", "Electrical Age - Other");
         NeoForge.EVENT_BUS.register(new RoomThermalBlockEventsHandler());
         NeoForge.EVENT_BUS.register(new ElectricMinecartChargeReporter());
@@ -555,8 +558,9 @@ public class Eln {
     }
 
     private void updateCreativeTabIcons() {
-        setTabIcon(creativeTabPowerElectronics, stack(sixNodeItem.getDescriptor(meta(33, 1))));
-        setTabIcon(creativeTabSignalProcessing, stack(sixNodeItem.getDescriptor(meta(32, 0))));
+        setTabIcon(creativeTabMechanics, Eln.findItemStack("Flywheel", 1));
+        setTabIcon(creativeTabPowerElectronics, Eln.findItemStack("Capacity Oriented Battery", 1));
+        setTabIcon(creativeTabSignalProcessing, new ItemStack(Items.COMPARATOR));
         setTabIcon(creativeTabLighting, stack(sharedItem.getDescriptor(meta(4, 37))));
         setTabIcon(creativeTabCables, stack(sixNodeItem.getDescriptor(meta(34, 2))));
         setTabIcon(creativeTabToolsArmor, stack(sharedItem.getDescriptor(meta(14, 0))));

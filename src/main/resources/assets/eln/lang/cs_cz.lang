@@ -44,6 +44,7 @@ Efficiency=Účinnost
 Electrical_cable_slot=Slot pro elektrický kabel
 End_of_life=Konec životnosti
 Energy=Energie
+Engaged=Aktivováno
 Entity_filter_slot=Slot pro filtr entit
 External_control=Externí ovládání
 Falstad_import\:_clipboard_is_not_valid_Falstad_data.=Import Falstad: schránka neobsahuje platná data Falstad.
@@ -55,6 +56,8 @@ Generating=Vyrábí
 Good=Dobrý
 Has_a_signal_output.=Má signálový výstup.
 Has_some_caveats\:=Má několik výhrad:
+Hold_[ctrl]_for_realism_details=Podrž [ctrl] pro detaily realismu
+Hold_[shift]_for_details=Podrž [shift] pro podrobnosti
 Inductance=Indukčnost
 Inductance\:_%1$H=Indukčnost: %1$H
 Input=Vstup
@@ -77,7 +80,6 @@ Measured_temperature\ncorresponding\nto_0%_output=Měřená teplota\nodpovídaj�
 Measured_temperature\ncorresponding\nto_100%_output=Měřená teplota\nodpovídající\nvýstupu 100%
 Measured_value\ncorresponding\nto_0%_output=Měřená hodnota\nodpovídající\nvýstupu 0%
 Measured_value\ncorresponding\nto_100%_output=Měřená hodnota\nodpovídající\nvýstupu 100%
-Melted=Melted
 Melted_%1$_requires_replacement=Melted %1$ requires replacement
 Mode=Režim
 Needs_%1$_Winding=Needs %1$ Winding
@@ -102,6 +104,7 @@ ON=ZAP
 Off=Vypnuto
 On=Zapnuto
 Open=Otevřeno
+Operational=Operational
 Output=Výstup
 Output_voltage=Výstupní napětí
 P\:_%1$_S\:_%2$=P: %1$ S: %2$
@@ -176,13 +179,13 @@ itemGroup.ElnCables=Electrical Age - Kabely
 itemGroup.ElnCreative=Electrical Age - Kreativní
 itemGroup.ElnLighting=Electrical Age - Osvětlení
 itemGroup.ElnMachines=Electrical Age - Stroje
+itemGroup.ElnMechanics=Electrical Age - Mechanics
 itemGroup.ElnOresMaterials=Electrical Age - Rudy a materiály
 itemGroup.ElnOther=Electrical Age - Ostatní
 itemGroup.ElnPowerDistribution=Electrical Age - Distribuce energie
 itemGroup.ElnPowerElectronics=Electrical Age - Výkonová elektronika
 itemGroup.ElnSignalProcessing=Electrical Age - Zpracování signálů
 itemGroup.ElnToolsArmor=Electrical Age - Nástroje a zbroj
-mod.meta.desc=Elektřina ve vaší základně!
 
 # src/main/java/mods/eln/gui/GuiVerticalVoltageSupplyBar.java
 Power_Supply_\:=Napájení:
@@ -209,6 +212,8 @@ Useful_to_prevent_over-voltage\nof_Batteries=Užitečné pro prevenci přepětí
 # src/main/java/mods/eln/item/SolarTrackerDescriptor.java
 Solar_panel_upgrade=Vylepšení solárního panelu
 
+# src/main/java/mods/eln/item/regulator/RegulatorSlot.java
+
 # src/main/java/mods/eln/sixnode/TreeResinCollector/TreeResinCollectorDescriptor.java
 Produces_Tree_Resin_over\ntime_when_put_on_a_tree.=Produkuje pryskyřici\nv průběhu času po umístění na strom.
 This_block_can_only_be_placed_on_the_side_of_a_tree!=Tento blok lze umístit pouze na stranu stromu!
@@ -226,6 +231,8 @@ __*_It_exposes_a_nominal_mains_class_instead_of_wall-plug_details=  * Namísto d
 # src/main/java/mods/eln/sixnode/batterycharger/BatteryChargerElement.java
 Charge_Current=Nabíjecí proud
 
+# src/main/java/mods/eln/sixnode/batterycharger/BatteryChargerGui.java
+
 # src/main/java/mods/eln/sixnode/diode/DiodeDescriptor.java
 Electrical_current_can_only\nflow_through_the_diode\nfrom_anode_to_cathode=Elektrický proud může diodou\nprocházet pouze\nod anody ke katodě
 Works,_with_the_caveat_that_it's_delayed_a_sim_tick=Funguje, s výhradou, že je zpožděna o jeden simulační krok
@@ -238,7 +245,6 @@ Emits_an_acoustic_alarm_if\nthe_input_signal_is_high=Vydává zvukový alarm, po
 Intended_field_supply\:_%1$V=Určené napájení pole: %1$V
 
 # src/main/java/mods/eln/sixnode/electricalalarm/ElectricalAlarmElement.java
-Engaged=Aktivováno
 Input_Voltage=Vstupní napětí
 
 # src/main/java/mods/eln/sixnode/electricalalarm/ElectricalAlarmGui.java
@@ -301,6 +307,10 @@ Displays_signal_value.=Zobrazuje hodnotu signálu.
 Max=Max
 Min=Min
 
+# src/main/java/mods/eln/sixnode/electricaldigitaldisplay/ElectricalDigitalDisplayGui.java
+
+# src/main/java/mods/eln/sixnode/electricalentitysensor/ElectricalEntitySensorContainer.java
+
 # src/main/java/mods/eln/sixnode/electricalentitysensor/ElectricalEntitySensorDescriptor.java
 Output_voltage_increases\nif_entities_are_moving_around.=Výstupní napětí se zvyšuje,\npokud se entity pohybují v okolí.
 
@@ -331,6 +341,8 @@ Provides_an_electrical_voltage\nwhich_is_proportional_to\nthe_intensity_of_dayli
 # src/main/java/mods/eln/sixnode/electricallightsensor/ElectricalLightSensorElement.java
 Light_level=Úroveň osvětlení
 
+# src/main/java/mods/eln/sixnode/electricalmath/ElectricalMathContainer.java
+
 # src/main/java/mods/eln/sixnode/electricalmath/ElectricalMathDescriptor.java
 Applicable_boolean_operators\:=Použitelné booleovské operátory:
 Applicable_functions\:=Použitelné funkce:
@@ -352,6 +364,8 @@ Waiting_for_completion...=Čeká se na dokončení...
 # src/main/java/mods/eln/sixnode/electricalredstoneinput/ElectricalRedstoneInputDescriptor.java
 Converts_Redstone_signal\nto_an_electrical_voltage.=Převádí redstonový signál\nna elektrické napětí.
 
+# src/main/java/mods/eln/sixnode/electricalredstoneinput/ElectricalRedstoneInputElement.java
+
 # src/main/java/mods/eln/sixnode/electricalredstoneoutput/ElectricalRedstoneOutputDescriptor.java
 Converts_electrical_voltage\ninto_a_Redstone_signal.=Převádí elektrické napětí\nna redstonový signál.
 
@@ -365,6 +379,8 @@ Control_voltage\:_%1$V=Ovládací napětí: %1$V
 # src/main/java/mods/eln/sixnode/electricalrelay/ElectricalRelayElement.java
 
 # src/main/java/mods/eln/sixnode/electricalrelay/ElectricalRelayGui.java
+
+# src/main/java/mods/eln/sixnode/electricalsensor/ElectricalSensorContainer.java
 
 # src/main/java/mods/eln/sixnode/electricalsensor/ElectricalSensorDescriptor.java
 Can_measure_Voltage/Power/Current=Může měřit napětí/výkon/proud
@@ -388,8 +404,6 @@ Provides_an_ideal_voltage_source\nwithout_energy_or_power_limitation.=Poskytuje 
 Can_break_an_electrical_circuit\ninterrupting_the_current.=Může rozpojit elektrický obvod\npřerušením proudu.
 Current_rating\:_%1$A=Jmenovitý proud: %1$A
 Voltage_rating\:_%1$V=Jmenovité napětí: %1$V
-
-# src/main/java/mods/eln/sixnode/electricalswitch/ElectricalSwitchElement.java
 
 # src/main/java/mods/eln/sixnode/electricaltimeout/ElectricalTimeoutDescriptor.java
 Upon_application_of_a_high_signal,\nthe_timer_maintains_the_output_high_for\na_configurable_interval._Can_be_re-triggered.=Po přivedení vysokého signálu\nčasovač udržuje výstup vysoký po\nnastavitelný interval. Lze znovu spustit.
@@ -439,8 +453,6 @@ You_can_set_an_initial\namount_of_available_energy.\nWhen_the_counter_arrives_at
 is_off=je vypnuto
 is_on=je zapnuto
 value_in_kJ=hodnota v kJ
-
-# src/main/java/mods/eln/sixnode/groundcable/GroundCableContainer.java
 
 # src/main/java/mods/eln/sixnode/groundcable/GroundCableDescriptor.java
 Acts_as_a_ground_reference.=Slouží jako zemnící reference.
@@ -495,12 +507,12 @@ It's_a_resistor=Je to rezistor
 # src/main/java/mods/eln/sixnode/resistor/ResistorElement.java
 
 # src/main/java/mods/eln/sixnode/thermalcable/ThermalCableDescriptor.java
-High_parallel_resistance\n_->_Low_power_dissipation.=Vysoký paralelní odpor\n -> Nízký ztrátový výkon.
-Low_serial_resistance\n_->_High_conductivity.=Nízký sériový odpor\n -> Vysoká vodivost.
-Min._temperature\:_%1$°C=Min. teplota: %1$°C
-Parallel_resistance\:_%1$K/W=Paralelní odpor: %1$K/W
-Serial_resistance\:_%1$K/W=Sériový odpor: %1$K/W
-The_thermal_simulator_doesn't_properly_manage_heat=Tepelný simulátor nespravuje teplo správně
+High_parallel_resistance\n_->_Low_power_dissipation.=High parallel resistance\n -> Low power dissipation.
+Low_serial_resistance\n_->_High_conductivity.=Low serial resistance\n -> High conductivity.
+Min._temperature\:_%1$°C=Min. temperature: %1$°C
+Parallel_resistance\:_%1$K/W=Parallel resistance: %1$K/W
+Serial_resistance\:_%1$K/W=Serial resistance: %1$K/W
+The_thermal_simulator_doesn't_properly_manage_heat=The thermal simulator doesn't properly manage heat
 
 # src/main/java/mods/eln/sixnode/thermalcable/ThermalCableElement.java
 Thermic_power=Tepelný výkon
@@ -538,9 +550,9 @@ Repeats_all_wireless_signals_in_range=Opakuje všechny bezdrátové signály v d
 It_should_require_power_to_receive_and_propagate_the_signal_realistically=Realisticky by měl vyžadovat energii pro příjem a šíření signálu
 Receive_signal_voltage_on_selected_wireless_signal_channel=Přijímá signálové napětí na vybraném bezdrátovém signálovém kanálu
 
-# src/main/java/mods/eln/sixnode/wirelesssignal/rx/WirelessSignalRxElement.java
-
 # src/main/java/mods/eln/sixnode/wirelesssignal/rx/WirelessSignalRxGui.java
+
+# src/main/java/mods/eln/sixnode/wirelesssignal/source/WirelessSignalSourceDescriptor.java
 
 # src/main/java/mods/eln/sixnode/wirelesssignal/tx/WirelessSignalTxDescriptor.java
 Sends_signal_voltage_on_selected_wireless_signal_channel=Odesílá signálové napětí na vybraném bezdrátovém signálovém kanálu
@@ -597,8 +609,6 @@ Actual\:_%1$=Skutečná: %1$
 Auto_shutdown=Automatické vypnutí
 Manual_shutdown=Ruční vypnutí
 Set_point\:_%1$=Nastavená hodnota: %1$
-
-# src/main/java/mods/eln/transparentnode/electricalmachine/ElectricalMachineContainer.java
 
 # src/main/java/mods/eln/transparentnode/electricalmachine/ElectricalMachineDescriptor.java
 Cost=Cena
@@ -682,8 +692,6 @@ Temperature_difference\:_%1$°C=Teplotní rozdíl: %1$°C
 # src/main/java/mods/eln/transparentnode/turbine/TurbineElement.java
 Nominal=Jmenovitý
 
-# src/main/java/mods/eln/transparentnode/turret/TurretContainer.java
-
 # src/main/java/mods/eln/transparentnode/turret/TurretDescriptor.java
 CAUTION\:_Cables_can_get_quite_hot!=POZOR: Kabely se mohou velmi zahřát!
 Laser_charge_power\:_%1$W...%2$kW=Nabíjecí výkon laseru: %1$W...%2$kW
@@ -751,20 +759,9 @@ Created_by\:=Vytvořeno:
 Is_not_a_crafting_material!=Není výrobní materiál!
 Recipe\:=Recept:
 
-# src/main/kotlin/mods/eln/Achievements.kt
-Electrical_Age_[WIP]=Electrical Age [WIP]
-achievement.craft_50v_macerator=Začínající drtič
-achievement.craft_50v_macerator.desc=Vyrobte 48V macerátor
-achievement.open_guide=Síla wiki
-achievement.open_guide.desc=Otevřete wiki průvodce
-
 # src/main/kotlin/mods/eln/block/ArcClayBlock.kt
 tile.arc_clay_block.name=Blok obloukové hlíny
 tile.arc_metal_block.name=Blok obloukového kovu
-
-# src/main/kotlin/mods/eln/craft/CraftingRecipes.kt
-entity.EAReplicator.name=Replikátor
-entity.ElectricMinecart.name=Elektrický důlní vozík
 
 # src/main/kotlin/mods/eln/falstad/FalstadImporter.kt
 %1$x%2$_blocks=%1$x%2$ bloků
@@ -862,6 +859,31 @@ Left=Vlevo
 Right=Vpravo
 Transfer=Přenos
 
+# src/main/kotlin/mods/eln/integration/create/CreateAdapterClient.kt
+Automatic_retry\:_off=Automatic retry: off
+Automatic_retry\:_on_(5_seconds)=Automatic retry: on (5 seconds)
+Change_gear=Change gear
+Disengage_before_changing_gear.=Disengage before changing gear.
+Disengaged=Disengaged
+Engage_/_disengage=Engage / disengage
+Input\:_%1$_RPM_|_Gear\:_%2$\:1=Input: %1$ RPM | Gear: %2$:1
+Output\:_%1$_rad/s_(%2$_RPM)=Output: %1$ rad/s (%2$ RPM)
+Power\:_%1$_W_|_Stress\:_%2$_SU=Power: %1$ W | Stress: %2$ SU
+Reset_fault=Reset fault
+Target\:_%1$_rad/s=Target: %1$ rad/s
+Toggle_automatic_retry=Toggle automatic retry
+Tripped\:_Create_overstressed=Tripped: Create overstressed
+Tripped\:_target_exceeds_240_rad/s=Tripped: target exceeds 240 rad/s
+Waiting_for_Create_rotation=Waiting for Create rotation
+
+# src/main/kotlin/mods/eln/integration/create/CreateAdapterEntity.kt
+Create_Shaft_Adapter=Create Shaft Adapter
+Industrial_Create_Shaft_Adapter=Industrial Create Shaft Adapter
+
+# src/main/kotlin/mods/eln/integration/create/CreateIntegration.kt
+Create_Shaft_Adapter.name=Create Shaft Adapter
+Industrial_Create_Shaft_Adapter.name=Industrial Create Shaft Adapter
+
 # src/main/kotlin/mods/eln/item/BrushDescriptor.kt
 Brush_is_dry=Štětec je suchý
 Can_paint_%1$_blocks=Může nabarvit %1$ bloků
@@ -935,8 +957,6 @@ Stored_Energy\:_%1$J_(%2$%)=Uložená energie: %1$J (%2$%)
 # src/main/kotlin/mods/eln/item/electricalitem/ElectricalPickaxe.kt
 Opens_holes._Right-click_to_open_smaller_holes.=Vytváří otvory. Klikněte pravým tlačítkem pro vytvoření menších otvorů.
 
-# src/main/kotlin/mods/eln/item/electricalitem/PortableOreScannerItem.kt
-
 # src/main/kotlin/mods/eln/item/lampitem/LampDescriptor.kt
 Current_lifetime\:_%1$h=Aktuální životnost: %1$h
 Nominal_brightness\:_%1$=Jmenovitý jas: %1$
@@ -1004,9 +1024,7 @@ Life_Left=Zbývající životnost
 Requires_a_turbine_blade_to_operate.=Pro provoz vyžaduje lopatku turbíny.
 Turbine_blade_slot=Slot pro lopatku turbíny
 
-# src/main/kotlin/mods/eln/misc/UtilsClient.kt
-Hold_[ctrl]_for_realism_details=Podrž [ctrl] pro detaily realismu
-Hold_[shift]_for_details=Podrž [shift] pro podrobnosti
+# src/main/kotlin/mods/eln/misc/Tooltips.kt
 
 # src/main/kotlin/mods/eln/misc/Version.kt
 mod.name=Electrical Age
@@ -1015,6 +1033,9 @@ mod.name=Electrical Age
 
 # src/main/kotlin/mods/eln/railroad/ElectricMinecartChargeReporter.kt
 Cart_Energy\:_=Energie vozíku: 
+
+# src/main/kotlin/mods/eln/registration/EntityRegistration.kt
+entity.EAReplicator.name=Replikátor
 
 # src/main/kotlin/mods/eln/registration/ItemRegistration.kt
 120V_Carbon_Light_Bulb.name=120V uhlíková žárovka
@@ -1217,7 +1238,7 @@ unreleasedium.name=nevydanium
 useless=k ničemu
 
 # src/main/kotlin/mods/eln/registration/SingleNodeRegistration.kt
-tile.eln.Conduit.name=Blok chráničky
+tile.eln.ConduitSingle.name=eln.ConduitSingle
 tile.eln.ElnProbe.name=Počítačová sonda Eln
 tile.eln.EnergyConverter.name=Exportér energie
 
@@ -1544,6 +1565,7 @@ Lead_Fuse_for_high_voltage_cables.name=Olověná pojistka pro vysokonapěťové 
 Lead_Fuse_for_low_voltage_cables.name=Olověná pojistka pro nízkonapěťové kabely
 Lead_Fuse_for_medium_voltage_cables.name=Olověná pojistka pro středněnapěťové kabely
 Lead_Fuse_for_very_high_voltage_cables.name=Olověná pojistka pro velmi vysokonapěťové kabely
+Legacy_Signal_Switch.name=Legacy Signal Switch
 Long_Suspended_Lamp_Socket.name=Dlouhá závěsná objímka lampy
 Long_Suspended_Lamp_Socket_(No_Swing).name=Dlouhá závěsná objímka lampy (bez houpání)
 Low_Current_Cable.name=Nízkoproudý kabel
@@ -1954,10 +1976,7 @@ Biome_temperature=Teplota biomu
 This_DC/DC_has_unrealistic_capacitance_effects_and_can_sink/source_power_that_violates_Newton's_laws=Tento DC/DC měnič má nerealistické kapacitní efekty a může spotřebovávat/dodávat výkon, což porušuje Newtonovy zákony
 
 # src/main/kotlin/mods/eln/transparentnode/DcDcWinding.kt
-%1$\:_%2$=%1$: %2$
-Broken=Broken
-Incomplete=Incomplete
-Operational=Operational
+Melted=Melted
 Primary_and_secondary_windings_must_match_(%1$_vs_%2$)=Primary and secondary windings must match (%1$ vs %2$)
 
 # src/main/kotlin/mods/eln/transparentnode/Fabricator.kt
@@ -1988,8 +2007,6 @@ Nom._Resistance\:_%1$=Jmen. odpor: %1$
 Set_resistance_with_coal_dust=Nastavit odpor uhelným prachem
 __*_Resistance_is_not_impacted_by_temperature=  * Odpor není ovlivněn teplotou
 __*_Signal_input_doesn't_require_power=  * Signálový vstup nevyžaduje napájení
-
-# src/main/kotlin/mods/eln/transparentnode/LegacyDcDc.kt
 
 # src/main/kotlin/mods/eln/transparentnode/NixieTube.kt
 Blank=Prázdné

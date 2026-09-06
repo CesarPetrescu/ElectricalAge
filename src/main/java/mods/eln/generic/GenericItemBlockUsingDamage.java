@@ -99,9 +99,10 @@ public class GenericItemBlockUsingDamage<Descriptor extends GenericItemBlockUsin
     public void getSubItems(CreativeModeTab tab, Consumer<ItemStack> list) {
         for (int id : orderList) {
             Descriptor descriptor = subItemList.get(id);
-            if (descriptor == null || descriptor.isHidden()) continue;
+              if (descriptor == null || descriptor.isHidden()) continue;
             CreativeModeTab descriptorTab = descriptor.getCreativeTab();
             if (descriptorTab == null) descriptorTab = creativeTab != null ? creativeTab : Eln.creativeTabOther;
+            descriptorTab = CreativeCategories.resolve(descriptor, descriptorTab);
             if (tab == null || tab == descriptorTab) {
                 list.accept(descriptor.newCreativeTabStack());
             }

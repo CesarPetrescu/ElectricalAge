@@ -173,7 +173,7 @@ object SixNodeRegistration {
         run {
             subId = 0
             val name = I18N.TR_NAME(I18N.Type.NONE, "Ground Cable")
-            val desc = GroundCableDescriptor(name, Eln.obj.getObj("groundcable")).creative()
+            val desc = GroundCableDescriptor(name, Eln.obj.getObj("groundcable")).cables()
             Eln.sixNodeItem.addDescriptor(subId + (id shl 6), desc)
         }
         run {
