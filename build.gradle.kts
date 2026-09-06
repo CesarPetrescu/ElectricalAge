@@ -284,3 +284,17 @@ tasks.register<Test>("benchmarkTest") {
     include("**/*BenchmarkTest.*", "**/*ProfilingTest.*")
     shouldRunAfter(tasks.named("test"))
 }
+
+// ModDevGradle wires its NeoForge launcher into `test` only, and sets that task's
+// working directory after evaluation. Share the completed launcher configuration
+// with benchmarks so they also prepare the argument files and load the tested mod.
+afterEvaluate {
+    tasks.named<Test>("benchmarkTest") {
+        val unitTests = tasks.named<Test>("test").get()
+        dependsOn(unitTests.taskDependencies.getDependencies(unitTests))
+        systemProperties(unitTests.systemProperties)
+        jvmArgs(unitTests.jvmArgs ?: emptyList<String>())
+        jvmArgumentProviders.addAll(unitTests.jvmArgumentProviders)
+        workingDir = unitTests.workingDir
+    }
+}
