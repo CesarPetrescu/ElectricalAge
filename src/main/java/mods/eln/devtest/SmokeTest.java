@@ -470,7 +470,8 @@ public final class SmokeTest {
         var motor = transparentElement(world, X, MECH_Z);
         var generator = transparentElement(world, X + 4, MECH_Z);
         if (motor == null || generator == null) return;
-        Eln.logger.info("{} t={} motor: {} | generator: {}", PREFIX, ticks, motor.multiMeterString(Direction.ZN), generator.multiMeterString(Direction.ZN));
+        Eln.logger.info("{} t={} motor: {} | generator: {} lastE={}", PREFIX, ticks, motor.multiMeterString(Direction.ZN), generator.multiMeterString(Direction.ZN),
+            generator instanceof mods.eln.mechanical.GeneratorElement g ? g.getLastE() : null);
         BlockPos turbinePos = new BlockPos(X - 1, GROUND + 1, HEAT_Z + 1);
         var heatTurbine = transparentElement(world, X - 1, HEAT_Z + 1);
         Eln.logger.info("{} t={} heat turbine: block={} element={} {}", PREFIX, ticks, BuiltInRegistries.BLOCK.getKey(world.getBlockState(turbinePos).getBlock()), heatTurbine,

@@ -154,6 +154,11 @@ public final class ClientSmokeTest {
                 double angle = shaftAngle(mc, X, GROUND + 1, MECH_Z);
                 double rads = shaftRads(mc, X, GROUND + 1, MECH_Z);
                 check(rads > 10 && !Double.isNaN(mechAngle) && angle != mechAngle, "shaft motor render turns: {} rad/s, angle {} -> {}", rads, mechAngle, angle);
+                // the generator at the end of the line: its render got the speed and the power it publishes (its first LED lights)
+                if (shaftRender(mc, X + 4, GROUND + 1, MECH_Z) instanceof mods.eln.mechanical.GeneratorRender generator) {
+                    var led = generator.getLedColors()[0];
+                    check(generator.getRads() > 10 && !led.equals(java.awt.Color.black), "generator render: {} rad/s, first LED {}", generator.getRads(), led);
+                } else fail("no generator render at the end of the shaft line");
                 shot(mc, "smoke-mech-spin");
                 phase = Phase.TACHOMETER_GUI;
                 wait = 0;
