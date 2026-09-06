@@ -391,8 +391,14 @@ open class ShaftNetwork() : INBTTReady {
     }
 
     private fun findShaftElementAt(coordinate: Coordinate): ShaftElement? {
-        if (coordinate.worldExist && coordinate.blockExist) {
-            val external = coordinate.tileEntity
+        if (coordinate.worldExist) {
+            // A Level#getBlockEntity lookup can add a chunk ticket even after isLoaded succeeds.
+            // Network rebuilds also run during unload: never restart that chunk's future chain.
+            val world = coordinate.world()
+            val chunk = (world as? net.minecraft.server.level.ServerLevel)?.chunkSource
+                ?.getChunkNow(coordinate.x shr 4, coordinate.z shr 4)
+            val external = chunk?.getBlockEntity(net.minecraft.core.BlockPos(coordinate.x, coordinate.y, coordinate.z),
+                net.minecraft.world.level.chunk.LevelChunk.EntityCreationType.CHECK)
             if (external is ShaftElement && !external.isShaftElementDestructing()) return external
         }
         val node = NodeManager.instance?.getNodeFromCoordonate(coordinate) ?: return null
