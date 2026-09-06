@@ -88,6 +88,15 @@ class TransparentNodeBlock : NodeBlock(nodeProperties().lightLevel { 0 }, 0), IM
         return if (collision.isEmpty) Shapes.block() else collision
     }
 
+    /** Pick-block (and Jade's name/icon): the descriptor's item, which 1.7.10 reached through the metadata value. */
+    override fun getCloneItemStack(state: BlockState, target: net.minecraft.world.phys.HitResult, world: net.minecraft.world.level.LevelReader, pos: BlockPos, player: Player): net.minecraft.world.item.ItemStack {
+        val entity = world.getBlockEntity(pos) as? TransparentNodeEntity ?: return net.minecraft.world.item.ItemStack.EMPTY
+        val descriptor = entity.elementRender?.transparentNodeDescriptor
+            ?: (entity.node as? TransparentNode)?.element?.transparentNodeDescriptor
+            ?: return net.minecraft.world.item.ItemStack.EMPTY
+        return descriptor.newCreativeTabStack()
+    }
+
     override fun newBlockEntity(pos: BlockPos, state: BlockState): BlockEntity {
         val meta = state.getValue(META)
         for (tag in EntityMetaTag.values()) {

@@ -217,6 +217,11 @@ repositories {
         url = uri("https://thedarkcolour.github.io/KotlinForForge/")
         content { includeGroup("thedarkcolour") }
     }
+    maven {
+        name = "Modrinth"
+        url = uri("https://api.modrinth.com/maven")
+        content { includeGroup("maven.modrinth") }
+    }
 }
 
 dependencies {
@@ -232,6 +237,10 @@ dependencies {
         "additionalRuntimeClasspath"(lib)
     }
     compileOnly("com.fazecast:jSerialComm:2.6.2")
+
+    // Jade (Waila's successor) for the hover overlay: compiled against, and loaded as a mod in the
+    // dev runs so the overlay can be looked at; optional at run time (mods.eln.integration.jade).
+    implementation("maven.modrinth:jade:${property("jadeVersion")}")
 
     // Build-time only: the lang-file generator parses the mod's own sources for tr() and
     // TR_NAME() call sites. Never shipped, never loaded at run time.

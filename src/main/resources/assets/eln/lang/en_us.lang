@@ -2104,3 +2104,6 @@ death.attack.eln.electrical=%1$s was electrocuted
 death.attack.eln.electrical.player=%1$s was electrocuted whilst fighting %2$s
 death.attack.eln.turret=%1$s was shot by a turret
 death.attack.eln.turret.player=%1$s was shot by a turret whilst fighting %2$s
+config.jade.plugin_eln.six_node=Electrical Age: node faces
+config.jade.plugin_eln.transparent_node=Electrical Age: machines
+config.jade.plugin_eln.ghost_node=Electrical Age: multiblock parts
