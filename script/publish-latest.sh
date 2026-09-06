@@ -43,7 +43,7 @@ Passed build, unit tests, benchmarks, and server/restart/client smoke tests: [CI
 
 Download **ElectricalAge-1.21.1-latest.jar** below and place it in your mods folder.
 SHA256SUMS.txt contains its checksum. Screenshots and test reports are attached to the CI run.
-This rolling prerelease is replaced by newer passing builds from main.
+This rolling release is automatically updated by newer passing builds from main.
 EOF
 
 if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
@@ -52,10 +52,10 @@ if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
     gh release upload "$tag" --repo "$GITHUB_REPOSITORY" --clobber \
         release-output/ElectricalAge-1.21.1-latest.jar release-output/SHA256SUMS.txt
     gh release edit "$tag" --repo "$GITHUB_REPOSITORY" \
-        --title "$title" --notes-file "$notes" --prerelease
+        --title "$title" --notes-file "$notes" --prerelease=false --latest
 else
     gh release create "$tag" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
-        --title "$title" --notes-file "$notes" --prerelease \
+        --title "$title" --notes-file "$notes" --latest \
         release-output/ElectricalAge-1.21.1-latest.jar release-output/SHA256SUMS.txt
 fi
 
