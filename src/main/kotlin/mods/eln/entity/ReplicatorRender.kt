@@ -1,17 +1,17 @@
 package mods.eln.entity
 
-import net.minecraft.client.model.Model
+import net.minecraft.client.model.SilverfishModel
+import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.client.renderer.entity.MobRenderer
-import net.minecraft.client.renderer.entity.EntityRenderDispatcher
 import net.minecraft.resources.ResourceLocation
 
-/** MobRenderer is generic over its entity and takes the EntityRenderDispatcher since 1.8. */
-class ReplicatorRender(manager: EntityRenderDispatcher, model: Model, shadowSize: Float) :
-    MobRenderer<ReplicatorEntity>(manager, model, shadowSize) {
+/** Upstream draws the replicator with vanilla's silverfish model and its own texture. */
+class ReplicatorRender(context: EntityRendererProvider.Context, model: SilverfishModel<ReplicatorEntity>, shadowSize: Float) :
+    MobRenderer<ReplicatorEntity, SilverfishModel<ReplicatorEntity>>(context, model, shadowSize) {
 
-    override fun getEntityTexture(entity: ReplicatorEntity): ResourceLocation = RES
+    override fun getTextureLocation(entity: ReplicatorEntity): ResourceLocation = RES
 
     companion object {
-        private val RES = ResourceLocation("eln:textures/entity/replicator.png")
+        private val RES = ResourceLocation.fromNamespaceAndPath("eln", "textures/entity/replicator.png")
     }
 }

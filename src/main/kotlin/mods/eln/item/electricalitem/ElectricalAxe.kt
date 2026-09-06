@@ -5,7 +5,7 @@ import mods.eln.misc.Utils
 import mods.eln.sim.IProcess
 import mods.eln.wiki.Data
 import net.minecraft.world.level.block.Block
-import net.minecraft.block.material.Material
+import net.minecraft.tags.BlockTags
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.Item
@@ -38,9 +38,9 @@ class ElectricalAxe(name: String, strengthOn: Float, strengthOff: Float,
     }
 
     override fun getDestroySpeed(stack: ItemStack, state: BlockState): Float {
-        val material = state.material
+        // 1.20+: block materials are gone; the axe's targets are the mineable/axe tag plus plants and vines.
         return when {
-            material === Material.WOOD || material === Material.PLANTS || material === Material.VINE -> getStrength(stack)
+            state.`is`(BlockTags.MINEABLE_WITH_AXE) || state.`is`(BlockTags.REPLACEABLE_BY_TREES) || state.`is`(BlockTags.LEAVES) || state.`is`(BlockTags.SAPLINGS) -> getStrength(stack)
             else -> super.getDestroySpeed(stack, state)
         }
     }
@@ -154,7 +154,7 @@ object TreeCapitation : IProcess {
         if (world.isClientSide)
             return
 
-        val dim = world.dimension()
+        val dim = mods.eln.misc.DimensionIds.id(world)
         blockSwappers[dim] = blockSwappers[dim]?.plus(swapper) ?: listOf(swapper)
     }
 
@@ -275,8 +275,8 @@ object TreeCapitation : IProcess {
                     val adjState = world.getBlockState(adj)
                     val block = adjState.block
 
-                    val isWood = block.isWood(world, adj)
-                    val isLeaf = block.isLeaves(adjState, world, adj)
+                    val isWood = adjState.`is`(BlockTags.LOGS)
+                    val isLeaf = adjState.`is`(BlockTags.LEAVES)
 
                     // If it's not wood or a leaf, we aren't interested.
                     if (!isWood && !isLeaf)
@@ -370,8 +370,8 @@ object TreeCapitation : IProcess {
         val state = world.getBlockState(pos)
         val block = state.block
 
-        if (!block.isAir(state, world, pos) && state.getPlayerRelativeBlockHardness(player, world, pos) > 0) {
-            if (!block.canHarvestBlock(world, pos, player))
+        if (!state.isAir && state.getDestroyProgress(player, world, pos) > 0) {
+            if (!block.canHarvestBlock(state, world, pos, player))
                 return
 
             if (!player.isCreative()) {
@@ -384,15 +384,15 @@ object TreeCapitation : IProcess {
                     // hands it to the block so drops that depend on it (inventories, our own
                     // node blocks) can still read it.
                     val tileEntity = world.getBlockEntity(pos)
-                    block.onBlockHarvested(world, pos, state, player)
+                    block.playerWillDestroy(world, pos, state, player)
 
-                    if (block.removedByPlayer(state, world, pos, player, true)) {
-                        block.onPlayerDestroy(world, pos, state)
-                        block.harvestBlock(world, player, pos, state, tileEntity, stack)
+                    if (block.onDestroyedByPlayer(state, world, pos, player, true, world.getFluidState(pos))) {
+                        block.destroy(world, pos, state)
+                        block.playerDestroy(world, player, pos, state, tileEntity, stack)
                     }
                 }
             } else {
-                world.setBlockToAir(pos)
+                world.removeBlock(pos, false)
             }
         }
     }

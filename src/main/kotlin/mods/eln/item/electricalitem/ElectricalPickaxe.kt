@@ -5,7 +5,7 @@ import mods.eln.item.electricalitem.TreeCapitation.removeBlockWithDrops
 import mods.eln.misc.Utils
 import mods.eln.wiki.Data
 import net.minecraft.world.level.block.Block
-import net.minecraft.block.material.Material
+import net.minecraft.tags.BlockTags
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.Item
@@ -28,9 +28,9 @@ class ElectricalPickaxe(name: String, strengthOn: Float, strengthOff: Float,
     }
 
     override fun getDestroySpeed(stack: ItemStack, state: BlockState): Float {
-        val material = state.material
+        // 1.20+: block materials are gone; the pickaxe's targets are the mineable/pickaxe tag.
         var value = when {
-            material === Material.IRON || material === Material.GLASS || material === Material.ANVIL || material === Material.ROCK -> getStrength(stack)
+            state.`is`(BlockTags.MINEABLE_WITH_PICKAXE) -> getStrength(stack)
             else -> super.getDestroySpeed(stack, state)
         }
         if (blocksEffectiveAgainst.any { it == state.block }) {
@@ -65,7 +65,7 @@ class ElectricalPickaxe(name: String, strengthOn: Float, strengthOff: Float,
                 for (b in (-1..0)) {
                     for (c in (-1..1)) {
                         if (a == 0 && b == 0 && c == 0) continue
-                        removeBlockWithDrops(entity, this, stack, w, pos.add(a, b, c))
+                        removeBlockWithDrops(entity, this, stack, w, pos.offset(a, b, c))
                     }
                 }
             }

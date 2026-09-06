@@ -4,10 +4,11 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import mods.eln.Eln
 import net.minecraft.core.BlockPos
+import net.minecraft.core.Holder
+import net.minecraft.core.registries.Registries
+import net.minecraft.resources.ResourceKey
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.biome.Biome
-import net.neoforged.fml.util.ObfuscationReflectionHelper
-import java.lang.reflect.Field
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
 import java.util.Locale
@@ -31,9 +32,10 @@ object BiomeClimateService {
     private const val DEEP_UNDERGROUND_AMBIENT_C = 40.0
 
     private val profilesByBiomeName = HashMap<String, BiomeClimateProfile>()
-    private val profilesByBiomeId = HashMap<Int, BiomeClimateProfile>()
+    /** Profiles by biome registry key ("minecraft:frozen_ocean"); biomes are a dynamic registry since 1.16. */
+    private val profilesByBiomeId = HashMap<String, BiomeClimateProfile>()
     private val missingProfileBiomeKeys = HashSet<String>()
-    private val weatherByDimension = HashMap<Int, WeatherSnapshot>()
+    private val weatherByDimension = HashMap<ResourceKey<Level>, WeatherSnapshot>()
     @Volatile private var loaded = false
     @Volatile private var startupAuditComplete = false
 
@@ -76,7 +78,7 @@ object BiomeClimateService {
     }
 
     private fun resolvePrecipitationType(
-        biome: Biome?,
+        biome: Holder<Biome>?,
         x: Int,
         y: Int,
         z: Int,
@@ -88,10 +90,10 @@ object BiomeClimateService {
         return "rain"
     }
 
-    private fun resolveProfileForBiome(biome: Biome?): BiomeClimateProfile {
+    private fun resolveProfileForBiome(biome: Holder<Biome>?): BiomeClimateProfile {
         if (biome != null) {
             synchronized(this) {
-                profilesByBiomeId[Biome.getIdForBiome(biome)]?.let { return it }
+                profilesByBiomeId[biomeKey(biome)]?.let { return it }
             }
         }
 
@@ -109,7 +111,7 @@ object BiomeClimateService {
 
         if (biome != null) {
             synchronized(this) {
-                profilesByBiomeId[Biome.getIdForBiome(biome)] = resolved
+                profilesByBiomeId[biomeKey(biome)] = resolved
             }
         }
         return resolved
@@ -143,16 +145,15 @@ object BiomeClimateService {
                 return
             }
 
-            val missingEntries = ArrayList<Pair<Int, String>>()
-            Biome.REGISTRY
-                .filterNotNull()
-                .forEach { biome ->
-                    val name = biomeDisplayName(biome) ?: return@forEach
-                    if (findProfileForBiomeName(name) == null) {
-                        missingProfileBiomeKeys.add(normalizeKey(name))
-                        missingEntries.add(Biome.getIdForBiome(biome) to name)
-                    }
+            val missingEntries = ArrayList<Pair<String, String>>()
+            val registry = mods.eln.misc.McRegistries.access().registryOrThrow(Registries.BIOME)
+            registry.holders().forEach { biome ->
+                val name = biomeDisplayName(biome) ?: return@forEach
+                if (findProfileForBiomeName(name) == null) {
+                    missingProfileBiomeKeys.add(normalizeKey(name))
+                    missingEntries.add(biomeKey(biome) to name)
                 }
+            }
 
             if (missingEntries.isEmpty()) {
                 Eln.logger.info("Biome climate startup audit: all registered biomes have climate profiles.")
@@ -223,22 +224,15 @@ object BiomeClimateService {
         return out
     }
 
-    private fun isSnowBiome(biome: Biome?, x: Int, y: Int, z: Int): Boolean {
+    private fun isSnowBiome(biome: Holder<Biome>?, x: Int, y: Int, z: Int): Boolean {
         if (biome == null) {
             return false
         }
-        if (biome.enableSnow) {
+        val pos = BlockPos(x, y, z)
+        if (biome.value().getPrecipitationAt(pos) == Biome.Precipitation.SNOW) {
             return true
         }
-        return biome.safeTemperature(x, y, z) <= 0.15f
-    }
-
-    private fun Biome.safeTemperature(x: Int, y: Int, z: Int): Float {
-        return try {
-            getTemperature(BlockPos(x, y, z))
-        } catch (_: Exception) {
-            0.8f
-        }
+        return biome.value().baseTemperature <= 0.15f
     }
 
     @JvmStatic
@@ -433,29 +427,16 @@ object BiomeClimateService {
         }
     }
 
-    /**
-     * Biome.getBiomeName() is @SideOnly(CLIENT) on 1.12 and stripped from the dedicated server, but
-     * the field behind it carries the same 1.7.10-style names the climate profiles are keyed by
-     * ("FrozenOcean", "Extreme Hills+"). Read the field directly on both sides; fall back to the
-     * registry path so a biome without a display name still gets a key.
-     */
-    private val biomeNameField: Field? by lazy {
-        try {
-            ObfuscationReflectionHelper.findField(Biome::class.java, "biomeName", "field_76791_y")
-        } catch (_: Throwable) {
-            null
-        }
-    }
+    /** The registry key ("minecraft:frozen_ocean"), or a stable stand-in for an unkeyed (inline) biome. */
+    private fun biomeKey(biome: Holder<Biome>): String =
+        biome.unwrapKey().map { it.location().toString() }.orElse("inline:" + System.identityHashCode(biome.value()))
 
-    private fun biomeDisplayName(biome: Biome): String? {
-        val fromField = try {
-            biomeNameField?.get(biome) as? String
-        } catch (_: Throwable) {
-            null
-        }
-        if (!fromField.isNullOrBlank()) return fromField
-        return biome.registryName?.path
-    }
+    /**
+     * The 1.7.10 climate profiles are keyed by display name ("Frozen Ocean"); the registry path
+     * ("frozen_ocean") reaches the same key through the underscore-to-space candidate.
+     */
+    private fun biomeDisplayName(biome: Holder<Biome>): String? =
+        biome.unwrapKey().map { it.location().path }.orElse(null)
 
     private fun normalizeKey(biomeName: String): String {
         return biomeName.trim().lowercase(Locale.ROOT)

@@ -56,14 +56,14 @@ open class TransparentNodeElementInventory : WorldlyContainer, INBTTReady, IUtil
     override fun isEmpty(): Boolean = inv.all { it.isEmpty }
 
     override fun removeItem(slot: Int, amt: Int): ItemStack {
-        var stack = getStackInSlot(slot)
+        var stack = getItem(slot)
         if (!stack.isEmpty) {
             if (stack.count <= amt) {
-                setInventorySlotContents(slot, ItemStack.EMPTY)
+                setItem(slot, ItemStack.EMPTY)
             } else {
                 stack = stack.split(amt)
                 if (stack.count == 0) {
-                    setInventorySlotContents(slot, ItemStack.EMPTY)
+                    setItem(slot, ItemStack.EMPTY)
                 }
             }
         }
@@ -72,35 +72,27 @@ open class TransparentNodeElementInventory : WorldlyContainer, INBTTReady, IUtil
 
     /** 1.11 renamed getStackInSlotOnClosing; the semantics (take the slot's contents) are unchanged. */
     override fun removeItemNoUpdate(slot: Int): ItemStack {
-        val stack = getStackInSlot(slot)
+        val stack = getItem(slot)
         if (!stack.isEmpty) {
-            setInventorySlotContents(slot, ItemStack.EMPTY)
+            setItem(slot, ItemStack.EMPTY)
         }
         return stack
     }
 
     override fun setItem(slot: Int, stack: ItemStack) {
         inv[slot] = stack
-        if (!stack.isEmpty && stack.count > inventoryStackLimit) {
-            stack.count = inventoryStackLimit
+        if (!stack.isEmpty && stack.count > maxStackSize) {
+            stack.count = maxStackSize
         }
     }
 
-    override fun clear() {
+    override fun clearContent() {
         for (i in inv.indices) inv[i] = ItemStack.EMPTY
     }
 
-    // The mod exposes no synced GUI fields; IInventory requires the accessors regardless.
-    override fun getField(id: Int): Int = 0
-    override fun setField(id: Int, value: Int) {}
-    override fun getFieldCount(): Int = 0
 
-    /** IInventory extends IWorldNameable on 1.11+, replacing getInventoryName/hasCustomInventoryName. */
-    override fun getName(): String = "tco.TransparentNodeInventory"
 
-    override fun hasCustomName(): Boolean = false
 
-    override fun getDisplayName(): Component = Component.literal(name)
 
     override fun getMaxStackSize(): Int {
         return stackLimit
@@ -130,7 +122,7 @@ open class TransparentNodeElementInventory : WorldlyContainer, INBTTReady, IUtil
         for (idx in 0..5) {
             val lol = getAccessibleSlotsFromSide(idx)
             for (hohoho in lol) {
-                if (hohoho == i && canInsertItem(i, itemstack, idx)) {
+                if (hohoho == i && canPlaceItemThroughFace(i, itemstack, idx)) {
                     return true
                 }
             }
@@ -146,13 +138,13 @@ open class TransparentNodeElementInventory : WorldlyContainer, INBTTReady, IUtil
     // int-sided ones that subclasses actually override.
 
     final override fun getSlotsForFace(side: Direction): IntArray =
-        getAccessibleSlotsFromSide(side.index)
+        getAccessibleSlotsFromSide(side.get3DDataValue())
 
-    final override fun canPlaceItemThroughFace(slot: Int, stack: ItemStack, side: Direction): Boolean =
-        canInsertItem(slot, stack, side.index)
+    final override fun canPlaceItemThroughFace(slot: Int, stack: ItemStack, side: Direction?): Boolean =
+        canPlaceItemThroughFace(slot, stack, side?.get3DDataValue() ?: 0)
 
     final override fun canTakeItemThroughFace(slot: Int, stack: ItemStack, side: Direction): Boolean =
-        canExtractItem(slot, stack, side.index)
+        canTakeItemThroughFace(slot, stack, side.get3DDataValue())
 
     open fun getAccessibleSlotsFromSide(side: Int): IntArray = intArrayOf()
 

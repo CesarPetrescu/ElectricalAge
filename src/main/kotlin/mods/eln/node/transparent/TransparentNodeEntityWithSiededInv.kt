@@ -35,8 +35,8 @@ class TransparentNodeEntityWithSiededInv : TransparentNodeEntity(), ISidedInvent
         return sidedInventory.removeItem(var1, var2)
     }
 
-    override fun getStackInSlotOnClosing(var1: Int): ItemStack {
-        return sidedInventory.getStackInSlotOnClosing(var1)
+    override fun removeItemNoUpdate(var1: Int): ItemStack {
+        return sidedInventory.removeItemNoUpdate(var1)
     }
 
     override fun setItem(var1: Int, var2: ItemStack) {

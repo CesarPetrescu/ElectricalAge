@@ -218,7 +218,7 @@ public class ElectricalFurnaceElement extends TransparentNodeElement {
                 stream.writeShort(-1);
             } else {
                 stream.writeShort(Item.getIdFromItem(stack.getItem()));
-                stream.writeShort(stack.getItemDamage() /* TODO(flattening) */);
+                stream.writeShort(stack.getItemDamage());
             }
 
             stream.writeShort((int) heatingCorpResistor.getPower());

@@ -20,7 +20,7 @@ public class SlotFilter extends SlotWithSkinAndComment {
      * Check if the stack is a valid item for this slot. Always true beside for
      * the armor slots.
      */
-    public boolean isItemValid(ItemStack itemStack) {
+    public boolean mayPlace(ItemStack itemStack) {
         for (IItemStackFilter filter : itemStackFilter) {
             if (filter.tryItemStack(itemStack))
                 return true;
@@ -29,7 +29,7 @@ public class SlotFilter extends SlotWithSkinAndComment {
     }
 
     @Override
-    public int getSlotStackLimit() {
+    public int getMaxStackSize() {
         // return super.getMaxStackSize();
         return stackLimit;
     }

@@ -17,9 +17,9 @@ import java.util.HashMap
 import java.util.HashSet
 import kotlin.math.abs
 import kotlin.math.floor
+import mods.eln.misc.DimensionIds
 import mods.eln.misc.getBlock
 import mods.eln.misc.getBlockState
-import mods.eln.misc.isAirBlock
 import mods.eln.misc.isBlockLoaded
 import mods.eln.misc.isEmptyBlock
 
@@ -116,7 +116,7 @@ object RoomThermalManager {
         if (world.isClientSide) return
 
         val changed = CellPos(x, y, z)
-        val dim = world.dimension()
+        val dim = DimensionIds.id(world)
 
         val touchedRoomIds = HashSet<RoomId>()
         collectRoomIdsAtOrAdjacent(dim, changed, touchedRoomIds)
@@ -145,7 +145,7 @@ object RoomThermalManager {
     )
 
     fun getRoomAt(world: Level, x: Int, y: Int, z: Int): RoomLookup? {
-        val dim = world.dimension()
+        val dim = DimensionIds.id(world)
         val roomId = roomByInteriorCellByDimension[dim]?.get(CellPos(x, y, z)) ?: return null
         val room = roomsById[roomId] ?: return null
         return RoomLookup(
@@ -275,11 +275,11 @@ object RoomThermalManager {
         val thermalNodeCoordsByDimension = collectThermalNodeCoordinatesByDimension()
 
         for (player in players) {
-            val world = player.level ?: continue
+            val world = player.level() ?: continue
             if (world.isClientSide) continue
-            if (dimensionFilter != null && !dimensionFilter.contains(world.dimension())) continue
+            if (dimensionFilter != null && !dimensionFilter.contains(DimensionIds.id(world))) continue
 
-            val thermalNodes = thermalNodeCoordsByDimension[world.dimension()] ?: continue
+            val thermalNodes = thermalNodeCoordsByDimension[DimensionIds.id(world)] ?: continue
             if (thermalNodes.isEmpty()) continue
 
             val seed = findPlayerAirSeed(player) ?: continue
@@ -316,7 +316,7 @@ object RoomThermalManager {
     }
 
     private fun findPlayerAirSeed(player: ServerPlayer): CellPos? {
-        val world = player.level ?: return null
+        val world = player.level() ?: return null
         val baseX = floor(player.x).toInt()
         val baseY = floor(player.y).toInt()
         val baseZ = floor(player.z).toInt()
@@ -403,7 +403,7 @@ object RoomThermalManager {
         )
 
         return RoomCandidate(
-            dimension = world.dimension(),
+            dimension = DimensionIds.id(world),
             interiorCells = visited,
             bounds = bounds
         )
@@ -494,8 +494,7 @@ object RoomThermalManager {
         if (tickCounter - room.lastDoorScanTick < ROOM_DOOR_SCAN_INTERVAL_TICKS) return
         room.lastDoorScanTick = tickCounter
 
-        val server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer() ?: return
-        val world = server.getWorld(room.dimension) ?: return
+        val world = DimensionIds.serverLevel(room.dimension) ?: return
         if (world.isClientSide) return
 
         room.openDoorCount = countOpenBoundaryDoors(world, room.interiorCells)
@@ -530,7 +529,7 @@ object RoomThermalManager {
     private fun toDoorBottomCell(world: Level, cell: CellPos): CellPos? {
         if (!world.isBlockLoaded(cell.x, cell.y, cell.z)) return null
         val state = world.getBlockState(cell.x, cell.y, cell.z)
-        if (state.propertyKeys.contains(DoorBlock.HALF) && state.getValue(DoorBlock.HALF) == DoorBlock.EnumDoorHalf.LOWER) return cell
+        if (state.hasProperty(DoorBlock.HALF) && state.getValue(DoorBlock.HALF) == net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER) return cell
         if (cell.y <= 0) return null
         val bottom = CellPos(cell.x, cell.y - 1, cell.z)
         if (!world.isBlockLoaded(bottom.x, bottom.y, bottom.z)) return null
@@ -542,8 +541,7 @@ object RoomThermalManager {
         if (!world.isBlockLoaded(doorBottomCell.x, doorBottomCell.y, doorBottomCell.z)) return false
         val state = world.getBlockState(doorBottomCell.x, doorBottomCell.y, doorBottomCell.z)
         if (state.block !is DoorBlock) return false
-        // The open flag only lives on the lower half's state in 1.12.2.
-        return state.propertyKeys.contains(DoorBlock.OPEN) && state.getValue(DoorBlock.OPEN)
+        return state.hasProperty(DoorBlock.OPEN) && state.getValue(DoorBlock.OPEN)
     }
 
     private fun createRoomId(candidate: RoomCandidate): RoomId {
@@ -699,12 +697,12 @@ object RoomThermalManager {
 
     private fun boundsToNbt(bounds: RoomBounds): CompoundTag {
         return CompoundTag().apply {
-            setInteger(NBT_MIN_X, bounds.minX)
-            setInteger(NBT_MIN_Y, bounds.minY)
-            setInteger(NBT_MIN_Z, bounds.minZ)
-            setInteger(NBT_MAX_X, bounds.maxX)
-            setInteger(NBT_MAX_Y, bounds.maxY)
-            setInteger(NBT_MAX_Z, bounds.maxZ)
+            putInt(NBT_MIN_X, bounds.minX)
+            putInt(NBT_MIN_Y, bounds.minY)
+            putInt(NBT_MIN_Z, bounds.minZ)
+            putInt(NBT_MAX_X, bounds.maxX)
+            putInt(NBT_MAX_Y, bounds.maxY)
+            putInt(NBT_MAX_Z, bounds.maxZ)
         }
     }
 

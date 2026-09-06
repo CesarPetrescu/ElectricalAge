@@ -71,7 +71,7 @@ abstract class NodeBase {
 
     open fun networkUnserialize(stream: DataInputStream, player: ServerPlayer?) {}
     fun notifyNeighbor() {
-        coordinate.world().updateNeighborsAt(coordinate.pos, coordinate.block, false)
+        coordinate.world().updateNeighborsAt(coordinate.pos, coordinate.block)
     }
 
     //public abstract Block getBlock();
@@ -123,7 +123,7 @@ abstract class NodeBase {
         coordinate.world().setBlockToAir(coordinate.x, coordinate.y, coordinate.z)
         NodeManager.instance!!.removeNode(this)
         if (explosionStrength != 0f) {
-            coordinate.world().createExplosion(null as Entity?, coordinate.x.toDouble(), coordinate.y.toDouble(), coordinate.z.toDouble(), explosionStrength, true)
+            coordinate.world().explode(null as Entity?, coordinate.x.toDouble(), coordinate.y.toDouble(), coordinate.z.toDouble(), explosionStrength, true, Level.ExplosionInteraction.BLOCK)
         }
     }
 
@@ -132,7 +132,7 @@ abstract class NodeBase {
         neighborBlockRead()
         NodeManager.instance!!.addNode(this)
         initializeFromThat(front, entityLiving, itemStack)
-        if (!itemStack.isNothing()) println("Node::constructor( meta = " + itemStack.itemDamage + ")")
+        if (!itemStack.isNothing()) println("Node::constructor( item = " + itemStack.item + ")")
     }
 
     abstract fun initializeFromThat(front: Direction, entityLiving: LivingEntity?, itemStack: ItemStack?)
@@ -155,7 +155,7 @@ abstract class NodeBase {
     }
 
     open fun onBlockActivated(entityPlayer: Player, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
-        if (!entityPlayer.level.isClientSide && !entityPlayer.mainHandItem.isNothing()) {
+        if (!entityPlayer.level().isClientSide && !entityPlayer.mainHandItem.isNothing()) {
             val equipped = entityPlayer.mainHandItem
             if (Eln.multiMeterElement.checkSameItemStack(equipped)) {
                 val str = multiMeterString(side)
@@ -425,14 +425,10 @@ abstract class NodeBase {
     }
 
     private inline fun forEachWatchingPlayer(action: (ServerPlayer) -> Unit) {
-        val server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer() ?: return
-        val worldServer = server.getWorld(coordinate.dimension) ?: return
-        val chunkMap = worldServer.playerChunkMap
-        val chunkX = coordinate.x shr 4
-        val chunkZ = coordinate.z shr 4
-        for (player in server.playerList.players) {
-            if (player.dimension != coordinate.dimension) continue
-            if (!chunkMap.isPlayerWatchingChunk(player, chunkX, chunkZ)) continue
+        val worldServer = mods.eln.misc.DimensionIds.serverLevel(coordinate.dimension) ?: return
+        // 1.21: the chunk map knows which players track a chunk (1.7.10's PlayerManager.isPlayerWatchingChunk).
+        val chunkPos = net.minecraft.world.level.ChunkPos(coordinate.x shr 4, coordinate.z shr 4)
+        for (player in worldServer.chunkSource.chunkMap.getPlayers(chunkPos, false)) {
             action(player)
         }
     }
@@ -474,13 +470,13 @@ abstract class NodeBase {
 
     fun dropItem(itemStack: ItemStack?) {
         if (itemStack.isNothing()) return
-        if (coordinate.world().gameRules.getBoolean("doTileDrops")) {
+        if (coordinate.world().gameRules.getBoolean(net.minecraft.world.level.GameRules.RULE_DOBLOCKDROPS)) {
             val var6 = 0.7f
-            val var7 = (coordinate.world().rand.nextFloat() * var6).toDouble() + (1.0f - var6).toDouble() * 0.5
-            val var9 = (coordinate.world().rand.nextFloat() * var6).toDouble() + (1.0f - var6).toDouble() * 0.5
-            val var11 = (coordinate.world().rand.nextFloat() * var6).toDouble() + (1.0f - var6).toDouble() * 0.5
+            val var7 = (coordinate.world().random.nextFloat() * var6).toDouble() + (1.0f - var6).toDouble() * 0.5
+            val var9 = (coordinate.world().random.nextFloat() * var6).toDouble() + (1.0f - var6).toDouble() * 0.5
+            val var11 = (coordinate.world().random.nextFloat() * var6).toDouble() + (1.0f - var6).toDouble() * 0.5
             val var13 = ItemEntity(coordinate.world(), coordinate.x.toDouble() + var7, coordinate.y.toDouble() + var9, coordinate.z.toDouble() + var11, itemStack)
-            var13.setPickupDelay(10)
+            var13.setPickUpDelay(10)
             coordinate.world().addFreshEntity(var13)
         }
     }
@@ -526,13 +522,12 @@ abstract class NodeBase {
         var teststatic = 0
         @JvmStatic
         fun isBlockWrappable(block: Block, w: Level?, x: Int, y: Int, z: Int): Boolean {
-            if (w != null && block.isReplaceable(w, BlockPos(x, y, z))) return true
+            if (w != null && w.getBlockState(BlockPos(x, y, z)).canBeReplaced()) return true
             if (block === Blocks.AIR) return true
             if (block === Eln.sixNodeBlock) return true
             if (block is GhostBlock) return true
-            if (block === Blocks.TORCH) return true
-            if (block === Blocks.REDSTONE_TORCH) return true
-            if (block === Blocks.UNLIT_REDSTONE_TORCH) return true
+            if (block === Blocks.TORCH || block === Blocks.WALL_TORCH) return true
+            if (block === Blocks.REDSTONE_TORCH || block === Blocks.REDSTONE_WALL_TORCH) return true
             return block === Blocks.REDSTONE_WIRE
         }
 

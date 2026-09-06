@@ -65,12 +65,12 @@ public class ItemDefault extends Default {
                             Recipe r = (Recipe) o;
 
                             ItemStack out = r.getRecipeOutput();
-                            if (out != null && out.getItem() == stack.getItem() && out.getItemDamage() /* TODO(flattening) */ == stack.getItemDamage() /* TODO(flattening) */) {
+                            if (out != null && out.getItem() == stack.getItem() && out.getItemDamage() == stack.getItemDamage()) {
                                 recipeOutList.add(r);
                             }
 
                             for (ItemStack rStack : Utils.getRecipeInputs(r)) {
-                                if (!McBridge.isNothing(rStack) && rStack.getItem() == stack.getItem() && rStack.getItemDamage() /* TODO(flattening) */ == stack.getItemDamage() /* TODO(flattening) */) {
+                                if (!McBridge.isNothing(rStack) && rStack.getItem() == stack.getItem() && rStack.getItemDamage() == stack.getItemDamage()) {
                                     recipeInList.add(r);
                                     break;
                                 }

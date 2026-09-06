@@ -20,7 +20,7 @@ open class TransparentNodeRequestPacket : IMessage {
         coord = c
     }
 
-    override fun fromBytes(buf: ByteBuf?) {
+    override fun fromBytes(buf: ByteBuf) {
         val x = ByteBufUtils.readVarInt(buf, 5)
         val y = ByteBufUtils.readVarInt(buf, 5)
         val z = ByteBufUtils.readVarInt(buf, 5)
@@ -28,7 +28,7 @@ open class TransparentNodeRequestPacket : IMessage {
         coord = Coordinate(x, y, z, w)
     }
 
-    override fun toBytes(buf: ByteBuf?) {
+    override fun toBytes(buf: ByteBuf) {
         ByteBufUtils.writeVarInt(buf, coord.x, 5)
         ByteBufUtils.writeVarInt(buf, coord.y, 5)
         ByteBufUtils.writeVarInt(buf, coord.z, 5)

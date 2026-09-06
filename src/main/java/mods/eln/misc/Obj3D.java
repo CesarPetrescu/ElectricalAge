@@ -244,21 +244,21 @@ public class Obj3D {
         public void draw() {
             if (locked) return;
 
-            //	Minecraft.getInstance().profiler.startSection("OBJ");
+            //	Minecraft.getInstance().profiler.push("OBJ");
             for (FaceGroup fg : faceGroup) {
                 fg.draw();
             }
-            //	Minecraft.getInstance().profiler.endSection();
+            //	Minecraft.getInstance().profiler.pop();
         }
 
         public void draw(float texOffsetX, float texOffsetY) {
             if (locked) return;
 
-            //	Minecraft.getInstance().profiler.startSection("OBJ");
+            //	Minecraft.getInstance().profiler.push("OBJ");
             for (FaceGroup fg : faceGroup) {
                 fg.drawVertex(texOffsetX, texOffsetY);
             }
-            //	Minecraft.getInstance().profiler.endSection();
+            //	Minecraft.getInstance().profiler.pop();
         }
 
         // Returns the bounding box of the vertices we'd draw.

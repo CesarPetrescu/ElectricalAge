@@ -219,6 +219,16 @@ public final class FixedFunction {
         state.texture = texture;
     }
 
+    /**
+     * Draws an item's baked model at the current matrix (what the 1.7.10 code did by rendering an
+     * EntityItem in place). World renders only: in a GUI, GuiGraphics.renderItem is the way.
+     */
+    public static void drawItem(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.ItemDisplayContext context) {
+        if (buffers == null || stack.isEmpty()) return;
+        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+        mc.getItemRenderer().renderStatic(stack, context, packedLight, packedOverlay, pose, buffers, mc.level, 0);
+    }
+
     /** The texture bound through {@link #bindTexture}; the GUI helpers blit from it. */
     public static ResourceLocation texture() {
         return state.texture;

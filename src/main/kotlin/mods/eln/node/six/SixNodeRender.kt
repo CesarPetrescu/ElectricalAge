@@ -8,7 +8,7 @@ import mods.eln.client.gl.GL11
 
 class SixNodeRender : BlockEntityRenderer<SixNodeEntity>() {
     override fun render(entity: SixNodeEntity, x: Double, y: Double, z: Double, partialTicks: Float, destroyStage: Int, alpha: Float) {
-        Minecraft.getInstance().profiler.startSection("SixNode")
+        Minecraft.getInstance().profiler.push("SixNode")
         val tileEntity = entity
         GL11.glPushMatrix()
         GL11.glTranslatef(x.toFloat() + .5f, y.toFloat() + .5f, z.toFloat() + .5f)
@@ -23,6 +23,6 @@ class SixNodeRender : BlockEntityRenderer<SixNodeEntity>() {
             }
         }
         GL11.glPopMatrix()
-        Minecraft.getInstance().profiler.endSection()
+        Minecraft.getInstance().profiler.pop()
     }
 }

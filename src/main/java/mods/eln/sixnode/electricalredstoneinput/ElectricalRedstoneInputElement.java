@@ -136,10 +136,10 @@ public class ElectricalRedstoneInputElement extends SixNodeElement {
 				sixNode.reconnect();
 			}
 			if (item == Eln.brushItem) {
-				if (currentItemStack.getItemDamage() /* TODO(flattening) */ < BrushItem.maximalUse) {
-					color = currentItemStack.getItemDamage() /* TODO(flattening) */ & 0xF;
+				if (currentItemStack.getItemDamage() < BrushItem.maximalUse) {
+					color = currentItemStack.getItemDamage() & 0xF;
 					
-					currentItemStack.setItemDamage(currentItemStack.getItemDamage() /* TODO(flattening) */ + 16);
+					currentItemStack.setItemDamage(currentItemStack.getItemDamage() + 16);
 					
 					sixNode.reconnect();
 				} else {

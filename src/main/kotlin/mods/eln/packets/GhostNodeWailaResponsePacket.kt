@@ -37,7 +37,7 @@ class GhostNodeWailaResponsePacket(var coord: Coordinate = Coordinate(0, 0, 0, 0
         }
     }
 
-    override fun fromBytes(buf: ByteBuf?) {
+    override fun fromBytes(buf: ByteBuf) {
         coord.read(buf)
         realCoord.read(buf)
         itemStack = ByteBufUtils.readItemStack(buf)
@@ -45,7 +45,7 @@ class GhostNodeWailaResponsePacket(var coord: Coordinate = Coordinate(0, 0, 0, 0
         realSide = Direction.fromInt(buf?.readInt() ?: 0)!!
     }
 
-    override fun toBytes(buf: ByteBuf?) {
+    override fun toBytes(buf: ByteBuf) {
         coord.write(buf)
         realCoord.write(buf)
         ByteBufUtils.writeItemStack(buf, itemStack)

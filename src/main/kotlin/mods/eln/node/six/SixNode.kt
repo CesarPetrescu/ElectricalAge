@@ -24,6 +24,8 @@ import mods.eln.sim.ThermalLoad
 import mods.eln.sixnode.lampsocket.LampSocketDescriptor
 import mods.eln.sixnode.lampsocket.LampSocketElement
 import net.minecraft.world.level.block.Block
+import mods.eln.misc.blockById
+import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.server.level.ServerPlayer
@@ -81,7 +83,7 @@ class SixNode : Node() {
         val descriptor = Eln.sixNodeItem.getDescriptor(itemStack)
         if (sideElementList[direction.int] != null) return false
         try {
-            sideElementIdList[direction.int] = itemStack.itemDamage //Je sais c'est moche !
+            sideElementIdList[direction.int] = descriptor!!.parentItemDamage // the legacy sub-id (was the item damage)
             sideElementList[direction.int] = descriptor!!.ElementClass.getConstructor(SixNode::class.java, Direction::class.java, SixNodeDescriptor::class.java).newInstance(this, direction, descriptor) as SixNodeElement
             if (descriptor is LampSocketDescriptor) {
                 LampSocketElement.placingPlayerIsCreative = player is ServerPlayer && isCreative(player)
@@ -90,7 +92,7 @@ class SixNode : Node() {
             disconnect()
             sideElementList[direction.int]!!.front = descriptor.getFrontFromPlace(direction, player!!)!!
             sideElementList[direction.int]!!.initialize()
-            sideElementIdList[direction.int] = itemStack.itemDamage
+            sideElementIdList[direction.int] = descriptor.parentItemDamage
             connect()
             println("createSubBlock " + sideElementIdList[direction.int] + " " + direction)
             needPublish = true
@@ -144,7 +146,7 @@ class SixNode : Node() {
 
     override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt.getCompound("node"))
-        sixNodeCacheBlock = Block.getBlockById(nbt.getInt("cacheBlockId"))
+        sixNodeCacheBlock = blockById(nbt.getInt("cacheBlockId"))
         sixNodeCacheBlockMeta = nbt.getByte("cacheBlockMeta")
         var idx: Int
         idx = 0
@@ -185,7 +187,7 @@ class SixNode : Node() {
 
     override fun writeToNBT(nbt: CompoundTag) {
         var idx = 0
-        nbt.putInt("cacheBlockId", Block.getIdFromBlock(sixNodeCacheBlock))
+        nbt.putInt("cacheBlockId", BuiltInRegistries.BLOCK.getId(sixNodeCacheBlock))
         nbt.putByte("cacheBlockMeta", sixNodeCacheBlockMeta)
         for (sideElement in sideElementList) {
             if (sideElement == null) {
@@ -268,7 +270,7 @@ class SixNode : Node() {
         super.publishSerialize(stream)
         try {
             var idx = 0
-            stream.writeInt(Block.getIdFromBlock(sixNodeCacheBlock))
+            stream.writeInt(BuiltInRegistries.BLOCK.getId(sixNodeCacheBlock))
             stream.writeByte(sixNodeCacheBlockMeta.toInt())
             for (sideElement in sideElementList) {
                 if (sideElement == null) {
@@ -433,7 +435,7 @@ class SixNode : Node() {
         } else {
             val stack = entityPlayer.mainHandItem
             var b = Blocks.AIR
-            if (!stack.isNothing()) b = Block.getBlockFromItem(stack.item)
+            if (!stack.isNothing()) b = Block.byItem(stack.item)
             var isWrenchReplacingBlock = false
             if (ServerKeyHandler.get(ServerKeyHandler.WRENCH) && !stack.isNothing()) {
                 for (a in sixNodeCacheList) {
@@ -448,13 +450,10 @@ class SixNode : Node() {
 
             if (isWrenchReplacingBlock) {
                 needPublish = true
-                if (!isCreative((entityPlayer as ServerPlayer))) entityPlayer.inventory.removeItem(entityPlayer.inventory.currentItem, 1)
+                if (!isCreative((entityPlayer as ServerPlayer))) entityPlayer.inventory.removeItem(entityPlayer.inventory.selected, 1)
 
                 run {
-                    val chunk = coordinate.world().getChunk(coordinate.x shr 4, coordinate.z shr 4)
-                    generateHeightMap(chunk)
-                    updateSkylight(chunk)
-                    chunk.generateSkylightMap()
+                    // 1.21's light engine follows block changes on its own; a manual re-check is all that is left.
                     updateAllLightTypes(coordinate.world(), coordinate.x, coordinate.y, coordinate.z)
                 }
                 true

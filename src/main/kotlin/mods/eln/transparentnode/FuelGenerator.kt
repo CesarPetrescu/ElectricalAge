@@ -27,6 +27,8 @@ import net.minecraft.world.level.material.Fluid
 import mods.eln.fluid.FluidRegistry
 import net.neoforged.neoforge.fluids.FluidStack
 import net.neoforged.neoforge.fluids.FluidUtil
+import net.neoforged.neoforge.fluids.FluidType
+import net.neoforged.neoforge.fluids.capability.IFluidHandler
 import mods.eln.client.gl.GL11
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -69,7 +71,7 @@ class FuelGeneratorDescriptor(name: String, internal val obj: Obj3D?, internal v
         voltageLevelColor = VoltageLevelColor.fromCable(cable)
     }
 
-    override fun setParent(item: net.minecraft.level.item.Item, damage: Int) {
+    override fun setParent(item: net.minecraft.world.item.Item, damage: Int) {
         super.setParent(item, damage)
         Data.addEnergy(newItemStack())
     }
@@ -171,30 +173,30 @@ class FuelGeneratorElement(transparentNode: TransparentNode, descriptor_: Transp
     }
 
     override fun onBlockActivated(player: Player, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
-        if (player.level?.isClientSide == false) {
+        if (!player.level().isClientSide) {
             val held = player.mainHandItem
-            // 1.12.2: FluidContainerRegistry is gone; any item exposing a fluid handler counts as a container,
+            // FluidContainerRegistry is gone; any item exposing a fluid handler counts as a container,
             // but we keep the 1.7.10 rule of only accepting a whole bucket at a time.
-            val contained = if (held.isEmpty) null else FluidUtil.getFluidContained(held)
-            if (contained != null && contained.amount >= Fluid.BUCKET_VOLUME) {
+            val contained = if (held.isEmpty) null else FluidUtil.getFluidContained(held).orElse(null)
+            if (contained != null && contained.amount >= FluidType.BUCKET_VOLUME) {
                 val deltaLevel = 1.0 / FuelGeneratorDescriptor.TankCapacityInBuckets
                 if (tankLevel <= 1.0 - deltaLevel) {
                     val fluid = contained.fluid
                     if ((fluid == tankFluid || tankLevel <= 0.0) && fluid in fuels) {
-                        val handler = FluidUtil.getFluidHandler(held.copy().also { it.count = 1 }) ?: return false
-                        val drained = handler.drain(FluidStack(fluid, Fluid.BUCKET_VOLUME), true)
-                        if (drained == null || drained.amount != Fluid.BUCKET_VOLUME) return false
+                        val handler = FluidUtil.getFluidHandler(held.copyWithCount(1)).orElse(null) ?: return false
+                        val drained = handler.drain(FluidStack(fluid, FluidType.BUCKET_VOLUME), IFluidHandler.FluidAction.EXECUTE)
+                        if (drained.isEmpty || drained.amount != FluidType.BUCKET_VOLUME) return false
                         tankFluid = fluid
                         tankLevel += deltaLevel
-                        if (!player.isCreative()) {
+                        if (!player.isCreative) {
                             val emptied = handler.container
-                            val slot = player.inventory.currentItem
+                            val slot = player.inventory.selected
                             if (held.count <= 1) {
                                 player.inventory.setItem(slot, emptied)
                             } else {
                                 held.shrink(1)
-                                if (!emptied.isEmpty && !player.inventory.addItemStackToInventory(emptied)) {
-                                    player.dropItem(emptied, false)
+                                if (!emptied.isEmpty && !player.inventory.add(emptied)) {
+                                    player.drop(emptied, false)
                                 }
                             }
                         }
@@ -234,7 +236,7 @@ class FuelGeneratorElement(transparentNode: TransparentNode, descriptor_: Transp
     override fun writeToNBT(nbt: CompoundTag) {
         super.writeToNBT(nbt)
         nbt.putDouble("tankLevel", tankLevel)
-        nbt.putString("tankFluid", tankFluid?.name ?: "")
+        nbt.putString("tankFluid", FluidRegistry.getFluidName(tankFluid) ?: "")
         nbt.putBoolean("on", on)
     }
 
@@ -253,7 +255,7 @@ class FuelGeneratorRender(tileEntity: TransparentNodeEntity, descriptor: Transpa
     private val eConn = LRDUMask()
     private var on = false
     private var voltageRatio = SlewLimiter(1f)
-    private val sound = object : LoopedSound("eln:fuelgenerator", coordinate(), SoundInstance.AttenuationType.LINEAR) {
+    private val sound = object : LoopedSound("eln:fuelgenerator", coordinate(), SoundInstance.Attenuation.LINEAR) {
         override fun getVolume() = if (on) 0.2f else 0f
         override fun getPitch() = 0.75f + 1f * voltageRatio.position
     }

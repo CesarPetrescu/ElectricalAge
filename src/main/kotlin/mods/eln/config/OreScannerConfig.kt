@@ -2,12 +2,13 @@ package mods.eln.config
 
 import mods.eln.Eln
 import mods.eln.item.electricalitem.OreScannerConfigElement
-import mods.eln.misc.Utils
-import net.minecraftforge.fml.common.registry.ForgeRegistries
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.tags.BlockTags
+import net.minecraft.tags.TagKey
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
-import net.minecraft.resources.ResourceLocation
-import net.minecraftforge.oredict.OreDictionary
+import net.neoforged.neoforge.common.Tags
 
 /**
  * Loads ore scanner configuration from JsonConfig and resolves ore entries
@@ -60,15 +61,11 @@ object OreScannerConfigLoader {
         val otherModFactor = config.getDoubleOrElse(AUTO_DISCOVERY_FACTOR_KEY, DEFAULT_OTHER_MOD_FACTOR).toFloat()
         val results = mutableListOf<OreScannerConfigElement>()
 
-        for (name in OreDictionary.getOreNames()) {
-            if (name == null || !name.startsWith("ore")) continue
-            for (stack in OreDictionary.getOres(name)) {
-                val damage = stack.itemDamage
-                val meta = if (damage == OreDictionary.WILDCARD_VALUE) 0 else stack.item.getMetadata(damage)
-                val blockKey = Utils.getItemId(stack) + (meta shl 12)
-                if (blockKey !in existingBlockKeys) {
-                    results.add(OreScannerConfigElement(blockKey, otherModFactor))
-                }
+        // 1.13+: the ore dictionary's "ore*" names are the `c:ores` block tag.
+        for (holder in BuiltInRegistries.BLOCK.getTagOrEmpty(Tags.Blocks.ORES)) {
+            val blockKey = BuiltInRegistries.BLOCK.getId(holder.value())
+            if (blockKey !in existingBlockKeys) {
+                results.add(OreScannerConfigElement(blockKey, otherModFactor))
             }
         }
 
@@ -82,28 +79,27 @@ object OreScannerConfigLoader {
         }
         val modid = parts[0]
         val name = parts[1]
-        val meta = if (parts.size >= 3) parts[2].toIntOrNull() ?: 0 else 0
+        // a third part (the 1.7.10 metadata) is ignored: variants are separate blocks now
 
-        val block = ForgeRegistries.BLOCKS.getValue(ResourceLocation(modid, name))
+        val block = BuiltInRegistries.BLOCK.getOptional(ResourceLocation.fromNamespaceAndPath(modid, name)).orElse(null)
         if (block == null || block === Blocks.AIR) {
             return
         }
 
-        val blockKey = Block.getIdFromBlock(block) + (meta shl 12)
+        val blockKey = BuiltInRegistries.BLOCK.getId(block)
         blockKeyMap[blockKey] = factor
     }
 
+    /**
+     * An ore-dictionary name ("oreCopper") is the conventional block tag `c:ores/copper`; a name
+     * that already looks like a tag id ("c:ores/copper" is caught by the ':' branch, so this is
+     * only the 1.7.10 spelling).
+     */
     private fun resolveOreDictionaryName(key: String, factor: Float, blockKeyMap: MutableMap<Int, Float>) {
-        val ores = OreDictionary.getOres(key)
-        if (ores.isEmpty()) {
-            return
-        }
-
-        for (stack in ores) {
-            val damage = stack.itemDamage
-            val meta = if (damage == OreDictionary.WILDCARD_VALUE) 0 else stack.item.getMetadata(damage)
-            val blockKey = Utils.getItemId(stack) + (meta shl 12)
-            blockKeyMap[blockKey] = factor
+        val path = if (key.startsWith("ore") && key.length > 3) "ores/" + key.substring(3).lowercase() else key.lowercase()
+        val tag: TagKey<Block> = BlockTags.create(ResourceLocation.fromNamespaceAndPath("c", path))
+        for (holder in BuiltInRegistries.BLOCK.getTagOrEmpty(tag)) {
+            blockKeyMap[BuiltInRegistries.BLOCK.getId(holder.value())] = factor
         }
     }
 }

@@ -13,11 +13,11 @@ class SoundClientEntity(var sm: SoundManager, var sound: SoundInstance) : IUuidE
             borneTimer--
             return true
         }
-        return sm.isSoundPlaying(sound)
+        return sm.isActive(sound)
     }
 
     override fun kill() {
         println("Sound deleted")
-        sm.stopSound(sound)
+        sm.stop(sound)
     }
 }

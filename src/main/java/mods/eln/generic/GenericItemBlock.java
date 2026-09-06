@@ -38,6 +38,6 @@ public class GenericItemBlock extends BlockItem {
 	/*
 	@Override //caca1.5.1
 	public String getItemNameIS(ItemStack itemstack) {
-		return getItemName() + "." + subNames[itemstack.getItemDamage() /* TODO(flattening) */];
+		return getItemName() + "." + subNames[itemstack.getItemDamage()];
 	}*/
 }

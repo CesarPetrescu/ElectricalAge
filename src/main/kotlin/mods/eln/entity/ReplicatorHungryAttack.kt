@@ -9,7 +9,7 @@ class ReplicatorHungryAttack<T : LivingEntity>(
     targetClass: Class<T>,
     shouldCheckSight: Boolean
 ) : NearestAttackableTargetGoal<T>(replicator, targetClass, shouldCheckSight) {
-    override fun shouldExecute(): Boolean {
+    override fun canUse(): Boolean {
         if (replicator.hunger < replicator.hungerToCanibal) return false
         return super.shouldExecute()
     }

@@ -19,7 +19,7 @@ class SoundClientEventListener(var uuidManager: UuidManager) {
     @Suppress("DEPRECATION")
     fun event(e: PlaySoundSourceEvent) {
         if (currentUuid == null) return
-        uuidManager.add(currentUuid!!, SoundClientEntity(e.manager, e.sound))
+        uuidManager.add(currentUuid!!, SoundClientEntity(net.minecraft.client.Minecraft.getInstance().soundManager, e.sound))
     }
 
     internal class KillSound {
@@ -27,7 +27,7 @@ class SoundClientEventListener(var uuidManager: UuidManager) {
         var sm: SoundManager? = null
 
         fun kill() {
-            sm!!.stopSound(sound)
+            sm!!.stop(sound!!)
         }
     }
 }

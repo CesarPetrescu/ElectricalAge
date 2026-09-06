@@ -52,14 +52,14 @@ class SixNodeElementInventory : Container, INBTTReady, IUtilityCableInventory {
     override fun isEmpty(): Boolean = inv.all { it.isEmpty }
 
     override fun removeItem(slot: Int, amt: Int): ItemStack {
-        var stack = getStackInSlot(slot)
+        var stack = getItem(slot)
         if (!stack.isEmpty) {
             if (stack.count <= amt) {
-                setInventorySlotContents(slot, ItemStack.EMPTY)
+                setItem(slot, ItemStack.EMPTY)
             } else {
                 stack = stack.split(amt)
                 if (stack.count == 0) {
-                    setInventorySlotContents(slot, ItemStack.EMPTY)
+                    setItem(slot, ItemStack.EMPTY)
                 }
             }
         }
@@ -68,9 +68,9 @@ class SixNodeElementInventory : Container, INBTTReady, IUtilityCableInventory {
 
     /** 1.11 renamed getStackInSlotOnClosing; the semantics are unchanged. */
     override fun removeItemNoUpdate(slot: Int): ItemStack {
-        val stack = getStackInSlot(slot)
+        val stack = getItem(slot)
         if (!stack.isEmpty) {
-            setInventorySlotContents(slot, ItemStack.EMPTY)
+            setItem(slot, ItemStack.EMPTY)
         }
         return stack
     }
@@ -78,28 +78,21 @@ class SixNodeElementInventory : Container, INBTTReady, IUtilityCableInventory {
     override fun setItem(slot: Int, stack: ItemStack) {
         try {
             inv[slot] = stack
-            if (!stack.isEmpty && stack.count > inventoryStackLimit) {
-                stack.count = inventoryStackLimit
+            if (!stack.isEmpty && stack.count > maxStackSize) {
+                stack.count = maxStackSize
             }
         } catch (e: Exception) {
             // TODO: handle exception
         }
     }
 
-    override fun clear() {
+    override fun clearContent() {
         for (i in inv.indices) inv[i] = ItemStack.EMPTY
     }
 
-    override fun getField(id: Int): Int = 0
-    override fun setField(id: Int, value: Int) {}
-    override fun getFieldCount(): Int = 0
 
-    override fun getDisplayName(): Component = Component.literal(name)
 
     /** Container extends IWorldNameable on 1.11+. */
-    override fun getName(): String {
-        return "tco.SixNodeInventory"
-    }
 
     override fun getMaxStackSize(): Int {
         return stackLimit
@@ -129,7 +122,4 @@ class SixNodeElementInventory : Container, INBTTReady, IUtilityCableInventory {
         return false
     }
 
-    override fun hasCustomName(): Boolean {
-        return false
-    }
 }

@@ -195,7 +195,7 @@ class BatteryDescriptor(
 
     override fun onEntityItemUpdate(entityItem: ItemEntity): Boolean {
         if (entityItem.isBurning) {
-            entityItem.level.createExplosion(entityItem, entityItem.x, entityItem.y, entityItem.z, 2f, true)
+            entityItem.level().createExplosion(entityItem, entityItem.x, entityItem.y, entityItem.z, 2f, true)
             entityItem.extinguish()
             entityItem.discard()
         }

@@ -31,8 +31,8 @@ class CableItemSlot(
     ), ISlotSkin.SlotSkin.medium, comment
 ) {
 
-    override fun isItemValid(itemStack: ItemStack): Boolean {
-        if (!super.isItemValid(itemStack)) return false
+    override fun mayPlace(itemStack: ItemStack): Boolean {
+        if (!super.mayPlace(itemStack)) return false
 
         return when (val cableDescriptor = Utils.getItemObject(itemStack)) {
             is UtilityCableDescriptor -> abs(cableDescriptor.getRemainingLengthMeters(itemStack) - expectedCableLength) < UtilityCableDescriptor.LENGTH_METERS_EPSILON

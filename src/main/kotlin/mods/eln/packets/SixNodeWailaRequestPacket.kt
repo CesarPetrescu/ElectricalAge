@@ -13,12 +13,12 @@ class SixNodeWailaRequestPacket : TransparentNodeRequestPacket {
         this.side = side
     }
 
-    override fun fromBytes(buf: ByteBuf?) {
+    override fun fromBytes(buf: ByteBuf) {
         super.fromBytes(buf)
         side = Direction.fromInt(buf?.readInt() ?: 0)!!
     }
 
-    override fun toBytes(buf: ByteBuf?) {
+    override fun toBytes(buf: ByteBuf) {
         super.toBytes(buf)
         buf?.writeInt(side.int)
     }

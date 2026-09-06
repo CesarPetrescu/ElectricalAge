@@ -30,12 +30,12 @@ class ElectricMinecartItem(name: String) : GenericItemUsingDamageDescriptor(name
                     (y.toFloat() + 0.5f).toDouble(),
                     (z.toFloat() + 0.5f).toDouble()
                 )
-                if (stack.hasDisplayName()) {
-                    minecart.customNameTag = stack.hoverName
+                if (stack.has(net.minecraft.core.component.DataComponents.CUSTOM_NAME)) {
+                    minecart.customName = stack.hoverName
                 }
                 world.addFreshEntity(minecart)
             }
-            --stack.count
+            stack.shrink(1)
             true
         } else false
     }

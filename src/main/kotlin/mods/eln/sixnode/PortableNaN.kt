@@ -137,13 +137,13 @@ class PortableNaNRender(tileEntity: SixNodeEntity, side: Direction, descriptor: 
     }
 
     override fun draw() {
-        Minecraft.getInstance().profiler.startSection("ACable")
+        Minecraft.getInstance().profiler.push("ACable")
 
         UtilsClient.bindTexture(descriptor.render?.cableTexture)
         glListCall()
 
         GL11.glColor3f(1f, 1f, 1f)
-        Minecraft.getInstance().profiler.endSection()
+        Minecraft.getInstance().profiler.pop()
     }
 
     override fun glListDraw() {

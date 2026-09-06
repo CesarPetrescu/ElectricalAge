@@ -15,7 +15,7 @@ open class SixNodeItemSlot(
     /**
      * Check if the stack is a valid item for this slot. Always true beside for the armor slots.
      */
-    override fun isItemValid(itemStack: ItemStack): Boolean {
+    override fun mayPlace(itemStack: ItemStack): Boolean {
         if (itemStack.item !== Eln.sixNodeItem) return false
         val descriptor = Eln.sixNodeItem.getDescriptor(itemStack)
         for (classFilter in descriptorClassList) {
@@ -24,7 +24,7 @@ open class SixNodeItemSlot(
         return false
     }
 
-    override fun getSlotStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return stackLimit
     }
 }

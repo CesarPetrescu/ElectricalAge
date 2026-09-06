@@ -8,7 +8,10 @@ mods/eln/**
 !mods/eln/fluid/BlockElnFluid.kt
 # --- not yet ported: commands (brigadier) and cross-mod integrations (phase 4); IC2/OC are gone on 1.21
 !mods/eln/server/console/**
-!mods/eln/integration/**
+# (the Waila data carriers - WailaCache, *WailaData, SixNodeCoordonate, TransparentNodeWailaEntry - are plain
+#  classes the packets and elements share and stay in; only the providers/plugin wait for Jade, phase 4)
+!mods/eln/integration/waila/*Provider.kt
+!mods/eln/integration/waila/WailaIntegration.kt
 !mods/eln/transparentnode/computercraftio/**
 !mods/eln/simplenode/energyconverter/*Ic2*
 !mods/eln/simplenode/energyconverter/*Oc*
@@ -17,3 +20,5 @@ mods/eln/**
 # --- unused upstream scaffolding (never registered): the CC/OC device probe and the test node
 !mods/eln/simplenode/DeviceProbe.kt
 !mods/eln/simplenode/test/**
+# --- dead upstream code: the replicator draws with vanilla's silverfish model (ClientProxy), ReplicatorModel is never used
+!mods/eln/entity/ReplicatorModel.kt

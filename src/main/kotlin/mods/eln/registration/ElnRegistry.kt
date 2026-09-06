@@ -60,6 +60,8 @@ object ElnRegistry {
     private val ores = ArrayList<Pair<String, Supplier<ItemStack>>>()
     private val afterItems = ArrayList<Runnable>()
     private val armorMaterials = LinkedHashMap<ResourceLocation, Staged<net.minecraft.world.item.ArmorMaterial>>()
+    private val entityTypes = LinkedHashMap<ResourceLocation, Staged<net.minecraft.world.entity.EntityType<*>>>()
+    private val attributes = ArrayList<Pair<Supplier<net.minecraft.world.entity.EntityType<out net.minecraft.world.entity.LivingEntity>>, Supplier<net.minecraft.world.entity.ai.attributes.AttributeSupplier.Builder>>>()
     private val namedStacks = HashMap<String, Supplier<ItemStack>>()
     private val itemBlocks = HashMap<ResourceLocation, Staged<Item>>()
     private var itemsRegistered = false
@@ -173,6 +175,28 @@ object ElnRegistry {
         return net.neoforged.neoforge.registries.DeferredHolder.create(Registries.ARMOR_MATERIAL, id)
     }
 
+    /**
+     * Replaces Forge's `EntityRegistry.registerModEntity`. The builder is evaluated in the
+     * ENTITY_TYPE event; a living entity's attributes go through [registerAttributes].
+     */
+    @JvmStatic
+    fun <T : net.minecraft.world.entity.Entity> registerEntityType(name: String, factory: Supplier<net.minecraft.world.entity.EntityType.Builder<T>>): Supplier<net.minecraft.world.entity.EntityType<T>> {
+        val id = registryName(name)
+        val staged = stage(entityTypes, id, { factory.get().build(id.toString()) as net.minecraft.world.entity.EntityType<*> }, null, "entity type")
+        return Supplier { @Suppress("UNCHECKED_CAST") (staged.get() as net.minecraft.world.entity.EntityType<T>) }
+    }
+
+    /** 1.7.10's applyEntityAttributes: the attribute supplier registered for a living entity type. */
+    @JvmStatic
+    fun registerAttributes(type: Supplier<net.minecraft.world.entity.EntityType<out net.minecraft.world.entity.LivingEntity>>, builder: Supplier<net.minecraft.world.entity.ai.attributes.AttributeSupplier.Builder>) {
+        attributes.add(type to builder)
+    }
+
+    @SubscribeEvent
+    fun onEntityAttributes(event: net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent) {
+        attributes.forEach { (type, builder) -> event.put(type.get(), builder.get().build()) }
+    }
+
     /** Runs [action] right after the items are registered (or immediately if they already are). */
     @JvmStatic
     fun afterItems(action: Runnable) {
@@ -214,6 +238,7 @@ object ElnRegistry {
                 }
             }
             Registries.ARMOR_MATERIAL -> registerAll(event, Registries.ARMOR_MATERIAL, armorMaterials)
+            Registries.ENTITY_TYPE -> registerAll(event, Registries.ENTITY_TYPE, entityTypes)
             Registries.BLOCK_ENTITY_TYPE -> registerAll(event, Registries.BLOCK_ENTITY_TYPE, blockEntities)
             Registries.MENU -> registerAll(event, Registries.MENU, menus)
             Registries.CREATIVE_MODE_TAB -> event.register(Registries.CREATIVE_MODE_TAB) { helper -> tabs.forEach { (id, tab) -> helper.register(id, tab) } }

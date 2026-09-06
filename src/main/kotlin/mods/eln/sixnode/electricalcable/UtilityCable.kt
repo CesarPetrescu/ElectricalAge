@@ -870,7 +870,7 @@ class UtilityCableRender(
     override fun drawCableAuto() = false
 
     override fun draw() {
-        Minecraft.getInstance().profiler.startSection("UtilityCable")
+        Minecraft.getInstance().profiler.push("UtilityCable")
         if (descriptor.insulated && descriptor.flatStyle && !descriptor.actsAsSingleConductor) {
             val jacket = jacketColor()
             GL11.glColor3f(jacket[0], jacket[1], jacket[2])
@@ -893,7 +893,7 @@ class UtilityCableRender(
         }
         emitOverheatSmoke()
         GL11.glColor3f(1f, 1f, 1f)
-        Minecraft.getInstance().profiler.endSection()
+        Minecraft.getInstance().profiler.pop()
     }
 
     override fun glListDraw() {
@@ -1040,7 +1040,7 @@ class UtilityCableRender(
         val dx = (world.rand.nextDouble() - 0.5) * 0.22
         val dy = world.rand.nextDouble() * 0.08 + 0.02
         val dz = (world.rand.nextDouble() - 0.5) * 0.22
-        world.spawnParticle(ParticleTypes.SMOKE_NORMAL, baseX + dx, baseY + dy, baseZ + dz, 0.0, 0.02 + intensity * 0.03, 0.0)
+        world.addParticle(ParticleTypes.SMOKE, baseX + dx, baseY + dy, baseZ + dz, 0.0, 0.02 + intensity * 0.03, 0.0)
     }
 
     private fun shouldDrawJunctionNode(): Boolean {

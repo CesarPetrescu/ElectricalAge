@@ -1,35 +1,40 @@
 package mods.eln.entity
 
 import mods.eln.misc.Utils
+import net.minecraft.core.BlockPos
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.sounds.SoundEvent
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityType
-import net.minecraft.world.entity.MobType
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier
 import net.minecraft.world.entity.ai.attributes.Attributes
-import net.minecraft.world.entity.ai.goal.MeleeAttackGoal
-import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal
-import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal
-import net.minecraft.world.entity.ai.goal.MoveThroughVillageGoal
-import net.minecraft.world.entity.ai.goal.MoveTowardsRestrictionGoal
-import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal
 import net.minecraft.world.entity.ai.goal.FloatGoal
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal
+import net.minecraft.world.entity.ai.goal.MoveThroughVillageGoal
+import net.minecraft.world.entity.ai.goal.MoveTowardsRestrictionGoal
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal
 import net.minecraft.world.entity.monster.Monster
 import net.minecraft.world.entity.npc.Villager
 import net.minecraft.world.entity.player.Player
-import net.minecraft.world.item.Items
-import net.minecraft.sounds.SoundEvents
-import net.minecraft.world.item.SpawnEggItem
+import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
-import net.minecraft.nbt.CompoundTag
-import net.minecraft.world.damagesource.DamageSource
-import net.minecraft.sounds.SoundEvent
-import net.minecraft.core.BlockPos
-import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.Level
+import net.minecraft.world.level.block.state.BlockState
 import java.util.ArrayList
 import java.util.Random
+import java.util.function.Supplier
 
-class ReplicatorEntity(world: Level) : Monster(world) {
+/**
+ * The cable-eating replicator. 1.21: the entity type, its attributes and its spawn egg are
+ * registry objects (see EntityRegistration); the size lives on the type builder.
+ */
+class ReplicatorEntity(type: EntityType<out ReplicatorEntity>, world: Level) : Monster(type, world) {
     var isSpawnedFromWeather = false
     var hungerTime = 10.0 * 60.0
     var hungerToEnergy = 10.0 * hungerTime
@@ -39,55 +44,56 @@ class ReplicatorEntity(world: Level) : Monster(world) {
     var hunger = (Math.random() - 0.5) * 0.3
 
     init {
-        enablePersistence()
-        setSize(0.3f, 0.7f)
-
-        val replicatorAi = ReplicatorCableAI(this)
-        var priority = 0
-        tasks.addTask(priority++, FloatGoal(this))
-        // 1.8 split target selection out of the melee task: one MeleeAttackGoal attacks
-        // whatever the target tasks below have chosen, replacing the three per-class tasks.
-        tasks.addTask(priority++, MeleeAttackGoal(this, 1.0, false))
-        tasks.addTask(priority++, replicatorAi)
-        tasks.addTask(priority++, MoveTowardsRestrictionGoal(this, 1.0))
-        tasks.addTask(priority++, MoveThroughVillageGoal(this, 1.0, false))
-        tasks.addTask(priority++, ConfigurableAiWander(this, 1.0, 20))
-        tasks.addTask(priority, LookAtPlayerGoal(this, Player::class.java, 8.0f))
-        tasks.addTask(priority++, RandomLookAroundGoal(this))
-
-        priority = 1
-        targetTasks.addTask(priority++, HurtByTargetGoal(this, true))
-        // checkSight values are 1.7.10's: players must be visible, villagers and other replicators need not be.
-        targetTasks.addTask(priority, NearestAttackableTargetGoal(this, Player::class.java, true))
-        targetTasks.addTask(priority, NearestAttackableTargetGoal(this, Villager::class.java, false))
-        targetTasks.addTask(priority++, ReplicatorHungryAttack(this, ReplicatorEntity::class.java, false))
+        setPersistenceRequired()
     }
 
-    override fun attackEntityAsMob(entity: Entity): Boolean {
+    override fun registerGoals() {
+        val replicatorAi = ReplicatorCableAI(this)
+        var priority = 0
+        goalSelector.addGoal(priority++, FloatGoal(this))
+        // 1.8 split target selection out of the melee task: one MeleeAttackGoal attacks
+        // whatever the target tasks below have chosen, replacing the three per-class tasks.
+        goalSelector.addGoal(priority++, MeleeAttackGoal(this, 1.0, false))
+        goalSelector.addGoal(priority++, replicatorAi)
+        goalSelector.addGoal(priority++, MoveTowardsRestrictionGoal(this, 1.0))
+        goalSelector.addGoal(priority++, MoveThroughVillageGoal(this, 1.0, false, 4) { false })
+        goalSelector.addGoal(priority++, ConfigurableAiWander(this, 1.0, 20))
+        goalSelector.addGoal(priority, LookAtPlayerGoal(this, Player::class.java, 8.0f))
+        goalSelector.addGoal(priority++, RandomLookAroundGoal(this))
+
+        priority = 1
+        targetSelector.addGoal(priority++, HurtByTargetGoal(this))
+        // checkSight values are 1.7.10's: players must be visible, villagers and other replicators need not be.
+        targetSelector.addGoal(priority, NearestAttackableTargetGoal(this, Player::class.java, true))
+        targetSelector.addGoal(priority, NearestAttackableTargetGoal(this, Villager::class.java, false))
+        targetSelector.addGoal(priority++, ReplicatorHungryAttack(this, ReplicatorEntity::class.java, false))
+    }
+
+    override fun doHurtTarget(entity: Entity): Boolean {
         if (entity is ReplicatorEntity) {
             hunger -= 0.4
             entity.hunger += 0.4
         }
-        return super.attackEntityAsMob(entity)
+        return super.doHurtTarget(entity)
     }
 
-    override fun updateAITasks() {
-        super.updateAITasks()
+    override fun customServerAiStep() {
+        super.customServerAiStep()
         hunger += 0.05 / hungerTime
 
         if (hunger > 1 && Math.random() < 0.05 / 5) {
-            attackEntityFrom(DamageSource.STARVE, 1.0f)
+            hurt(damageSources().starve(), 1.0f)
         }
         if (hunger < 0.5 && Math.random() * 10 < 0.05) {
             heal(1.0f)
         }
         if (hunger < hungerToDuplicate) {
-            val entityLiving = ReplicatorEntity(world)
-            entityLiving.moveTo(posX, posY, posZ, 0.0f, 0.0f)
-            entityLiving.rotationYawHead = entityLiving.yRot
-            entityLiving.renderYawOffset = entityLiving.yRot
-            world.addFreshEntity(entityLiving)
-            entityLiving.playLivingSound()
+            val entityLiving = ReplicatorEntity(TYPE.get(), level())
+            entityLiving.moveTo(x, y, z, 0.0f, 0.0f)
+            entityLiving.yHeadRot = entityLiving.yRot
+            entityLiving.yBodyRot = entityLiving.yRot
+            level().addFreshEntity(entityLiving)
+            entityLiving.playAmbientSound()
             hunger = 0.0
         }
     }
@@ -96,62 +102,57 @@ class ReplicatorEntity(world: Level) : Monster(world) {
         hunger -= Math.min(0.001, energy / hungerToEnergy)
     }
 
-    override fun applyEntityAttributes() {
-        super.applyEntityAttributes()
-        getEntityAttribute(Attributes.FOLLOW_RANGE).baseValue = 8.0
-        getEntityAttribute(Attributes.MAX_HEALTH).baseValue = 8.0
-        getEntityAttribute(Attributes.MOVEMENT_SPEED).baseValue = 0.23000000417232513
-        getEntityAttribute(Attributes.ATTACK_DAMAGE).baseValue = 3.0
+    override fun getAmbientSound(): SoundEvent = SoundEvents.SILVERFISH_AMBIENT
+
+    override fun getHurtSound(source: DamageSource): SoundEvent = SoundEvents.SILVERFISH_HURT
+
+    override fun getDeathSound(): SoundEvent = SoundEvents.SILVERFISH_DEATH
+
+    override fun playStepSound(pos: BlockPos, state: BlockState) {
+        playSound(SoundEvents.SILVERFISH_STEP, 0.15f, 1.0f)
     }
 
-    // isAIEnabled() is gone: every EntityLiving runs its AI tasks on 1.8+.
-
-    override fun getAmbientSound(): SoundEvent = SoundEvents.ENTITY_SILVERFISH_AMBIENT
-
-    override fun getHurtSound(source: DamageSource): SoundEvent = SoundEvents.ENTITY_SILVERFISH_HURT
-
-    override fun getDeathSound(): SoundEvent = SoundEvents.ENTITY_SILVERFISH_DEATH
-
-    override fun playStepSound(pos: BlockPos, block: Block) {
-        playSound(SoundEvents.ENTITY_SILVERFISH_STEP, 0.15f, 1.0f)
-    }
-
-    override fun dropFewItems(wasRecentlyHit: Boolean, lootingLevel: Int) {
+    override fun dropCustomDeathLoot(level: ServerLevel, source: DamageSource, recentlyHit: Boolean) {
+        super.dropCustomDeathLoot(level, source, recentlyHit)
         if (dropList.isNotEmpty()) {
-            entityDropItem(dropList[Random().nextInt(dropList.size)].copy(), 0.5f)
+            spawnAtLocation(dropList[Random().nextInt(dropList.size)].copy(), 0.5f)
         }
 
         if (isSpawnedFromWeather && Math.random() < 0.33) {
-            // Spawn eggs stop being damage-keyed in 1.9: the entity id travels in the stack's
-            // EntityTag NBT, which SpawnEggItem writes for us.
-            val entityId = EntityType.getKey(ReplicatorEntity::class.java)
-            if (entityId != null) {
-                val egg = ItemStack(Items.SPAWN_EGG)
-                SpawnEggItem.applyEntityIdToItemStack(egg, entityId)
-                entityDropItem(egg, 0.5f)
-            }
+            spawnAtLocation(ItemStack(SPAWN_EGG.get()), 0.5f)
         }
     }
 
-    override fun getCreatureAttribute(): MobType {
-        return MobType.UNDEFINED
-    }
-
-    override fun writeEntityToNBT(nbt: CompoundTag) {
-        super.writeEntityToNBT(nbt)
+    override fun addAdditionalSaveData(nbt: CompoundTag) {
+        super.addAdditionalSaveData(nbt)
         nbt.putDouble("ElnHunger", hunger)
         nbt.putBoolean("isSpawnedFromWeather", isSpawnedFromWeather)
     }
 
-    override fun readEntityFromNBT(nbt: CompoundTag) {
-        super.readEntityFromNBT(nbt)
+    override fun readAdditionalSaveData(nbt: CompoundTag) {
+        super.readAdditionalSaveData(nbt)
         hunger = nbt.getDouble("ElnHunger")
         isSpawnedFromWeather = nbt.getBoolean("isSpawnedFromWeather")
-        Utils.println("[Replicator] $posX $posY $posZ ")
+        Utils.println("[Replicator] $x $y $z ")
     }
 
     companion object {
         @JvmField
         val dropList = ArrayList<ItemStack>()
+
+        /** Registered by EntityRegistration through ElnRegistry. */
+        @JvmField
+        var TYPE: Supplier<EntityType<ReplicatorEntity>> = Supplier { throw IllegalStateException("ReplicatorEntity type not registered") }
+
+        @JvmField
+        var SPAWN_EGG: Supplier<Item> = Supplier { throw IllegalStateException("replicator spawn egg not registered") }
+
+        /** 1.7.10's applyEntityAttributes, as the attribute supplier the entity type registers. */
+        @JvmStatic
+        fun createAttributes(): AttributeSupplier.Builder = createMonsterAttributes()
+            .add(Attributes.FOLLOW_RANGE, 8.0)
+            .add(Attributes.MAX_HEALTH, 8.0)
+            .add(Attributes.MOVEMENT_SPEED, 0.23000000417232513)
+            .add(Attributes.ATTACK_DAMAGE, 3.0)
     }
 }

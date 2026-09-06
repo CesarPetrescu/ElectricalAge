@@ -1,24 +1,24 @@
 package mods.eln.sound
 
-import mods.eln.client.ClientProxy
+import mods.eln.client.ClientSetup
 import mods.eln.client.SoundLoader
 import mods.eln.misc.Utils.TraceRayWeightOpaque
 import mods.eln.misc.Utils.println
 import mods.eln.misc.Utils.traceRay
 import net.minecraft.client.Minecraft
-import net.minecraft.world.entity.player.Player
 import net.minecraft.resources.ResourceLocation
-import net.minecraft.sounds.SoundSource
 import net.minecraft.sounds.SoundEvent
+import net.minecraft.sounds.SoundSource
 import kotlin.math.pow
 import kotlin.math.sqrt
 
 object SoundClient {
     fun play(p: SoundCommand) {
-        ClientProxy.soundClientEventListener.currentUuid = p.uuid
+        ClientSetup.soundClientEventListener.currentUuid = p.uuid
 
-        val player: Player = Minecraft.getInstance().player
-        if (p.level!!.dimension() != player.dimension) return
+        val player = Minecraft.getInstance().player ?: return
+        val world = p.world ?: return
+        if (world.dimension() != player.level().dimension()) return
         val distance = sqrt((p.x - player.x).pow(2.0) + (p.y - player.y).pow(2.0) + (p.z - player.z).pow(2.0))
         if (distance >= p.rangeMax) return
         var distanceFactor = 1f
@@ -27,7 +27,7 @@ object SoundClient {
         }
 
         val blockFactor = traceRay(
-            p.level!!,
+            world,
             player.x,
             player.y,
             player.z,
@@ -45,7 +45,7 @@ object SoundClient {
             p.volume *= distanceFactor
             if (p.volume <= 0) return
 
-            p.level!!.playSound(
+            world.playLocalSound(
                 player.x + 2 * (p.x - player.x) / distance,
                 player.y + 2 * (p.y - player.y) / distance,
                 player.z + 2 * (p.z - player.z) / distance,
@@ -62,7 +62,7 @@ object SoundClient {
 
                 bandVolume -= (((trackCount - 1 - idx) / (trackCount - 1f) + 0.2) * blockFactor).toFloat()
                 println(bandVolume)
-                p.level!!.playSound(
+                world.playLocalSound(
                     player.x + 2 * (p.x - player.x) / distance,
                     player.y + 2 * (p.y - player.y) / distance,
                     player.z + 2 * (p.z - player.z) / distance,
@@ -75,14 +75,13 @@ object SoundClient {
             }
         }
 
-        ClientProxy.soundClientEventListener.currentUuid = null
+        ClientSetup.soundClientEventListener.currentUuid = null
     }
 
     /**
-     * 1.12.2 plays SoundEvents, not sound names. This is a purely client-side play (the server
-     * already told us which track), so the client sound handler only needs the sounds.json key;
-     * a registered event is not required for this path.
+     * The client plays SoundEvents, not sound names. This is a purely client-side play (the
+     * server already told us which track), and the sound engine resolves the event's location in
+     * sounds.json itself, so the event need not be registered.
      */
-    private fun soundEvent(track: String): SoundEvent =
-        SoundEvent.REGISTRY.getObject(ResourceLocation(track)) ?: SoundEvent(ResourceLocation(track))
+    private fun soundEvent(track: String): SoundEvent = SoundEvent.createVariableRangeEvent(ResourceLocation.parse(track))
 }

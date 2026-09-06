@@ -26,7 +26,7 @@ open class ElectricalTool(name: String, var strengthOn: Float, var strengthOff: 
     var range = 0
     var rIcon: ResourceLocation
     override fun onEntitySwing(entityLiving: LivingEntity?, stack: ItemStack?): Boolean {
-        if (entityLiving!!.level.isClientSide) return false
+        if (entityLiving!!.level().isClientSide) return false
         Eln.itemEnergyInventoryProcess.addExclusion(this, 2.0)
         return super.onEntitySwing(entityLiving, stack)
     }
@@ -113,10 +113,10 @@ open class ElectricalTool(name: String, var strengthOn: Float, var strengthOff: 
     override fun electricalItemUpdate(stack: ItemStack, time: Double) {}
 
     companion object {
-        val blocksEffectiveAgainst = arrayOf(Blocks.GRASS, Blocks.DIRT, Blocks.SAND, Blocks.GRAVEL, Blocks.SNOW, Blocks.SNOW, Blocks.CLAY, Blocks.FARMLAND, Blocks.SOUL_SAND, Blocks.MYCELIUM)
+        val blocksEffectiveAgainst = arrayOf(Blocks.GRASS_BLOCK, Blocks.DIRT, Blocks.SAND, Blocks.GRAVEL, Blocks.SNOW, Blocks.SNOW_BLOCK, Blocks.CLAY, Blocks.FARMLAND, Blocks.SOUL_SAND, Blocks.MYCELIUM)
     }
 
     init {
-        rIcon = ResourceLocation("eln", "textures/items/" + name.replace(" ", "").lowercase() + ".png")
+        rIcon = ResourceLocation.fromNamespaceAndPath("eln", "textures/items/" + name.replace(" ", "").lowercase() + ".png")
     }
 }

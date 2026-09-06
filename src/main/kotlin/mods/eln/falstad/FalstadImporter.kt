@@ -77,7 +77,7 @@ object FalstadImporter {
 
     fun importFromClipboardAsync(player: ServerPlayer, netlist: String) {
         val playerName = player.name
-        val dimension = player.level.dimension()
+        val dimension = player.level().dimension()
         planningExecutor.execute {
             val parseResult = try {
                 FalstadDeviceParser.parse(netlist)
@@ -113,7 +113,7 @@ object FalstadImporter {
 
         sendMessage(player, tr("Falstad import: requires a flat, clear area of %1$. Planned orientation: original.", requiredAreaText(plan)))
 
-        val search = findPlacementArea(player.level, player, plan)
+        val search = findPlacementArea(player.level(), player, plan)
         val placement = search.placement
         if (placement == null) {
             val bestNearby = search.bestNearbyArea?.let { " " + tr($$"Largest nearby area found was %1$x%2$ blocks.", it.width, it.height) } ?: ""
@@ -167,7 +167,7 @@ object FalstadImporter {
                 FalstadNodeKind.NORMAL -> if (point in groundedByVoltageSource) getBlockDescriptor("Ground Cable") else normalCableDescriptor
             } ?: continue
 
-            val result = placeSixNode(player.level, player, area, point, descriptor, null)
+            val result = placeSixNode(player.level(), player, area, point, descriptor, null)
             if (!result.placed) {
                 messages += tr("Failed to place %1$ at %2$,%3$", descriptor.name, point.x, point.y)
                 result.failureSummary?.let { messages += tr("Debug %1$ at %2$,%3$: %4$", descriptor.name, point.x, point.y, it) }
@@ -175,7 +175,7 @@ object FalstadImporter {
         }
 
         for (point in placedPlan.wires) {
-            val result = placeSixNode(player.level, player, area, point, normalCableDescriptor, null)
+            val result = placeSixNode(player.level(), player, area, point, normalCableDescriptor, null)
             if (!result.placed) {
                 messages += tr("Failed to place wire at %1$,%2$", point.x, point.y)
                 result.failureSummary?.let { messages += tr("Debug wire at %1$,%2$: %3$", point.x, point.y, it) }
@@ -255,13 +255,13 @@ object FalstadImporter {
                 messages += tr("Missing ELN descriptor for %1$", component.kind)
                 continue
             }
-            val result = placeSixNode(player.level, player, area, component.cell, descriptor, frontFor(component, placement.rotated))
+            val result = placeSixNode(player.level(), player, area, component.cell, descriptor, frontFor(component, placement.rotated))
             if (!result.placed) {
                 messages += tr("Failed to place %1$ at %2$,%3$", descriptor.name, component.cell.x, component.cell.y)
                 result.failureSummary?.let { messages += tr("Debug %1$ at %2$,%3$: %4$", descriptor.name, component.cell.x, component.cell.y, it) }
                 continue
             }
-            val element = getTopElement(player.level, area, component.cell)
+            val element = getTopElement(player.level(), area, component.cell)
             if (element != null) {
                 configureElement(player, element, component, messages)
             }
@@ -356,10 +356,10 @@ object FalstadImporter {
     ): PlacementResult {
         val descriptor = getBlockDescriptor("Electrical Source") ?: return PlacementResult(false, tr("missing descriptor: Electrical Source"))
         val placement = voltageSourcePlacement(component)
-        val placed = placeSixNode(player.level, player, area, placement.sourcePoint, descriptor, frontFor(component))
+        val placed = placeSixNode(player.level(), player, area, placement.sourcePoint, descriptor, frontFor(component))
         if (!placed.placed) return placed
 
-        val element = getTopElement(player.level, area, placement.sourcePoint) as? ElectricalSourceElement
+        val element = getTopElement(player.level(), area, placement.sourcePoint) as? ElectricalSourceElement
         if (element == null) {
             messages += tr("Voltage source placed, but couldn't configure its voltage.")
             return PlacementResult(true)
@@ -385,10 +385,10 @@ object FalstadImporter {
     ): PlacementResult {
         val descriptor = getBlockDescriptor("Electrical Source") ?: return PlacementResult(false, tr("missing descriptor: Electrical Source"))
         val placement = singlePortVoltageSourcePlacement(component)
-        val placed = placeSixNode(player.level, player, area, placement.sourcePoint, descriptor, frontFor(component))
+        val placed = placeSixNode(player.level(), player, area, placement.sourcePoint, descriptor, frontFor(component))
         if (!placed.placed) return placed
 
-        val element = getTopElement(player.level, area, placement.sourcePoint) as? ElectricalSourceElement
+        val element = getTopElement(player.level(), area, placement.sourcePoint) as? ElectricalSourceElement
         if (element == null) {
             messages += tr("Voltage source placed, but couldn't configure its voltage.")
             return PlacementResult(true)
@@ -408,10 +408,10 @@ object FalstadImporter {
     ): PlacementResult {
         val descriptor = getBlockDescriptor("Current Source") ?: return PlacementResult(false, tr("missing descriptor: Current Source"))
         val placement = currentSourcePlacement(component)
-        val placed = placeSixNode(player.level, player, area, placement.sourcePoint, descriptor, frontFor(component))
+        val placed = placeSixNode(player.level(), player, area, placement.sourcePoint, descriptor, frontFor(component))
         if (!placed.placed) return placed
 
-        val element = getTopElement(player.level, area, placement.sourcePoint) as? CurrentSourceElement
+        val element = getTopElement(player.level(), area, placement.sourcePoint) as? CurrentSourceElement
         if (element == null) {
             messages += tr("Current source placed, but couldn't configure its current.")
             return PlacementResult(true)
@@ -434,12 +434,12 @@ object FalstadImporter {
         val displayDescriptor = getBlockDescriptor("Industrial Data Logger") ?: return PlacementResult(false, tr("missing descriptor: Industrial Data Logger"))
         val placement = probeDisplayPlacement(component)
 
-        val probeResult = placeSixNode(player.level, player, area, placement.probePoint, probeDescriptor, placement.probeFront)
+        val probeResult = placeSixNode(player.level(), player, area, placement.probePoint, probeDescriptor, placement.probeFront)
         if (!probeResult.placed) return probeResult
-        val displayResult = placeSixNode(player.level, player, area, placement.displayPoint, displayDescriptor, placement.displayFront)
+        val displayResult = placeSixNode(player.level(), player, area, placement.displayPoint, displayDescriptor, placement.displayFront)
         if (!displayResult.placed) return displayResult
 
-        val probeElement = getTopElement(player.level, area, placement.probePoint) as? ElectricalSensorElement
+        val probeElement = getTopElement(player.level(), area, placement.probePoint) as? ElectricalSensorElement
         if (probeElement == null) {
             return PlacementResult(false, tr("placed Voltage Probe but couldn't find top element"))
         }
@@ -450,7 +450,7 @@ object FalstadImporter {
         probeConfig.putFloat("max", maxValue.toFloat())
         probeElement.readConfigTool(probeConfig, player)
 
-        val displayElement = getTopElement(player.level, area, placement.displayPoint) as? ElectricalDataLoggerElement
+        val displayElement = getTopElement(player.level(), area, placement.displayPoint) as? ElectricalDataLoggerElement
         if (displayElement == null) {
             return PlacementResult(false, tr("placed Industrial Data Logger but couldn't find top element"))
         }
@@ -671,10 +671,10 @@ object FalstadImporter {
         messages: MutableList<String>
     ): PlacementResult {
         val descriptor = descriptorFor(component.kind) ?: return PlacementResult(false, tr("missing descriptor: Signal Switch"))
-        val result = placeSixNode(player.level, player, area, component.cell, descriptor, frontFor(component, rotatedPlacement))
+        val result = placeSixNode(player.level(), player, area, component.cell, descriptor, frontFor(component, rotatedPlacement))
         if (!result.placed) return result
 
-        val element = getTopElement(player.level, area, component.cell) as? ElectricalGateSourceElement
+        val element = getTopElement(player.level(), area, component.cell) as? ElectricalGateSourceElement
         if (element == null) {
             messages += tr("Signal switch placed, but couldn't configure its state.")
             return PlacementResult(true)
@@ -693,7 +693,7 @@ object FalstadImporter {
         messages: MutableList<String>
     ): PlacementResult {
         val descriptor = descriptorFor(component.kind) ?: return PlacementResult(false, tr("missing descriptor: LED vuMeter"))
-        val result = placeSixNode(player.level, player, area, component.cell, descriptor, frontFor(component, rotatedPlacement))
+        val result = placeSixNode(player.level(), player, area, component.cell, descriptor, frontFor(component, rotatedPlacement))
         if (result.placed) messages += component.substitutions
         return result
     }
@@ -706,7 +706,7 @@ object FalstadImporter {
         messages: MutableList<String>
     ): PlacementResult {
         val descriptor = descriptorFor(component.kind) ?: return PlacementResult(false, tr("missing descriptor: NAND Chip"))
-        val result = placeSixNode(player.level, player, area, component.cell, descriptor, frontFor(component, rotatedPlacement))
+        val result = placeSixNode(player.level(), player, area, component.cell, descriptor, frontFor(component, rotatedPlacement))
         if (result.placed) messages += component.substitutions
         return result
     }

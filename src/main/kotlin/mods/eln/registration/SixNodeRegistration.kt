@@ -715,7 +715,7 @@ object SixNodeRegistration {
                 bare.moltenPileDescriptor = moltenPileByMaterial[material]
                 Eln.sixNodeItem.addDescriptor(allocator.nextId(), categoriseUtilityCable(bare, spec.metricArea, bare.poleEligible))
                 if (!distributionTabIconAssigned && material == UtilityCableMaterial.ALUMINUM && bare.poleEligible) {
-                    (Eln.creativeTabPowerDistribution as? GenericCreativeTab)?.setIcon(bare.newCreativeTabStack())
+                    ElnRegistry.afterItems { GenericCreativeTab.setIcon(Eln.creativeTabPowerDistribution, bare.newCreativeTabStack()) }
                     distributionTabIconAssigned = true
                 }
 

@@ -49,12 +49,8 @@ object OreColorMapping {
 
     @JvmStatic
     fun updateColorMapping(): FloatArray {
+        // The block key is the block's registry id (16 bits; the 1.7.10 metadata nibble is gone).
         val blockKeyMapping = FloatArray(1024 * 64)
-        for (blockId in 0..4095) {
-            for (meta in 0..15) {
-                blockKeyMapping[blockId + (meta shl 12)] = 0f
-            }
-        }
 
         for (c in OreScannerManager.oreScannerConfig) {
             if (c.blockKey >= 0 && c.blockKey < blockKeyMapping.size)

@@ -40,7 +40,7 @@ import net.minecraft.world.Container
 import net.minecraft.world.item.ItemStack
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.core.particles.ParticleTypes
-import net.minecraftforge.oredict.OreDictionary
+import mods.eln.misc.OreDict
 import mods.eln.client.gl.GL11
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -542,8 +542,8 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
         return left?.itemDescriptorAs<RollerWheelDescriptor>() != null && right?.itemDescriptorAs<RollerWheelDescriptor>() != null
     }
 
-    private fun ItemStack.matchesOre(name: String): Boolean = OreDictionary.getOreIDs(this).any { OreDictionary.getOreName(it) == name }
-    private fun ItemStack.matchesAnyOre(vararg names: String): Boolean = OreDictionary.getOreIDs(this).any { OreDictionary.getOreName(it) in names }
+    private fun ItemStack.matchesOre(name: String): Boolean = OreDict.matches(this, name)
+    private fun ItemStack.matchesAnyOre(vararg names: String): Boolean = names.any { OreDict.matches(this, it) }
     private fun ItemStack.asUtilityCableDescriptor(): UtilityCableDescriptor? = Eln.sixNodeItem.getDescriptor(this) as? UtilityCableDescriptor
     private inline fun <reified T> ItemStack.itemDescriptorAs(): T? = GenericItemUsingDamageDescriptor.getDescriptor(this) as? T
     private fun ItemStack.detectIngotMaterial(): UtilityCableMaterial? = when {
@@ -724,7 +724,7 @@ class WireMachineRender(entity: TransparentNodeEntity, descriptor: TransparentNo
         val dx = (world.rand.nextDouble() - 0.5) * 0.18
         val dz = (world.rand.nextDouble() - 0.5) * 0.18
         val dy = world.rand.nextDouble() * 0.05
-        world.spawnParticle(ParticleTypes.SMOKE_NORMAL, baseX + dx, baseY + dy, baseZ + dz, 0.0, 0.015, 0.0)
+        world.addParticle(ParticleTypes.SMOKE, baseX + dx, baseY + dy, baseZ + dz, 0.0, 0.015, 0.0)
     }
 }
 
@@ -785,9 +785,9 @@ class WireMachineGui(player: Player, inventory: Container, private val render: W
         drawString(8, 104, render.statusLine())
         val barWidth = 160
         val filled = (barWidth * render.progressRatio()).toInt()
-        drawRect(guiLeft + 8, guiTop + 130, guiLeft + 8 + barWidth, guiTop + 138, 0xFF444444.toInt())
+        helper.drawRect(8, 130, 8 + barWidth, 138, 0xFF444444.toInt())
         if (filled > 0) {
-            drawRect(guiLeft + 8, guiTop + 130, guiLeft + 8 + filled, guiTop + 138, 0xFF2FB34A.toInt())
+            helper.drawRect(8, 130, 8 + filled, 138, 0xFF2FB34A.toInt())
         }
         drawString(8, 118, tr("Progress: %1$ / %2$", Utils.plotValue(render.progressMeters.toDouble(), "m"), Utils.plotValue(render.progressTargetMeters.toDouble(), "m")))
     }
@@ -815,7 +815,7 @@ private fun WireMachineKind.slotCount(): Int = when (this) {
     WireMachineKind.COMBINER -> 6
 }
 
-private fun WireMachineKind.slots(inventory: Container): Array<net.minecraft.level.inventory.Slot> = when (this) {
+private fun WireMachineKind.slots(inventory: Container): Array<net.minecraft.world.inventory.Slot> = when (this) {
     WireMachineKind.ROLLER -> arrayOf(
         SlotWithSkinAndComment(inventory, 0, 8, 18, SlotSkin.medium, arrayOf(tr("Metal Ingot Input"))),
         SlotWithSkinAndComment(inventory, 1, 30, 18, SlotSkin.medium, arrayOf(tr("Left Roller Wheel"))),

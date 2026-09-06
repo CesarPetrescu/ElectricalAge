@@ -30,7 +30,7 @@ open class TransparentNodeResponsePacket : IMessage {
         coord = c
     }
 
-    override fun fromBytes(buf: ByteBuf?) {
+    override fun fromBytes(buf: ByteBuf) {
         val length = ByteBufUtils.readVarInt(buf, 5)
         entries = (1..length).map {
             val label = ByteBufUtils.readUTF8String(buf)
@@ -44,7 +44,7 @@ open class TransparentNodeResponsePacket : IMessage {
         coord = Coordinate(x, y, z, w)
     }
 
-    override fun toBytes(buf: ByteBuf?) {
+    override fun toBytes(buf: ByteBuf) {
         ByteBufUtils.writeVarInt(buf, entries.size, 5)
         for (entry in entries) {
             ByteBufUtils.writeUTF8String(buf, entry.label)

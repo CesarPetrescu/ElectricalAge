@@ -11,8 +11,8 @@ import mods.eln.node.transparent.TransparentNode
  * Created by Gregory Maddra on 2016-06-27.
  */
 class TransparentNodeRequestPacketHandler : IMessageHandler<TransparentNodeRequestPacket, TransparentNodeResponsePacket> {
-    override fun onMessage(message: TransparentNodeRequestPacket?, ctx: MessageContext?): TransparentNodeResponsePacket? {
-        var c = message!!.coord
+    override fun onMessage(message: TransparentNodeRequestPacket, ctx: MessageContext?): TransparentNodeResponsePacket? {
+        var c = message.coord
         val ghostElem = Eln.ghostManager.getGhost(c)
         if(ghostElem != null) c = ghostElem.observatorCoordonate!!
         val node = NodeManager.instance!!.getNodeFromCoordonate(c) as? TransparentNode

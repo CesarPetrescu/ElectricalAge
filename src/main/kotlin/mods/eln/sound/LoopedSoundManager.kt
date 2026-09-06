@@ -22,26 +22,26 @@ class LoopedSoundManager(val updateInterval: Float = 0.5f) {
     fun process(deltaT: Float) {
         remaining -= deltaT
         if (remaining <= 0) {
-            val soundHandler = Minecraft.getInstance().soundHandler
+            val soundHandler = Minecraft.getInstance().soundManager
             loops.forEach {
                 // add 0.5 to put the point in the center of the block making sounds
                 val cx = it.coord.x + 0.5
                 val cy = it.coord.y + 0.5
                 val cz = it.coord.z + 0.5
                 // get the player, and get the squared distance between the player and the block
-                val player = Minecraft.getInstance().player
+                val player = Minecraft.getInstance().player ?: return
                 val distDeltaSquared = sqDistDelta(cx, cy, cz, player.x, player.y, player.z)
                 // when comparing, compare distDeltaSquared to the square of the distance delta that you are trying to compare against.
-                if (it.volume > 0 && it.pitch > 0 && !soundHandler.isSoundPlaying(it) && distDeltaSquared < Eln.config.getDoubleOrElse("ui.audio.maxSoundDistance", 16.0) * Eln.config.getDoubleOrElse("ui.audio.maxSoundDistance", 16.0)) {
+                if (it.volume > 0 && it.pitch > 0 && !soundHandler.isActive(it) && distDeltaSquared < Eln.config.getDoubleOrElse("ui.audio.maxSoundDistance", 16.0) * Eln.config.getDoubleOrElse("ui.audio.maxSoundDistance", 16.0)) {
                     try {
-                        soundHandler.playSound(it)
+                        soundHandler.play(it)
                     } catch (e: IllegalArgumentException) {
                         System.out.println(e)
                     }
                 }
                 if (distDeltaSquared >= Eln.config.getDoubleOrElse("ui.audio.maxSoundDistance", 16.0) * Eln.config.getDoubleOrElse("ui.audio.maxSoundDistance", 16.0) || it.volume == 0f || it.pitch == 0f) {
                     try {
-                        soundHandler.stopSound(it)
+                        soundHandler.stop(it)
                     }catch (e: Exception) {
                         System.out.println(e)
                     }

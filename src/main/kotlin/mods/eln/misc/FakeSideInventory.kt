@@ -26,15 +26,8 @@ class FakeSideInventory : WorldlyContainer {
     }
 
     override fun setItem(var1: Int, var2: ItemStack) {}
-    override fun getName(): String {
-        return "FakeSideInventory"
-    }
 
-    override fun hasCustomName(): Boolean {
-        return false
-    }
 
-    override fun getDisplayName(): Component = Component.literal(name)
 
     override fun getMaxStackSize(): Int {
         return 0
@@ -51,10 +44,7 @@ class FakeSideInventory : WorldlyContainer {
         return false
     }
 
-    override fun getField(id: Int): Int = 0
-    override fun setField(id: Int, value: Int) {}
-    override fun getFieldCount(): Int = 0
-    override fun clear() {}
+    override fun clearContent() {}
 
     override fun getSlotsForFace(side: Direction): IntArray {
         return intArrayOf()

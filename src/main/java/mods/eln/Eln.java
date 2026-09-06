@@ -44,6 +44,7 @@ import mods.eln.railroad.ElectricMinecartChargeReporter;
 import mods.eln.registration.ElnRegistry;
 import mods.eln.registration.ItemRegistration;
 import mods.eln.registration.SingleNodeRegistration;
+import mods.eln.registration.EntityRegistration;
 import mods.eln.registration.SixNodeRegistration;
 import mods.eln.registration.TransparentNodeRegistration;
 import mods.eln.server.*;
@@ -392,6 +393,7 @@ public class Eln {
         SixNodeRegistration.INSTANCE.registerSix();
         TransparentNodeRegistration.INSTANCE.registerTransparent();
         ItemRegistration.INSTANCE.registerItem();
+        EntityRegistration.INSTANCE.registerEntities();
 
         ElnRegistry.afterItems(this::updateCreativeTabIcons);
 

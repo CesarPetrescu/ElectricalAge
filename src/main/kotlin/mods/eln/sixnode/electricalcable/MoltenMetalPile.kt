@@ -70,7 +70,7 @@ class MoltenMetalPileRender(
     override fun getCableRender(lrdu: LRDU) = descriptor.render
 
     override fun draw() {
-        Minecraft.getInstance().profiler.startSection("MoltenMetalPile")
+        Minecraft.getInstance().profiler.push("MoltenMetalPile")
         when (descriptor.material) {
             UtilityCableMaterial.COPPER -> GL11.glColor3f(0.92f, 0.38f, 0.10f)
             UtilityCableMaterial.ALUMINUM -> GL11.glColor3f(0.83f, 0.85f, 0.88f)
@@ -79,7 +79,7 @@ class MoltenMetalPileRender(
         glListCall()
         drawHotGlow()
         GL11.glColor3f(1f, 1f, 1f)
-        Minecraft.getInstance().profiler.endSection()
+        Minecraft.getInstance().profiler.pop()
     }
 
     private fun drawHotGlow() {

@@ -176,3 +176,8 @@ inline fun ItemStack.editTag(edit: (net.minecraft.nbt.CompoundTag) -> Unit) {
     edit(tag)
     tagCompound = tag
 }
+
+// ------------------------------------------------------------ entity dimension
+
+/** 1.7.10's `entity.dimension`: the integer dimension id of the level the entity is in (see [DimensionIds]). */
+val net.minecraft.world.entity.Entity.dimension: Int get() = DimensionIds.id(level())

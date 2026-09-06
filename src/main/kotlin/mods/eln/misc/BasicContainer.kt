@@ -8,12 +8,14 @@ import net.minecraft.world.inventory.AbstractContainerMenu
 import net.minecraft.world.Container
 import net.minecraft.world.inventory.Slot
 import net.minecraft.world.item.ItemStack
-import kotlin.math.min
 
 /**
  * Base of the mod's 37 containers. 1.21 wants a MenuType and the container id vanilla assigned;
  * the id is read from [mods.eln.GuiHandler.pendingContainerId], which both sides set right
  * before constructing the container, so the subclasses keep their (player, inventory, slots) shape.
+ *
+ * The 1.7.10 shift-click merge (`mergeItemStack`) honoured each slot's own stack limit, which
+ * vanilla's `moveItemStackTo` does too since 1.17; the copy is gone.
  */
 open class BasicContainer(player: Player, protected var inventory: Container, slot: Array<Slot>) :
     AbstractContainerMenu(mods.eln.GuiHandler.MENU.get(), mods.eln.GuiHandler.pendingContainerId) {
@@ -39,21 +41,22 @@ open class BasicContainer(player: Player, protected var inventory: Container, sl
         }
     }
 
-    override fun addSlotToContainer(slot: Slot): Slot {
+    /** 1.7.10's name for [addSlot]. */
+    open fun addSlotToContainer(slot: Slot): Slot {
         return super.addSlot(slot)
     }
 
-    override fun quickMoveStack(player: Player, slotId: Int): ItemStack? {
-        val slot = inventorySlots[slotId] as Slot?
-        if (slot != null && slot.hasItem) {
-            val itemstack1 = slot.stack
-            val invSize = inventory.getContainerSize()
+    override fun quickMoveStack(player: Player, slotId: Int): ItemStack {
+        val slot = slots[slotId]
+        if (slot.hasItem()) {
+            val itemstack1 = slot.item
+            val invSize = inventory.containerSize
             if (slotId < invSize) {
-                mergeItemStack(itemstack1, invSize, inventorySlots.size, true)
+                mergeItemStack(itemstack1, invSize, slots.size, true)
             } else {
                 if (!mergeItemStack(itemstack1, 0, invSize, true)) {
                     if (slotId < invSize + 27) {
-                        mergeItemStack(itemstack1, invSize + 27, inventorySlots.size, false)
+                        mergeItemStack(itemstack1, invSize + 27, slots.size, false)
                     } else {
                         mergeItemStack(itemstack1, invSize, invSize + 27, false)
                     }
@@ -61,90 +64,18 @@ open class BasicContainer(player: Player, protected var inventory: Container, sl
             }
 
             if (itemstack1.count == 0) {
-                slot.set(null as ItemStack?)
+                slot.set(ItemStack.EMPTY)
             } else {
                 slot.setChanged()
             }
         }
 
-        return null
+        // Nothing is returned: vanilla would loop while the source slot still has items and a
+        // returned stack, and the 1.7.10 code did one pass.
+        return ItemStack.EMPTY
     }
 
-    override fun mergeItemStack(par1ItemStack: ItemStack, par2: Int, par3: Int, par4: Boolean): Boolean {
-        var flag1 = false
-        var k = par2
-        if (par4) {
-            k = par3 - 1
-        }
-        var slot: Slot
-        var itemstack1: ItemStack?
-        if (par1ItemStack.isStackable) {
-            while (par1ItemStack.count > 0 && (!par4 && k < par3 || par4 && k >= par2)) {
-                slot = inventorySlots[k] as Slot
-                itemstack1 = slot.stack
-                if (slot.isItemValid(par1ItemStack) && !itemstack1.isNothing() && itemstack1.item === par1ItemStack.item && (!par1ItemStack.hasSubtypes || par1ItemStack.itemDamage == itemstack1.itemDamage) && ItemStack.areItemStackTagsEqual(
-                        par1ItemStack,
-                        itemstack1
-                    )
-                ) {
-                    val l = itemstack1.count + par1ItemStack.count
-                    val maxSize = min(slot.maxStackSize.toDouble(), par1ItemStack.maxStackSize.toDouble())
-                        .toInt()
-                    if (l <= maxSize) {
-                        par1ItemStack.count = 0
-                        itemstack1.count = l
-                        slot.setChanged()
-                        flag1 = true
-                    } else if (itemstack1.count < maxSize) {
-                        par1ItemStack.count -= maxSize - itemstack1.count
-                        itemstack1.count = maxSize
-                        slot.setChanged()
-                        flag1 = true
-                    }
-                }
-                if (par4) {
-                    --k
-                } else {
-                    ++k
-                }
-            }
-        }
-        if (par1ItemStack.count > 0) {
-            k = if (par4) {
-                par3 - 1
-            } else {
-                par2
-            }
-            while (!par4 && k < par3 || par4 && k >= par2) {
-                slot = inventorySlots[k] as Slot
-                itemstack1 = slot.stack
-                if (itemstack1.isNothing() && slot.isItemValid(par1ItemStack)) {
-                    val l = par1ItemStack.count
-                    val maxSize = min(slot.maxStackSize.toDouble(), par1ItemStack.maxStackSize.toDouble())
-                        .toInt()
-                    if (l <= maxSize) {
-                        slot.set(par1ItemStack.copy())
-                        slot.setChanged()
-                        par1ItemStack.count = 0
-                        flag1 = true
-                        break
-                    } else {
-                        par1ItemStack.count -= maxSize
-                        val newItemStack = par1ItemStack.copy()
-                        newItemStack.count = maxSize
-                        slot.set(newItemStack)
-                        slot.setChanged()
-                        flag1 = true
-                        break
-                    }
-                }
-                if (par4) {
-                    --k
-                } else {
-                    ++k
-                }
-            }
-        }
-        return flag1
-    }
+    /** 1.7.10's name for [moveItemStackTo]. */
+    fun mergeItemStack(stack: ItemStack, startIndex: Int, endIndex: Int, reverse: Boolean): Boolean =
+        moveItemStackTo(stack, startIndex, endIndex, reverse)
 }

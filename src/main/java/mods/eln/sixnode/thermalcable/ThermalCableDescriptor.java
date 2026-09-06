@@ -1,6 +1,5 @@
 package mods.eln.sixnode.thermalcable;
 
-import mods.eln.misc.McBridge;
 import mods.eln.Eln;
 import mods.eln.cable.CableRenderDescriptor;
 import mods.eln.misc.RealisticEnum;
@@ -32,8 +31,6 @@ public class ThermalCableDescriptor extends SixNodeDescriptor {
     String description = "todo cable";
 
     public CableRenderDescriptor render;
-
-    public static final ThermalCableDescriptor[] list = new ThermalCableDescriptor[256];
 
     public ThermalCableDescriptor(String name,
                                   double thermalWarmLimit, double thermalCoolLimit,
@@ -79,22 +76,11 @@ public class ThermalCableDescriptor extends SixNodeDescriptor {
         }
     }
 
+    /** The descriptor behind a thermal-cable stack (the sub-id used to be in the damage value). */
     public static ThermalCableDescriptor getDescriptorFrom(ItemStack itemStack) {
-        return list[(itemStack.getItemDamage() /* TODO(flattening) */ >> 8) & 0xFF];
+        return Eln.sixNodeItem.getDescriptor(itemStack) instanceof ThermalCableDescriptor d ? d : null;
     }
 
-    /*
-    static void setThermalLoadFrom(ItemStack itemStack, ThermalLoad thermalLoad) {
-        if (McBridge.isNothing(itemStack) || itemStack.itemID != Eln.sixNodeBlock.blockID || (itemStack.getItemDamage() /* TODO(flattening) */ & 0xFF) != Eln.electricalCableId) {
-            thermalLoad.setHighImpedance();
-        } else {
-            ThermalCableDescriptor cableDescriptor = ThermalCableDescriptor.list[(itemStack.getItemDamage() /* TODO(flattening) */ >> 8) & 0xFF];
-            thermalLoad.Rp = cableDescriptor.thermalRp;
-            thermalLoad.Rs = cableDescriptor.thermalRs;
-            thermalLoad.C = cableDescriptor.thermalC;
-        }
-    }
-    */
     public void setThermalLoad(ThermalLoad thermalLoad) {
         thermalLoad.Rp = thermalRp;
         thermalLoad.Rs = thermalRs;

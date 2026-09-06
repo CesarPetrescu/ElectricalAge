@@ -269,12 +269,12 @@ class CurrentCableRender(tileEntity: SixNodeEntity?, side: Direction?, descripto
     }
 
     override fun draw() {
-        Minecraft.getInstance().profiler.startSection("ECable")
+        Minecraft.getInstance().profiler.push("ECable")
         setGlColorFromDye(color, 1.0f)
         bindTexture(descriptor.render.cableTexture)
         glListCall()
         GL11.glColor3f(1f, 1f, 1f)
-        Minecraft.getInstance().profiler.endSection()
+        Minecraft.getInstance().profiler.pop()
     }
 
     override fun glListDraw() {

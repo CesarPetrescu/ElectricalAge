@@ -11,6 +11,8 @@ import mods.eln.misc.Utils
 import mods.eln.misc.UtilsClient
 import mods.eln.wiki.Data
 import net.minecraft.world.level.block.Block
+import net.minecraft.core.BlockPos
+import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.server.level.ServerPlayer
@@ -172,7 +174,7 @@ class PortableOreScannerItem(name: String?, private val obj: Obj3D,
     }
 
     override fun onBlockStartBreak(itemstack: ItemStack?, x: Int, y: Int, z: Int, player: Player?): Boolean {
-        if (!player!!.level.isClientSide) {
+        if (!player!!.level().isClientSide) {
             setDamage(itemstack, (getDamage(itemstack) + 1).toByte())
             //Utils.println("Break");
         }
@@ -225,7 +227,7 @@ class PortableOreScannerItem(name: String?, private val obj: Obj3D,
             var oRender = Eln.clientLiveDataManager.getData(item, 1)
             if (oRender == null) oRender = Eln.clientLiveDataManager.newData(item, RenderStorage(viewRange, viewYAlpha, resWidth, resHeight), 1)
             val render = oRender as RenderStorage
-            render.generate(e!!.level, e.x, Utils.getHeadPosY(e), e.z, e.yRot * Math.PI.toFloat() / 180.0f, e.xRot * Math.PI.toFloat() / 180.0f)
+            render.generate(e!!.level(), e.x, Utils.getHeadPosY(e), e.z, e.yRot * Math.PI.toFloat() / 180.0f, e.xRot * Math.PI.toFloat() / 180.0f)
             val scale = 1f / resWidth * 0.50f
             GL11.glTranslatef(0.90668f, 0.163f, -0.25078f)
             GL11.glRotatef(270f, 1f, 0f, 0f)
@@ -399,21 +401,11 @@ class PortableOreScannerItem(name: String?, private val obj: Obj3D,
                             val yBlock = posYint + yFloor.toInt()
                             val zBlock = posZint + zFloor.toInt()
                             blockKey = 0U
-                            if (yBlock in 0..255) {
-                                val chunk = w.getChunk(xBlock shr 4, zBlock shr 4)
-                                // 1.12.2 chunk sections hold palette-packed block states; the
-                                // 1.7.10 LSB/MSB/meta nibble arrays are gone. Same key layout:
-                                // 12 bits of block id, 4 bits of metadata.
-                                val storage = chunk.blockStorageArray[yBlock shr 4]
-                                if (storage != null) {
-                                    val xLocal = xBlock and 0xF
-                                    val yLocal = yBlock and 0xF
-                                    val zLocal = zBlock and 0xF
-                                    val state = storage.get(xLocal, yLocal, zLocal)
-                                    val blockId = Block.getIdFromBlock(state.block)
-                                    val rawMeta = state.block.getMetaFromState(state)
-                                    blockKey = (blockId.toUInt() + (rawMeta.toUInt() shl 12)).toUShort()
-                                }
+                            if (yBlock >= w.minBuildHeight && yBlock < w.maxBuildHeight) {
+                                // The key is the block's registry id (the 1.7.10 metadata nibble is gone);
+                                // the chunk is read through the level, which serves loaded chunks from its cache.
+                                val state = w.getBlockState(BlockPos(xBlock, yBlock, zBlock))
+                                blockKey = BuiltInRegistries.BLOCK.getId(state.block).toUInt().toUShort()
                             }
                             if (blockKey >= 1024U * 64U) {
                                 blockKey = 0U
@@ -426,9 +418,9 @@ class PortableOreScannerItem(name: String?, private val obj: Obj3D,
                         }
                         stackGreen += blockKeyFactor[blockKey.toInt()] * dToStack
 
-                        val b = Block.getBlockById((blockKey and 0xFFFU).toInt())
+                        val b = BuiltInRegistries.BLOCK.byId(blockKey.toInt())
                         if (b !== Blocks.AIR && b !== Eln.lightBlock) {
-                            val opaque = b.getStateFromMeta((blockKey.toInt() shr 12) and 0xF).isOpaqueCube
+                            val opaque = b.defaultBlockState().isSolidRender(w, BlockPos.ZERO)
                             stackRed += if (opaque) 0.2f * dToStack else 0.1f * dToStack
                         } else stackBlue += 0.06f * dToStack
                         x += vx * dBest

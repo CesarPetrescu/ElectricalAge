@@ -14,7 +14,6 @@ import mods.eln.sim.mna.component.Resistor
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor
 import mods.eln.misc.LRDU
 import net.minecraft.world.entity.ai.goal.Goal
-import net.minecraft.world.damagesource.DamageSource
 import java.util.Random
 import kotlin.math.pow
 import mods.eln.misc.rand
@@ -40,10 +39,10 @@ class ReplicatorCableAI(private val entity: ReplicatorEntity) : Goal(), ITimeRem
     init {
         Eln.instance.highVoltageCableDescriptor.applyTo(load)
         load.serialResistance = load.serialResistance * 10
-        mutexBits = 1
+        setFlags(java.util.EnumSet.of(Flag.MOVE))
     }
 
-    override fun shouldExecute(): Boolean {
+    override fun canUse(): Boolean {
         val nodes = NodeManager.instance!!.nodes
         if (nodes.isEmpty()) return false
 
@@ -56,14 +55,14 @@ class ReplicatorCableAI(private val entity: ReplicatorEntity) : Goal(), ITimeRem
             for (element in sixNode.sideElementList) {
                 val load = getInterestingCableLoad(element) ?: continue
 
-                val path = entity.navigator.getPathToXYZ(
+                val path = entity.navigation.createPath(
                     node.coordinate.x.toDouble(),
                     node.coordinate.y.toDouble(),
-                    node.coordinate.z.toDouble()
+                    node.coordinate.z.toDouble(), 0
                 )
                     ?: continue
 
-                entity.navigator.setPath(path, 1.0)
+                entity.navigation.moveTo(path, 1.0)
                 cableCoordinate = node.coordinate
                 cableLoad = load
                 moveTimeOut = moveTimeOutReset
@@ -76,11 +75,11 @@ class ReplicatorCableAI(private val entity: ReplicatorEntity) : Goal(), ITimeRem
         return false
     }
 
-    override fun shouldContinueExecuting(): Boolean {
+    override fun canContinueToUse(): Boolean {
         return cableCoordinate != null
     }
 
-    override fun updateTask() {
+    override fun tick() {
         moveTimeOut -= 0.05
         resetTimeout -= 0.05
 
@@ -94,15 +93,15 @@ class ReplicatorCableAI(private val entity: ReplicatorEntity) : Goal(), ITimeRem
         val coordinate = cableCoordinate ?: return
         val distance = coordinate.distanceTo(entity)
 
-        if (distance > 2 && (entity.navigator.path?.isFinished != false)) {
-            entity.navigator.tryMoveToXYZ(coordinate.x.toDouble(), coordinate.y.toDouble(), coordinate.z.toDouble(), 1.0)
+        if (distance > 2 && entity.navigation.isDone) {
+            entity.navigation.moveTo(coordinate.x.toDouble(), coordinate.y.toDouble(), coordinate.z.toDouble(), 1.0)
         }
 
         if (distance < 2) {
             val voltage = load.voltage
             val nextResistance = (voltage / Eln.LVU).pow(-0.3) * voltage * voltage / 50.0
             if (resistorLoad.resistance < 0.8 * nextResistance) {
-                entity.hurt(DamageSource.MAGIC, 5.0f)
+                entity.hurt(entity.damageSources().magic(), 5.0f)
             } else {
                 entity.eatElectricity(resistorLoad.power * 0.05)
             }

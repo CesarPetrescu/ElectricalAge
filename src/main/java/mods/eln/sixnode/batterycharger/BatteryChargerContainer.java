@@ -24,7 +24,7 @@ public class BatteryChargerContainer extends BasicContainer {
             super(par1iInventory, slot, x, y, SlotSkin.medium, new String[]{tr("Battery slot")});
         }
 
-        public boolean isItemValid(ItemStack itemStack) {
+        public boolean mayPlace(ItemStack itemStack) {
             Object d = Utils.getItemObject(itemStack);
             if (d instanceof IItemEnergyBattery) {
                 return true;
@@ -33,7 +33,7 @@ public class BatteryChargerContainer extends BasicContainer {
         }
 
         @Override
-        public int getSlotStackLimit() {
+        public int getMaxStackSize() {
             return 1;
         }
     }

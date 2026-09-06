@@ -1,8 +1,8 @@
 package mods.eln.sound
 
 import mods.eln.Eln
+import mods.eln.misc.DimensionIds
 import mods.eln.misc.Utils.sendPacketToClient
-import net.minecraft.server.level.ServerPlayer
 import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
 import java.io.IOException
@@ -12,18 +12,13 @@ object SoundServer {
         val bos = ByteArrayOutputStream(64)
         val stream = DataOutputStream(bos)
         try {
+            val world = p.world ?: return
             stream.writeByte(Eln.packetPlaySound.toInt())
-            stream.writeByte(p.level!!.dimension())
+            stream.writeByte(DimensionIds.id(world))
             p.writeTo(stream)
-            val server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer()
-            for (obj in server.playerList.players) {
-                val player = obj as ServerPlayer
-                if (player.dimension == p.level!!.dimension() && player.getDistance(
-                        p.x,
-                        p.y,
-                        p.z
-                    ) < p.rangeMax + 2
-                ) {
+            val server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer() ?: return
+            for (player in server.playerList.players) {
+                if (player.level() === world && player.distanceToSqr(p.x, p.y, p.z) < (p.rangeMax + 2.0) * (p.rangeMax + 2.0)) {
                     sendPacketToClient(bos, player)
                 }
             }

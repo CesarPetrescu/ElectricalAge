@@ -87,7 +87,7 @@ class PacketHandler {
     private fun packetPlaySound(stream: DataInputStream, @Suppress("UNUSED_PARAMETER") manager: Connection, player: Player) {
         try {
             if (stream.readByte().toInt() != player.dimension) return
-            SoundClient.play(SoundCommand.fromStream(stream, player.level))
+            SoundClient.play(SoundCommand.fromStream(stream, player.level()))
         } catch (e: IOException) {
             e.printStackTrace()
         }
@@ -123,7 +123,7 @@ class PacketHandler {
             val z = stream.readInt()
             val dimension = stream.readByte().toInt()
             if (player.dimension == dimension) {
-                val entity = player.level.getBlockEntity(x, y, z)
+                val entity = player.level().getBlockEntity(x, y, z)
                 if (entity != null && entity is INodeEntity) {
                     val node = entity as INodeEntity
                     if (node.nodeUuid == stream.readUTF()) {
@@ -152,7 +152,7 @@ class PacketHandler {
             val z: Int = stream.readInt()
             val dimension: Int = stream.readByte().toInt()
             if (player.dimension == dimension) {
-                val entity = player.level.getBlockEntity(x, y, z)
+                val entity = player.level().getBlockEntity(x, y, z)
                 if (entity != null && entity is INodeEntity) {
                     val node = entity as INodeEntity
                     if (node.nodeUuid == stream.readUTF()) {
@@ -195,7 +195,4 @@ class PacketHandler {
         }
     }
 
-    init {
-        Eln.eventChannel.register(this)
-    }
 }

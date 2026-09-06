@@ -35,7 +35,7 @@ public class GenericItemUsingDamageSlot extends SlotWithSkin implements ISlotWit
     /**
      * Check if the stack is a valid item for this slot. Always true beside for the armor slots.
      */
-    public boolean isItemValid(ItemStack itemStack) {
+    public boolean mayPlace(ItemStack itemStack) {
         //	if(itemStack.getItem() != item) return false;
         if ((itemStack.getItem() instanceof GenericItemUsingDamage) == false) return false;
         GenericItemUsingDamageDescriptor descriptor = ((GenericItemUsingDamage) itemStack.getItem()).getDescriptor(itemStack);
@@ -52,7 +52,7 @@ public class GenericItemUsingDamageSlot extends SlotWithSkin implements ISlotWit
     }
 
     @Override
-    public int getSlotStackLimit() {
+    public int getMaxStackSize() {
         //return super.getMaxStackSize();
         return stackLimit;
     }

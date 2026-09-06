@@ -3,13 +3,10 @@ package mods.eln.entity
 import mods.eln.Eln
 import mods.eln.misc.Utils
 import mods.eln.sim.IProcess
-import net.minecraft.server.level.ServerPlayer
 import net.minecraft.core.BlockPos
 import net.minecraft.world.Difficulty
 import net.minecraft.world.level.LightLayer
-import mods.eln.misc.isAirBlock
 import mods.eln.misc.isBlockLoaded
-import mods.eln.misc.isEmptyBlock
 import mods.eln.misc.rand
 
 /**
@@ -18,29 +15,26 @@ import mods.eln.misc.rand
  */
 class ReplicatorPopProcess : IProcess {
     override fun process(time: Double) {
-        val world = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer().getWorld(0)
+        val world = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer()?.overworld() ?: return
         val maxReplicators = Eln.config.getIntOrElse("entities.replicator.maxCount", 100)
         val popPerSecondPerPlayer =
             Eln.config.getDoubleOrElse("entities.replicator.thunderSpawnPerSecondPerPlayer", 1.0 / 120.0)
 
         var replicatorCount = 0
-        for (entity in world.loadedEntityList) {
-            if (entity is ReplicatorEntity) {
-                replicatorCount++
-                if (replicatorCount > maxReplicators) {
-                    entity.discard()
-                }
+        for (entity in world.getEntities(ReplicatorEntity.TYPE.get()) { true }) {
+            replicatorCount++
+            if (replicatorCount > maxReplicators) {
+                entity.discard()
             }
         }
 
         if (world.difficulty == Difficulty.PEACEFUL) return
         // Weather spawns are still mob spawns; honour the game rule like vanilla does.
-        if (!world.gameRules.getBoolean("doMobSpawning")) return
+        if (!world.gameRules.getBoolean(net.minecraft.world.level.GameRules.RULE_DOMOBSPAWNING)) return
 
-        if (world.worldInfo.isThundering) {
-            for (player in world.playerEntities) {
-                if (player !is ServerPlayer) continue
-                if (Math.random() * world.playerEntities.size < time * popPerSecondPerPlayer && player.level == world) {
+        if (world.isThundering) {
+            for (player in world.players()) {
+                if (Math.random() * world.players().size < time * popPerSecondPerPlayer && player.level() == world) {
                     val x = (player.x + Utils.rand(-100.0, 100.0)).toInt()
                     val z = (player.z + Utils.rand(-100.0, 100.0)).toInt()
                     Utils.println("POP")
@@ -53,9 +47,9 @@ class ReplicatorPopProcess : IProcess {
                     // an unbounded one would hang the server tick if it never found one.
                     var y = 2
                     var found = false
-                    while (y < world.height - 2) {
+                    while (y < world.maxBuildHeight - 2) {
                         val pos = BlockPos(x, y, z)
-                        if (world.isEmptyBlock(pos) && world.isEmptyBlock(pos.up()) &&
+                        if (world.isEmptyBlock(pos) && world.isEmptyBlock(pos.above()) &&
                             world.getBrightness(LightLayer.BLOCK, pos) <= 6
                         ) {
                             found = true
@@ -65,12 +59,12 @@ class ReplicatorPopProcess : IProcess {
                     }
                     if (!found) continue
 
-                    val entityLiving = ReplicatorEntity(world)
+                    val entityLiving = ReplicatorEntity(ReplicatorEntity.TYPE.get(), world)
                     entityLiving.moveTo(x + 0.5, y.toDouble(), z + 0.5, 0.0f, 0.0f)
-                    entityLiving.rotationYawHead = entityLiving.yRot
-                    entityLiving.renderYawOffset = entityLiving.yRot
+                    entityLiving.yHeadRot = entityLiving.yRot
+                    entityLiving.yBodyRot = entityLiving.yRot
                     world.addFreshEntity(entityLiving)
-                    entityLiving.playLivingSound()
+                    entityLiving.playAmbientSound()
                     entityLiving.isSpawnedFromWeather = true
                     Utils.println("Spawn Replicator at $x $y $z")
                 }

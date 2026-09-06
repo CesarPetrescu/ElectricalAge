@@ -5,29 +5,44 @@ import mods.eln.misc.Coordinate
 import mods.eln.node.NodeManager
 import mods.eln.sim.mna.misc.MnaConst
 import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.entity.EntityType
 import net.minecraft.world.entity.vehicle.AbstractMinecart
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.world.InteractionHand
+import net.minecraft.world.InteractionResult
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.Items
 import net.minecraft.core.BlockPos
 import net.minecraft.world.level.Level
+import java.util.function.Supplier
 import kotlin.math.abs
 import kotlin.math.sign
 
-class EntityElectricMinecart(world: Level, x: Double, y: Double, z: Double): AbstractMinecart(world, x, y, z) {
+class EntityElectricMinecart(type: EntityType<out EntityElectricMinecart>, world: Level): AbstractMinecart(type, world) {
 
-    // TODO: Confirm if this is actually needed for anything
-    constructor(world: Level): this(world, 0.0, 0.0, 0.0)
+    constructor(world: Level, x: Double, y: Double, z: Double): this(TYPE.get(), world) {
+        setPos(x, y, z)
+        xo = x
+        yo = y
+        zo = z
+    }
+
+    companion object {
+        /** Registered by EntityRegistration through ElnRegistry. */
+        @JvmField
+        var TYPE: Supplier<EntityType<EntityElectricMinecart>> = Supplier { throw IllegalStateException("EntityElectricMinecart type not registered") }
+    }
 
     private var lastPowerElement: RailroadPowerInterface? = null
     private val locomotiveMaximumResistance = 200.0
     var energyBufferTargetJoules = 10_000.0
     var energyBufferJoules = 0.0
 
-    override fun onUpdate() {
-        super.onUpdate()
-        val cartCoordinate = Coordinate(posX.toInt(), posY.toInt(), posZ.toInt(), world)
+    override fun tick() {
+        super.tick()
+        val cartCoordinate = Coordinate(x.toInt(), y.toInt(), z.toInt(), level())
         val overheadWires = getOverheadWires(cartCoordinate)
         val underTrackWires = getUnderTrackWires(cartCoordinate)
 
@@ -82,11 +97,12 @@ class EntityElectricMinecart(world: Level, x: Double, y: Double, z: Double): Abs
             }
 
             val startingThreshold = 0.0005
+            val motion = deltaMovement
 
-            if (abs(motionX) >= startingThreshold || abs(motionZ) >= startingThreshold) {
-                if (abs(motionX) < 0.5 && abs(motionZ) < 0.5) {
-                    pushX = motionX.sign * 0.05 * (energyAvailable / maxEnergy)
-                    pushZ = motionZ.sign * 0.05 * (energyAvailable / maxEnergy)
+            if (abs(motion.x) >= startingThreshold || abs(motion.z) >= startingThreshold) {
+                if (abs(motion.x) < 0.5 && abs(motion.z) < 0.5) {
+                    pushX = motion.x.sign * 0.05 * (energyAvailable / maxEnergy)
+                    pushZ = motion.z.sign * 0.05 * (energyAvailable / maxEnergy)
                     energyBufferJoules -= energyAvailable
                 }
             }
@@ -94,8 +110,7 @@ class EntityElectricMinecart(world: Level, x: Double, y: Double, z: Double): Abs
 
         //Eln.logger.info("Push: ($pushX, $pushZ)")
 
-        motionX += pushX
-        motionZ += pushZ
+        deltaMovement = deltaMovement.add(pushX, 0.0, pushZ)
 
         //Eln.logger.info("Speed: ($motionX, $motionZ)")
 
@@ -126,28 +141,25 @@ class EntityElectricMinecart(world: Level, x: Double, y: Double, z: Double): Abs
         return null
     }
 
-    override fun processInitialInteract(player: Player, hand: InteractionHand): Boolean {
-        if (super.processInitialInteract(player, hand)) return true
-        if (player.isShiftKeyDown) return false
-
-        if (isBeingRidden && !isPassenger(player)) {
-            return true
+    override fun interact(player: Player, hand: InteractionHand): InteractionResult {
+        val ret = super.interact(player, hand)
+        if (ret.consumesAction()) return ret
+        if (player.isSecondaryUseActive) return InteractionResult.PASS
+        if (isVehicle) return InteractionResult.PASS
+        if (!level().isClientSide) {
+            return if (player.startRiding(this)) InteractionResult.CONSUME else InteractionResult.PASS
         }
-
-        if (!world.isClientSide) {
-            player.startRiding(this)
-        }
-        return true
+        return InteractionResult.SUCCESS
     }
 
-    override fun writeEntityToNBT(tag: CompoundTag) {
-        super.writeEntityToNBT(tag)
+    override fun addAdditionalSaveData(tag: CompoundTag) {
+        super.addAdditionalSaveData(tag)
         tag.putDouble("EnergyBufferJ", energyBufferJoules)
         tag.putDouble("EnergyBufferTargetJ", energyBufferTargetJoules)
     }
 
-    override fun readEntityFromNBT(tag: CompoundTag) {
-        super.readEntityFromNBT(tag)
+    override fun readAdditionalSaveData(tag: CompoundTag) {
+        super.readAdditionalSaveData(tag)
         if (tag.contains("EnergyBufferJ")) {
             energyBufferJoules = tag.getDouble("EnergyBufferJ")
         }
@@ -156,7 +168,10 @@ class EntityElectricMinecart(world: Level, x: Double, y: Double, z: Double): Abs
         }
     }
 
-    override fun getType(): AbstractMinecart.Type = AbstractMinecart.Type.RIDEABLE
+    override fun getMinecartType(): AbstractMinecart.Type = AbstractMinecart.Type.RIDEABLE
 
-    override fun getDefaultDisplayTile(): BlockState = Blocks.IRON_BLOCK.defaultState
+    /** What breaking the cart drops: the electric minecart item when it exists, else a plain minecart. */
+    override fun getDropItem(): Item = Eln.findItemStack("Electric Minecart", 1)?.item ?: Items.MINECART
+
+    override fun getDefaultDisplayBlockState(): BlockState = Blocks.IRON_BLOCK.defaultBlockState()
 }

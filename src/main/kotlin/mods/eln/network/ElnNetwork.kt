@@ -134,11 +134,11 @@ object ElnNetwork {
 
 /** The SimpleImpl message shape, kept so the six typed packets only change an import. */
 interface IMessage {
-    fun fromBytes(buf: ByteBuf?)
-    fun toBytes(buf: ByteBuf?)
+    fun fromBytes(buf: ByteBuf)
+    fun toBytes(buf: ByteBuf)
 }
 
-interface IMessageHandler<REQ : IMessage, REPLY : IMessage?> {
+interface IMessageHandler<REQ : IMessage?, REPLY : IMessage?> {
     fun onMessage(message: REQ, ctx: MessageContext?): REPLY?
 }
 

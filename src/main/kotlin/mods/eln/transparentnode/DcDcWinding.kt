@@ -299,11 +299,11 @@ internal class DcDcWindingSlot(
     private val stackLimit: Int,
     private val comment: Array<String> = arrayOf(tr("Power cable or wire slot"))
 ) : SlotWithSkin(inventory, slot, x, y, ISlotSkin.SlotSkin.medium), ISlotWithComment {
-    override fun isItemValid(itemStack: ItemStack): Boolean {
+    override fun mayPlace(itemStack: ItemStack): Boolean {
         return dcDcWinding(itemStack) != null
     }
 
-    override fun getSlotStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return stackLimit
     }
 

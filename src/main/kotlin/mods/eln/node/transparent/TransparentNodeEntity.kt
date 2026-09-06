@@ -211,17 +211,7 @@ open class TransparentNodeEntity(type: BlockEntityType<*>, pos: BlockPos, state:
         sidedInventory.setItem(var1, var2)
     }
 
-    override fun clear() = sidedInventory.clear()
-
-    override fun getField(id: Int): Int = sidedInventory.getField(id)
-    override fun setField(id: Int, value: Int) = sidedInventory.setField(id, value)
-    override fun getFieldCount(): Int = sidedInventory.fieldCount
-
-    override fun getName(): String = sidedInventory.name
-
-    override fun hasCustomName(): Boolean = sidedInventory.hasCustomName()
-
-    override fun getDisplayName(): Component = sidedInventory.displayName
+    override fun clearContent() = sidedInventory.clearContent()
 
     override fun getMaxStackSize(): Int {
         return sidedInventory.maxStackSize
@@ -246,7 +236,7 @@ open class TransparentNodeEntity(type: BlockEntityType<*>, pos: BlockPos, state:
     override fun getSlotsForFace(side: EnumFacing): IntArray =
         sidedInventory.getSlotsForFace(side)
 
-    override fun canPlaceItemThroughFace(slot: Int, stack: ItemStack, side: EnumFacing): Boolean =
+    override fun canPlaceItemThroughFace(slot: Int, stack: ItemStack, side: EnumFacing?): Boolean =
         sidedInventory.canPlaceItemThroughFace(slot, stack, side)
 
     override fun canTakeItemThroughFace(slot: Int, stack: ItemStack, side: EnumFacing): Boolean =

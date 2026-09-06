@@ -13,8 +13,8 @@ class LampItemSlot(inventory: Container, slot: Int, x: Int, y: Int, stackLimit: 
         ISlotSkin.SlotSkin.medium, arrayOf(I18N.tr("Lamp slot"))
     ) {
 
-    override fun isItemValid(itemStack: ItemStack): Boolean {
-        return if (!super.isItemValid(itemStack)) false
+    override fun mayPlace(itemStack: ItemStack): Boolean {
+        return if (!super.mayPlace(itemStack)) false
         else (Utils.getItemObject(itemStack) as LampDescriptor).lampData.technology in acceptedLampTypes
     }
 

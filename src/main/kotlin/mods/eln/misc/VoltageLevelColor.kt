@@ -29,7 +29,35 @@ enum class VoltageLevelColor(val textureName: String?) {
             else -> null
         }
 
+    /** The 1.7.10 fixed-function tint (render code only). */
+    fun setGLColor() {
+        val c = rgb ?: return
+        mods.eln.client.gl.GL11.glColor3f(c[0], c[1], c[2])
+    }
+
     companion object {
+        @JvmStatic
+        fun fromCable(descriptor: mods.eln.sixnode.electricalcable.ElectricalCableDescriptor?): VoltageLevelColor {
+            return if (descriptor != null) {
+                if (descriptor.signalWire) {
+                    SignalVoltage
+                } else {
+                    fromVoltage(descriptor.electricalNominalVoltage)
+                }
+            } else {
+                None
+            }
+        }
+
+        @JvmStatic
+        fun fromCable(descriptor: mods.eln.sixnode.currentcable.CurrentCableDescriptor?): VoltageLevelColor {
+            return if (descriptor != null) {
+                Neutral
+            } else {
+                None
+            }
+        }
+
         @JvmStatic
         fun fromVoltage(voltage: Double): VoltageLevelColor {
             return if (voltage < 0) {

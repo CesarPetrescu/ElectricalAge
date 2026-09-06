@@ -2,7 +2,6 @@ package mods.eln.misc
 
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
-import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket
 import net.minecraft.server.level.ServerPlayer
 
 /**
@@ -10,9 +9,8 @@ import net.minecraft.server.level.ServerPlayer
  */
 
 fun Player.totalItemsCarried(stack: ItemStack): Int {
-    return inventory.mainInventory
-        .filterNotNull()
-        .filter { it.isItemEqual(stack) }
+    return inventory.items
+        .filter { ItemStack.isSameItem(it, stack) }
         .sumOf { it.count }
 }
 
@@ -21,18 +19,17 @@ fun Player.removeMultipleItems(stack: ItemStack, count: Int) {
     assert(count <= totalItemsCarried(stack))
     var left = count
     try {
-        inventory.mainInventory.indices.reversed().forEach { i ->
-            val invStack = inventory.mainInventory[i]
-            if (invStack?.isItemEqual(stack) == true) {
+        inventory.items.indices.reversed().forEach { i ->
+            val invStack = inventory.items[i]
+            if (ItemStack.isSameItem(invStack, stack)) {
                 left -= invStack.split(invStack.count.coerceAtMost(left)).count
                 assert(invStack.count >= 0)
-                // Black magic used to synchronize immediately with the client.
-                val slot = openContainer.getSlotFromInventory(inventory, i) ?: return@forEach
-                connection.sendPacket(ClientboundContainerSetSlotPacket(openContainer.windowId, slot.index, invStack))
                 if (left == 0) return
             }
         }
     } finally {
         inventory.setChanged()
+        // Synchronize immediately with the client (1.7.10 hand-built a slot packet per slot).
+        inventoryMenu.broadcastChanges()
     }
 }

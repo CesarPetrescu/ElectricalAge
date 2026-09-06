@@ -3,9 +3,6 @@ package mods.eln.entity
 import net.minecraft.world.entity.PathfinderMob
 import net.minecraft.world.entity.ai.goal.Goal
 import net.minecraft.world.entity.ai.util.DefaultRandomPos
-import mods.eln.misc.xCoord
-import mods.eln.misc.yCoord
-import mods.eln.misc.zCoord
 
 class ConfigurableAiWander(
     private val entity: PathfinderMob,
@@ -17,26 +14,26 @@ class ConfigurableAiWander(
     private var zPosition = 0.0
 
     init {
-        mutexBits = 1
+        setFlags(java.util.EnumSet.of(Flag.MOVE))
     }
 
-    override fun shouldExecute(): Boolean {
+    override fun canUse(): Boolean {
         // EntityLiving.age (time since last player proximity) became getIdleTime() in 1.8.
         if (entity.idleTime >= 100) return false
-        if (entity.rng.nextInt(randLimit) != 0) return false
+        if (entity.random.nextInt(randLimit) != 0) return false
 
-        val vec3 = DefaultRandomPos.findRandomTarget(entity, 10, 7) ?: return false
+        val vec3 = DefaultRandomPos.getPos(entity, 10, 7) ?: return false
         xPosition = vec3.x
         yPosition = vec3.y
         zPosition = vec3.z
         return true
     }
 
-    override fun shouldContinueExecuting(): Boolean {
-        return !entity.navigator.noPath()
+    override fun canContinueToUse(): Boolean {
+        return !entity.navigation.isDone
     }
 
-    override fun startExecuting() {
-        entity.navigator.tryMoveToXYZ(xPosition, yPosition, zPosition, speed)
+    override fun start() {
+        entity.navigation.moveTo(xPosition, yPosition, zPosition, speed)
     }
 }

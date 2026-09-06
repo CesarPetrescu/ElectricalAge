@@ -28,7 +28,7 @@ class ElectricalPoleRender(entity: TransparentNodeEntity, descriptor: Transparen
         this.descriptor = descriptor as ElectricalPoleDescriptor
 
         if (this.descriptor.includeTransformer) {
-            addLoopedSound(object : LoopedSound("eln:transformer", coordinate(), SoundInstance.AttenuationType.LINEAR) {
+            addLoopedSound(object : LoopedSound("eln:transformer", coordinate(), SoundInstance.Attenuation.LINEAR) {
                 override fun getVolume(): Float {
                     if (load.position > this@ElectricalPoleRender.descriptor.minimalLoadToHum)
                         return 0.05f * (load.position - this@ElectricalPoleRender.descriptor.minimalLoadToHum) / (1 - this@ElectricalPoleRender.descriptor.minimalLoadToHum)
