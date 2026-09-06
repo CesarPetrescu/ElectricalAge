@@ -21,7 +21,8 @@ permissions:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Let an active release finish; the publisher skips commits superseded on main.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   build:
@@ -35,6 +36,8 @@ jobs:
           distribution: temurin
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
+      - name: Check release publisher
+        run: bash script/test-publish-latest.sh
       - name: Build and test
         run: ./gradlew build
       - name: Upload test reports
@@ -164,3 +167,27 @@ jobs:
             run/client/crash-reports/**
             run/server/crash-reports/**
             /tmp/xorg.log
+
+  release:
+    name: Publish latest 1.21.1 mod
+    needs: [build, benchmark, smoke]
+    if: >-
+      github.repository == 'CesarPetrescu/ElectricalAge' &&
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: mod-jar
+          path: release-input
+      - name: Publish tested JAR and checksum
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash script/publish-latest.sh
