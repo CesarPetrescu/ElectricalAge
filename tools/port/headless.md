@@ -64,6 +64,29 @@ onboarding screen, which is not the title screen, and the run never ends. `-Psto
 i.e. after models are baked. There is no audio device, so `SoundEngine` logs "Failed to open
 OpenAL device" and carries on; everything else is real.
 
+## The smoke tests
+
+The dedicated server places a circuit through the real item-use path (a FakePlayer), reads the
+meters, and reads them again after a restart against the saved world:
+
+    ./gradlew runServer -PsmokeTest=place      # SMOKE PASS ... energised=true current flowing=true
+    ./gradlew runServer -PsmokeTest=verify     # the same after the restart; also runs /eln on the console
+
+The ore count in the `place` log is only meaningful on normal terrain (`level-type=minecraft:normal`
+in `run/server/server.properties`); on the flat dev world it says SKIP.
+
+The client joins a copy of that world, flies to the circuit and screenshots the world, a
+third-person view with items on the floor, the resistor GUI, the macerator's container GUI, the
+inventory and an Electrical Age creative tab into `run/client/screenshots/`:
+
+    cp -r run/server/world run/client/saves/smoke
+    DISPLAY=:99 ./gradlew runClient -PsmokeClient=smoke
+
+`SMOKE PASS screen open: ...` twice in the log, no crash report, and the pictures are the evidence
+(`docs/port/smoke-*-1.21.png` are the committed ones). Software GL (llvmpipe) on two cores takes
+about a minute per run; do not run two game processes at once on a small box, the second Gradle
+daemon and the Kotlin compile daemon together push it into swap.
+
 ## What to grep for
 
     grep -c 'Missing textures in model' <log>          # atlas / model texture problems
