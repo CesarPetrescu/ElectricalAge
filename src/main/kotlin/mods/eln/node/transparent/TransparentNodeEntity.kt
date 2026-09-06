@@ -1,7 +1,5 @@
 package mods.eln.node.transparent
 
-import net.neoforged.api.distmarker.Dist
-import net.neoforged.api.distmarker.OnlyIn
 import mods.eln.Eln
 import mods.eln.cable.CableRenderDescriptor
 import mods.eln.misc.Coordinate
@@ -28,8 +26,19 @@ import java.lang.reflect.InvocationTargetException
 import mods.eln.misc.xCoord
 import mods.eln.misc.yCoord
 import mods.eln.misc.zCoord
+import net.minecraft.world.level.block.entity.BlockEntityType
+import net.minecraft.world.level.block.state.BlockState
+import java.util.function.Supplier
 
-open class TransparentNodeEntity : NodeBlockEntity(), WorldlyContainer {
+open class TransparentNodeEntity(type: BlockEntityType<*>, pos: BlockPos, state: BlockState) : NodeBlockEntity(type, pos, state), WorldlyContainer {
+    constructor(pos: BlockPos, state: BlockState) : this(TYPE.get(), pos, state)
+
+    companion object {
+        /** Registered by Eln through ElnRegistry.registerBlockEntity. */
+        @JvmField
+        var TYPE: Supplier<BlockEntityType<TransparentNodeEntity>> = Supplier { throw IllegalStateException("TransparentNodeEntity type not registered") }
+    }
+
     var elementRender: TransparentNodeElementRender? = null
     var elementRenderId: Short = 0
 
@@ -95,7 +104,6 @@ open class TransparentNodeEntity : NodeBlockEntity(), WorldlyContainer {
         return if (elementRender == null) super.cameraDrawOptimisation() else elementRender!!.cameraDrawOptimisation()
     }
 
-    @OnlyIn(Dist.CLIENT)
     override fun unoptimizedRenderBoundingBox(): AABB {
         return if (elementRender == null) super.unoptimizedRenderBoundingBox() else elementRender!!.unoptimizedRenderBoundingBox()
     }
@@ -131,8 +139,8 @@ open class TransparentNodeEntity : NodeBlockEntity(), WorldlyContainer {
         }
         if (desc == null) {
             val pos = BlockPos(x, y, z)
-            val bb = Blocks.STONE.defaultState.getCollisionBoundingBox(world, pos)?.offset(pos)
-            if (bb != null && par5AxisAlignedBB.intersects(bb)) list.add(bb)
+            val bb = AABB(pos)
+            if (par5AxisAlignedBB.intersects(bb)) list.add(bb)
         } else {
             desc.addCollisionBoxesToList(par5AxisAlignedBB, list, world, x, y, z)
         }

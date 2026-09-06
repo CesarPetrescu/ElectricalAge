@@ -6,6 +6,7 @@ import mods.eln.sim.IProcess
 import net.minecraft.nbt.CompoundTag
 import java.util.*
 import kotlin.math.*
+import mods.eln.misc.writeToNBT
 
 class Equation : IValue, INBTTReady {
     var stringList: LinkedList<String?> = LinkedList()

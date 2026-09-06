@@ -33,6 +33,7 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
 import java.util.*
+import mods.eln.misc.writeToNBT
 
 
 class ElectricalVuMeterDescriptor(name: String, objName: String, var onOffOnly: Boolean) : SixNodeDescriptor(name, ElectricalVuMeterElement::class.java, ElectricalVuMeterRender::class.java) {

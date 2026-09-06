@@ -16,6 +16,7 @@ import mods.eln.misc.isBlockLoaded
 import mods.eln.misc.isReplaceable
 import mods.eln.misc.setBlock
 import mods.eln.misc.setBlockToAir
+import mods.eln.misc.writeToNBT
 
 class GhostManager(par1Str: String?) : SavedData(par1Str) {
     var ghostTable: MutableMap<Coordinate?, GhostElement> = Hashtable()

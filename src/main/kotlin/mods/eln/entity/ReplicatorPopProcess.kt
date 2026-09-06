@@ -10,6 +10,8 @@ import net.minecraft.world.level.LightLayer
 import net.minecraftforge.fml.common.FMLCommonHandler
 import mods.eln.misc.isAirBlock
 import mods.eln.misc.isBlockLoaded
+import mods.eln.misc.isEmptyBlock
+import mods.eln.misc.rand
 
 /**
  * Spawns replicators near players during thunderstorms and culls the population above the

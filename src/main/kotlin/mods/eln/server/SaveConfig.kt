@@ -3,6 +3,7 @@ package mods.eln.server
 import mods.eln.Eln
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.world.level.saveddata.SavedData
+import mods.eln.misc.writeToNBT
 
 class SaveConfig(par1Str: String) : SavedData(par1Str) {
     override fun readFromNBT(nbt: CompoundTag) {

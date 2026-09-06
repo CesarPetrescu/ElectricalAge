@@ -50,6 +50,8 @@ import mods.eln.misc.xCoord
 import mods.eln.misc.yCoord
 import mods.eln.misc.zCoord
 import mods.eln.misc.isNothing
+import mods.eln.misc.rand
+import mods.eln.misc.writeToNBT
 
 enum class WireMachineKind(
     val displayName: String,

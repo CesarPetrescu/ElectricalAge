@@ -14,6 +14,7 @@ import mods.eln.sim.process.destruct.ShaftSpeedWatchdog
 import mods.eln.sim.process.destruct.WorldExplosion
 import net.minecraft.nbt.CompoundTag
 import java.util.*
+import mods.eln.misc.writeToNBT
 
 // Speed above which shafts will (by default) explode.
 val absoluteMaximumShaftSpeed = 250.0

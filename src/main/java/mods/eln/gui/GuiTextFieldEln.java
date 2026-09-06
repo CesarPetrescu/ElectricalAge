@@ -2,10 +2,14 @@ package mods.eln.gui;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.network.chat.Component;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 
+/** An {@link EditBox} driven by the mod's {@link IGuiObject} event loop; keeps 1.7.10's getText/setText. */
 public class GuiTextFieldEln extends EditBox implements IGuiObject {
 
     int xPos, yPos, width, height;
@@ -21,11 +25,11 @@ public class GuiTextFieldEln extends EditBox implements IGuiObject {
     }
 
     public GuiTextFieldEln(Font par1FontRenderer, int x, int y, int w, int h, GuiHelper helper, int maxLength) {
-        super(0, par1FontRenderer, x, y, w, h);
+        super(par1FontRenderer, x, y, w, h, Component.empty());
         setTextColor(-1);
-        setDisabledTextColour(-1);
-        setEnableBackgroundDrawing(true);
-        setMaxStringLength(maxLength);
+        setTextColorUneditable(-1);
+        setBordered(true);
+        setMaxLength(maxLength);
         xPos = x;
         yPos = y;
         width = w;
@@ -65,6 +69,19 @@ public class GuiTextFieldEln extends EditBox implements IGuiObject {
             this.comment.set(line, comment);
     }
 
+    // 1.7.10 names
+    public String getText() {
+        return getValue();
+    }
+
+    public void setText(String text) {
+        setValue(text);
+    }
+
+    public void setMaxStringLength(int length) {
+        setMaxLength(length);
+    }
+
     public void setText(float value) {
         if (Math.abs(value) < 1000)
             setText(String.format("%3.2f", value));
@@ -76,10 +93,9 @@ public class GuiTextFieldEln extends EditBox implements IGuiObject {
         setText(String.format("%d", value));
     }
 
-    @Override
     public void setEnabled(boolean par1) {
         enabled = par1;
-        super.setEnabled(par1);
+        setEditable(par1);
     }
 
     public boolean getEnabled() {
@@ -91,7 +107,9 @@ public class GuiTextFieldEln extends EditBox implements IGuiObject {
             setFocused(false);
             return true;
         }
-        return super.textboxKeyTyped(par1, par2);
+        if (par1 != 0) return charTyped(par1, 0);
+        if (par2 != 0) return keyPressed(par2, 0, 0);
+        return false;
     }
 
     @Override
@@ -107,7 +125,11 @@ public class GuiTextFieldEln extends EditBox implements IGuiObject {
 
     @Override
     public void idraw(int x, int y, float f) {
-        this.drawTextBox();
+        GuiGraphics g = Gui.graphics();
+        if (g == null) return;
+        setX(xPos);
+        setY(yPos);
+        render(g, x, y, f);
     }
 
     @Override
@@ -117,7 +139,9 @@ public class GuiTextFieldEln extends EditBox implements IGuiObject {
 
     @Override
     public void imouseClicked(int x, int y, int code) {
-        this.mouseClicked(x, y, code);
+        boolean inside = x >= xPos && y >= yPos && x < xPos + width && y < yPos + height;
+        if (inside != isFocused()) setFocused(inside);
+        if (inside) this.mouseClicked(x, y, code);
     }
 
     @Override
@@ -130,7 +154,7 @@ public class GuiTextFieldEln extends EditBox implements IGuiObject {
 
     @Override
     public void idraw2(int x, int y) {
-        if (!isFocused() && getVisible() && x >= xPos && y >= yPos && x < xPos + width && y < yPos + height)
+        if (!isFocused() && visible && x >= xPos && y >= yPos && x < xPos + width && y < yPos + height)
             helper.drawHoveringText(comment, x, y, Minecraft.getInstance().font);
 
     }

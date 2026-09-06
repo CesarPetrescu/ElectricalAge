@@ -6,6 +6,7 @@ import mods.eln.misc.Direction
 import mods.eln.misc.INBTTReady
 import net.minecraft.world.entity.player.Player
 import net.minecraft.nbt.CompoundTag
+import mods.eln.misc.writeToNBT
 
 class GhostElement : INBTTReady {
     @JvmField

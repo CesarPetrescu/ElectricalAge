@@ -16,6 +16,7 @@ import java.io.DataOutputStream
 import mods.eln.misc.xCoord
 import mods.eln.misc.yCoord
 import mods.eln.misc.zCoord
+import mods.eln.misc.writeToNBT
 
 class VerticalHubDescriptor(baseName: String, obj: Obj3D):
     SimpleShaftDescriptor(

@@ -38,6 +38,7 @@ import java.io.IOException
 import java.lang.reflect.InvocationTargetException
 import java.util.*
 import mods.eln.misc.isNothing
+import mods.eln.misc.writeToNBT
 
 class SixNode : Node() {
     @JvmField

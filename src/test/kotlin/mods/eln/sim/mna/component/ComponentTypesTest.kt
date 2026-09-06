@@ -16,6 +16,7 @@ import mods.eln.sim.mna.state.State
 import mods.eln.sim.mna.state.VoltageState
 import mods.eln.sim.mna.state.VoltageStateLineReady
 import net.minecraft.nbt.CompoundTag
+import mods.eln.misc.writeToNBT
 
 private const val EPS = 1e-9
 

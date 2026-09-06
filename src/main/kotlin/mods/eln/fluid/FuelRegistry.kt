@@ -1,8 +1,8 @@
 package mods.eln.fluid
 
 import mods.eln.config.JsonConfig
-import net.minecraftforge.fluids.Fluid
-import net.minecraftforge.fluids.FluidRegistry
+import net.minecraft.world.level.material.Fluid
+import mods.eln.fluid.FluidRegistry
 import java.io.File
 
 data class FuelEntry(

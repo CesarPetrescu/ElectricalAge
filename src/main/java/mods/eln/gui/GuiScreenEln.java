@@ -1,20 +1,36 @@
 package mods.eln.gui;
 
+import mods.eln.client.Keyboard;
+import mods.eln.client.gl.FixedFunction;
 import mods.eln.gui.GuiTextFieldEln.GuiTextFieldElnObserver;
 import mods.eln.gui.IGuiObject.IGuiObjectObserver;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 
-import java.io.IOException;
-
+/**
+ * Base of the mod's non-inventory screens. The 1.7.10 protected API the ~40 screens override
+ * ({@code initGui}, {@code preDraw}/{@code postDraw}, {@code guiObjectEvent}, {@code newHelper})
+ * is kept; this class maps it onto 1.21's {@link Screen}.
+ */
 public abstract class GuiScreenEln extends Screen implements GuiTextFieldElnObserver, IGuiObjectObserver {
 
     protected GuiHelper helper;
 
+    protected GuiScreenEln() {
+        super(Component.empty());
+    }
+
     protected abstract GuiHelper newHelper();
 
     @Override
+    protected void init() {
+        super.init();
+        initGui();
+    }
+
+    /** 1.7.10's initGui; screens override it and call super. */
     public void initGui() {
-        super.initGui();
         helper = newHelper();
     }
 
@@ -49,41 +65,56 @@ public abstract class GuiScreenEln extends Screen implements GuiTextFieldElnObse
     }
 
     public GuiVerticalProgressBar newGuiVerticalProgressBar(int x, int y, int width, int height) {
-        GuiVerticalProgressBar o = helper.newGuiVerticalProgressBar(x, y, width, height);
-
-        return o;
+        return helper.newGuiVerticalProgressBar(x, y, width, height);
     }
 
     @Override
-    protected void keyTyped(char key, int code) throws IOException {
-        helper.keyTyped(key, code);
-        super.keyTyped(key, code);
-    }
-
-    protected void mouseClicked(int x, int y, int code) throws IOException {
-        helper.mouseClicked(x, y, code);
-        super.mouseClicked(x, y, code);
+    public boolean charTyped(char codePoint, int modifiers) {
+        helper.keyTyped(codePoint, 0);
+        return super.charTyped(codePoint, modifiers);
     }
 
     @Override
-    protected void mouseReleased(int x, int y, int witch) {
-        // 1.8+: mouseMovedOrUp split into mouseReleased (this) and mouseClickMove.
-        helper.mouseMovedOrUp(x, y, witch);
-        super.mouseReleased(x, y, witch);
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        // Editing keys reach the widgets as a key code with no character, like LWJGL 2 did.
+        if (keyCode == Keyboard.KEY_RETURN) helper.keyTyped('\r', keyCode);
+        else if (keyCode == Keyboard.KEY_BACK || keyCode == Keyboard.KEY_DELETE || keyCode == Keyboard.KEY_LEFT || keyCode == Keyboard.KEY_RIGHT)
+            helper.keyTyped('\0', keyCode);
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
-    public boolean doesGuiPauseGame() {
+    @Override
+    public boolean mouseClicked(double x, double y, int code) {
+        helper.mouseClicked((int) x, (int) y, code);
+        return super.mouseClicked(x, y, code);
+    }
+
+    @Override
+    public boolean mouseReleased(double x, double y, int witch) {
+        helper.mouseMovedOrUp((int) x, (int) y, witch);
+        return super.mouseReleased(x, y, witch);
+    }
+
+    @Override
+    public boolean isPauseScreen() {
         return false;
     }
 
     @Override
-    public void drawScreen(int x, int y, float f) {
-        super.drawScreen(x, y, f);
-        preDraw(f, x, y);
-        helper.mouseMove(x, y);
-        helper.draw(x, y, f);
-        postDraw(f, x, y);
-        helper.draw2(x, y);
+    public void render(GuiGraphics graphics, int x, int y, float f) {
+        Gui.begin(graphics);
+        FixedFunction.beginGui(graphics);
+        try {
+            super.render(graphics, x, y, f);
+            preDraw(f, x, y);
+            helper.mouseMove(x, y);
+            helper.draw(x, y, f);
+            postDraw(f, x, y);
+            helper.draw2(x, y);
+        } finally {
+            FixedFunction.end();
+            Gui.end();
+        }
     }
 
     @Override

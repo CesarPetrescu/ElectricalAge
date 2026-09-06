@@ -5,8 +5,8 @@ import mods.eln.Eln.fluidBlocks
 import mods.eln.Eln.fluids
 import net.minecraft.world.level.block.Block
 import net.minecraft.resources.ResourceLocation
-import net.minecraftforge.fluids.Fluid
-import net.minecraftforge.fluids.FluidRegistry
+import net.minecraft.world.level.material.Fluid
+import mods.eln.fluid.FluidRegistry
 
 /**
  * 1.12.2: a Fluid carries its own still/flow sprites, and the per-fluid ItemBucket +

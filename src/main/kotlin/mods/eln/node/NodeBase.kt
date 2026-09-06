@@ -46,6 +46,8 @@ import mods.eln.misc.getBlock
 import mods.eln.misc.setBlockToAir
 import mods.eln.misc.isNothing
 import mods.eln.misc.isReplaceable
+import mods.eln.misc.rand
+import mods.eln.misc.writeToNBT
 
 abstract class NodeBase {
     var neighborOpaque: Byte = 0
@@ -198,7 +200,7 @@ abstract class NodeBase {
             }
         }
         if (hasGui(side)) {
-            entityPlayer.openGui(Eln.instance, GuiHandler.nodeBaseOpen + side.int, coordinate.world(), coordinate.x, coordinate.y, coordinate.z)
+            GuiHandler.open(entityPlayer, GuiHandler.nodeBaseOpen + side.int, coordinate.world(), coordinate.x, coordinate.y, coordinate.z)
             return true
         }
         return false

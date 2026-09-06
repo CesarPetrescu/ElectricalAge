@@ -25,6 +25,7 @@ import java.util.UUID
 import mods.eln.misc.xCoord
 import mods.eln.misc.yCoord
 import mods.eln.misc.zCoord
+import mods.eln.misc.writeToNBT
 
 abstract class GridElement(transparentNode: TransparentNode, descriptor: TransparentNodeDescriptor, internal var connectRange: Int) : TransparentNodeElement(transparentNode, descriptor) {
     var gridLinkList = HashSet<GridLink>()

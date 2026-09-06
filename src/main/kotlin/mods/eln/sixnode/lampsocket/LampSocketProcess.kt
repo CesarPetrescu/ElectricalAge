@@ -20,6 +20,7 @@ import mods.eln.misc.yCoord
 import mods.eln.misc.zCoord
 import mods.eln.misc.getBlockState
 import mods.eln.misc.isNothing
+import mods.eln.misc.rand
 
 class LampSocketProcess(var element: LampSocketElement) : IProcess {
 

@@ -37,6 +37,7 @@ import mods.eln.misc.xCoord
 import mods.eln.misc.yCoord
 import mods.eln.misc.zCoord
 import mods.eln.misc.isNothing
+import mods.eln.misc.writeToNBT
 
 abstract class TurbineDescriptor(baseName: String, obj: Obj3D) :
     SimpleShaftDescriptor(baseName, TurbineElement::class, TurbineRender::class, EntityMetaTag.Fluid) {

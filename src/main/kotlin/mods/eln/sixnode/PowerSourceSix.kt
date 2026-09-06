@@ -33,6 +33,7 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
 import java.util.*
+import mods.eln.misc.writeToNBT
 
 class PowerSourceDescriptor(name: String, obj: Obj3D) : SixNodeDescriptor(name, PowerSourceElement::class.java, PowerSourceRender::class.java) {
 

@@ -6,6 +6,7 @@ import mods.eln.misc.FunctionTable
 import mods.eln.sim.ThermalLoad
 import mods.eln.sim.mna.component.VoltageSource
 import net.minecraft.nbt.CompoundTag
+import mods.eln.misc.writeToNBT
 
 class NbtBatteryProcessTest {
     @Test

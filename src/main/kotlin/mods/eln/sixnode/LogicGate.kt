@@ -29,6 +29,7 @@ import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
+import mods.eln.misc.writeToNBT
 
 open class LogicGateDescriptor(name: String, obj: Obj3D?, functionName: String, functionClass: Class<out LogicFunction>,
                                elementClass: Class<out LogicGateElement>, renderClass: Class<out LogicGateRender>) :

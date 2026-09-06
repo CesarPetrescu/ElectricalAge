@@ -9,6 +9,7 @@ import net.minecraft.world.Container
 import net.minecraft.world.item.ItemStack
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.chat.Component
+import mods.eln.misc.writeToNBT
 
 class SixNodeElementInventory : Container, INBTTReady, IUtilityCableInventory {
     var sixNodeRender: SixNodeElementRender? = null

@@ -4,6 +4,7 @@ import mods.eln.misc.INBTTReady
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.core.Direction
 import net.minecraftforge.fluids.*
+import mods.eln.misc.writeToNBT
 
 open class ElementSidedFluidHandler: ISidedFluidHandler, INBTTReady {
 

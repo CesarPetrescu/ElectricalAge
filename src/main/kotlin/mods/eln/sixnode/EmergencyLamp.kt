@@ -24,6 +24,7 @@ import net.minecraft.nbt.CompoundTag
 import mods.eln.client.gl.GL11
 import java.io.DataInputStream
 import java.io.DataOutputStream
+import mods.eln.misc.writeToNBT
 
 class EmergencyLampDescriptor(name: String, val cable: ElectricalCableDescriptor, val batteryCapacity: Double,
                               val nominalVoltage: Double,

@@ -12,9 +12,11 @@ import pathlib, re, subprocess, sys
 
 SYMBOLS = [
     "xCoord", "yCoord", "zCoord",
-    "getBlock", "getBlockMetadata", "getBlockState", "getTileEntity",
-    "setBlock", "setBlockToAir", "isBlockLoaded", "isAirBlock",
+    "getBlock", "getBlockMetadata", "getBlockState", "getBlockEntity",
+    "setBlock", "setBlockToAir", "isBlockLoaded", "isEmptyBlock",
     "getIndirectPowerLevelTo", "markBlockForUpdate", "isReplaceable", "isNothing",
+    # 1.21
+    "rand", "isItemEqual", "writeToNBT", "stackFromNbt", "itemId", "itemById", "blockById",
 ]
 PKG = "mods.eln.misc"
 

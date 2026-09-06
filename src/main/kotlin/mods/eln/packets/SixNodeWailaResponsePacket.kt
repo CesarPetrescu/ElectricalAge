@@ -1,6 +1,6 @@
 package mods.eln.packets
 
-import net.minecraftforge.fml.common.network.ByteBufUtils
+import mods.eln.network.ByteBufUtils
 import io.netty.buffer.ByteBuf
 import mods.eln.misc.Coordinate
 import mods.eln.misc.Direction

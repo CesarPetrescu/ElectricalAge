@@ -39,6 +39,7 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
 import java.util.*
+import mods.eln.misc.writeToNBT
 
 abstract class TransparentNodeElement(@JvmField var node: TransparentNode?, @JvmField var transparentNodeDescriptor: TransparentNodeDescriptor) : GhostObserver, IPlayer, INodeElement {
     @JvmField

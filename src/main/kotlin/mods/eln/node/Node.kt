@@ -6,7 +6,8 @@ import net.minecraft.nbt.CompoundTag
 import net.minecraft.world.level.LightLayer
 import java.io.DataOutputStream
 import java.io.IOException
-import mods.eln.misc.getTileEntity
+import mods.eln.misc.getBlockEntity
+import mods.eln.misc.writeToNBT
 
 abstract class Node : NodeBase() {
     private var lastLight = 0

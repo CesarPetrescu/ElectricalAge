@@ -33,6 +33,7 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
 import kotlin.math.sin
+import mods.eln.misc.writeToNBT
 
 open class AnalogChipDescriptor(name: String, obj: Obj3D?, functionName: String,
                                 functionClass: Class<out AnalogFunction>,

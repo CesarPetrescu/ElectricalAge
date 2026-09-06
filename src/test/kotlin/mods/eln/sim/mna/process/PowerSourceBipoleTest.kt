@@ -7,6 +7,7 @@ import mods.eln.disableLog4jJmx
 import mods.eln.sim.mna.component.Resistor
 import mods.eln.sim.mna.component.VoltageSource
 import mods.eln.sim.mna.state.VoltageState
+import mods.eln.misc.writeToNBT
 
 class PowerSourceBipoleTest {
     @Test

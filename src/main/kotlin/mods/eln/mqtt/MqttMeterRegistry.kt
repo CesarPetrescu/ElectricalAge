@@ -5,6 +5,7 @@ import net.minecraft.nbt.CompoundTag
 import net.minecraft.nbt.ListTag
 import java.security.SecureRandom
 import java.util.Locale
+import mods.eln.misc.writeToNBT
 
 /**
  * Tracks reserved MQTT meter identifiers globally so that multiple meters never reuse the same ID.

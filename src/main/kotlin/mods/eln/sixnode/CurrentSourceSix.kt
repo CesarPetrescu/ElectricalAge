@@ -26,6 +26,7 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
 import java.util.*
+import mods.eln.misc.writeToNBT
 
 class CurrentSourceDescriptor(name: String, obj: Obj3D) : SixNodeDescriptor(name, CurrentSourceElement::class.java, CurrentSourceRender::class.java) {
     private var main: Obj3D.Obj3DPart = obj.getPart("main")

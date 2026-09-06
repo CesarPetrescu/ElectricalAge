@@ -60,6 +60,8 @@ import kotlin.math.floor
 import mods.eln.misc.xCoord
 import mods.eln.misc.yCoord
 import mods.eln.misc.zCoord
+import mods.eln.misc.rand
+import mods.eln.misc.writeToNBT
 
 enum class UtilityCableMaterial(val label: String, val meltingPointCelsius: Double) {
     COPPER("Copper", 1085.0),

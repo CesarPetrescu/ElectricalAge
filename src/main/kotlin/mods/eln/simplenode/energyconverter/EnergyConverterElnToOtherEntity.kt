@@ -22,6 +22,7 @@ import net.minecraftforge.energy.CapabilityEnergy
 import net.neoforged.neoforge.energy.IEnergyStorage
 import java.io.DataInputStream
 import java.io.IOException
+import mods.eln.misc.writeToNBT
 
 @InterfaceList(Optional.Interface(iface = "ic2.api.energy.tile.IEnergySource", modid = Other.modIdIc2), Optional.Interface(iface = "li.cil.oc.api.network.Environment", modid = Other.modIdOc))
 class EnergyConverterElnToOtherEntity : SimpleNodeEntity("ElnToOther"), ITickable, IEnergySource, Environment {

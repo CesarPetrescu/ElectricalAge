@@ -3,6 +3,7 @@ package mods.eln.sim.nbt
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import net.minecraft.nbt.CompoundTag
+import mods.eln.misc.writeToNBT
 
 class NbtThermalLoadTest {
     @Test

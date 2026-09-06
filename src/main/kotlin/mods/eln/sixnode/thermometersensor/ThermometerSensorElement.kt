@@ -20,6 +20,7 @@ import net.minecraft.world.Container
 import net.minecraft.nbt.CompoundTag
 import java.io.DataInputStream
 import java.io.DataOutputStream
+import mods.eln.misc.writeToNBT
 
 class ThermometerSensorElement(sixNode: SixNode, side: Direction, descriptor: SixNodeDescriptor) :
     SixNodeElement(sixNode, side, descriptor) {

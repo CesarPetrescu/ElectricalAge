@@ -1,8 +1,8 @@
 package mods.eln.packets
 
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext
+import mods.eln.network.IMessage
+import mods.eln.network.IMessageHandler
+import mods.eln.network.MessageContext
 import mods.eln.integration.waila.SixNodeCoordonate
 import mods.eln.integration.waila.SixNodeWailaData
 import mods.eln.integration.waila.WailaCache

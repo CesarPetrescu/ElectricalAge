@@ -28,7 +28,7 @@ import mods.eln.client.itemrender.IItemRenderer.ItemRendererHelper
 import mods.eln.client.gl.GL11
 import mods.eln.misc.getBlock
 import mods.eln.misc.getBlockMetadata
-import mods.eln.misc.getTileEntity
+import mods.eln.misc.getBlockEntity
 import mods.eln.misc.setBlock
 import mods.eln.misc.setBlockToAir
 import mods.eln.misc.getBlockState

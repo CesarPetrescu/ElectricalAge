@@ -10,7 +10,13 @@ import net.minecraft.world.inventory.Slot
 import net.minecraft.world.item.ItemStack
 import kotlin.math.min
 
-open class BasicContainer(player: Player, protected var inventory: Container, slot: Array<Slot>) : AbstractContainerMenu() {
+/**
+ * Base of the mod's 37 containers. 1.21 wants a MenuType and the container id vanilla assigned;
+ * the id is read from [mods.eln.GuiHandler.pendingContainerId], which both sides set right
+ * before constructing the container, so the subclasses keep their (player, inventory, slots) shape.
+ */
+open class BasicContainer(player: Player, protected var inventory: Container, slot: Array<Slot>) :
+    AbstractContainerMenu(mods.eln.GuiHandler.MENU.get(), mods.eln.GuiHandler.pendingContainerId) {
     init {
         for (i in slot.indices) {
             addSlotToContainer(slot[i])

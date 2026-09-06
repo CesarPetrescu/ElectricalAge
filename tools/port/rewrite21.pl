@@ -164,6 +164,9 @@ my @classes = (
     ['net.minecraftforge.fml.relauncher.Side',            'net.neoforged.api.distmarker.Dist',                    'Side',               'Dist'],
     ['net.minecraftforge.common.MinecraftForge',          'net.neoforged.neoforge.common.NeoForge',               'MinecraftForge',     'NeoForge'],
     ['net.minecraftforge.fluids.FluidStack',              'net.neoforged.neoforge.fluids.FluidStack',             undef, undef],
+    ['net.minecraftforge.fluids.FluidTankInfo',           'mods.eln.fluid.FluidTankInfo',                         undef, undef],
+    ['net.minecraftforge.fluids.FluidRegistry',           'mods.eln.fluid.FluidRegistry',                         undef, undef],
+    ['net.minecraftforge.fluids.Fluid',                   'net.minecraft.world.level.material.Fluid',             undef, undef],
     ['net.minecraftforge.fluids.FluidTank',               'net.neoforged.neoforge.fluids.capability.templates.FluidTank', undef, undef],
     ['net.minecraftforge.fluids.FluidUtil',               'net.neoforged.neoforge.fluids.FluidUtil',              undef, undef],
     ['net.minecraftforge.fluids.capability.IFluidHandler','net.neoforged.neoforge.fluids.capability.IFluidHandler', undef, undef],
@@ -187,6 +190,12 @@ my @classes = (
     ['net.minecraftforge.client.event.GuiOpenEvent',      'net.neoforged.neoforge.client.event.ScreenEvent.Opening', 'GuiOpenEvent',    'Opening'],
     ['net.minecraftforge.fml.relauncher.ReflectionHelper','net.neoforged.fml.util.ObfuscationReflectionHelper', 'ReflectionHelper',   'ObfuscationReflectionHelper'],
     ['net.minecraftforge.fml.common.Loader',              'net.neoforged.fml.ModList',                            'Loader',             'ModList'],
+    # SimpleImpl packets -> mods.eln.network (same shape)
+    ['net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler', 'mods.eln.network.IMessageHandler', undef, undef],
+    ['net.minecraftforge.fml.common.network.simpleimpl.IMessage', 'mods.eln.network.IMessage',           undef, undef],
+    ['net.minecraftforge.fml.common.network.simpleimpl.MessageContext', 'mods.eln.network.MessageContext', undef, undef],
+    ['net.minecraftforge.fml.common.network.ByteBufUtils', 'mods.eln.network.ByteBufUtils',            undef, undef],
+    ['org.lwjgl.input.Keyboard',                          'mods.eln.client.Keyboard',                             undef, undef],
     # fixed-function GL -> the emulator in mods.eln.client.gl (same names, same constants)
     ['org.lwjgl.opengl.GL11',                             'mods.eln.client.gl.GL11',                              undef, undef],
     ['org.lwjgl.opengl.GL12',                             'mods.eln.client.gl.GL12',                              undef, undef],

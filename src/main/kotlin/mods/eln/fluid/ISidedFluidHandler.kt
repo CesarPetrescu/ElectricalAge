@@ -1,9 +1,9 @@
 package mods.eln.fluid
 
 import net.minecraft.core.Direction
-import net.minecraftforge.fluids.Fluid
+import net.minecraft.world.level.material.Fluid
 import net.neoforged.neoforge.fluids.FluidStack
-import net.minecraftforge.fluids.FluidTankInfo
+import mods.eln.fluid.FluidTankInfo
 
 /**
  * The side-aware fluid interface Electrical Age is written against: 1.7.10's

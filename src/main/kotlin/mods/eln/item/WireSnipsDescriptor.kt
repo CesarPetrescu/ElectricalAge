@@ -37,7 +37,7 @@ class WireSnipsDescriptor(name: String) : GenericItemUsingDamageDescriptor(name,
 
     override fun onItemRightClick(s: ItemStack, w: Level, p: Player): ItemStack {
         if (!w.isClientSide) {
-            p.openGui(Eln.instance, GuiHandler.wireSnipsOpen, w, 0, 0, 0)
+            GuiHandler.open(p, GuiHandler.wireSnipsOpen, w, 0, 0, 0)
         }
         return s
     }

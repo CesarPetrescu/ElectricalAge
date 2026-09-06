@@ -26,6 +26,7 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
 import java.lang.reflect.InvocationTargetException
+import mods.eln.misc.writeToNBT
 
 class TransparentNode : Node() {
     @JvmField

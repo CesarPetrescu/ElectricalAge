@@ -33,6 +33,7 @@ import mods.eln.misc.xCoord
 import mods.eln.misc.yCoord
 import mods.eln.misc.zCoord
 import mods.eln.misc.isNothing
+import mods.eln.misc.rand
 
 class LampSocketRender(tileEntity: SixNodeEntity, side: Direction, sixNodeDescriptor: SixNodeDescriptor) :
     SixNodeElementRender(tileEntity, side, sixNodeDescriptor) {

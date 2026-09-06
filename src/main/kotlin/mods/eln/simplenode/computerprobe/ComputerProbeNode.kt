@@ -29,6 +29,8 @@ import mods.eln.sixnode.wirelesssignal.aggregator.IWirelessSignalAggregator
 import mods.eln.sixnode.wirelesssignal.aggregator.SmallerAggregator
 import mods.eln.sixnode.wirelesssignal.tx.WirelessSignalTxElement
 import net.minecraft.nbt.CompoundTag
+import mods.eln.misc.rand
+import mods.eln.misc.writeToNBT
 
 @Optional.Interface(iface = "dan200.computercraft.api.peripheral.IPeripheral", modid = Other.modIdCc)
 class ComputerProbeNode : SimpleNode(), IPeripheral {

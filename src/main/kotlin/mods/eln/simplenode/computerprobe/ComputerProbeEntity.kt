@@ -13,6 +13,7 @@ import mods.eln.Other
 import mods.eln.node.simple.SimpleNodeEntity
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.util.ITickable
+import mods.eln.misc.writeToNBT
 
 @Optional.Interface(iface = "li.cil.oc.api.network.Environment", modid = Other.modIdOc)
 class ComputerProbeEntity : SimpleNodeEntity(ComputerProbeNode.getNodeUuidStatic()), ITickable, Environment {

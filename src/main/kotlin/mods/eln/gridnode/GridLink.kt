@@ -15,6 +15,7 @@ import net.minecraft.nbt.CompoundTag
 
 import java.util.HashSet
 import java.util.Optional
+import mods.eln.misc.writeToNBT
 
 /**
  * Created by svein on 23/08/15.

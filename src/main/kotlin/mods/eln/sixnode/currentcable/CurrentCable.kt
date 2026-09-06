@@ -42,6 +42,7 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
 import mods.eln.misc.isNothing
+import mods.eln.misc.writeToNBT
 
 class CurrentCableDescriptor(
     name: String?,

@@ -1,10 +1,8 @@
 package mods.eln
 
-import net.neoforged.bus.api.SubscribeEvent
-import net.minecraftforge.fml.common.network.FMLNetworkEvent.ServerCustomPacketEvent
-import io.netty.channel.ChannelHandler.Sharable
 import mods.eln.client.ClientKeyHandler
-import mods.eln.client.ClientProxy
+import mods.eln.client.ClientSetup
+import net.neoforged.neoforge.network.handling.IPayloadContext
 import mods.eln.item.FalstadImportPacketHandler
 import mods.eln.misc.Coordinate
 import mods.eln.misc.Utils.println
@@ -22,17 +20,17 @@ import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
-import mods.eln.misc.getTileEntity
+import mods.eln.misc.getBlockEntity
 
-@Sharable
+/**
+ * The byte protocol, both directions: a leading packet id selects the handler. 1.21: the bytes
+ * arrive in [mods.eln.network.ElnNetwork.RawPayload]; the context's player is the sender's
+ * ServerPlayer on the server and the local player on the client.
+ */
 class PacketHandler {
-    @SubscribeEvent
-    fun onServerPacket(event: ServerCustomPacketEvent) {
-        val packet = event.packet
-        val stream = DataInputStream(ByteArrayInputStream(packet.payload().array()))
-        val manager = event.manager
-        val player: Player = (event.handler as ServerGamePacketListenerImpl).player // ServerPlayer
-        packetRx(stream, manager, player)
+    fun onPayload(data: ByteArray, context: IPayloadContext) {
+        val stream = DataInputStream(ByteArrayInputStream(data))
+        packetRx(stream, context.connection(), context.player())
     }
 
     fun packetRx(stream: DataInputStream, manager: Connection, player: Player) {
@@ -80,7 +78,7 @@ class PacketHandler {
 
     private fun packetDestroyUuid(stream: DataInputStream, @Suppress("UNUSED_PARAMETER") manager: Connection, @Suppress("UNUSED_PARAMETER") player: Player) {
         try {
-            ClientProxy.uuidManager.kill(stream.readInt())
+            ClientSetup.uuidManager.kill(stream.readInt())
         } catch (e: IOException) {
             e.printStackTrace()
         }
@@ -97,9 +95,8 @@ class PacketHandler {
 
     private fun packetOpenLocalGui(stream: DataInputStream, @Suppress("UNUSED_PARAMETER") manager: Connection, player: Player) {
         try {
-            player.openGui(Eln.instance, stream.readInt(),
-                player.level, stream.readInt(), stream.readInt(),
-                stream.readInt())
+            val id = stream.readInt()
+            mods.eln.client.ClientGuiHandler.openLocal(id, stream.readInt(), stream.readInt(), stream.readInt())
         } catch (e: IOException) {
             e.printStackTrace()
         }

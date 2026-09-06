@@ -4,6 +4,7 @@ import mods.eln.Eln
 import mods.eln.misc.Utils
 import mods.eln.misc.Utils.println
 import mods.eln.sim.IProcess
+import mods.eln.misc.rand
 
 enum class WatchdogType {
     THERMAL,

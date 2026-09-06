@@ -6,8 +6,8 @@ import net.minecraft.block.material.Material
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.item.BlockItem
 import net.minecraftforge.fluids.BlockFluidClassic
-import net.minecraftforge.fluids.Fluid
-import net.minecraftforge.fluids.FluidRegistry
+import net.minecraft.world.level.material.Fluid
+import mods.eln.fluid.FluidRegistry
 
 //shamelessly lifted from IC2
 class BlockElnFluid(

@@ -10,17 +10,17 @@ import net.minecraft.nbt.CompoundTag
 import net.minecraft.world.Container
 import net.minecraft.nbt.ListTag
 import net.minecraft.server.level.ServerPlayer
-import net.minecraft.network.play.server.SPacketCustomPayload
 import mods.eln.client.gl.GL11
-import io.netty.buffer.Unpooled
-import net.minecraft.network.FriendlyByteBuf
+import mods.eln.network.ElnNetwork
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.world.level.GameRules
+import net.neoforged.fml.loading.FMLEnvironment
+import net.neoforged.neoforge.server.ServerLifecycleHooks
 import net.minecraft.core.NonNullList
 import net.minecraft.core.BlockPos
 import net.minecraft.world.level.Level
-import net.minecraftforge.fml.common.FMLCommonHandler
 import net.neoforged.api.distmarker.Dist
 import mods.eln.ServerKeyHandler
-import net.minecraftforge.common.DimensionManager
 import net.minecraft.world.entity.item.ItemEntity
 import java.io.IOException
 import net.minecraft.world.level.block.entity.BlockEntity
@@ -32,7 +32,6 @@ import net.minecraft.world.phys.AABB
 import mods.eln.generic.GenericItemUsingDamage
 import mods.eln.generic.GenericItemBlockUsingDamage
 import net.minecraft.world.item.CreativeModeTab
-import net.minecraftforge.oredict.OreDictionary
 import net.minecraft.world.phys.Vec3
 import net.minecraft.client.player.RemotePlayer
 import net.minecraft.world.level.block.Blocks
@@ -42,13 +41,10 @@ import java.lang.NoSuchFieldException
 import net.minecraft.world.item.crafting.Ingredient
 import net.minecraft.world.item.crafting.Recipe
 import net.minecraft.world.item.crafting.ShapedRecipe
-import net.minecraftforge.oredict.ShapedOreRecipe
 import net.minecraft.world.item.crafting.ShapelessRecipe
-import net.minecraftforge.oredict.ShapelessOreRecipe
 import net.minecraft.network.chat.Component
 import net.minecraft.world.level.BlockGetter
 import kotlin.jvm.JvmOverloads
-import net.minecraft.item.crafting.FurnaceRecipes
 import java.io.FileInputStream
 import mods.eln.misc.Obj3D.Obj3DPart
 import mods.eln.sim.mna.SubSystem
@@ -162,7 +158,7 @@ object Utils {
 
     @JvmStatic
     fun getItemEnergie(par0ItemStack: ItemStack?): Double {
-        return burnTimeToEnergyFactor * 80000.0 / 1600 * FurnaceBlockEntity.getItemBurnTime(par0ItemStack)
+        return burnTimeToEnergyFactor * 80000.0 / 1600 * (par0ItemStack?.getBurnTime(null) ?: 0)
     }
 
     @JvmStatic
@@ -362,11 +358,11 @@ object Utils {
     @JvmStatic
     fun readFromNBT(nbt: CompoundTag, str: String?, inventory: Container) {
         val var2 = nbt.getList(str, 10)
-        for (var3 in 0 until var2.tagCount()) {
-            val var4 = var2.getCompoundTagAt(var3) as CompoundTag
+        for (var3 in 0 until var2.size) {
+            val var4 = var2.getCompound(var3)
             val var5: Int = (var4.getByte("Slot") and (255).toByte()).toInt()
             if (var5 >= 0 && var5 < inventory.containerSize) {
-                inventory.setItem(var5, ItemStack(var4))
+                inventory.setItem(var5, stackFromNbt(var4))
             }
         }
     }
@@ -377,9 +373,9 @@ object Utils {
         for (var3 in 0 until inventory.containerSize) {
             if (!inventory.getItem(var3).isNothing()) {
                 val var4 = CompoundTag()
-                var4.setByte("Slot", var3.toByte())
+                var4.putByte("Slot", var3.toByte())
                 inventory.getItem(var3).writeToNBT(var4)
-                var2.appendTag(var4)
+                var2.add(var4)
             }
         }
         nbt.put(str, var2)
@@ -387,8 +383,7 @@ object Utils {
 
     @JvmStatic
     fun sendPacketToClient(bos: ByteArrayOutputStream, player: ServerPlayer) {
-        val packet = SPacketCustomPayload(Eln.channelName, FriendlyByteBuf(Unpooled.wrappedBuffer(bos.toByteArray())))
-        player.connection.sendPacket(packet)
+        ElnNetwork.sendTo(bos, player)
     }
 
     @JvmStatic
@@ -458,12 +453,12 @@ object Utils {
 
     @JvmStatic
     fun getWorld(dim: Int): Level {
-        return FMLCommonHandler.instance().minecraftServerInstance.getWorld(dim)
+        return DimensionIds.serverLevel(dim) ?: throw IllegalStateException("no world for dimension $dim")
     }
 
     @JvmStatic
     fun getWorldExist(dim: Int): Boolean {
-        return DimensionManager.getWorld(dim) != null
+        return DimensionIds.serverLevel(dim) != null
     }
 
     @JvmStatic
@@ -472,9 +467,9 @@ object Utils {
             0.0.coerceAtLeast(Eln.wind.getWind(y))
         } else {
             val world = getWorld(worldId)
-            val factor = 1f + world.getRainStrength(0f) * 0.2f + world.getThunderStrength(0f) * 0.2f
+            val factor = 1f + world.getRainLevel(0f) * 0.2f + world.getThunderLevel(0f) * 0.2f
             0.0.coerceAtLeast(
-                Eln.wind.getWind(y) * factor + world.getRainStrength(0f) * 1f + world.getThunderStrength(0f) * 2f
+                Eln.wind.getWind(y) * factor + world.getRainLevel(0f) * 1f + world.getThunderLevel(0f) * 2f
             )
         }
     }
@@ -482,13 +477,13 @@ object Utils {
     @JvmStatic
     fun dropItem(itemStack: ItemStack?, x: Int, y: Int, z: Int, world: Level) {
         if (itemStack.isNothing()) return
-        if (world.gameRules.getBoolean("doTileDrops")) {
+        if (world.gameRules.getBoolean(GameRules.RULE_DOBLOCKDROPS)) {
             val var6 = 0.7f
             val var7 = (world.rand.nextFloat() * var6).toDouble() + (1.0f - var6).toDouble() * 0.5
             val var9 = (world.rand.nextFloat() * var6).toDouble() + (1.0f - var6).toDouble() * 0.5
             val var11 = (world.rand.nextFloat() * var6).toDouble() + (1.0f - var6).toDouble() * 0.5
             val var13 = ItemEntity(world, x.toDouble() + var7, y.toDouble() + var9, z.toDouble() + var11, itemStack)
-            var13.setPickupDelay(10)
+            var13.setPickUpDelay(10)
             world.addFreshEntity(var13)
         }
     }
@@ -538,7 +533,7 @@ object Utils {
             val target = inventory.getItem(slot)
             if (target == null) {
                 val amount = toPut.coerceAtMost(limit)
-                inventory.setItem(slot, ItemStack(stack.item, amount, stack.itemDamage))
+                inventory.setItem(slot, stack.copyWithCount(amount))
                 toPut -= amount
                 changed = true
             } else {
@@ -648,8 +643,9 @@ object Utils {
             stream.writeShort(-1)
             stream.writeShort(-1)
         } else {
-            stream.writeShort(Item.getIdFromItem(stack.item))
-            stream.writeShort(stack.itemDamage)
+            // 1.21: registry ids can exceed a short in large packs, and there is no damage sub-id.
+            stream.writeShort(itemId(stack.item))
+            stream.writeShort(0)
         }
     }
 
@@ -671,7 +667,7 @@ object Utils {
             null
         } else {
             ItemDamage = stream.readShort()
-            if (old == null || Item.getIdFromItem(old.item.item) != itemId.toInt() || old.item.itemDamage != ItemDamage.toInt()) ItemEntity(tileEntity.level, tileEntity.xCoord + 0.5, tileEntity.yCoord + 0.5, tileEntity.zCoord + 1.2, newItemStack(itemId.toInt(), 1, ItemDamage.toInt())) else old
+            if (old == null || itemId(old.item.item) != itemId.toInt()) ItemEntity(tileEntity.level!!, tileEntity.xCoord + 0.5, tileEntity.yCoord + 0.5, tileEntity.zCoord + 1.2, newItemStack(itemId.toInt(), 1, ItemDamage.toInt())) else old
         }
     }
 
@@ -689,7 +685,7 @@ object Utils {
         val x = t.xCoord
         val y = t.yCoord
         val z = t.zCoord
-        val w = t.level
+        val w = t.level ?: return
         var o: BlockEntity? = w.getBlockEntity(x + 1, y, z)
         if (o != null && o is ITileEntitySpawnClient) (o as ITileEntitySpawnClient).tileEntityNeighborSpawn()
         o = w.getBlockEntity(x - 1, y, z)
@@ -796,24 +792,20 @@ object Utils {
 	 */
     @JvmStatic
     fun getItemStack(name: String, list: MutableList<ItemStack>) {
-        val tempList: NonNullList<ItemStack> = NonNullList.create()
-        for (item in Item.REGISTRY) {
-            val tab = item?.creativeTab ?: continue
-            item.getSubItems(tab, tempList)
-        }
         val s = name.lowercase()
-        for (itemstack in tempList) {
-            // String s1 = itemstack.getHoverName();
-            if (itemstack!!.displayName.lowercase().contains(s)) {
+        for (item in BuiltInRegistries.ITEM) {
+            val itemstack = ItemStack(item)
+            if (itemstack.hoverName.string.lowercase().contains(s)) {
                 list.add(itemstack)
             }
         }
     }
 
+    /** 1.7.10's "effective side": which logical side the current thread belongs to. */
     val side: Dist
-        get() = FMLCommonHandler.instance().effectiveSide
+        get() = if (Thread.currentThread().name.startsWith("Render") || (FMLEnvironment.dist.isClient && ServerLifecycleHooks.getCurrentServer() == null)) Dist.CLIENT else Dist.DEDICATED_SERVER
     val isServer: Boolean
-        get() = side == Dist.SERVER
+        get() = side == Dist.DEDICATED_SERVER
 
     fun printSide(string: String?) {
         println(string)
@@ -834,14 +826,11 @@ object Utils {
     @JvmStatic
     fun areSame(stack: ItemStack, output: ItemStack): Boolean {
         try {
-            if (stack.item === output.item && stack.itemDamage == output.itemDamage) return true
-            val stackIds = OreDictionary.getOreIDs(stack)
-            val outputIds = OreDictionary.getOreIDs(output)
-            // System.out.println(Arrays.toString(stackIds) + "   " + Arrays.toString(outputIds));
-            for (i in outputIds) {
-                for (j in stackIds) {
-                    if (i == j) return true
-                }
+            if (stack.item === output.item) return true
+            // Ore dictionary -> item tags: two stacks are "the same" when they share a tag.
+            val stackTags = stack.tags.toList()
+            for (tag in output.tags) {
+                if (stackTags.contains(tag)) return true
             }
         } catch (_: Exception) {
         }
@@ -864,7 +853,7 @@ object Utils {
 	 */
     @JvmStatic
     fun isCreative(entityPlayer: ServerPlayer): Boolean {
-        return entityPlayer.interactionManager.isCreative
+        return entityPlayer.gameMode.isCreative
         /*
 		 * Minecraft m = Minecraft.getInstance(); return m.getSingleplayerServer().getGameType().isCreative();
 		 */
@@ -877,7 +866,7 @@ object Utils {
 
     @JvmStatic
     fun serverTeleport(e: Entity, x: Double, y: Double, z: Double) {
-        if (e is ServerPlayer) e.setPositionAndUpdate(x, y, z) else e.setPosition(x, y, z)
+        if (e is ServerPlayer) e.teleportTo(x, y, z) else e.setPos(x, y, z)
     }
 
     /** 1.12.2: returns block states, since opacity (what every caller asks) is a state property now. */
@@ -1028,14 +1017,13 @@ object Utils {
      * in reading order, which is what the wiki drew before.
      */
     @JvmStatic
-    fun getItemStackGrid(r: Recipe?): Array<Array<ItemStack?>>? {
+    fun getItemStackGrid(r: Recipe<*>?): Array<Array<ItemStack?>>? {
         if (r == null) return null
         val stacks = Array(3) { arrayOfNulls<ItemStack>(3) }
         return try {
             val ingredients = r.ingredients
             val width = when (r) {
-                is ShapedRecipe -> r.recipeWidth
-                is ShapedOreRecipe -> readPrivateInt<Any>(r, "width")
+                is ShapedRecipe -> r.width
                 else -> 0
             }
             if (width in 1..3) {
@@ -1060,14 +1048,14 @@ object Utils {
 
     /** The stack the wiki shows for an ingredient: the first item it accepts, if any. */
     private fun firstStackOf(ingredient: Ingredient?): ItemStack? =
-        ingredient?.matchingStacks?.firstOrNull { !it.isEmpty }
+        ingredient?.items?.firstOrNull { !it.isEmpty }
 
     @JvmStatic
-    fun getRecipeInputs(r: Recipe?): ArrayList<ItemStack?> {
+    fun getRecipeInputs(r: Recipe<*>?): ArrayList<ItemStack?> {
         return try {
             val stacks = ArrayList<ItemStack?>()
             r?.ingredients?.forEach { ingredient ->
-                ingredient.matchingStacks.filterTo(stacks) { !it.isEmpty }
+                ingredient.items.filterTo(stacks) { !it.isEmpty }
             }
             stacks
         } catch (e: Exception) {
@@ -1083,27 +1071,27 @@ object Utils {
     @JvmStatic
     fun isWater(waterCoord: Coordinate): Boolean {
         val block = waterCoord.block
-        return block === Blocks.FLOWING_WATER || block === Blocks.WATER
+        return block === Blocks.WATER
     }
 
     @JvmStatic
     fun sendMessage(entityPlayer: Player, string: String?) {
-        entityPlayer.sendMessage(Component.literal(string))
+        entityPlayer.sendSystemMessage(Component.literal(string ?: ""))
     }
 
     @JvmStatic
-    fun newItemStack(i: Int, size: Int, damage: Int): ItemStack {
-        return ItemStack(Item.getItemById(i), size, damage)
+    fun newItemStack(i: Int, size: Int, @Suppress("UNUSED_PARAMETER") damage: Int): ItemStack {
+        return ItemStack(itemById(i), size)
     }
 
     @JvmStatic
-    fun newItemStack(i: Item?, size: Int, damage: Int): ItemStack {
-        return ItemStack(i, size, damage)
+    fun newItemStack(i: Item?, size: Int, @Suppress("UNUSED_PARAMETER") damage: Int): ItemStack {
+        return if (i == null) ItemStack.EMPTY else ItemStack(i, size)
     }
 
     @JvmStatic
     fun getTags(nbt: CompoundTag): List<CompoundTag> {
-        val set: Array<Any> = nbt.getAllKeys.filterNotNull().toTypedArray()
+        val set: Array<Any> = nbt.allKeys.filterNotNull().toTypedArray()
         val tags = ArrayList<CompoundTag>()
         for (idx in set.indices) {
             tags.add(nbt.getCompound(set[idx] as String))
@@ -1138,41 +1126,49 @@ object Utils {
     }
 
     fun getBlock(blockId: Int): Block {
-        return Block.getBlockById(blockId)
+        return blockById(blockId)
     }
 
     @JvmStatic
-    fun updateSkylight(chunk: LevelChunk) {
-        chunk.onTick(false)
+    fun updateSkylight(@Suppress("UNUSED_PARAMETER") chunk: LevelChunk) {
+        // 1.14+: the light engine keeps itself current; nothing to poke.
     }
 
     @JvmStatic
     fun updateAllLightTypes(world: Level, xCoord: Int, yCoord: Int, zCoord: Int) {
-        world.checkLight(BlockPos(xCoord, yCoord, zCoord))
-        world.markBlocksDirtyVertical(xCoord, zCoord, 0, 255)
+        world.lightEngine.checkBlock(BlockPos(xCoord, yCoord, zCoord))
     }
 
     @JvmStatic
     fun getItemId(stack: ItemStack): Int {
-        return Item.getIdFromItem(stack.item)
+        return itemId(stack.item)
     }
 
     @JvmStatic
     fun getItemId(block: Block?): Int {
-        return Item.getIdFromItem(Item.getItemFromBlock(block))
+        return if (block == null) 0 else itemId(block.asItem())
     }
 
+    /**
+     * Smelting recipes are data since 1.13 (data/eln/recipe/*.json, generated from these calls by
+     * the recipe data generator); at run time this only records the pair.
+     */
     @JvmStatic
     @JvmOverloads
-    fun addSmelting(parentItem: Item?, parentItemDamage: Int, findItemStack: ItemStack?, f: Float = 0.3f) {
-        FurnaceRecipes.instance().addSmeltingRecipe(newItemStack(parentItem, 1, parentItemDamage), findItemStack, f)
+    fun addSmelting(parentItem: Item?, @Suppress("UNUSED_PARAMETER") parentItemDamage: Int, findItemStack: ItemStack?, f: Float = 0.3f) {
+        if (parentItem == null || findItemStack == null) return
+        smeltingRecipes.add(Triple(ItemStack(parentItem), findItemStack, f))
     }
 
     @JvmStatic
     @JvmOverloads
     fun addSmelting(parentBlock: Block?, parentItemDamage: Int, findItemStack: ItemStack?, f: Float = 0.3f) {
-        FurnaceRecipes.instance().addSmeltingRecipe(newItemStack(Item.getItemFromBlock(parentBlock), 1, parentItemDamage), findItemStack, f)
+        addSmelting(parentBlock?.asItem(), parentItemDamage, findItemStack, f)
     }
+
+    /** (input, output, experience) of every smelting recipe the mod declared. */
+    @JvmStatic
+    val smeltingRecipes = ArrayList<Triple<ItemStack, ItemStack, Float>>()
 
     @JvmStatic
     fun newNbtTagCompund(nbt: CompoundTag?, string: String): CompoundTag {
@@ -1181,16 +1177,9 @@ object Utils {
         return cmp
     }
 
-    val mapFolder: String
-        get() {
-            val server = FMLCommonHandler.instance().minecraftServerInstance
-            val savesAt = if (!server.isDedicatedServer) "saves/" else ""
-            return savesAt + server.folderName + "/"
-        }
-
     fun getMapFile(name: String): File {
-        val server = FMLCommonHandler.instance().minecraftServerInstance
-        return server.getFile(mapFolder + name)
+        val server = ServerLifecycleHooks.getCurrentServer() ?: throw IllegalStateException("no server")
+        return server.getWorldPath(net.minecraft.world.level.storage.LevelResource(name)).toFile()
     }
 
     @JvmStatic
@@ -1225,7 +1214,7 @@ object Utils {
     fun isPlayerUsingWrench(player: Player?): Boolean {
         if (player == null) return false
         if (ServerKeyHandler.get(ServerKeyHandler.WRENCH)) return true
-        val stack = player.inventory.getCurrentItem() ?: return false
+        val stack = player.inventory.getSelected() ?: return false
         return isWrench(stack)
     }
 
@@ -1272,7 +1261,7 @@ object Utils {
     class TraceRayWeightOpaque : TraceRayWeight {
         override fun getWeight(block: Block?): Float {
             if (block == null) return 0f
-            return if (block.defaultState.isOpaqueCube) 1f else 0f
+            return if (block.defaultBlockState().canOcclude()) 1f else 0f
         }
     }
 

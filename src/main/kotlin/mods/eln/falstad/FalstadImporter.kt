@@ -49,7 +49,7 @@ import kotlin.math.floor
 import mods.eln.misc.getBlock
 import mods.eln.misc.getBlockMetadata
 import mods.eln.misc.getBlockState
-import mods.eln.misc.getTileEntity
+import mods.eln.misc.getBlockEntity
 import mods.eln.misc.isReplaceable
 
 object FalstadImporter {

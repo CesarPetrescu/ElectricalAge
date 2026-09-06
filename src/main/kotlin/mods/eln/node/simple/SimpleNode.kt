@@ -19,6 +19,7 @@ import net.minecraft.nbt.CompoundTag
 import java.io.DataOutputStream
 import java.io.IOException
 import java.util.*
+import mods.eln.misc.writeToNBT
 
 abstract class SimpleNode : NodeBase() {
     var removedByPlayer: ServerPlayer? = null

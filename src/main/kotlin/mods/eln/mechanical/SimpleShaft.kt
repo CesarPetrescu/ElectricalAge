@@ -20,6 +20,7 @@ import kotlin.reflect.KClass
 import mods.eln.misc.xCoord
 import mods.eln.misc.yCoord
 import mods.eln.misc.zCoord
+import mods.eln.misc.writeToNBT
 
 abstract class SimpleShaftDescriptor(name: String, elm: KClass<out TransparentNodeElement>, render: KClass<out TransparentNodeElementRender>, tag: EntityMetaTag) :
     TransparentNodeDescriptor(name, elm.java, render.java, tag) {

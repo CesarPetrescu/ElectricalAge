@@ -16,7 +16,7 @@ import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.level.Level
-import mods.eln.misc.getTileEntity
+import mods.eln.misc.getBlockEntity
 
 abstract class SimpleNodeBlock protected constructor(material: Material?) : BlockContainer(material) {
     var descriptorKey: String? = null

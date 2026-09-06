@@ -22,6 +22,7 @@ import mods.eln.misc.getBlock
 import mods.eln.misc.getBlockState
 import mods.eln.misc.isAirBlock
 import mods.eln.misc.isBlockLoaded
+import mods.eln.misc.isEmptyBlock
 
 object RoomThermalManager {
     private const val ROOM_SCAN_INTERVAL_TICKS = 40

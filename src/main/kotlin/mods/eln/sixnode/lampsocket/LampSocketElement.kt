@@ -43,6 +43,7 @@ import java.io.DataOutputStream
 import java.io.IOException
 import kotlin.math.pow
 import mods.eln.misc.isNothing
+import mods.eln.misc.writeToNBT
 
 class LampSocketElement(sixNode: SixNode, side: Direction, sixNodeDescriptor: SixNodeDescriptor) :
     SixNodeElement(sixNode, side, sixNodeDescriptor), IConfigurable {

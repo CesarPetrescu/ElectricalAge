@@ -23,6 +23,7 @@ import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.Level
 import java.io.DataInputStream
 import java.io.DataOutputStream
+import mods.eln.misc.writeToNBT
 
 
 class DeviceProbeBlock: SimpleNodeBlock(Material.ICE) {

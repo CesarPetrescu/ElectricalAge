@@ -23,13 +23,14 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.nbt.CompoundTag
 import mods.eln.client.itemrender.IItemRenderer
-import net.minecraftforge.fluids.Fluid
-import net.minecraftforge.fluids.FluidRegistry
+import net.minecraft.world.level.material.Fluid
+import mods.eln.fluid.FluidRegistry
 import net.neoforged.neoforge.fluids.FluidStack
 import net.neoforged.neoforge.fluids.FluidUtil
 import mods.eln.client.gl.GL11
 import java.io.DataInputStream
 import java.io.DataOutputStream
+import mods.eln.misc.writeToNBT
 
 class FuelGeneratorDescriptor(name: String, internal val obj: Obj3D?, internal val cable: ElectricalCableDescriptor,
                               internal val nominalPower: Double, internal val maxVoltage: Double,

@@ -35,6 +35,7 @@ import java.io.DataOutputStream
 import java.io.IOException
 import java.text.NumberFormat
 import java.text.ParseException
+import mods.eln.misc.writeToNBT
 
 class TachometerDescriptor(baseName: String, obj: Obj3D) : SimpleShaftDescriptor(baseName,
     TachometerElement::class, TachometerRender::class, EntityMetaTag.Basic) {

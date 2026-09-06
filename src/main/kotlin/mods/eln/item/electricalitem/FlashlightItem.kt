@@ -7,6 +7,7 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.util.Mth
 import net.minecraft.world.level.Level
 import mods.eln.misc.isAirBlock
+import mods.eln.misc.isEmptyBlock
 
 abstract class FlashlightItem(name: String?) : GenericItemUsingDamageDescriptor(name!!) {
     abstract fun getLightState(stack: ItemStack): Int

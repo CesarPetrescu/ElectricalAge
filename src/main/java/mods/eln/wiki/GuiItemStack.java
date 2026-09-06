@@ -30,7 +30,7 @@ public class GuiItemStack extends Gui implements IGuiObject {
     ItemStack stack;
 
     public GuiHelper helper;
-    static final ResourceLocation slotSkin = ResourceLocation.parse($1);
+    static final ResourceLocation slotSkin = ResourceLocation.parse("textures/gui/container/furnace.png");
 
 
     @Override

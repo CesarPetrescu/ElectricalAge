@@ -8,7 +8,6 @@ import mods.eln.misc.Direction.Companion.fromInt
 import mods.eln.misc.LRDU
 import mods.eln.misc.Utils.println
 import mods.eln.misc.Utils.updateAllLightTypes
-import mods.eln.misc.Utils.updateSkylight
 import mods.eln.node.NodeBlockEntity
 import net.minecraft.world.level.block.Block
 import net.minecraft.client.gui.screens.Screen
@@ -17,13 +16,24 @@ import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.inventory.AbstractContainerMenu
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.level.Level
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.block.entity.BlockEntityType
+import net.minecraft.world.level.block.state.BlockState
 import java.io.DataInputStream
 import java.io.IOException
+import java.util.function.Supplier
+import mods.eln.misc.blockById
 import mods.eln.misc.xCoord
 import mods.eln.misc.yCoord
 import mods.eln.misc.zCoord
 
-class SixNodeEntity : NodeBlockEntity() {
+class SixNodeEntity(pos: BlockPos, state: BlockState) : NodeBlockEntity(TYPE.get(), pos, state) {
+    companion object {
+        /** Registered by Eln through ElnRegistry.registerBlockEntity. */
+        @JvmField
+        var TYPE: Supplier<BlockEntityType<SixNodeEntity>> = Supplier { throw IllegalStateException("SixNodeEntity type not registered") }
+    }
+
     @JvmField
     var elementRenderList = arrayOfNulls<SixNodeElementRender>(6)
     @JvmField
@@ -34,7 +44,7 @@ class SixNodeEntity : NodeBlockEntity() {
         val sixNodeCacheBlockOld = sixNodeCacheBlock
         super.serverPublishUnserialize(stream)
         try {
-            sixNodeCacheBlock = Block.getBlockById(stream.readInt())
+            sixNodeCacheBlock = blockById(stream.readInt())
             sixNodeCacheBlockMeta = stream.readByte()
             var idx: Int
             idx = 0
@@ -80,10 +90,7 @@ class SixNodeEntity : NodeBlockEntity() {
 
         //	world.setLightValue(LightLayer.SKY, xCoord,yCoord,zCoord,15);
         if (sixNodeCacheBlock !== sixNodeCacheBlockOld) {
-            val chunk = world.getChunk(xCoord shr 4, zCoord shr 4)
-            // 1.12.2: generateHeightMap() is protected; generateSkylightMap() recomputes the height map too.
-            updateSkylight(chunk)
-            chunk.generateSkylightMap()
+            // 1.14+: the light engine tracks itself; a block check is all the camouflage change needs.
             updateAllLightTypes(world, xCoord, yCoord, zCoord)
         }
     }

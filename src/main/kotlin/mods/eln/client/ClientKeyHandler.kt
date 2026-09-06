@@ -12,7 +12,7 @@ import mods.eln.misc.UtilsClient.sendPacketToServer
 import mods.eln.wiki.Root
 import net.minecraft.client.KeyMapping
 import net.minecraft.util.text.translation.I18n
-import org.lwjgl.input.Keyboard
+import mods.eln.client.Keyboard
 import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
 import java.io.IOException

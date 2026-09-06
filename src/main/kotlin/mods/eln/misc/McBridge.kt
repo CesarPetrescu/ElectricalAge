@@ -15,7 +15,7 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
 /**
- * Bridges between the 1.7.10 shapes Electrical Age is written against and the 1.12.2 API.
+ * Bridges between the 1.7.10 shapes Electrical Age is written against and the 1.21 API.
  *
  * Two different things live here and they age differently:
  *
@@ -47,45 +47,50 @@ inline val Vec3.zCoord: Double get() = z
 
 // -------------------------------------------------------- BlockEntity coordinates
 
-/** 1.7.10's `BlockEntity.xCoord`. The TE knows its own [BlockPos] on 1.12.2. */
-inline val BlockEntity.xCoord: Int get() = pos.x
-inline val BlockEntity.yCoord: Int get() = pos.y
-inline val BlockEntity.zCoord: Int get() = pos.z
+/** 1.7.10's `BlockEntity.xCoord`. The block entity knows its own [BlockPos]. */
+inline val BlockEntity.xCoord: Int get() = blockPos.x
+inline val BlockEntity.yCoord: Int get() = blockPos.y
+inline val BlockEntity.zCoord: Int get() = blockPos.z
 
 // ------------------------------------------------------------ block accessors
 
 fun BlockGetter.getBlock(x: Int, y: Int, z: Int): Block =
     getBlockState(BlockPos(x, y, z)).block
 
-fun BlockGetter.getBlockMetadata(x: Int, y: Int, z: Int): Int =
-    getBlockState(BlockPos(x, y, z)).let { it.block.getMetaFromState(it) }
+/** 1.13 removed block metadata; the blocks that still have one carry it as a state property ([IMetaBlock]). */
+fun BlockGetter.getBlockMetadata(x: Int, y: Int, z: Int): Int {
+    val state = getBlockState(BlockPos(x, y, z))
+    return (state.block as? IMetaBlock)?.metaOfState(state) ?: 0
+}
 
 fun BlockGetter.getBlockState(x: Int, y: Int, z: Int): BlockState =
     getBlockState(BlockPos(x, y, z))
 
 @JvmOverloads
 fun Level.setBlock(x: Int, y: Int, z: Int, block: Block, meta: Int = 0, flags: Int = 3): Boolean =
-    setBlockState(BlockPos(x, y, z), block.getStateFromMeta(meta), flags)
+    setBlock(BlockPos(x, y, z), (block as? IMetaBlock)?.stateForMeta(meta) ?: block.defaultBlockState(), flags)
 
 fun Level.setBlockToAir(x: Int, y: Int, z: Int): Boolean =
-    setBlockToAir(BlockPos(x, y, z))
+    removeBlock(BlockPos(x, y, z), false)
 
 fun Level.isBlockLoaded(x: Int, y: Int, z: Int): Boolean =
-    isBlockLoaded(BlockPos(x, y, z))
+    isLoaded(BlockPos(x, y, z))
+
+fun Level.isBlockLoaded(pos: BlockPos): Boolean = isLoaded(pos)
 
 fun Level.isEmptyBlock(x: Int, y: Int, z: Int): Boolean =
-    isAirBlock(BlockPos(x, y, z))
+    isEmptyBlock(BlockPos(x, y, z))
 
 fun BlockGetter.getBlockEntity(x: Int, y: Int, z: Int): BlockEntity? =
-    getTileEntity(BlockPos(x, y, z))
+    getBlockEntity(BlockPos(x, y, z))
 
 fun Level.getIndirectPowerLevelTo(x: Int, y: Int, z: Int, side: Int): Int =
-    getRedstonePower(BlockPos(x, y, z), Direction.byIndex(side))
+    getSignal(BlockPos(x, y, z), Direction.from3DDataValue(side))
 
 /** 1.7.10's `Level.markBlockForUpdate`: re-send the block to watching clients. */
 fun Level.markBlockForUpdate(pos: BlockPos) {
     val state = getBlockState(pos)
-    notifyBlockUpdate(pos, state, state, 3)
+    sendBlockUpdated(pos, state, state, 3)
 }
 
 fun Level.markBlockForUpdate(x: Int, y: Int, z: Int) = markBlockForUpdate(BlockPos(x, y, z))
@@ -94,7 +99,7 @@ fun Level.markBlockForUpdate(x: Int, y: Int, z: Int) = markBlockForUpdate(BlockP
 
 /** 1.7.10's `Block.isReplaceable(world, x, y, z)`. */
 fun Block.isReplaceable(world: BlockGetter, x: Int, y: Int, z: Int): Boolean =
-    isReplaceable(world, BlockPos(x, y, z))
+    world.getBlockState(BlockPos(x, y, z)).canBeReplaced()
 
 // ------------------------------------------------------------- empty stacks
 
@@ -108,3 +113,43 @@ fun ItemStack?.isNothing(): Boolean {
     contract { returns(false) implies (this@isNothing != null) }
     return this == null || this.isEmpty
 }
+
+// ------------------------------------------------------------- 1.20.5+ item stack (de)serialisation
+
+/** ItemStack NBT needs a registry lookup since 1.20.5; this finds the current one on either side. */
+object McRegistries {
+    @JvmStatic
+    fun access(): net.minecraft.core.RegistryAccess {
+        net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer()?.let { return it.registryAccess() }
+        if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient) ClientRegistries.access()?.let { return it }
+        return net.minecraft.core.RegistryAccess.EMPTY
+    }
+}
+
+private object ClientRegistries {
+    fun access(): net.minecraft.core.RegistryAccess? = net.minecraft.client.Minecraft.getInstance().level?.registryAccess()
+}
+
+/** 1.7.10's `ItemStack.writeToNBT(tag)`. */
+fun ItemStack.writeToNBT(tag: net.minecraft.nbt.CompoundTag): net.minecraft.nbt.CompoundTag {
+    if (isEmpty) return tag
+    val saved = save(McRegistries.access(), tag)
+    return saved as? net.minecraft.nbt.CompoundTag ?: tag
+}
+
+/** 1.7.10's `ItemStack.loadItemStackFromNBT(tag)`: an unknown item reads as EMPTY, as before it read as null. */
+@JvmName("stackFromNbt")
+fun stackFromNbt(tag: net.minecraft.nbt.CompoundTag): ItemStack = ItemStack.parseOptional(McRegistries.access(), tag)
+
+// ------------------------------------------------------------- 1.7.10 idioms
+
+/** 1.7.10's `ItemStack.isItemEqual`: same item (damage no longer exists). */
+fun ItemStack.isItemEqual(other: ItemStack?): Boolean = other != null && ItemStack.isSameItem(this, other)
+
+/** `Level.rand` became `Level.random` (a RandomSource; nextFloat/nextInt are unchanged). */
+inline val Level.rand: net.minecraft.util.RandomSource get() = random
+
+/** Item numeric ids, as `Item.getIdFromItem`/`getItemById` gave them; the byte protocol sends them. */
+fun itemId(item: net.minecraft.world.item.Item): Int = net.minecraft.core.registries.BuiltInRegistries.ITEM.getId(item)
+fun itemById(id: Int): net.minecraft.world.item.Item = net.minecraft.core.registries.BuiltInRegistries.ITEM.byId(id)
+fun blockById(id: Int): Block = net.minecraft.core.registries.BuiltInRegistries.BLOCK.byId(id)

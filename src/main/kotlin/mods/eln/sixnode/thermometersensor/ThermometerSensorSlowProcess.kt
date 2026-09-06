@@ -6,6 +6,7 @@ import mods.eln.misc.INBTTReady
 import mods.eln.misc.RcInterpolator
 import mods.eln.sim.IProcess
 import net.minecraft.nbt.CompoundTag
+import mods.eln.misc.writeToNBT
 
 class ThermometerSensorSlowProcess(private val element: ThermometerSensorElement) : IProcess, INBTTReady {
     private var timeCounter = 0.0

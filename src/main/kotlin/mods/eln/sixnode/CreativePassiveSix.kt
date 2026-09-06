@@ -45,6 +45,7 @@ import java.text.NumberFormat
 import java.text.ParseException
 import java.util.Collections
 import java.util.HashMap
+import mods.eln.misc.writeToNBT
 
 abstract class CreativePassiveDescriptor(
     name: String,

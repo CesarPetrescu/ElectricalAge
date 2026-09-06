@@ -26,6 +26,7 @@ import net.minecraft.nbt.StringTag
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
+import mods.eln.misc.writeToNBT
 
 class PowerSocketElement(sixNode: SixNode?, side: Direction?, descriptor: SixNodeDescriptor?) : SixNodeElement(
     sixNode!!, side!!, descriptor!!

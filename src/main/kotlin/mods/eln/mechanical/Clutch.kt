@@ -30,6 +30,7 @@ import mods.eln.client.gl.GL11
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import mods.eln.misc.isNothing
+import mods.eln.misc.writeToNBT
 
 class ClutchPlateItem(
     name: String,

@@ -27,6 +27,7 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.util.*
 import mods.eln.misc.getBlockState
+import mods.eln.misc.writeToNBT
 
 /**
  * A comparator-alike. It doesn't "compare" anything, though.

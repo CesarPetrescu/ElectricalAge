@@ -17,6 +17,7 @@ import java.io.DataOutputStream
 import java.io.IOException
 import kotlin.math.max
 import kotlin.math.min
+import mods.eln.misc.writeToNBT
 
 class EnergyConverterElnToOtherNode : SimpleNode() {
     var load = NbtElectricalLoad("load")

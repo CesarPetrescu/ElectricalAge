@@ -2,6 +2,7 @@ package mods.eln.node
 
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.world.level.saveddata.SavedData
+import mods.eln.misc.writeToNBT
 
 class NodeManagerNbt(par1Str: String?) : SavedData(par1Str) {
     override fun isDirty(): Boolean {

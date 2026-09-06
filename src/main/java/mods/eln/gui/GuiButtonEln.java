@@ -1,21 +1,31 @@
 package mods.eln.gui;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
-import mods.eln.client.gl.GL11;
 
 import java.util.ArrayList;
 
+/**
+ * A vanilla-looking button driven by the mod's {@link IGuiObject} event loop rather than the
+ * screen's widget list (the helper positions and draws it, the observer gets the press).
+ */
 public class GuiButtonEln extends Button implements IGuiObject {
 
     IGuiObjectObserver observer;
     private boolean playPressSound = true;
     private boolean pressedInside = false;
+    /** 1.7.10's public fields, kept for the screens that poke them. */
+    public boolean enabled = true;
+    public String displayString;
 
     public GuiButtonEln(int x, int y, int width, int height, String str) {
-        super(0, x, y, width, height, str);
+        super(x, y, width, height, Component.literal(str), b -> {
+        }, DEFAULT_NARRATION);
+        displayString = str;
     }
 
     GuiHelper helper;
@@ -33,15 +43,23 @@ public class GuiButtonEln extends Button implements IGuiObject {
         return this;
     }
 
+    public void setDisplayString(String str) {
+        displayString = str;
+        setMessage(Component.literal(str));
+    }
+
     @Override
     public void idraw(int x, int y, float f) {
-        GL11.glColor4f(1f, 1f, 1f, 1f);
-        drawButton(Minecraft.getInstance(), x, y, f);
+        GuiGraphics g = Gui.graphics();
+        if (g == null) return;
+        active = enabled;
+        if (!getMessage().getString().equals(displayString)) setMessage(Component.literal(displayString));
+        render(g, x, y, f);
     }
 
     @Override
     public int getYMax() {
-        return this.y + height;
+        return getY() + height;
     }
 
     @Override
@@ -57,7 +75,7 @@ public class GuiButtonEln extends Button implements IGuiObject {
         if (code != 0) {
             return;
         }
-        pressedInside = mousePressed(Minecraft.getInstance(), x, y);
+        pressedInside = enabled && visible && clicked(x, y);
     }
 
     @Override
@@ -66,11 +84,11 @@ public class GuiButtonEln extends Button implements IGuiObject {
             return;
         }
         boolean shouldActivate = pressedInside && enabled && visible
-            && x >= this.x && y >= this.y && x < this.x + width && y < this.y + height;
+            && x >= getX() && y >= getY() && x < getX() + width && y < getY() + height;
         pressedInside = false;
         if (shouldActivate) {
             if (playPressSound) {
-                Minecraft.getInstance().getSoundManager().playSound(SimpleSoundInstance.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
             }
             onMouseClicked();
             if (observer != null) {
@@ -85,14 +103,14 @@ public class GuiButtonEln extends Button implements IGuiObject {
 
     @Override
     public void idraw2(int x, int y) {
-        if (helper != null && visible && x >= this.x && y >= this.y && x < this.x + width && y < this.y + height)
+        if (helper != null && visible && x >= getX() && y >= getY() && x < getX() + width && y < getY() + height)
             helper.drawHoveringText(comment, x, y, Minecraft.getInstance().font);
     }
 
     @Override
     public void translate(int x, int y) {
-        this.x += x;
-        this.y += y;
+        setX(getX() + x);
+        setY(getY() + y);
     }
 
     ArrayList<String> comment = new ArrayList<String>();

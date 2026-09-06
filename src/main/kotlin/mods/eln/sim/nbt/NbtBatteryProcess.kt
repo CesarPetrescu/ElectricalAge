@@ -7,6 +7,7 @@ import mods.eln.sim.ThermalLoad
 import mods.eln.sim.mna.component.VoltageSource
 import mods.eln.sim.mna.state.VoltageState
 import net.minecraft.nbt.CompoundTag
+import mods.eln.misc.writeToNBT
 
 class NbtBatteryProcess(
     positiveLoad: VoltageState?,

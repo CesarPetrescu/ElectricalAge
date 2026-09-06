@@ -1,26 +1,9 @@
 # Files the 1.21.1 build compiles (Ant patterns, relative to src/main/java and src/main/kotlin).
 # Lines starting with "!" are excludes. Grow this as files are ported; `./gradlew portStatus` prints the count.
 mods/eln/**
-# --- not yet ported: GUI layer and the per-element screens (phase 3)
-!mods/eln/gui/**
-!mods/eln/**/*Gui.java
-!mods/eln/**/*Gui.kt
-!mods/eln/**/*GuiDraw.java
-!mods/eln/**/*GuiDraw.kt
-!mods/eln/wiki/Gui*.java
-!mods/eln/GuiHandler.java
 # --- not yet ported: packets and the sided proxies (phase 2)
-!mods/eln/packets/**
-!mods/eln/PacketHandler.kt
-!mods/eln/CommonProxy.java
-!mods/eln/client/ClientProxy.java
-!mods/eln/client/ClientPacketHandler.java
 # --- not yet ported: content registration and recipes (phase 2)
 !mods/eln/craft/**
-!mods/eln/registration/ItemRegistration.kt
-!mods/eln/registration/SixNodeRegistration.kt
-!mods/eln/registration/TransparentNodeRegistration.kt
-!mods/eln/registration/SingleNodeRegistration.kt
 !mods/eln/fluid/FluidRegistration.kt
 # --- not yet ported: commands (brigadier) and cross-mod integrations (phase 4); IC2/OC are gone on 1.21
 !mods/eln/server/console/**
@@ -28,3 +11,5 @@ mods/eln/**
 !mods/eln/transparentnode/computercraftio/**
 !mods/eln/simplenode/energyconverter/*Ic2*
 !mods/eln/simplenode/energyconverter/*Oc*
+!mods/eln/devtest/SmokeTest.java
+!mods/eln/simplenode/computerprobe/**

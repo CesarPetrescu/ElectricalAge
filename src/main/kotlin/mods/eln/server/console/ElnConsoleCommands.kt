@@ -45,7 +45,7 @@ import kotlin.math.max
 import kotlin.math.sin
 import mods.eln.misc.getBlock
 import mods.eln.misc.getBlockMetadata
-import mods.eln.misc.getTileEntity
+import mods.eln.misc.getBlockEntity
 import mods.eln.misc.setBlockToAir
 
 private data class ZoneBounds(

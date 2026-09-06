@@ -24,6 +24,7 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
 import mods.eln.misc.isNothing
+import mods.eln.misc.writeToNBT
 
 class ElectricalFuseHolderDescriptor(name: String, obj: Obj3D) :
     SixNodeDescriptor(name, ElectricalFuseHolderElement::class.java, ElectricalFuseHolderRender::class.java) {

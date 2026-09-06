@@ -3,18 +3,13 @@ package mods.eln.gui;
 import mods.eln.misc.UtilsClient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import mods.eln.client.gl.RenderHelper;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import mods.eln.client.gl.GL11;
-import mods.eln.client.gl.GL12;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class GuiHelper {
@@ -23,7 +18,7 @@ public class GuiHelper {
     ResourceLocation background;
     static final ResourceLocation helperTexture = ResourceLocation.fromNamespaceAndPath("eln", "sprites/gui/helpertexture.png");
 
-    static final ResourceLocation slotSkin = ResourceLocation.parse($1);
+    static final ResourceLocation slotSkin = ResourceLocation.parse("textures/gui/container/furnace.png");
 
 
     public GuiHelper(Screen screen, int xSize, int ySize, String backgroundName) {
@@ -120,34 +115,37 @@ public class GuiHelper {
     ArrayList<IGuiObject> removeList = new ArrayList<IGuiObject>();*/
     ArrayList<IGuiObject> objectList = new ArrayList<IGuiObject>();
 
+    /** The graphics of the frame being drawn (published by the screen through {@link Gui#begin}). */
+    public GuiGraphics graphics() {
+        return Gui.graphics();
+    }
+
     void draw(int x, int y, float f) {
-        screen.drawDefaultBackground();
+        GuiGraphics g = graphics();
+        if (g == null) return;
         if (background != null)
             UtilsClient.drawGuiBackground(background, screen, xSize, ySize);
         else {
-            UtilsClient.bindTexture(helperTexture);
             int px = 0, py = 0;
             px += (screen.width - xSize) / 2;
             py += (screen.height - ySize) / 2;
 
-            screen.drawRect(px + 2, py + 2, px + xSize - 2, py + ySize - 2, 0xFFC6C6C6);
+            g.fill(px + 2, py + 2, px + xSize - 2, py + ySize - 2, 0xFFC6C6C6);
 
-            screen.drawRect(px + 4, py, px + xSize - 4, py + 1, 0xFF000000);
-            screen.drawRect(px + 4, py + 1, px + xSize - 4, py + 3, 0xFFFFFFFF);
-            screen.drawRect(px + 4, py + ySize - 1, px + xSize - 4, py + ySize - 0, 0xFF000000);
-            screen.drawRect(px + 4, py + ySize - 3, px + xSize - 4, py + ySize - 1, 0xFF555555);
+            g.fill(px + 4, py, px + xSize - 4, py + 1, 0xFF000000);
+            g.fill(px + 4, py + 1, px + xSize - 4, py + 3, 0xFFFFFFFF);
+            g.fill(px + 4, py + ySize - 1, px + xSize - 4, py + ySize - 0, 0xFF000000);
+            g.fill(px + 4, py + ySize - 3, px + xSize - 4, py + ySize - 1, 0xFF555555);
 
-            screen.drawRect(px, py + 4, px + 1, py + ySize - 4, 0xFF000000);
-            screen.drawRect(px + 1, py + 4, px + 3, py + ySize - 4, 0xFFFFFFFF);
-            screen.drawRect(px + xSize - 1, py + 4, px + xSize - 0, py + ySize - 4, 0xFF000000);
-            screen.drawRect(px + xSize - 3, py + 4, px + xSize - 1, py + ySize - 4, 0xFF555555);
+            g.fill(px, py + 4, px + 1, py + ySize - 4, 0xFF000000);
+            g.fill(px + 1, py + 4, px + 3, py + ySize - 4, 0xFFFFFFFF);
+            g.fill(px + xSize - 1, py + 4, px + xSize - 0, py + ySize - 4, 0xFF000000);
+            g.fill(px + xSize - 3, py + 4, px + xSize - 1, py + ySize - 4, 0xFF555555);
 
-            GL11.glColor3f(1f, 1f, 1f);
-
-            screen.drawTexturedModalRect(px, py, 0, 0, 4, 4);
-            screen.drawTexturedModalRect(px + xSize - 4, py, 4, 0, 4, 4);
-            screen.drawTexturedModalRect(px, py + ySize - 4, 0, 4, 4, 4);
-            screen.drawTexturedModalRect(px + xSize - 4, py + ySize - 4, 4, 4, 4, 4);
+            g.blit(helperTexture, px, py, 0, 0, 4, 4);
+            g.blit(helperTexture, px + xSize - 4, py, 4, 0, 4, 4);
+            g.blit(helperTexture, px, py + ySize - 4, 0, 4, 4, 4);
+            g.blit(helperTexture, px + xSize - 4, py + ySize - 4, 4, 4, 4, 4);
         }
 
         for (IGuiObject o : objectList) {
@@ -155,16 +153,20 @@ public class GuiHelper {
         }
     }
 
+    /** Draws from the texture last bound through UtilsClient.bindTexture (256x256, as before). */
     public void drawTexturedModalRect(int x, int y, int u, int v, int width, int height) {
         x += (screen.width - xSize) / 2;
         y += (screen.height - ySize) / 2;
-        screen.drawTexturedModalRect(x, y, u, v, width, height);
+        ResourceLocation texture = mods.eln.client.gl.FixedFunction.texture();
+        GuiGraphics g = graphics();
+        if (g == null || texture == null) return;
+        g.blit(texture, x, y, u, v, width, height);
     }
 
     public void drawRect(int x0, int y0, int x1, int y1, int color) {
         int dx = (screen.width - xSize) / 2;
         int dy = (screen.height - ySize) / 2;
-        screen.drawRect(x0 + dx, y0 + dy, x1 + dx, y1 + dy, color);
+        Gui.drawRect(x0 + dx, y0 + dy, x1 + dx, y1 + dy, color);
     }
 
     IGuiObject[] objectListCopy() {
@@ -173,6 +175,14 @@ public class GuiHelper {
             cpy[idx] = objectList.get(idx);
         }
         return cpy;
+    }
+
+    /** Whether a text field has the keyboard, so the screen does not treat typed letters as hotkeys. */
+    public boolean hasFocusedTextField() {
+        for (IGuiObject o : objectList) {
+            if (o instanceof GuiTextFieldEln t && t.isFocused()) return true;
+        }
+        return false;
     }
 
     protected void keyTyped(char key, int code) {
@@ -200,7 +210,9 @@ public class GuiHelper {
     }
 
     public void drawString(int x, int y, int color, String str) {
-        Minecraft.getInstance().font.drawString(str, screen.width / 2 - xSize / 2 + x, screen.height / 2 - ySize / 2 + y, color);
+        GuiGraphics g = graphics();
+        if (g == null) return;
+        g.drawString(Minecraft.getInstance().font, str, screen.width / 2 - xSize / 2 + x, screen.height / 2 - ySize / 2 + y, color, false);
     }
 
     public void draw2(int x, int y) {
@@ -209,113 +221,23 @@ public class GuiHelper {
         }
     }
 
+    /** A vanilla tooltip at (x, y); the coordinates are relative to the GUI for container screens, as before. */
     public void drawHoveringText(List par1List, int x, int y, Font font) {
-        if (!par1List.isEmpty()) {
-            if (screen instanceof AbstractContainerScreen) {
-                x -= (screen.width - xSize) / 2;
-                y -= (screen.height - ySize) / 2;
-            }
-
-            GL11.glDisable(GL12.GL_RESCALE_NORMAL);
-            RenderHelper.disableStandardItemLighting();
-            GL11.glDisable(GL11.GL_LIGHTING);
-            GL11.glDisable(GL11.GL_DEPTH_TEST);
-            int textWidth = 0;
-            Iterator iterator = par1List.iterator();
-
-            while (iterator.hasNext()) {
-                String s = (String) iterator.next();
-                int l = font.width(s);
-
-                if (l > textWidth) {
-                    textWidth = l;
-                }
-            }
-
-            if (screen instanceof AbstractContainerScreen) {
-                if (x + (screen.width - xSize) / 2 + textWidth + 30 > screen.width) {
-                    x -= textWidth + 24;
-                }
-            } else {
-                if (x + textWidth + 30 > screen.width) {
-                    x -= textWidth + 24;
-                }
-            }
-
-            int i1 = x + 12;
-            int j1 = y - 12;
-            int k1 = 8;
-
-            if (par1List.size() > 1) {
-                k1 += 2 + (par1List.size() - 1) * 10;
-            }
-/*
-            if (i1 + k > this.width) {
-                i1 -= 28 + k;
-            }
-
-            if (j1 + k1 + 6 > this.height) {
-                j1 = this.height - k1 - 6;
-            }*/
-
-
-            int l1 = -267386864;
-            drawGradientRect(i1 - 3, j1 - 4, i1 + textWidth + 3, j1 - 3, l1, l1);
-            drawGradientRect(i1 - 3, j1 + k1 + 3, i1 + textWidth + 3, j1 + k1 + 4, l1, l1);
-            drawGradientRect(i1 - 3, j1 - 3, i1 + textWidth + 3, j1 + k1 + 3, l1, l1);
-            drawGradientRect(i1 - 4, j1 - 3, i1 - 3, j1 + k1 + 3, l1, l1);
-            drawGradientRect(i1 + textWidth + 3, j1 - 3, i1 + textWidth + 4, j1 + k1 + 3, l1, l1);
-            int i2 = 1347420415;
-            int j2 = (i2 & 16711422) >> 1 | i2 & -16777216;
-            drawGradientRect(i1 - 3, j1 - 3 + 1, i1 - 3 + 1, j1 + k1 + 3 - 1, i2, j2);
-            drawGradientRect(i1 + textWidth + 2, j1 - 3 + 1, i1 + textWidth + 3, j1 + k1 + 3 - 1, i2, j2);
-            drawGradientRect(i1 - 3, j1 - 3, i1 + textWidth + 3, j1 - 3 + 1, i2, i2);
-            drawGradientRect(i1 - 3, j1 + k1 + 2, i1 + textWidth + 3, j1 + k1 + 3, j2, j2);
-
-            for (int k2 = 0; k2 < par1List.size(); ++k2) {
-                String s1 = (String) par1List.get(k2);
-                font.drawStringWithShadow(s1, i1, j1, -1);
-
-                if (k2 == 0) {
-                    j1 += 2;
-                }
-
-                j1 += 10;
-            }
-
-            GL11.glEnable(GL11.GL_LIGHTING);
-            GL11.glEnable(GL11.GL_DEPTH_TEST);
-            RenderHelper.enableStandardItemLighting();
-            GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+        GuiGraphics g = graphics();
+        if (g == null || par1List.isEmpty()) return;
+        List<Component> lines = new ArrayList<>();
+        for (Object o : par1List) lines.add(Component.literal(String.valueOf(o)));
+        if (screen instanceof AbstractContainerScreen) {
+            x += (screen.width - xSize) / 2;
+            y += (screen.height - ySize) / 2;
         }
+        g.renderComponentTooltip(font, lines, x, y);
     }
 
     public void drawGradientRect(int par1, int par2, int par3, int par4, int par5, int par6) {
-        float f = (float) (par5 >> 24 & 255) / 255.0F;
-        float f1 = (float) (par5 >> 16 & 255) / 255.0F;
-        float f2 = (float) (par5 >> 8 & 255) / 255.0F;
-        float f3 = (float) (par5 & 255) / 255.0F;
-        float f4 = (float) (par6 >> 24 & 255) / 255.0F;
-        float f5 = (float) (par6 >> 16 & 255) / 255.0F;
-        float f6 = (float) (par6 >> 8 & 255) / 255.0F;
-        float f7 = (float) (par6 & 255) / 255.0F;
-        GL11.glDisable(GL11.GL_TEXTURE_2D);
-        GL11.glEnable(GL11.GL_BLEND);
-        GL11.glDisable(GL11.GL_ALPHA_TEST);
-        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-        GL11.glShadeModel(GL11.GL_SMOOTH);
-        Tesselator tessellator = Tesselator.getInstance();
-        BufferBuilder buffer = tessellator.getBuffer();
-        buffer.begin(GL11.GL_QUADS, DefaultVertexFormat.POSITION_COLOR);
-        buffer.pos((double) par3, (double) par2, 0).color(f1, f2, f3, f).endVertex();
-        buffer.pos((double) par1, (double) par2, 0).color(f1, f2, f3, f).endVertex();
-        buffer.pos((double) par1, (double) par4, 0).color(f5, f6, f7, f4).endVertex();
-        buffer.pos((double) par3, (double) par4, 0).color(f5, f6, f7, f4).endVertex();
-        tessellator.draw();
-        GL11.glShadeModel(GL11.GL_FLAT);
-        GL11.glDisable(GL11.GL_BLEND);
-        GL11.glEnable(GL11.GL_ALPHA_TEST);
-        GL11.glEnable(GL11.GL_TEXTURE_2D);
+        GuiGraphics g = graphics();
+        if (g == null) return;
+        g.fillGradient(Math.min(par1, par3), Math.min(par2, par4), Math.max(par1, par3), Math.max(par2, par4), par5, par6);
     }
 
     public int getHoveringTextWidth(List<String> comment, Font fontRenderer) {

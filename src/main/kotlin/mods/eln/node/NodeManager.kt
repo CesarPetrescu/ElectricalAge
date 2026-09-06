@@ -8,6 +8,8 @@ import mods.eln.node.transparent.TransparentNodeElement
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.world.level.saveddata.SavedData
 import java.util.*
+import mods.eln.misc.rand
+import mods.eln.misc.writeToNBT
 
 class NodeManager(par1Str: String?) : SavedData(par1Str) {
     val nodeArray: HashMap<Coordinate, NodeBase>

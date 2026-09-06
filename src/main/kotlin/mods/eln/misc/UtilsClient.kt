@@ -30,7 +30,7 @@ import io.netty.buffer.Unpooled
 import net.minecraft.core.BlockPos
 import net.minecraft.world.level.Level
 import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
-import org.lwjgl.input.Keyboard
+import mods.eln.client.Keyboard
 import mods.eln.client.gl.GL11
 import java.awt.Color
 import java.io.ByteArrayOutputStream
@@ -79,7 +79,7 @@ object UtilsClient {
     fun clientOpenGui(gui: Screen?) {
         guiLastOpen = gui
         val clientPlayer = clientPlayer
-        clientPlayer.openGui(Eln.instance, GuiHandler.genericOpen, clientPlayer.entityWorld, 0, 0, 0)
+        mods.eln.client.ClientGuiHandler.openLocal(GuiHandler.genericOpen, 0, 0, 0)
     }
 
     @JvmStatic

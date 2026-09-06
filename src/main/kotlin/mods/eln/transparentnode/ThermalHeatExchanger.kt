@@ -28,13 +28,14 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.nbt.CompoundTag
 import mods.eln.client.itemrender.IItemRenderer
 import net.minecraft.core.Direction as EnumFacing
-import net.minecraftforge.fluids.Fluid
+import net.minecraft.world.level.material.Fluid
 import net.neoforged.neoforge.fluids.FluidStack
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank
 import mods.eln.fluid.ISidedFluidHandler
 import mods.eln.client.gl.GL11
 import java.lang.Math.ceil
 import java.lang.Math.min
+import mods.eln.misc.writeToNBT
 
 class ThermalHeatExchangerDescriptor(
     name: String,

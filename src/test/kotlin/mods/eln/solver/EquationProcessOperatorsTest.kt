@@ -5,6 +5,7 @@ import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import mods.eln.misc.writeToNBT
 
 private class MutableValue(var current: Double) : IValue {
     override fun getValue(): Double = current

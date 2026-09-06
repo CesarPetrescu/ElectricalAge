@@ -23,7 +23,7 @@ import net.minecraft.world.phys.Vec3
 import net.minecraft.world.level.Level
 import mods.eln.misc.getBlock
 import mods.eln.misc.getBlockState
-import mods.eln.misc.getTileEntity
+import mods.eln.misc.getBlockEntity
 import mods.eln.misc.isNothing
 
 @Optional.Interface(iface = "mcp.mobius.waila.api.IWailaDataProvider", modid = "waila")

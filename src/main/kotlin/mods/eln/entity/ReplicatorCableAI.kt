@@ -17,6 +17,7 @@ import net.minecraft.world.entity.ai.goal.Goal
 import net.minecraft.world.damagesource.DamageSource
 import java.util.Random
 import kotlin.math.pow
+import mods.eln.misc.rand
 
 class ReplicatorCableAI(private val entity: ReplicatorEntity) : Goal(), ITimeRemoverObserver {
     var cableCoordinate: Coordinate? = null

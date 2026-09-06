@@ -4,6 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import mods.eln.sim.ThermalLoad
 import net.minecraft.nbt.CompoundTag
+import mods.eln.misc.writeToNBT
 
 class NbtFurnaceProcessTest {
     @Test

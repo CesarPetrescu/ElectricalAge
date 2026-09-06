@@ -1,7 +1,5 @@
 package mods.eln.node
 
-import net.neoforged.api.distmarker.Dist
-import net.neoforged.api.distmarker.OnlyIn
 import mods.eln.Eln
 import mods.eln.cable.CableRenderDescriptor
 import mods.eln.misc.Coordinate
@@ -13,21 +11,21 @@ import mods.eln.misc.Utils.notifyNeighbor
 import mods.eln.misc.Utils.println
 import mods.eln.misc.UtilsClient
 
-import net.minecraft.client.Minecraft
+import mods.eln.misc.DimensionIds
 import net.minecraft.client.gui.screens.Screen
+import net.minecraft.core.BlockPos
+import net.minecraft.core.HolderLookup
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.inventory.AbstractContainerMenu
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.protocol.Packet
-import net.minecraft.network.FriendlyByteBuf
-import net.minecraft.network.play.server.SPacketCustomPayload
-import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket
-import io.netty.buffer.Unpooled
+import net.minecraft.network.protocol.game.ClientGamePacketListener
+import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.entity.BlockEntity
-import net.minecraft.util.ITickable
+import net.minecraft.world.level.block.entity.BlockEntityType
+import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.phys.AABB
-import net.minecraft.world.level.LightLayer
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -35,16 +33,21 @@ import java.io.IOException
 import java.util.*
 import java.util.concurrent.LinkedBlockingQueue
 import mods.eln.misc.getBlock
-import mods.eln.misc.getTileEntity
+import mods.eln.misc.getBlockEntity
 import mods.eln.misc.setBlock
 import mods.eln.misc.setBlockToAir
 import mods.eln.misc.xCoord
 import mods.eln.misc.yCoord
 import mods.eln.misc.zCoord
+import mods.eln.misc.writeToNBT
 
-abstract class NodeBlockEntity : BlockEntity(), ITickable, ITileEntitySpawnClient, INodeEntity {
+abstract class NodeBlockEntity(type: BlockEntityType<*>, pos: BlockPos, state: BlockState) : BlockEntity(type, pos, state), ITileEntitySpawnClient, INodeEntity {
     val block: NodeBlock
-        get() = getBlockType() as NodeBlock
+        get() = blockState.block as NodeBlock
+
+    /** 1.7.10's `worldObj`: the level, which a placed block entity always has. */
+    val world: Level
+        get() = level!!
     var redstone = false
     var lastLight = 0xFF
     var firstUnserialize = true
@@ -60,7 +63,7 @@ abstract class NodeBlockEntity : BlockEntity(), ITickable, ITileEntitySpawnClien
             val newRedstone = b.toInt() and 0x10 != 0
             if (redstone != newRedstone) {
                 redstone = newRedstone
-                world.updateNeighborsAt(pos, blockType, false)
+                world.updateNeighborsAt(blockPos, blockState.block)
             } else {
                 redstone = newRedstone
             }
@@ -109,7 +112,6 @@ abstract class NodeBlockEntity : BlockEntity(), ITickable, ITileEntitySpawnClien
         return null
     }
 
-    @OnlyIn(Dist.CLIENT)
     override fun getRenderBoundingBox(): AABB {
         return if (cameraDrawOptimisation()) localRenderBoundingBox() else unoptimizedRenderBoundingBox()
     }
@@ -118,7 +120,6 @@ abstract class NodeBlockEntity : BlockEntity(), ITickable, ITileEntitySpawnClien
         return true
     }
 
-    @OnlyIn(Dist.CLIENT)
     protected fun localRenderBoundingBox(): AABB {
         return AABB(
             (xCoord - 1).toDouble(),
@@ -130,7 +131,6 @@ abstract class NodeBlockEntity : BlockEntity(), ITickable, ITileEntitySpawnClien
         )
     }
 
-    @OnlyIn(Dist.CLIENT)
     open fun unoptimizedRenderBoundingBox(): AABB {
         return localRenderBoundingBox()
     }
@@ -144,34 +144,29 @@ abstract class NodeBlockEntity : BlockEntity(), ITickable, ITileEntitySpawnClien
             node?.lightValue?: 0
         }
 
-    /**
-     * Reads a tile entity from NBT.
-     */
-    override fun readFromNBT(nbt: CompoundTag) {
-        super.readFromNBT(nbt)
+    /** Reads a tile entity from NBT (1.7.10 name; 1.21 calls it loadAdditional). */
+    open fun readFromNBT(nbt: CompoundTag) {}
+
+    /** Writes a tile entity to NBT (1.7.10 name; 1.21 calls it saveAdditional). */
+    open fun writeToNBT(nbt: CompoundTag): CompoundTag = nbt
+
+    override fun loadAdditional(tag: CompoundTag, registries: HolderLookup.Provider) {
+        super.loadAdditional(tag, registries)
+        readFromNBT(tag)
     }
 
-    /**
-     * Writes a tile entity to NBT.
-     */
-    override fun writeToNBT(nbt: CompoundTag): CompoundTag {
-        return super.writeToNBT(nbt)
+    override fun saveAdditional(tag: CompoundTag, registries: HolderLookup.Provider) {
+        super.saveAdditional(tag, registries)
+        writeToNBT(tag)
     }
 
-    //max draw distance
-    @OnlyIn(Dist.CLIENT)
-    override fun getMaxRenderDistanceSquared(): Double {
-        return 4096.0 * 4 * 4
-    }
+    // The max draw distance (4096 * 16 in 1.7.10) is the renderer's getViewDistance() now.
 
     @Suppress("UNUSED_PARAMETER") fun onBlockPlacedBy(front: Direction?, entityLiving: LivingEntity?, metadata: Int) {}
     var updateEntityFirst = true
 
-    /**
-     * 1.8 replaced BlockEntity.canUpdate()/updateEntity() with the ITickable interface, which a
-     * tile entity only implements when it actually ticks.
-     */
-    override fun update() {
+    /** Ticked by the block's BlockEntityTicker (1.7.10's updateEntity). */
+    open fun update() {
         if (updateEntityFirst) {
             updateEntityFirst = false
             if (!world.isClientSide) {
@@ -195,7 +190,7 @@ abstract class NodeBlockEntity : BlockEntity(), ITickable, ITileEntitySpawnClien
         }
     }
 
-    override fun onChunkUnload() {
+    override fun onChunkUnloaded() {
         if (world.isClientSide) {
             destructor()
         }
@@ -206,11 +201,11 @@ abstract class NodeBlockEntity : BlockEntity(), ITickable, ITileEntitySpawnClien
         clientList.remove(this)
     }
 
-    override fun invalidate() {
-        if (world.isClientSide) {
+    override fun setRemoved() {
+        if (level?.isClientSide == true) {
             destructor()
         }
-        super.invalidate()
+        super.setRemoved()
     }
 
     fun onBlockActivated(entityPlayer: Player?, side: Direction?, vx: Float, vy: Float, vz: Float): Boolean {
@@ -233,22 +228,14 @@ abstract class NodeBlockEntity : BlockEntity(), ITickable, ITileEntitySpawnClien
 
     /**
      * The node's publish payload is not a vanilla NBT sync, so it travels on the mod's own
-     * channel. 1.8 narrowed the tile-entity sync packet to ClientboundBlockEntityDataPacket, and
-     * SPacketCustomPayload now takes a FriendlyByteBuf, so the bytes are wrapped here.
+     * channel (see [buildPublishPayload]); vanilla gets no update packet.
      */
-    override fun getUpdatePacket(): ClientboundBlockEntityDataPacket? {
-        val node = node
-        if (node == null) {
-            println("ASSERT NULL NODE getUpdatePacket() nodeblock entity")
-            return null
-        }
-        return null
-    }
+    override fun getUpdatePacket(): Packet<ClientGamePacketListener>? = null
 
-    fun buildPublishPayload(): SPacketCustomPayload? {
+    /** The node's publish packet bytes, for the client that just started watching this chunk. */
+    fun buildPublishPayload(): ByteArray? {
         val node = node ?: return null
-        val payload = node.publishPacket?.toByteArray() ?: return null
-        return SPacketCustomPayload(Eln.channelName, FriendlyByteBuf(Unpooled.wrappedBuffer(payload)))
+        return node.publishPacket?.toByteArray()
     }
 
     open fun preparePacketForServer(stream: DataOutputStream) {
@@ -257,7 +244,7 @@ abstract class NodeBlockEntity : BlockEntity(), ITickable, ITileEntitySpawnClien
             stream.writeInt(xCoord)
             stream.writeInt(yCoord)
             stream.writeInt(zCoord)
-            stream.writeByte(world.dimension())
+            stream.writeByte(DimensionIds.id(world))
             stream.writeUTF(nodeUuid)
         } catch (e: IOException) {
             e.printStackTrace()
@@ -273,7 +260,7 @@ abstract class NodeBlockEntity : BlockEntity(), ITickable, ITileEntitySpawnClien
     }
 
     fun getAdjacentCableRender(side: Direction, lrdu: LRDU): CableRenderDescriptor? {
-        val lookupKey = CableRenderLookupKey(world.dimension(), xCoord, yCoord, zCoord, side, lrdu)
+        val lookupKey = CableRenderLookupKey(DimensionIds.id(world), xCoord, yCoord, zCoord, side, lrdu)
         val activeLookups = adjacentCableRenderLookups.get()
         if (!activeLookups.add(lookupKey)) return null
 
@@ -342,14 +329,5 @@ abstract class NodeBlockEntity : BlockEntity(), ITickable, ITileEntitySpawnClien
         @JvmField
         //val clientList = LinkedList<NodeBlockEntity>()
         val clientList = LinkedBlockingQueue<NodeBlockEntity>()
-        fun getEntity(x: Int, y: Int, z: Int): NodeBlockEntity? {
-            var entity: BlockEntity?
-            if (Minecraft.getInstance().level.getBlockEntity(x, y, z).also { entity = it } != null) {
-                if (entity is NodeBlockEntity) {
-                    return entity as NodeBlockEntity?
-                }
-            }
-            return null
-        }
     }
 }

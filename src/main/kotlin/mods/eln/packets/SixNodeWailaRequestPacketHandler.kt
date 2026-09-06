@@ -1,7 +1,7 @@
 package mods.eln.packets
 
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext
+import mods.eln.network.IMessageHandler
+import mods.eln.network.MessageContext
 import mods.eln.misc.Utils
 import mods.eln.node.NodeManager
 import mods.eln.node.six.SixNode

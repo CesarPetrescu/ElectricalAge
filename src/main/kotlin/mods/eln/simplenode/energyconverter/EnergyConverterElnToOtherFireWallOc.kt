@@ -7,6 +7,7 @@ import li.cil.oc.api.network.Visibility
 import mods.eln.Other
 import mods.eln.misc.Utils
 import net.minecraft.nbt.CompoundTag
+import mods.eln.misc.writeToNBT
 
 class EnergyConverterElnToOtherFireWallOc(var e: EnergyConverterElnToOtherEntity) {
 

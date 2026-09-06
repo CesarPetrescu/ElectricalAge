@@ -45,6 +45,7 @@ import java.util.HashMap
 import kotlin.math.abs
 import kotlin.math.pow
 import mods.eln.misc.isNothing
+import mods.eln.misc.writeToNBT
 
 class PowerCapacitorSixDescriptor(name: String,
                                   obj: Obj3D,

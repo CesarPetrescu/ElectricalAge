@@ -6,6 +6,7 @@ import mods.eln.sim.mna.SubSystem
 import mods.eln.disableLog4jJmx
 import mods.eln.sim.mna.state.VoltageState
 import net.minecraft.nbt.CompoundTag
+import mods.eln.misc.writeToNBT
 
 class InductorUtilityTest {
     @Test

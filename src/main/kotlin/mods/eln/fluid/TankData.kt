@@ -3,10 +3,11 @@ package mods.eln.fluid
 import mods.eln.misc.INBTTReady
 import mods.eln.misc.Utils
 import net.minecraft.nbt.CompoundTag
-import net.minecraftforge.fluids.Fluid
-import net.minecraftforge.fluids.FluidRegistry
+import net.minecraft.world.level.material.Fluid
+import mods.eln.fluid.FluidRegistry
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank
 import java.lang.Exception
+import mods.eln.misc.writeToNBT
 
 data class TankData(val tank: FluidTank, val fluidWhitelist: MutableList<Fluid> = mutableListOf(), var fractionalDemandMb: Double = 0.0):
     INBTTReady {

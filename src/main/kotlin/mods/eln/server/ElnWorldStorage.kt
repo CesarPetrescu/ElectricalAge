@@ -3,6 +3,7 @@ package mods.eln.server
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.saveddata.SavedData
+import mods.eln.misc.writeToNBT
 
 class ElnWorldStorage(str: String?) : SavedData(str) {
     private var dim = 0

@@ -1,6 +1,5 @@
 package mods.eln.misc
 
-import net.minecraftforge.fml.common.FMLCommonHandler
 import mods.eln.node.NodeBlockEntity
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.state.BlockState
@@ -10,10 +9,12 @@ import net.minecraft.nbt.CompoundTag
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.phys.AABB
 import net.minecraft.core.BlockPos
+import net.minecraft.core.registries.Registries
+import net.minecraft.resources.ResourceKey
+import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.phys.Vec3
 import net.minecraft.world.level.Level
-import net.minecraftforge.client.MinecraftForgeClient
-import net.minecraftforge.common.DimensionManager
+import net.neoforged.neoforge.server.ServerLifecycleHooks
 import kotlin.math.abs
 import kotlin.math.floor
 
@@ -63,16 +64,15 @@ class Coordinate : INBTTReady {
 
     private var w: Level? = null
     fun world(): Level {
-        return if (w == null) {
-            FMLCommonHandler.instance().minecraftServerInstance.getWorld(worldDimension())
-        } else w!!
+        return w ?: (DimensionIds.serverLevel(worldDimension())
+            ?: throw IllegalStateException("no world for dimension $dimension (no server running?)"))
     }
 
     constructor(entity: NodeBlockEntity) {
         x = entity.xCoord
         y = entity.yCoord
         z = entity.zCoord
-        dimension = entity.level.dimension()
+        dimension = DimensionIds.id(entity.level!!)
     }
 
     constructor(x: Int, y: Int, z: Int, dimention: Int) {
@@ -86,7 +86,7 @@ class Coordinate : INBTTReady {
         this.x = x
         this.y = y
         this.z = z
-        dimension = world.dimension()
+        dimension = DimensionIds.id(world)
         if (world.isClientSide) w = world
     }
 
@@ -94,8 +94,9 @@ class Coordinate : INBTTReady {
         x = entity.xCoord
         y = entity.yCoord
         z = entity.zCoord
-        dimension = entity.level.dimension()
-        if (entity.level.isClientSide) w = entity.level
+        val level = entity.level!!
+        dimension = DimensionIds.id(level)
+        if (level.isClientSide) w = level
     }
 
     fun newWithOffset(x: Int, y: Int, z: Int): Coordinate {
@@ -112,6 +113,12 @@ class Coordinate : INBTTReady {
         y = nbt.getInt(str + "y")
         z = nbt.getInt(str + "z")
         dimension = nbt.getInt(str + "d")
+        // 1.16+: the dimension is a key; the name is authoritative when present (ids of datapack
+        // dimensions are allocated per run), the int stays for the vanilla three and old data.
+        if (nbt.contains(str + "dn")) {
+            val key = ResourceKey.create(Registries.DIMENSION, ResourceLocation.parse(nbt.getString(str + "dn")))
+            dimension = DimensionIds.id(key)
+        }
     }
 
     override fun writeToNBT(nbt: CompoundTag, str: String) {
@@ -119,6 +126,7 @@ class Coordinate : INBTTReady {
         nbt.putInt(str + "y", y)
         nbt.putInt(str + "z", z)
         nbt.putInt(str + "d", dimension)
+        DimensionIds.key(dimension)?.let { nbt.putString(str + "dn", it.location().toString()) }
     }
 
     override fun toString(): String {
@@ -166,11 +174,11 @@ class Coordinate : INBTTReady {
         get() = world().getBlockMetadata(x, y, z)
     val blockExist: Boolean
         get() {
-            val w = DimensionManager.getWorld(dimension) ?: return false
+            val w = w ?: DimensionIds.serverLevel(dimension) ?: return false
             return w.isBlockLoaded(x, y, z)
         }
     val worldExist: Boolean
-        get() = DimensionManager.getWorld(dimension) != null
+        get() = w != null || DimensionIds.serverLevel(dimension) != null
 
     fun copyTo(v: DoubleArray) {
         v[0] = x + 0.5
@@ -232,16 +240,15 @@ class Coordinate : INBTTReady {
 
     fun setWorld(world: Level) {
         if (world.isClientSide) w = world
-        dimension = world.dimension()
+        dimension = DimensionIds.id(world)
     }
 
-    /**
-     * 1.8 replaced metadata with block states; "set the meta" means replacing the state with
-     * the same block's state for that meta. Flag 0 as before: no neighbour or client update.
-     */
+    /** 1.13 removed block metadata; blocks that kept one as a state property ([IMetaBlock]) take it here. Flag 0 as before. */
     fun setMetadata(meta: Int) {
         val w = world()
-        w.setBlockState(pos, w.getBlockState(pos).block.getStateFromMeta(meta), 0)
+        val state = w.getBlockState(pos)
+        val block = state.block as? IMetaBlock ?: return
+        w.setBlock(pos, block.stateForMeta(meta), 0)
     }
 
     /** This coordinate as the BlockPos the 1.8+ world API takes. Allocates; hot loops keep the ints. */

@@ -10,6 +10,7 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.core.Direction
 import net.minecraft.network.chat.Component
+import mods.eln.misc.writeToNBT
 
 open class TransparentNodeElementInventory : WorldlyContainer, INBTTReady, IUtilityCableInventory {
     @JvmField

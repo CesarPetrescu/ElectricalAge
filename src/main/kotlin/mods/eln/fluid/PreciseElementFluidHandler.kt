@@ -2,6 +2,7 @@ package mods.eln.fluid
 
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.core.Direction
+import mods.eln.misc.writeToNBT
 
 class PreciseElementFluidHandler(tankSize: Int) : ElementFluidHandler(tankSize) {
     private var fixup = 0.0

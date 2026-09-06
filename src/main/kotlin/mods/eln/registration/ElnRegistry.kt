@@ -9,6 +9,12 @@ import net.minecraft.world.item.CreativeModeTab
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.entity.BlockEntity
+import net.minecraft.world.level.block.entity.BlockEntityType
+import net.minecraft.world.inventory.AbstractContainerMenu
+import net.minecraft.world.inventory.MenuType
+import net.neoforged.neoforge.common.extensions.IMenuTypeExtension
+import net.neoforged.neoforge.network.IContainerFactory
 import net.neoforged.bus.api.SubscribeEvent
 import net.neoforged.fml.common.EventBusSubscriber
 import net.neoforged.neoforge.registries.RegisterEvent
@@ -48,7 +54,10 @@ object ElnRegistry {
 
     private val blocks = LinkedHashMap<ResourceLocation, Staged<Block>>()
     private val items = LinkedHashMap<ResourceLocation, Staged<Item>>()
+    private val blockEntities = LinkedHashMap<ResourceLocation, Staged<BlockEntityType<*>>>()
+    private val menus = LinkedHashMap<ResourceLocation, Staged<MenuType<*>>>()
     private val tabs = LinkedHashMap<ResourceLocation, CreativeModeTab>()
+    private val ores = ArrayList<Pair<String, Supplier<ItemStack>>>()
     private val afterItems = ArrayList<Runnable>()
     private val namedStacks = HashMap<String, Supplier<ItemStack>>()
     private val itemBlocks = HashMap<ResourceLocation, Staged<Item>>()
@@ -106,6 +115,43 @@ object ElnRegistry {
         return itemBlocks[id]?.get() ?: throw IllegalStateException("no BlockItem registered for $id")
     }
 
+    /**
+     * Replaces GameRegistry.registerTileEntity. The type is built in its event (after blocks), so
+     * the valid block is read through a supplier. [Eln] keeps the type in the block entity class.
+     */
+    @JvmStatic
+    fun <T : BlockEntity> registerBlockEntity(name: String, block: Supplier<Block>, factory: BlockEntityType.BlockEntitySupplier<T>): Supplier<BlockEntityType<T>> {
+        val id = registryName(name)
+        @Suppress("UNCHECKED_CAST")
+        val staged = stage(blockEntities, id, { BlockEntityType.Builder.of(factory, block.get()).build(null) as BlockEntityType<*> }, null, "block entity type")
+        return Supplier { @Suppress("UNCHECKED_CAST") (staged.get() as BlockEntityType<T>) }
+    }
+
+    /**
+     * The ore-dictionary entries of 1.7.10 (`OreDictionary.registerOre(name, stack)`). 1.13+ uses
+     * item tags, which are data: the data generator turns this list into tag JSON, and at run time
+     * [Eln.dictionnaryOreFromMod] answers `findItemStack` for those names. A null name is skipped:
+     * upstream registers a few items under dictionary names it never assigns.
+     */
+    @JvmStatic
+    fun registerOre(name: String?, stack: Supplier<ItemStack>) {
+        if (name == null) {
+            Eln.LOGGER.warn("Ore dictionary registration skipped: no dictionary name")
+            return
+        }
+        ores.add(name to stack)
+        afterItems { Eln.dictionnaryOreFromMod.putIfAbsent(name, stack.get()) }
+    }
+
+    @JvmStatic
+    val oreEntries: List<Pair<String, Supplier<ItemStack>>> get() = ores
+
+    @JvmStatic
+    fun <T : AbstractContainerMenu> registerMenu(name: String, factory: IContainerFactory<T>): Supplier<MenuType<T>> {
+        val staged = stage(menus, registryName(name), { IMenuTypeExtension.create(factory) as MenuType<*> }, null, "menu type")
+        return Supplier { @Suppress("UNCHECKED_CAST") (staged.get() as MenuType<T>) }
+    }
+
     /** Tabs are plain objects; they are built eagerly (descriptors point at them) and registered in their event. */
     @JvmStatic
     fun registerCreativeTab(name: String, tab: CreativeModeTab): CreativeModeTab {
@@ -155,6 +201,8 @@ object ElnRegistry {
                     items.keys.forEach { Eln.LOGGER.info("REGDUMP item {}", it) }
                 }
             }
+            Registries.BLOCK_ENTITY_TYPE -> registerAll(event, Registries.BLOCK_ENTITY_TYPE, blockEntities)
+            Registries.MENU -> registerAll(event, Registries.MENU, menus)
             Registries.CREATIVE_MODE_TAB -> event.register(Registries.CREATIVE_MODE_TAB) { helper -> tabs.forEach { (id, tab) -> helper.register(id, tab) } }
         }
     }

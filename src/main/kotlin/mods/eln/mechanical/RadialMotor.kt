@@ -27,6 +27,7 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 import kotlin.math.cos
 import kotlin.math.pow
+import mods.eln.misc.writeToNBT
 
 class RadialMotorDescriptor(baseName: String, obj: Obj3D) :
     SimpleShaftDescriptor(baseName, RadialMotorElement::class, RadialMotorRender::class, EntityMetaTag.Fluid) {

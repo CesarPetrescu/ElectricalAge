@@ -34,6 +34,7 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.util.*
 import mods.eln.misc.isNothing
+import mods.eln.misc.writeToNBT
 
 class FuelHeatFurnaceDescriptor(name: String, model: Obj3D, val thermal: ThermalLoadInitializerByPowerDrop) :
     TransparentNodeDescriptor(name, FuelHeatFurnaceElement::class.java, FuelHeatFurnaceRender::class.java,

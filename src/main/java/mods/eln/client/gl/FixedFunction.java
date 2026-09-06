@@ -219,6 +219,11 @@ public final class FixedFunction {
         state.texture = texture;
     }
 
+    /** The texture bound through {@link #bindTexture}; the GUI helpers blit from it. */
+    public static ResourceLocation texture() {
+        return state.texture;
+    }
+
     public static void color(float r, float g, float b, float a) {
         state.r = r;
         state.g = g;

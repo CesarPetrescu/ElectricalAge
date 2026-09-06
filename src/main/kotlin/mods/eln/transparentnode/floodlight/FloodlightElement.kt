@@ -38,6 +38,7 @@ import java.io.DataOutputStream
 import java.io.IOException
 import kotlin.math.pow
 import mods.eln.misc.isNothing
+import mods.eln.misc.writeToNBT
 
 class FloodlightElement(transparentNode: TransparentNode, transparentNodeDescriptor: TransparentNodeDescriptor) :
     TransparentNodeElement(transparentNode, transparentNodeDescriptor), IConfigurable {

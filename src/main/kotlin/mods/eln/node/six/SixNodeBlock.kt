@@ -1,68 +1,67 @@
 package mods.eln.node.six
 
-import net.neoforged.api.distmarker.Dist
-import net.neoforged.api.distmarker.OnlyIn
 import mods.eln.Eln
 import mods.eln.misc.Direction
 import mods.eln.misc.Direction.Companion.fromFacing
-import mods.eln.misc.Direction.Companion.fromIntMinecraftSide
-import mods.eln.misc.Utils.generateHeightMap
 import mods.eln.misc.Utils.isCreative
 import mods.eln.misc.Utils.isRemote
 import mods.eln.misc.Utils.println
 import mods.eln.misc.Utils.updateAllLightTypes
-import mods.eln.misc.Utils.updateSkylight
 import mods.eln.node.NodeBase
 import mods.eln.node.NodeBlock
-import net.minecraft.world.level.block.Block
-import net.minecraft.block.material.Material
-import net.minecraft.world.level.block.state.BlockState
-import net.minecraft.client.Minecraft
-import net.minecraft.world.item.CreativeModeTab
+import net.minecraft.core.BlockPos
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
-import net.minecraft.server.level.ServerPlayer
-import net.minecraft.world.level.block.Blocks
-import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
-import net.minecraft.world.level.block.RenderShape
-import net.minecraft.core.Direction as EnumFacing
-import net.minecraft.core.NonNullList
-import net.minecraft.world.phys.AABB
-import net.minecraft.core.BlockPos
-import net.minecraft.world.phys.HitResult
-import net.minecraft.world.phys.Vec3
+import net.minecraft.world.item.context.BlockPlaceContext
 import net.minecraft.world.level.BlockGetter
 import net.minecraft.world.level.Level
-import java.util.*
+import net.minecraft.world.level.LevelReader
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.level.block.RenderShape
+import net.minecraft.world.level.block.entity.BlockEntity
+import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.level.material.FluidState
+import net.minecraft.world.phys.AABB
+import net.minecraft.world.phys.BlockHitResult
+import net.minecraft.world.phys.HitResult
+import net.minecraft.world.phys.Vec3
+import net.minecraft.world.phys.shapes.CollisionContext
+import net.minecraft.world.phys.shapes.Shapes
+import net.minecraft.world.phys.shapes.VoxelShape
 import mods.eln.misc.getBlock
-import mods.eln.misc.getTileEntity
+import mods.eln.misc.getBlockEntity
 import mods.eln.misc.isBlockLoaded
 import mods.eln.misc.setBlockToAir
-import mods.eln.misc.xCoord
-import mods.eln.misc.yCoord
-import mods.eln.misc.zCoord
 import mods.eln.misc.getBlockState
-import mods.eln.misc.isReplaceable
 
-class SixNodeBlock  // public static ArrayList<Integer> repertoriedItemStackId = new ArrayList<Integer>();
-// private IIcon icon;
-(material: Material?, tileEntityClass: Class<*>?) : NodeBlock(material, tileEntityClass!!, 0) {
-    override fun getPickBlock(state: BlockState, target: HitResult, world: Level, pos: BlockPos, player: Player): ItemStack {
+/**
+ * The block every six-node element lives in. 1.21: the per-face selection that used to come from
+ * a hand-written collisionRayTrace comes from [getShape] (one thin slab per enabled face; vanilla
+ * clips the look ray against it and reports the face), collision is a full cube only when the
+ * node has a volume or a camouflage block, and light opacity follows the camouflage block.
+ */
+class SixNodeBlock : NodeBlock(nodeProperties().strength(0.3f, 1.0f), 0) {
+    override fun newBlockEntity(pos: BlockPos, state: BlockState): BlockEntity = SixNodeEntity(pos, state)
+
+    override fun getCloneItemStack(state: BlockState, target: HitResult, world: LevelReader, pos: BlockPos, player: Player): ItemStack {
         val entity = world.getBlockEntity(pos) as SixNodeEntity?
-        if (entity != null) {
-            val render = entity.elementRenderList[fromFacing(target.sideHit).int]
+        if (entity != null && target is BlockHitResult) {
+            val render = entity.elementRenderList[fromFacing(target.direction).int]
             if (render != null) {
                 findClosestMatchingHotbarStack(player, render.sixNodeDescriptor)?.let { return it.copy() }
                 return render.sixNodeDescriptor.newCreativeTabStack()
             }
         }
-        return super.getPickBlock(state, target, world, pos, player)
+        return ItemStack.EMPTY
     }
 
     private fun findClosestMatchingHotbarStack(player: Player, descriptor: SixNodeDescriptor): ItemStack? {
         val inventory = player.inventory ?: return null
-        val currentSlot = inventory.currentItem
+        val currentSlot = inventory.selected
         var bestStack: ItemStack? = null
         var bestDistance = Int.MAX_VALUE
         for (slot in 0 until 9) {
@@ -83,19 +82,31 @@ class SixNodeBlock  // public static ArrayList<Integer> repertoriedItemStackId =
     }
 
 
-    override fun getCollisionBoundingBox(state: BlockState, world: BlockGetter, pos: BlockPos): AABB? {
-        val hasBody = nodeHasCache(world, pos.x, pos.y, pos.z) ||
-            (world is Level && hasVolume(world, pos.x, pos.y, pos.z))
-        return if (hasBody) super.getCollisionBoundingBox(state, world, pos) else NULL_AABB
+    private fun hasBody(world: BlockGetter, pos: BlockPos): Boolean =
+        nodeHasCache(world, pos.x, pos.y, pos.z) || (world is Level && hasVolume(world, pos.x, pos.y, pos.z))
+
+    override fun getCollisionShape(state: BlockState, world: BlockGetter, pos: BlockPos, context: CollisionContext): VoxelShape =
+        if (hasBody(world, pos)) Shapes.block() else Shapes.empty()
+
+    /** The outline and ray-trace shape: a full cube for bodies, else one slab per populated face. */
+    override fun getShape(state: BlockState, world: BlockGetter, pos: BlockPos, context: CollisionContext): VoxelShape {
+        if (hasBody(world, pos)) return Shapes.block()
+        val entity = world.getBlockEntity(pos) as? SixNodeEntity ?: return Shapes.empty()
+        var shape = Shapes.empty()
+        for (direction in Direction.values()) {
+            val enabled = if (world is Level && !world.isClientSide) {
+                (entity.node as? SixNode)?.getSideEnable(direction) ?: false
+            } else entity.getSyncronizedSideEnable(direction)
+            if (enabled) shape = Shapes.or(shape, faceSlab(direction))
+        }
+        return shape
     }
+
+    override fun getVisualShape(state: BlockState, world: BlockGetter, pos: BlockPos, context: CollisionContext): VoxelShape = Shapes.empty()
 
     fun hasVolume(world: Level, x: Int, y: Int, z: Int): Boolean {
         val entity = getEntity(world, x, y, z) ?: return false
         return entity.hasVolume(world, x, y, z)
-    }
-
-    override fun getBlockHardness(blockState: BlockState, world: Level, pos: BlockPos): Float {
-        return 0.3f
     }
 
     /**
@@ -115,25 +126,13 @@ class SixNodeBlock  // public static ArrayList<Integer> repertoriedItemStackId =
         return null
     }
 
-    // @OnlyIn(Dist.CLIENT)
-    override fun getSubBlocks(tab: CreativeModeTab, subItems: NonNullList<ItemStack>) {
-        Eln.sixNodeItem.getSubItems(tab, subItems)
-    }
-
-    override fun isOpaqueCube(state: BlockState): Boolean {
-        return false
-    }
-
-    override fun isFullCube(state: BlockState): Boolean {
-        return false
-    }
 
     /**
      * Six-nodes draw entirely from their TESR, including the camouflage block a cable can be
      * hidden inside. Phase 3 replaces this with an IExtendedBlockState carrying the camouflaged
      * state plus a delegating baked model.
      */
-    override fun getRenderType(state: BlockState): RenderShape {
+    override fun getRenderShape(state: BlockState): RenderShape {
         return RenderShape.INVISIBLE
     }
 
@@ -148,29 +147,13 @@ class SixNodeBlock  // public static ArrayList<Integer> repertoriedItemStackId =
 	 *
 	 * return 255; }
 	 */
-    override fun getItemDropped(state: BlockState, rand: Random, fortune: Int): Item? {
-        return null
-    }
+    // No loot table: the block itself never drops (the elements drop through the node).
 
-    override fun quantityDropped(par1Random: Random): Int {
-        return 0
-    }
-
-
-    override fun isReplaceable(world: BlockGetter, pos: BlockPos): Boolean {
+    override fun canBeReplaced(state: BlockState, context: BlockPlaceContext): Boolean {
         return false
     }
 
-    override fun canPlaceBlockOnSide(world: Level, pos: BlockPos, side: EnumFacing): Boolean {
-        /* see canPlaceBlockAt; it needs changing if this method is fixed */
-        return true /*
-					 * if(par1World.isClientSide) return true; SixNodeEntity tileEntity = (SixNodeEntity) par1World.getBlockTileEntity(par2, par3, par4); if(tileEntity == null || (tileEntity instanceof SixNodeEntity) == false) return true; Direction direction = Direction.fromIntMinecraftSide(par5); SixNode node = (SixNode) tileEntity.getNode(); if(node == null) return true; if(node.getSideEnable(direction))return false;
-					 *
-					 * return true;
-					 */
-    }
-
-    override fun canPlaceBlockAt(world: Level, pos: BlockPos): Boolean {
+    override fun canSurvive(state: BlockState, world: LevelReader, pos: BlockPos): Boolean {
         /* This should probably call canPlaceBlockOnSide with each
 		 * appropriate side to see if it can go somewhere.
 		 * (cf. BlockLever, BlockTorch, etc)
@@ -195,46 +178,45 @@ class SixNodeBlock  // public static ArrayList<Integer> repertoriedItemStackId =
      *
      * return tileEntity.onBlockActivated(entityPlayer, Direction.fromIntMinecraftSide(minecraftSide),vx,vy,vz); }
      */
-    override fun removedByPlayer(state: BlockState, world: Level, pos: BlockPos, entityPlayer: Player, willHarvest: Boolean): Boolean {
+    override fun onDestroyedByPlayer(state: BlockState, world: Level, pos: BlockPos, entityPlayer: Player, willHarvest: Boolean, fluid: FluidState): Boolean {
         if (world.isClientSide) return false
         val x = pos.x; val y = pos.y; val z = pos.z
         val tileEntity = world.getBlockEntity(pos) as SixNodeEntity
         val sixNode = tileEntity.node as SixNode? ?: return true
         if (sixNode.sixNodeCacheBlock !== Blocks.AIR) {
             if (isCreative((entityPlayer as ServerPlayer)) == false) {
-                val stack = ItemStack(sixNode.sixNodeCacheBlock, 1, sixNode.sixNodeCacheBlockMeta.toInt())
+                val stack = ItemStack(sixNode.sixNodeCacheBlock, 1)
                 sixNode.dropItem(stack)
             }
             sixNode.sixNodeCacheBlock = Blocks.AIR
-            val chunk = world.getChunk(pos)
-            generateHeightMap(chunk)
-            updateSkylight(chunk)
-            chunk.generateSkylightMap()
             updateAllLightTypes(world, x, y, z)
             sixNode.needPublish = true
             return false
         }
         val breakDirection = resolveBreakDirection(world, pos, entityPlayer, sixNode) ?: return false
         if (!sixNode.playerAskToBreakSubBlock(entityPlayer as ServerPlayer, breakDirection)) return false
-        return if (sixNode.ifSideRemain) true else super.removedByPlayer(state, world, pos, entityPlayer, willHarvest)
+        return if (sixNode.ifSideRemain) true else super.onDestroyedByPlayer(state, world, pos, entityPlayer, willHarvest, fluid)
     }
 
-    override fun breakBlock(world: Level, pos: BlockPos, state: BlockState) {
-        if (!world.isClientSide) {
+    override fun onRemove(state: BlockState, world: Level, pos: BlockPos, newState: BlockState, movedByPiston: Boolean) {
+        if (!world.isClientSide && !state.`is`(newState.block)) {
             val x = pos.x; val y = pos.y; val z = pos.z
-            val tileEntity = world.getBlockEntity(pos) as SixNodeEntity
-            val sixNode = tileEntity.node as SixNode? ?: return
-            for (direction in Direction.values()) {
-                if (sixNode.getSideEnable(direction)) {
-                    println("SixNodeBlock.breakBlock deleting side=$direction at $x,$y,$z block=${state.block.javaClass.simpleName}")
-                    sixNode.deleteSubBlock(null, direction)
+            val tileEntity = world.getBlockEntity(pos) as? SixNodeEntity
+            val sixNode = tileEntity?.node as SixNode?
+            if (sixNode != null) {
+                for (direction in Direction.values()) {
+                    if (sixNode.getSideEnable(direction)) {
+                        println("SixNodeBlock.breakBlock deleting side=$direction at $x,$y,$z block=${state.block.javaClass.simpleName}")
+                        sixNode.deleteSubBlock(null, direction)
+                    }
                 }
             }
         }
-        super.breakBlock(world, pos, state)
+        super.onRemove(state, world, pos, newState, movedByPiston)
     }
 
-    override fun neighborChanged(state: BlockState, world: Level, pos: BlockPos, b: Block, fromPos: BlockPos) {
+    override fun neighborChanged(state: BlockState, world: Level, pos: BlockPos, b: Block, fromPos: BlockPos, movedByPiston: Boolean) {
+        if (world.isClientSide) return
         val x = pos.x; val y = pos.y; val z = pos.z
         val tileEntity = world.getBlockEntity(pos) as SixNodeEntity
         val sixNode = tileEntity.node as SixNode? ?: return
@@ -247,158 +229,33 @@ class SixNodeBlock  // public static ArrayList<Integer> repertoriedItemStackId =
             }
         }
         if (!sixNode.ifSideRemain) {
-            world.setBlockToAir(pos)
+            world.removeBlock(pos, false)
         } else {
-            super.neighborChanged(state, world, pos, b, fromPos)
+            super.neighborChanged(state, world, pos, b, fromPos, movedByPiston)
         }
     }
 
-    var w = 0.0
-    var booltemp = BooleanArray(6)
-    override fun collisionRayTrace(blockState: BlockState, world: Level, pos: BlockPos, start: Vec3, end: Vec3): HitResult? {
-        val x = pos.x; val y = pos.y; val z = pos.z
-        if (nodeHasCache(world, x, y, z)) return super.collisionRayTrace(blockState, world, pos, start, end)
-        val tileEntity = world.getBlockEntity(pos) as SixNodeEntity? ?: return null
-        if (world.isClientSide) {
-            booltemp[0] = tileEntity.getSyncronizedSideEnable(Direction.XN)
-            booltemp[1] = tileEntity.getSyncronizedSideEnable(Direction.XP)
-            booltemp[2] = tileEntity.getSyncronizedSideEnable(Direction.YN)
-            booltemp[3] = tileEntity.getSyncronizedSideEnable(Direction.YP)
-            booltemp[4] = tileEntity.getSyncronizedSideEnable(Direction.ZN)
-            booltemp[5] = tileEntity.getSyncronizedSideEnable(Direction.ZP)
-            val entity = getEntity(world, x, y, z)
-            if (entity != null) {
-                val element = entity.elementRenderList[Direction.YN.int]
-                // setBlockBounds(0, 0, 0, 1, 1, 1);
-                if (element != null && element.sixNodeDescriptor.hasVolume()) {
-                    return HitResult(Vec3(0.5, 0.5, 0.5), Direction.YN.toFacing(), pos)
-                }
-            }
-        } else {
-            val sixNode = tileEntity.node as SixNode? ?: return null
-            booltemp[0] = sixNode.getSideEnable(Direction.XN)
-            booltemp[1] = sixNode.getSideEnable(Direction.XP)
-            booltemp[2] = sixNode.getSideEnable(Direction.YN)
-            booltemp[3] = sixNode.getSideEnable(Direction.YP)
-            booltemp[4] = sixNode.getSideEnable(Direction.ZN)
-            booltemp[5] = sixNode.getSideEnable(Direction.ZP)
-            val entity = getEntity(world, x, y, z)
-            if (entity != null) {
-                val node: NodeBase? = entity.node
-                if (node != null && node is SixNode) {
-                    val element = node.sideElementList[Direction.YN.int]
-                    if (element != null && element.sixNodeElementDescriptor.hasVolume()) return HitResult(Vec3(0.5, 0.5, 0.5), Direction.YN.toFacing(), pos)
-                }
-            }
-        }
-        // XN
-        if (isIn(x.toDouble(), end.xCoord, start.xCoord) && booltemp[0]) {
-            val hitX: Double
-            val hitY: Double
-            val hitZ: Double
-            val ratio: Double
-            ratio = (x - start.xCoord) / (end.xCoord - start.xCoord)
-            if (ratio <= 1.1) {
-                hitX = start.xCoord + ratio * (end.xCoord - start.xCoord)
-                hitY = start.yCoord + ratio * (end.yCoord - start.yCoord)
-                hitZ = start.zCoord + ratio * (end.zCoord - start.zCoord)
-                if (isIn(hitY, y + w, y + 1 - w) && isIn(hitZ, z + w, z + 1 - w)) return HitResult(Vec3(hitX, hitY, hitZ), Direction.XN.toFacing(), pos)
-            }
-        }
-        // XP
-        if (isIn((x + 1).toDouble(), start.xCoord, end.xCoord) && booltemp[1]) {
-            val hitX: Double
-            val hitY: Double
-            val hitZ: Double
-            val ratio: Double
-            ratio = (x + 1 - start.xCoord) / (end.xCoord - start.xCoord)
-            if (ratio <= 1.1) {
-                hitX = start.xCoord + ratio * (end.xCoord - start.xCoord)
-                hitY = start.yCoord + ratio * (end.yCoord - start.yCoord)
-                hitZ = start.zCoord + ratio * (end.zCoord - start.zCoord)
-                if (isIn(hitY, y + w, y + 1 - w) && isIn(hitZ, z + w, z + 1 - w)) return HitResult(Vec3(hitX, hitY, hitZ), Direction.XP.toFacing(), pos)
-            }
-        }
-        // YN
-        if (isIn(y.toDouble(), end.yCoord, start.yCoord) && booltemp[2]) {
-            val hitX: Double
-            val hitY: Double
-            val hitZ: Double
-            val ratio: Double
-            ratio = (y - start.yCoord) / (end.yCoord - start.yCoord)
-            if (ratio <= 1.1) {
-                hitX = start.xCoord + ratio * (end.xCoord - start.xCoord)
-                hitY = start.yCoord + ratio * (end.yCoord - start.yCoord)
-                hitZ = start.zCoord + ratio * (end.zCoord - start.zCoord)
-                if (isIn(hitX, x + w, x + 1 - w) && isIn(hitZ, z + w, z + 1 - w)) return HitResult(Vec3(hitX, hitY, hitZ), Direction.YN.toFacing(), pos)
-            }
-        }
-        // YP
-        if (isIn((y + 1).toDouble(), start.yCoord, end.yCoord) && booltemp[3]) {
-            val hitX: Double
-            val hitY: Double
-            val hitZ: Double
-            val ratio: Double
-            ratio = (y + 1 - start.yCoord) / (end.yCoord - start.yCoord)
-            if (ratio <= 1.1) {
-                hitX = start.xCoord + ratio * (end.xCoord - start.xCoord)
-                hitY = start.yCoord + ratio * (end.yCoord - start.yCoord)
-                hitZ = start.zCoord + ratio * (end.zCoord - start.zCoord)
-                if (isIn(hitX, x + w, x + 1 - w) && isIn(hitZ, z + w, z + 1 - w)) return HitResult(Vec3(hitX, hitY, hitZ), Direction.YP.toFacing(), pos)
-            }
-        }
-        // ZN
-        if (isIn(z.toDouble(), end.zCoord, start.zCoord) && booltemp[4]) {
-            val hitX: Double
-            val hitY: Double
-            val hitZ: Double
-            val ratio: Double
-            ratio = (z - start.zCoord) / (end.zCoord - start.zCoord)
-            if (ratio <= 1.1) {
-                hitX = start.xCoord + ratio * (end.xCoord - start.xCoord)
-                hitY = start.yCoord + ratio * (end.yCoord - start.yCoord)
-                hitZ = start.zCoord + ratio * (end.zCoord - start.zCoord)
-                if (isIn(hitY, y + w, y + 1 - w) && isIn(hitX, x + w, x + 1 - w)) return HitResult(Vec3(hitX, hitY, hitZ), Direction.ZN.toFacing(), pos)
-            }
-        }
-        // ZP
-        if (isIn((z + 1).toDouble(), start.zCoord, end.zCoord) && booltemp[5]) {
-            val hitX: Double
-            val hitY: Double
-            val hitZ: Double
-            val ratio: Double
-            ratio = (z + 1 - start.zCoord) / (end.zCoord - start.zCoord)
-            if (ratio <= 1.1) {
-                hitX = start.xCoord + ratio * (end.xCoord - start.xCoord)
-                hitY = start.yCoord + ratio * (end.yCoord - start.yCoord)
-                hitZ = start.zCoord + ratio * (end.zCoord - start.zCoord)
-                if (isIn(hitY, y + w, y + 1 - w) && isIn(hitX, x + w, x + 1 - w)) return HitResult(Vec3(hitX, hitY, hitZ), Direction.ZP.toFacing(), pos)
-            }
-        }
-        return null
-    }
-
-    fun collisionRayTrace(world: Level, pos: BlockPos, entityLiving: Player): HitResult? {
-        // double distanceMax = (double)Minecraft.getInstance().playerController.getBlockReachDistance();
+    /** Where the player's look ray hits this block's [getShape]; null when it misses. */
+    fun collisionRayTrace(world: Level, pos: BlockPos, entityLiving: Player): BlockHitResult? {
         // Server player state can lag a few ticks behind under low TPS; add margin so raytrace still resolves a side.
         val distanceMax = 8.0
-        // Vec3 is immutable on 1.12, so the eye-height offset builds a new vector.
-        var start = Vec3(entityLiving.x, entityLiving.y, entityLiving.z)
-        if (!world.isClientSide) start = start.add(0.0, 1.62, 0.0)
-        val look = entityLiving.getLook(0.5f)
+        val start = entityLiving.getEyePosition(0.5f)
+        val look = entityLiving.getViewVector(0.5f)
         val end = start.add(look.x * distanceMax, look.y * distanceMax, look.z * distanceMax)
-        return collisionRayTrace(world.getBlockState(pos), world, pos, start, end)
+        val shape = getShape(world.getBlockState(pos), world, pos, CollisionContext.of(entityLiving))
+        val hit = shape.clip(start, end, pos) ?: return null
+        return if (hit.type == HitResult.Type.MISS) null else hit
     }
 
     private fun resolveBreakDirection(world: Level, pos: BlockPos, entityPlayer: Player, sixNode: SixNode): Direction? {
         val ray = collisionRayTrace(world, pos, entityPlayer)
-        val rayDirection = ray?.let { fromFacing(it.sideHit) }
+        val rayDirection = ray?.let { fromFacing(it.direction) }
         if (rayDirection != null && sixNode.getSideEnable(rayDirection)) {
             return rayDirection
         }
 
         // Fallback: pick the enabled face most directly facing the player's look vector.
-        val look = entityPlayer.getLook(0.5f)
+        val look = entityPlayer.getViewVector(0.5f)
         var bestDirection: Direction? = null
         var bestScore = Double.NEGATIVE_INFINITY
         for (direction in Direction.values()) {
@@ -449,7 +306,7 @@ class SixNodeBlock  // public static ArrayList<Integer> repertoriedItemStackId =
             }
         }
         // The clicked face points against the player look direction.
-        return -(look.xCoord * nx + look.yCoord * ny + look.zCoord * nz)
+        return -(look.x * nx + look.y * ny + look.z * nz)
     }
 
     fun getIfOtherBlockIsSolid(world: Level, x: Int, y: Int, z: Int, direction: Direction): Boolean {
@@ -462,9 +319,10 @@ class SixNodeBlock  // public static ArrayList<Integer> repertoriedItemStackId =
         // "unknown" instead of "air" so attached six-node parts do not self-delete
         // before their support block has actually loaded.
         if (!world.isBlockLoaded(vect[0], vect[1], vect[2])) return true
-        val block = world.getBlock(vect[0], vect[1], vect[2])
-        if (block === Blocks.AIR) return false
-        return block.defaultState.isOpaqueCube
+        val other = BlockPos(vect[0], vect[1], vect[2])
+        val state = world.getBlockState(other)
+        if (state.isAir) return false
+        return state.isSolidRender(world, other)
     }
 
     fun nodeHasCache(world: BlockGetter, x: Int, y: Int, z: Int): Boolean {
@@ -479,49 +337,40 @@ class SixNodeBlock  // public static ArrayList<Integer> repertoriedItemStackId =
         return false
     }
 
-    override fun getLightOpacity(state: BlockState, w: BlockGetter, pos: BlockPos): Int {
+    override fun getLightBlock(state: BlockState, w: BlockGetter, pos: BlockPos): Int {
         val sne = w.getBlockEntity(pos) as? SixNodeEntity ?: return 0
         val b = sne.sixNodeCacheBlock
         return if (b === Blocks.AIR) 0 else try {
-            b.getLightOpacity(b.getStateFromMeta(sne.sixNodeCacheBlockMeta.toInt()), w, pos)
+            b.defaultBlockState().getLightBlock(w, pos)
         } catch (e2: Exception) {
-            255
+            15
         }
-        // return b.getIcon(w, x, y, z, side);
+    }
+
+    override fun propagatesSkylightDown(state: BlockState, world: BlockGetter, pos: BlockPos): Boolean {
+        return !nodeHasCache(world, pos.x, pos.y, pos.z)
     }
 
     val nodeUuid: String
-        get() = "s"
-
-    @OnlyIn(Dist.CLIENT)
-    override fun getSelectedBoundingBox(state: BlockState, w: Level, pos: BlockPos): AABB {
-        val x = pos.x; val y = pos.y; val z = pos.z
-        if (hasVolume(w, x, y, z)) return super.getSelectedBoundingBox(state, w, pos)
-        val col = collisionRayTrace(w, pos, Minecraft.getInstance().player)
-        val h = 0.2
-        val hn = 1 - h
-        val b = 0.02
-        val bn = 1 - 0.02
-        if (col != null) {
-            // Utils.println(Direction.fromIntMinecraftSide(col.sideHit));
-            when (fromFacing(col.sideHit)) {
-                Direction.XN -> return AABB(x.toDouble() + b, y.toDouble(), z.toDouble(), x.toDouble() + h, y.toDouble() + 1, z.toDouble() + 1)
-                Direction.XP -> return AABB(x.toDouble() + hn, y.toDouble(), z.toDouble(), x.toDouble() + bn, y.toDouble() + 1, z.toDouble() + 1)
-                Direction.YN -> return AABB(x.toDouble(), y.toDouble() + b, z.toDouble(), x.toDouble() + 1, y.toDouble() + h, z.toDouble() + 1)
-                Direction.YP -> return AABB(x.toDouble(), y.toDouble() + hn, z.toDouble(), x.toDouble() + 1, y.toDouble() + bn, z.toDouble() + 1)
-                Direction.ZN -> return AABB(x.toDouble(), y.toDouble(), z.toDouble() + b, x.toDouble() + 1, y.toDouble() + 1, z.toDouble() + h)
-                Direction.ZP -> return AABB(x.toDouble(), y.toDouble(), z.toDouble() + hn, x.toDouble() + 1, y.toDouble() + 1, z.toDouble() + bn)
-                null -> TODO()
-            }
-        }
-        return AABB(0.5, 0.5, 0.5, 0.5, 0.5, 0.5) //super.getSelectedBoundingBoxFromPool(w, x, y, z);
-        // return AABB((double)p_149633_2_ , (double)p_149633_3_ , (double)p_149633_4_ + this.minZ+0.2, (double)p_149633_2_ + this.maxX, (double)p_149633_3_ + this.maxY, (double)p_149633_4_ + this.maxZ);
-        // return super.getSelectedBoundingBoxFromPool(w, x, y, z);
-    }
+        get() = NODE_UUID
 
     companion object {
+        const val NODE_UUID = "s"
+
         fun isIn(value: Double, min: Double, max: Double): Boolean {
             return if (value >= min && value <= max) true else false
         }
+
+        /** The outline slab of one face: 0.2 deep, inset 0.02 like the 1.7.10 selection box. */
+        private val SLABS: Map<Direction, VoxelShape> = mapOf(
+            Direction.XN to Shapes.box(0.02, 0.0, 0.0, 0.2, 1.0, 1.0),
+            Direction.XP to Shapes.box(0.8, 0.0, 0.0, 0.98, 1.0, 1.0),
+            Direction.YN to Shapes.box(0.0, 0.02, 0.0, 1.0, 0.2, 1.0),
+            Direction.YP to Shapes.box(0.0, 0.8, 0.0, 1.0, 0.98, 1.0),
+            Direction.ZN to Shapes.box(0.0, 0.0, 0.02, 1.0, 1.0, 0.2),
+            Direction.ZP to Shapes.box(0.0, 0.0, 0.8, 1.0, 1.0, 0.98),
+        )
+
+        fun faceSlab(direction: Direction): VoxelShape = SLABS[direction] ?: Shapes.empty()
     }
 }

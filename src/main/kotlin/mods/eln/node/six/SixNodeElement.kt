@@ -38,6 +38,7 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
 import java.util.*
+import mods.eln.misc.writeToNBT
 
 abstract class SixNodeElement(sixNode: SixNode, @JvmField var side: Direction, descriptor: SixNodeDescriptor) : GhostObserver, IPlayer, INodeElement {
     @JvmField

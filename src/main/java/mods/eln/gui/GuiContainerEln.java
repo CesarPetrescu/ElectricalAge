@@ -1,29 +1,35 @@
 package mods.eln.gui;
 
+import mods.eln.client.Keyboard;
+import mods.eln.client.gl.FixedFunction;
 import mods.eln.gui.GuiTextFieldEln.GuiTextFieldElnObserver;
 import mods.eln.gui.IGuiObject.IGuiObjectObserver;
 import mods.eln.gui.ISlotSkin.SlotSkin;
 import mods.eln.misc.UtilsClient;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.resources.ResourceLocation;
-import org.lwjgl.input.Keyboard;
-import mods.eln.client.gl.GL11;
+import net.neoforged.fml.util.ObfuscationReflectionHelper;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
-public abstract class GuiContainerEln extends AbstractContainerScreen implements IGuiObjectObserver, GuiTextFieldElnObserver {
+/**
+ * Base of the mod's inventory screens; see {@link GuiScreenEln} for the API it keeps.
+ */
+public abstract class GuiContainerEln extends AbstractContainerScreen<AbstractContainerMenu> implements IGuiObjectObserver, GuiTextFieldElnObserver {
 
     public GuiHelperContainer helper;
 
     protected abstract GuiHelperContainer newHelper();
 
-    static final ResourceLocation slotSkin = ResourceLocation.parse($1);
+    static final ResourceLocation slotSkin = ResourceLocation.parse("textures/gui/container/furnace.png");
 
     public GuiContainerEln(AbstractContainerMenu par1Container) {
-        super(par1Container);
+        super(par1Container, Minecraft.getInstance().player.getInventory(), Component.empty());
     }
 
     public void add(IGuiObject object) {
@@ -31,29 +37,38 @@ public abstract class GuiContainerEln extends AbstractContainerScreen implements
     }
 
     @Override
-    public void initGui() {
+    protected void init() {
         helper = newHelper();
-        xSize = helper.xSize;
-        ySize = helper.ySize;
-        super.initGui();
+        imageWidth = helper.xSize;
+        imageHeight = helper.ySize;
+        super.init();
+        apply(helper);
+        initGui();
+    }
 
-        if (helper instanceof GuiHelperContainer) {
-            apply((GuiHelperContainer) helper);
+    /**
+     * Lays the 36 player-inventory slots out at the helper's inventory offset, as 1.7.10 did.
+     * The containers add them at (0, 0) because only the screen knows its layout. Slot.x/y are
+     * final since 1.14; the client-side menu is this screen's own object, so they are set through
+     * reflection once, at init.
+     */
+    void apply(GuiHelperContainer helper) {
+        int n = menu.slots.size();
+        for (int idx = n - 36; idx < n; idx++) {
+            Slot s = menu.slots.get(idx);
+            int x = (idx - (n - 36)) % 9 * 18;
+            int y = (idx - (n - 36)) / 9 * 18;
+            if (idx >= n - 9) {
+                y = 58;
+                x = (idx - (n - 9)) * 18;
+            }
+            ObfuscationReflectionHelper.setPrivateValue(Slot.class, s, x + helper.xInv, "x");
+            ObfuscationReflectionHelper.setPrivateValue(Slot.class, s, y + helper.yInv, "y");
         }
     }
 
-    void apply(GuiHelperContainer helper) {
-        for (int idx = inventorySlots.slots.size() - 36; idx < inventorySlots.slots.size(); idx++) {
-            Slot s = (Slot) inventorySlots.slots.get(idx);
-            s.xPos = (idx - (inventorySlots.slots.size() - 36)) % 9 * 18;
-            s.yPos = (idx - (inventorySlots.slots.size() - 36)) / 9 * 18;
-            if (idx >= inventorySlots.slots.size() - 9) {
-                s.yPos = 58;
-                s.xPos = (idx - (inventorySlots.slots.size() - 9)) * 18;
-            }
-            s.xPos += helper.xInv;
-            s.yPos += helper.yInv;
-        }
+    /** 1.7.10's initGui; screens override it and call super. */
+    public void initGui() {
     }
 
     public GuiTextFieldEln newGuiTextField(int x, int y, int width) {
@@ -93,9 +108,7 @@ public abstract class GuiContainerEln extends AbstractContainerScreen implements
     }
 
     public GuiVerticalProgressBar newGuiVerticalProgressBar(int x, int y, int width, int height) {
-        GuiVerticalProgressBar o = helper.newGuiVerticalProgressBar(x, y, width, height);
-
-        return o;
+        return helper.newGuiVerticalProgressBar(x, y, width, height);
     }
 
     public void drawTexturedModalRectEln(int x, int y, int u, int v, int width, int height) {
@@ -103,32 +116,49 @@ public abstract class GuiContainerEln extends AbstractContainerScreen implements
     }
 
     @Override
-    protected void keyTyped(char key, int code) throws IOException {
-        helper.keyTyped(key, code);
-        if (code == Keyboard.KEY_ESCAPE) {
-            super.keyTyped(key, code);
-        }
-    }
-
-    protected void mouseClicked(int x, int y, int code) throws IOException {
-        helper.mouseClicked(x, y, code);
-        super.mouseClicked(x, y, code);
+    public boolean charTyped(char codePoint, int modifiers) {
+        helper.keyTyped(codePoint, 0);
+        return super.charTyped(codePoint, modifiers);
     }
 
     @Override
-    protected void mouseReleased(int x, int y, int witch) {
-        // 1.8+: mouseMovedOrUp split into mouseReleased (this) and mouseClickMove.
-        helper.mouseMovedOrUp(x, y, witch);
-        super.mouseReleased(x, y, witch);
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (keyCode == Keyboard.KEY_RETURN) helper.keyTyped('\r', keyCode);
+        else if (keyCode == Keyboard.KEY_BACK || keyCode == Keyboard.KEY_DELETE || keyCode == Keyboard.KEY_LEFT || keyCode == Keyboard.KEY_RIGHT)
+            helper.keyTyped('\0', keyCode);
+        // A focused text field owns the keyboard (the inventory key must not close the screen).
+        if (keyCode != Keyboard.KEY_ESCAPE && helper.hasFocusedTextField()) return true;
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
-    public boolean doesGuiPauseGame() {
+    @Override
+    public boolean mouseClicked(double x, double y, int code) {
+        helper.mouseClicked((int) x, (int) y, code);
+        return super.mouseClicked(x, y, code);
+    }
+
+    @Override
+    public boolean mouseReleased(double x, double y, int witch) {
+        helper.mouseMovedOrUp((int) x, (int) y, witch);
+        return super.mouseReleased(x, y, witch);
+    }
+
+    @Override
+    public boolean isPauseScreen() {
         return false;
     }
 
     @Override
-    public void drawScreen(int x, int y, float f) {
-        super.drawScreen(x, y, f);
+    public void render(GuiGraphics graphics, int x, int y, float f) {
+        Gui.begin(graphics);
+        FixedFunction.beginGui(graphics);
+        try {
+            super.render(graphics, x, y, f);
+            renderTooltip(graphics, x, y);
+        } finally {
+            FixedFunction.end();
+            Gui.end();
+        }
     }
 
     @Override
@@ -140,70 +170,57 @@ public abstract class GuiContainerEln extends AbstractContainerScreen implements
     public void guiObjectEvent(IGuiObject object) {
     }
 
-    @SuppressWarnings("incomplete-switch")
     @Override
-    protected void drawGuiContainerBackgroundLayer(float f, int mx, int my) {
-        GL11.glColor4f(1f, 1f, 1f, 1f);
+    protected void renderBg(GuiGraphics graphics, float f, int mx, int my) {
         preDraw(f, mx, my);
         helper.mouseMove(mx, my);
         helper.draw(mx, my, f);
         UtilsClient.bindTexture(slotSkin);
-        GL11.glColor4f(1f, 1f, 1f, 1f);
 
-        for (Object o : inventorySlots.slots) {
-            Slot slot = (Slot) o;
+        for (Slot slot : menu.slots) {
             SlotSkin skin = SlotSkin.none;
-
             if (slot instanceof ISlotSkin) skin = ((ISlotSkin) slot).getSlotSkin();
-
             switch (skin) {
-                case medium:
-                    drawTexturedModalRectEln(slot.xPos - 1, slot.yPos - 1, 55, 16, 73 - 55, 34 - 16);
-                    break;
-                case big:
-                    drawTexturedModalRectEln(slot.xPos - 5, slot.yPos - 5, 111, 30, 137 - 111, 56 - 30);
-                    break;
+                case medium -> drawTexturedModalRectEln(slot.x - 1, slot.y - 1, 55, 16, 73 - 55, 34 - 16);
+                case big -> drawTexturedModalRectEln(slot.x - 5, slot.y - 5, 111, 30, 137 - 111, 56 - 30);
+                default -> {
+                }
             }
         }
         postDraw(f, mx, my);
     }
 
     @Override
-    protected void drawGuiContainerForegroundLayer(int mx, int my) {
-        super.drawGuiContainerForegroundLayer(mx, my);
+    protected void renderLabels(GuiGraphics graphics, int mx, int my) {
+        // 1.21 draws the labels in GUI-local coordinates; the mod's foreground layer draws in screen
+        // coordinates like 1.7.10 did, so undo the translation for it.
+        graphics.pose().pushPose();
+        graphics.pose().translate(-leftPos, -topPos, 0);
         helper.draw2(mx, my);
         ArrayList<String> list = new ArrayList<String>();
-        GL11.glColor4f(1f, 1f, 1f, 1f);
 
-        for (Object o : inventorySlots.slots) {
-            Slot slot = (Slot) o;
-            if (slot.hasItem() == false
-                && mx - guiLeft >= slot.xPos && my - guiTop >= slot.yPos
-                && mx - guiLeft < slot.xPos + 17 && my - guiTop < slot.yPos + 17) {
+        for (Slot slot : menu.slots) {
+            if (!slot.hasItem()
+                && mx - leftPos >= slot.x && my - topPos >= slot.y
+                && mx - leftPos < slot.x + 17 && my - topPos < slot.y + 17) {
                 list.clear();
-
-                SlotSkin comment = SlotSkin.none;
                 if (slot instanceof ISlotWithComment) {
                     ((ISlotWithComment) slot).getComment(list);
-                    int x, y;
                     int strWidth = 0;
                     for (String str : list) {
-                        int size = fontRenderer.width(str);
+                        int size = font.width(str);
                         if (size > strWidth) strWidth = size;
                     }
-
-                    x = slot.xPos;
-                    y = slot.yPos;
-
                     int xOffset = 0;
-                    if (guiLeft + x + strWidth + 30 > this.width) {
+                    if (leftPos + slot.x + strWidth + 30 > this.width) {
                         xOffset -= strWidth + 20;
                     }
                     if (!list.isEmpty())
-                        drawHoveringText((java.util.List) list, mx - guiLeft + xOffset, my - guiTop, fontRenderer);
+                        helper.drawHoveringText(list, mx - leftPos + xOffset, my - topPos, font);
                 }
             }
         }
+        graphics.pose().popPose();
     }
 
     protected void preDraw(float f, int x, int y) {
