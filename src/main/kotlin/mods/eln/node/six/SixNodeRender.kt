@@ -16,7 +16,7 @@ import net.minecraft.world.phys.Vec3
 class SixNodeRender : BlockEntityRenderer<SixNodeEntity> {
     override fun render(entity: SixNodeEntity, partialTicks: Float, poseStack: PoseStack, buffer: MultiBufferSource, packedLight: Int, packedOverlay: Int) {
         Minecraft.getInstance().profiler.push("SixNode")
-        FixedFunction.begin(poseStack, buffer, packedLight, packedOverlay)
+        FixedFunction.begin(poseStack, buffer, NodeRenderSupport.neighbourLight(entity), packedOverlay)
         try {
             GL11.glPushMatrix()
             GL11.glTranslatef(.5f, .5f, .5f)

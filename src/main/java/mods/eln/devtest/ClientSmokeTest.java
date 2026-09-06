@@ -32,7 +32,7 @@ public final class ClientSmokeTest {
     private static final String PREFIX = "SMOKE";
     private static final int X = 512, Z = 512, GROUND = 64;
 
-    private enum Phase { OPEN, JOIN, SETUP, WORLD_SHOT, NIGHT_SHOT, THIRD_PERSON_SHOT, GUI, GUI_SHOT, MACHINE_GUI, MACHINE_GUI_SHOT, INVENTORY, INVENTORY_SHOT, CREATIVE_TAB, CREATIVE_SHOT, DONE }
+    private enum Phase { OPEN, JOIN, SETUP, WORLD_SHOT, NIGHT_SHOT, THIRD_PERSON_SHOT, HAND_THIRD_SHOT, HAND_FIRST_SHOT, HAND_CABLE_SHOT, GUI, GUI_SHOT, MACHINE_GUI, MACHINE_GUI_SHOT, INVENTORY, INVENTORY_SHOT, CREATIVE_TAB, CREATIVE_SHOT, DONE }
 
     private final String save;
     private Phase phase = Phase.OPEN;
@@ -114,7 +114,29 @@ public final class ClientSmokeTest {
             case THIRD_PERSON_SHOT -> {
                 if (wait++ < 60) return;
                 shot(mc, "smoke-third-person");
+                // the machine in hand, seen from the front, then through the player's eyes, then a cable
+                mc.player.getInventory().selected = 3;
+                mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);
+                phase = Phase.HAND_THIRD_SHOT;
+                wait = 0;
+            }
+            case HAND_THIRD_SHOT -> {
+                if (wait++ < 40) return;
+                shot(mc, "smoke-hand-third");
                 mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);
+                phase = Phase.HAND_FIRST_SHOT;
+                wait = 0;
+            }
+            case HAND_FIRST_SHOT -> {
+                if (wait++ < 40) return;
+                shot(mc, "smoke-hand-first");
+                mc.player.getInventory().selected = 0;
+                phase = Phase.HAND_CABLE_SHOT;
+                wait = 0;
+            }
+            case HAND_CABLE_SHOT -> {
+                if (wait++ < 40) return;
+                shot(mc, "smoke-hand-cable");
                 phase = Phase.GUI;
                 wait = 0;
             }

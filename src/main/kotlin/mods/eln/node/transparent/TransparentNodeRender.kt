@@ -13,7 +13,7 @@ import net.minecraft.world.phys.Vec3
 class TransparentNodeRender : BlockEntityRenderer<TransparentNodeEntity> {
     override fun render(entity: TransparentNodeEntity, partialTicks: Float, poseStack: PoseStack, buffer: MultiBufferSource, packedLight: Int, packedOverlay: Int) {
         val elementRender = entity.elementRender ?: return
-        FixedFunction.begin(poseStack, buffer, packedLight, packedOverlay)
+        FixedFunction.begin(poseStack, buffer, NodeRenderSupport.neighbourLight(entity), packedOverlay)
         try {
             GL11.glPushMatrix()
             GL11.glTranslatef(.5f, .5f, .5f)
