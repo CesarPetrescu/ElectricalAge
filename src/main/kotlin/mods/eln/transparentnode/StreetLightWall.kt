@@ -10,7 +10,7 @@ import mods.eln.sim.mna.component.Resistor
 import mods.eln.sim.nbt.NbtElectricalLoad
 import mods.eln.sixnode.lampsupply.LampSupplyElement
 import net.minecraft.world.entity.player.Player
-import org.lwjgl.opengl.GL11
+import mods.eln.client.gl.GL11
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException

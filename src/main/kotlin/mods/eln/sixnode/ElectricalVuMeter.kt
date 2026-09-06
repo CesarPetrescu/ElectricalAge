@@ -27,7 +27,7 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.world.level.block.entity.BlockEntity
 import mods.eln.client.itemrender.IItemRenderer
-import org.lwjgl.opengl.GL11
+import mods.eln.client.gl.GL11
 import org.lwjgl.util.Color
 import java.io.DataInputStream
 import java.io.DataOutputStream

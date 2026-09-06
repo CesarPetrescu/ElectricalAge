@@ -5,7 +5,7 @@ import mods.eln.node.six.SixNodeDescriptor
 import mods.eln.node.six.SixNodeElementRender
 import mods.eln.node.six.SixNodeEntity
 import net.minecraft.client.Minecraft
-import org.lwjgl.opengl.GL11
+import mods.eln.client.gl.GL11
 
 class SignalInductorRender(tileEntity: SixNodeEntity?, side: Direction?, descriptor: SixNodeDescriptor?) :
     SixNodeElementRender(

@@ -12,7 +12,7 @@ import mods.eln.sim.ThermalLoad
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.nbt.CompoundTag
-import org.lwjgl.opengl.GL11
+import mods.eln.client.gl.GL11
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import mods.eln.misc.xCoord

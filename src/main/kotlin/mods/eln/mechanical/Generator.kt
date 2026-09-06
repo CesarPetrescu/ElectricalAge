@@ -23,7 +23,7 @@ import mods.eln.sim.process.heater.ResistorHeatThermalLoad
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
-import org.lwjgl.opengl.GL11
+import mods.eln.client.gl.GL11
 import java.awt.Color
 import java.io.DataInputStream
 import java.io.DataOutputStream

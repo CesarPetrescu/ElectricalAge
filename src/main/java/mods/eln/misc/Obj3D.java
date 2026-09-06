@@ -3,7 +3,7 @@ package mods.eln.misc;
 import mods.eln.Eln;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.opengl.GL11;
+import mods.eln.client.gl.GL11;
 
 import java.io.*;
 import java.util.*;

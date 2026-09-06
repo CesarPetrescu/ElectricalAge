@@ -38,7 +38,7 @@ import mods.eln.sim.nbt.NbtElectricalLoad
 import mods.eln.sim.nbt.NbtThermalLoad
 import mods.eln.sim.process.heater.ElectricalLoadHeatThermalLoad
 import net.minecraft.client.Minecraft
-import net.minecraft.client.renderer.RenderHelper
+import mods.eln.client.gl.RenderHelper
 import net.minecraft.world.entity.player.Player
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.Container
@@ -48,7 +48,7 @@ import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.ChatFormatting
 import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
-import org.lwjgl.opengl.GL11
+import mods.eln.client.gl.GL11
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException

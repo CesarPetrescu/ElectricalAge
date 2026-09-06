@@ -22,7 +22,7 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.entity.projectile.AbstractArrow
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.level.LightLayer
-import org.lwjgl.opengl.GL11
+import mods.eln.client.gl.GL11
 import java.io.DataInputStream
 import java.io.IOException
 import kotlin.math.cos

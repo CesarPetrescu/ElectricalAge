@@ -14,7 +14,7 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import mods.eln.client.itemrender.IItemRenderer
-import org.lwjgl.opengl.GL11
+import mods.eln.client.gl.GL11
 
 class ElectricalHumiditySensorDescriptor(name: String, private val obj: Obj3D?) : SixNodeDescriptor(
     name,

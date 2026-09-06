@@ -12,8 +12,8 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.player.LocalPlayer
 import net.minecraft.client.gui.Font
 import net.minecraft.client.gui.screens.Screen
-import net.minecraft.client.renderer.OpenGlHelper
-import net.minecraft.client.renderer.RenderHelper
+import mods.eln.client.gl.OpenGlHelper
+import mods.eln.client.gl.RenderHelper
 import net.minecraft.client.renderer.entity.EntityRenderer
 import net.minecraft.client.renderer.entity.ItemRenderer
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher
@@ -31,7 +31,7 @@ import net.minecraft.core.BlockPos
 import net.minecraft.world.level.Level
 import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
 import org.lwjgl.input.Keyboard
-import org.lwjgl.opengl.GL11
+import mods.eln.client.gl.GL11
 import java.awt.Color
 import java.io.ByteArrayOutputStream
 import java.util.*

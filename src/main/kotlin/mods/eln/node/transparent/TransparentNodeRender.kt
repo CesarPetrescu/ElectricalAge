@@ -1,7 +1,7 @@
 package mods.eln.node.transparent
 
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer
-import org.lwjgl.opengl.GL11
+import mods.eln.client.gl.GL11
 
 class TransparentNodeRender : BlockEntityRenderer<TransparentNodeEntity>() {
     override fun render(entity: TransparentNodeEntity, x: Double, y: Double, z: Double, partialTicks: Float, destroyStage: Int, alpha: Float) {

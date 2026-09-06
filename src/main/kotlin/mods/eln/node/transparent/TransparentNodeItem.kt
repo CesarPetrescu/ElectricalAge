@@ -18,7 +18,7 @@ import mods.eln.client.itemrender.IItemRenderer.ItemRendererHelper
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.core.Direction as EnumFacing
 import net.minecraft.core.BlockPos
-import org.lwjgl.opengl.GL11
+import mods.eln.client.gl.GL11
 import mods.eln.misc.setBlock
 
 class TransparentNodeItem(b: Block?) : GenericItemBlockUsingDamage<TransparentNodeDescriptor?>(b), IItemRenderer {

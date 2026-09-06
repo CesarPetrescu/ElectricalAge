@@ -25,7 +25,7 @@ import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor
 import mods.eln.sound.LoopedSound
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
-import org.lwjgl.opengl.GL11
+import mods.eln.client.gl.GL11
 import java.awt.Color
 import java.io.DataInputStream
 import java.io.DataOutputStream

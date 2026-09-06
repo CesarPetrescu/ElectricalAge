@@ -11,7 +11,7 @@ import net.minecraft.world.Container
 import net.minecraft.nbt.ListTag
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.network.play.server.SPacketCustomPayload
-import org.lwjgl.opengl.GL11
+import mods.eln.client.gl.GL11
 import io.netty.buffer.Unpooled
 import net.minecraft.network.FriendlyByteBuf
 import net.minecraft.core.NonNullList
@@ -803,7 +803,7 @@ object Utils {
         }
         val s = name.lowercase()
         for (itemstack in tempList) {
-            // String s1 = $1.getHoverName();
+            // String s1 = itemstack.getHoverName();
             if (itemstack!!.displayName.lowercase().contains(s)) {
                 list.add(itemstack)
             }
@@ -1218,7 +1218,7 @@ object Utils {
     }
 
     fun isWrench(stack: ItemStack): Boolean {
-        return areSame(stack, Eln.wrenchItemStack) || $1.hoverName.lowercase().contains("wrench")
+        return areSame(stack, Eln.wrenchItemStack) || stack.hoverName.lowercase().contains("wrench")
     }
 
     @JvmStatic

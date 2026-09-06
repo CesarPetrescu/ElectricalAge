@@ -6,7 +6,7 @@ import net.minecraft.nbt.CompoundTag
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.phys.Vec3
 import net.minecraft.core.Direction as EnumFacing
-import org.lwjgl.opengl.GL11
+import mods.eln.client.gl.GL11
 
 /**
  * Represents the 6 possible directions along the axis of a block.

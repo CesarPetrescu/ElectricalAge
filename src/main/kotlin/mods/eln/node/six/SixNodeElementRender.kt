@@ -24,7 +24,7 @@ import net.minecraft.client.gui.screens.Screen
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.Container
 import net.minecraft.world.phys.AABB
-import org.lwjgl.opengl.GL11
+import mods.eln.client.gl.GL11
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
 import java.io.DataOutputStream

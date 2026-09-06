@@ -9,7 +9,7 @@ import mods.eln.node.transparent.TransparentNodeEntity
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.level.Level
-import org.lwjgl.opengl.GL11
+import mods.eln.client.gl.GL11
 import java.io.DataInputStream
 import java.io.IOException
 

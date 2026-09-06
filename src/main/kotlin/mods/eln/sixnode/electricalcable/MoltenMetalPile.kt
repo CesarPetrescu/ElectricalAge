@@ -18,7 +18,7 @@ import mods.eln.node.six.SixNodeEntity
 import net.minecraft.client.Minecraft
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
-import org.lwjgl.opengl.GL11
+import mods.eln.client.gl.GL11
 
 class MoltenMetalPileDescriptor(
     name: String,

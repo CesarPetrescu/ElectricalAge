@@ -9,7 +9,7 @@ import net.minecraft.world.level.block.RenderShape
 
 class SixNodeCacheStd : ISixNodeCache {
     override fun accept(stack: ItemStack): Boolean {
-        Utils.println("Testing item ${$1.hoverName} for blockiness")
+        Utils.println("Testing item ${stack.hoverName} for blockiness")
         val b = Block.getBlockFromItem(stack.item) ?: return false
         if (b is BlockContainer) return false
         // 1.8+: the integer render types (0 cube, 31 logs, 39 quartz, 59 chisel) are all baked

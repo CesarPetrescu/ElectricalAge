@@ -206,7 +206,7 @@ class WireSnipsGui(player: Player) : GuiContainerEln(WireSnipsContainer(player))
             drawString(8, 104, tr("Input must be a utility wire"))
             return
         }
-        drawString(8, 104, $1.hoverName)
+        drawString(8, 104, stack.hoverName)
         drawString(8, 116, tr("Remaining: %1$ m", Utils.plotValue(descriptor.getRemainingLengthMeters(stack))))
     }
 }

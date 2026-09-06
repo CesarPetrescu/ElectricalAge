@@ -12,7 +12,7 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.resources.ResourceLocation
 import mods.eln.client.itemrender.IItemRenderer
-import org.lwjgl.opengl.GL11
+import mods.eln.client.gl.GL11
 import mods.eln.misc.isNothing
 
 class BrushDescriptor(name: String): GenericItemUsingDamageDescriptor(name) {

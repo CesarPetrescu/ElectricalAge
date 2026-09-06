@@ -5,7 +5,7 @@ import mods.eln.misc.Utils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.nbt.CompoundTag;
-import org.lwjgl.opengl.GL11;
+import mods.eln.client.gl.GL11;
 
 public class DataLogs implements INBTTReady {
 

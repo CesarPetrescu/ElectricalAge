@@ -29,7 +29,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu
 import net.minecraft.world.Container
 import net.minecraft.world.item.ItemStack
 import net.minecraft.nbt.CompoundTag
-import org.lwjgl.opengl.GL11
+import mods.eln.client.gl.GL11
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.util.*
@@ -308,7 +308,7 @@ class TurbineElement(node: TransparentNode, desc_: TransparentNodeDescriptor) :
                 lifeLeftH < 1.0  -> "<1h"
                 else             -> String.format("%.1fh", lifeLeftH)
             }
-            info[tr("Blade")] = $1.hoverName
+            info[tr("Blade")] = bladeStack.hoverName
             info[tr("Life Left")] = lifeLeftStr
         } else {
             info[tr("Blade")] = tr("None")

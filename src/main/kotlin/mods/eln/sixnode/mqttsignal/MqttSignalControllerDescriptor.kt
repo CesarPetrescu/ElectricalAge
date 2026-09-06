@@ -12,7 +12,7 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
 import mods.eln.client.itemrender.IItemRenderer.ItemRendererHelper
-import org.lwjgl.opengl.GL11
+import mods.eln.client.gl.GL11
 
 class MqttSignalControllerDescriptor(name: String?, private val obj: Obj3D?) :
     SixNodeDescriptor(name, MqttSignalControllerElement::class.java, MqttSignalControllerRender::class.java) {

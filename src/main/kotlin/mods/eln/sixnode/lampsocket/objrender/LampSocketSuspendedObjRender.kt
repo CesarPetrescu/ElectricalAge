@@ -6,7 +6,7 @@ import mods.eln.misc.UtilsClient
 import mods.eln.sixnode.lampsocket.LampSocketDescriptor
 import mods.eln.sixnode.lampsocket.LampSocketRender
 import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
-import org.lwjgl.opengl.GL11
+import mods.eln.client.gl.GL11
 
 class LampSocketSuspendedObjRender(obj: Obj3D, val onOffModel: Boolean, val length: Int, val canSwing: Boolean) : ILampSocketObjRender {
 

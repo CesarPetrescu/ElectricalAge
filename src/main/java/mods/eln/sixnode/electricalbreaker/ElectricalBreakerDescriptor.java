@@ -13,13 +13,13 @@ import mods.eln.sixnode.genericcable.GenericCableDescriptor;
 import mods.eln.wiki.Data;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.RenderHelper;
+import mods.eln.client.gl.RenderHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.opengl.GL11;
+import mods.eln.client.gl.GL11;
 
 import java.util.Collections;
 import java.util.List;

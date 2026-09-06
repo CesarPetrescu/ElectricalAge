@@ -10,7 +10,7 @@ import mods.eln.node.six.SixNodeElementRender;
 import mods.eln.node.six.SixNodeEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.opengl.GL11;
+import mods.eln.client.gl.GL11;
 
 public class Rs485CableRender extends SixNodeElementRender {
 

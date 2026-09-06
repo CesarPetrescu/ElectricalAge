@@ -320,7 +320,7 @@ class LampSocketElement(sixNode: SixNode, side: Direction, sixNodeDescriptor: Si
         info[I18N.tr("Power Consumption")] = plotPower("", electricalLoad.voltage.pow(2) / lampResistor.resistance)
 
         val lampStack = inventory.getItem(LampSocketContainer.LAMP_SLOT_ID)
-        if (!lampStack.isNothing()) info[I18N.tr("Bulb")] = $1.hoverName
+        if (!lampStack.isNothing()) info[I18N.tr("Bulb")] = lampStack.hoverName
         else info[I18N.tr("Bulb")] = I18N.tr("None")
 
         if (Eln.config.getBooleanOrElse("ui.waila.easyMode", false)) {

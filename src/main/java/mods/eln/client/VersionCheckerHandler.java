@@ -60,11 +60,11 @@ public class VersionCheckerHandler {
 
         // Print the current version when the client start a map
         if (Eln.config.getBooleanOrElse("updates.versionCheck.enabled", true)) {
-            //m.player.sendMessage(Component.$1(Version.printColor()));
+            //m.player.sendMessage(Component.literal(Version.printColor()));
             System.out.println(Version.printColor());
             String elnVers = "Electrical Age";
-            m.player.sendMessage(Component.$1(elnVers));
-            m.player.sendMessage(Component.$1(versionMsg));
+            m.player.sendMessage(Component.literal(elnVers));
+            m.player.sendMessage(Component.literal(versionMsg));
         }
 
         NeoForge.EVENT_BUS.unregister(this);

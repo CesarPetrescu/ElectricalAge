@@ -15,7 +15,7 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.inventory.AbstractContainerMenu
 import net.minecraft.world.Container
 import net.minecraft.world.item.ItemStack
-import org.lwjgl.opengl.GL11
+import mods.eln.client.gl.GL11
 import mods.eln.misc.xCoord
 import mods.eln.misc.yCoord
 import mods.eln.misc.zCoord

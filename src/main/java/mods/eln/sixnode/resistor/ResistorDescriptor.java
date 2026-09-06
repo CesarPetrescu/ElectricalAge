@@ -10,7 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import mods.eln.client.itemrender.IItemRenderer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.opengl.GL11;
+import mods.eln.client.gl.GL11;
 
 import java.util.List;
 

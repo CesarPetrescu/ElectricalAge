@@ -10,7 +10,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.opengl.*;
+import mods.eln.client.gl.GL11;
 
 import java.io.DataInputStream;
 import java.io.IOException;

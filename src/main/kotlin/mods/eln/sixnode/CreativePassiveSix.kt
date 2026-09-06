@@ -36,7 +36,7 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.nbt.CompoundTag
 import mods.eln.client.itemrender.IItemRenderer
-import org.lwjgl.opengl.GL11
+import mods.eln.client.gl.GL11
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
 import java.io.DataOutputStream

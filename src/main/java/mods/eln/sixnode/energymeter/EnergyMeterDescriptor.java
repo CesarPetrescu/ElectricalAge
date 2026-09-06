@@ -10,7 +10,7 @@ import mods.eln.node.six.SixNodeElementRender;
 import mods.eln.wiki.Data;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import org.lwjgl.opengl.GL11;
+import mods.eln.client.gl.GL11;
 
 public class EnergyMeterDescriptor extends SixNodeDescriptor {
 

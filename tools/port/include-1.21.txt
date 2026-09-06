@@ -1,27 +1,30 @@
 # Files the 1.21.1 build compiles (Ant patterns, relative to src/main/java and src/main/kotlin).
-# Grow this list as files are ported; `./gradlew portStatus` prints the count.
-mods/eln/Eln.java
-mods/eln/registration/ElnRegistry.kt
-mods/eln/generic/IDescriptorItem.java
-mods/eln/generic/DescriptorItem.java
-mods/eln/generic/DescriptorBlockItem.java
-mods/eln/generic/GenericItemUsingDamage.java
-mods/eln/generic/GenericItemUsingDamageDescriptor.kt
-mods/eln/generic/GenericItemUsingDamageDescriptorWithComment.java
-mods/eln/generic/GenericItemBlockUsingDamage.java
-mods/eln/generic/GenericItemBlockUsingDamageDescriptor.java
-mods/eln/generic/SharedItem.java
-mods/eln/generic/GenericCreativeTab.java
-mods/eln/generic/CreativeTabPopulator.java
-mods/eln/client/itemrender/LegacyItemRender.kt
-mods/eln/misc/VoltageLevelColor.kt
-mods/eln/misc/RealisticEnum.kt
-mods/eln/misc/Tooltips.kt
-mods/eln/i18n/I18N.kt
-mods/eln/wiki/Data.java
-mods/eln/ore/OreDescriptor.kt
-mods/eln/ore/OreBlock.kt
-mods/eln/ore/OreItem.kt
-mods/eln/datagen/ElnDataGenerators.kt
-mods/eln/devtest/DevHooks.java
-mods/eln/devtest/ClientDevHooks.java
+# Lines starting with "!" are excludes. Grow this as files are ported; `./gradlew portStatus` prints the count.
+mods/eln/**
+# --- not yet ported: GUI layer and the per-element screens (phase 3)
+!mods/eln/gui/**
+!mods/eln/**/*Gui.java
+!mods/eln/**/*Gui.kt
+!mods/eln/**/*GuiDraw.java
+!mods/eln/**/*GuiDraw.kt
+!mods/eln/wiki/Gui*.java
+!mods/eln/GuiHandler.java
+# --- not yet ported: packets and the sided proxies (phase 2)
+!mods/eln/packets/**
+!mods/eln/PacketHandler.kt
+!mods/eln/CommonProxy.java
+!mods/eln/client/ClientProxy.java
+!mods/eln/client/ClientPacketHandler.java
+# --- not yet ported: content registration and recipes (phase 2)
+!mods/eln/craft/**
+!mods/eln/registration/ItemRegistration.kt
+!mods/eln/registration/SixNodeRegistration.kt
+!mods/eln/registration/TransparentNodeRegistration.kt
+!mods/eln/registration/SingleNodeRegistration.kt
+!mods/eln/fluid/FluidRegistration.kt
+# --- not yet ported: commands (brigadier) and cross-mod integrations (phase 4); IC2/OC are gone on 1.21
+!mods/eln/server/console/**
+!mods/eln/integration/**
+!mods/eln/transparentnode/computercraftio/**
+!mods/eln/simplenode/energyconverter/*Ic2*
+!mods/eln/simplenode/energyconverter/*Oc*

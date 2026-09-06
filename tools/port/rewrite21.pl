@@ -187,6 +187,11 @@ my @classes = (
     ['net.minecraftforge.client.event.GuiOpenEvent',      'net.neoforged.neoforge.client.event.ScreenEvent.Opening', 'GuiOpenEvent',    'Opening'],
     ['net.minecraftforge.fml.relauncher.ReflectionHelper','net.neoforged.fml.util.ObfuscationReflectionHelper', 'ReflectionHelper',   'ObfuscationReflectionHelper'],
     ['net.minecraftforge.fml.common.Loader',              'net.neoforged.fml.ModList',                            'Loader',             'ModList'],
+    # fixed-function GL -> the emulator in mods.eln.client.gl (same names, same constants)
+    ['org.lwjgl.opengl.GL11',                             'mods.eln.client.gl.GL11',                              undef, undef],
+    ['org.lwjgl.opengl.GL12',                             'mods.eln.client.gl.GL12',                              undef, undef],
+    ['net.minecraft.client.renderer.RenderHelper',        'mods.eln.client.gl.RenderHelper',                      undef, undef],
+    ['net.minecraft.client.renderer.OpenGlHelper',        'mods.eln.client.gl.OpenGlHelper',                      undef, undef],
 );
 
 # --- member renames, only when dot-qualified (receiver.name) -------------------------------
@@ -409,7 +414,8 @@ for my $file (@ARGV) {
         if ($l =~ $nbt_any) {
             for my $r (@nbt_re) { my ($re, $to) = @$r; $l =~ s/$re/$1$2$to/g; }
         }
-        for my $r (@exprs) { my ($from, $to) = @$r; $l =~ s/$from/$to/g; }
+        # /ee so that "$1" in a replacement string is the capture, not the two characters
+        for my $r (@exprs) { my ($from, $to) = @$r; $l =~ s/$from/"\"$to\""/gee; }
         # definitions: "override fun markDirty(" / "public void markDirty(" -> the 1.21 interface name
         if ($l =~ /\b(?:fun|void|int|boolean|ItemStack|String|IntArray)\s+\w+\s*\(/ ) {
             for my $from (keys %defs) {

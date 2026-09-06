@@ -8,7 +8,7 @@ import mods.eln.node.NodeBlockEntity
 import mods.eln.node.six.SixNodeElementRender
 import mods.eln.node.six.SixNodeEntity
 import net.minecraft.world.level.block.entity.BlockEntity
-import org.lwjgl.opengl.GL11
+import mods.eln.client.gl.GL11
 import mods.eln.misc.getBlock
 import mods.eln.misc.getTileEntity
 import mods.eln.misc.xCoord

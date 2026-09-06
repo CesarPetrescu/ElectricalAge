@@ -2,7 +2,7 @@ package mods.eln.misc
 
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.world.phys.Vec3
-import org.lwjgl.opengl.GL11
+import mods.eln.client.gl.GL11
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException

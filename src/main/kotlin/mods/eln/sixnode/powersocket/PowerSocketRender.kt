@@ -12,7 +12,7 @@ import mods.eln.node.six.SixNodeElementRender
 import mods.eln.node.six.SixNodeEntity
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.world.entity.player.Player
-import org.lwjgl.opengl.GL11
+import mods.eln.client.gl.GL11
 import java.io.DataInputStream
 import java.io.IOException
 

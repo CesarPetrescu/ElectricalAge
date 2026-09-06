@@ -12,8 +12,8 @@ import mods.eln.sound.LoopedSound
 import net.minecraft.world.item.ItemStack
 import net.minecraft.nbt.CompoundTag
 import mods.eln.client.itemrender.IItemRenderer
-import org.lwjgl.opengl.GL11
-import org.lwjgl.opengl.GL12
+import mods.eln.client.gl.GL11
+import mods.eln.client.gl.GL12
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import kotlin.reflect.KClass

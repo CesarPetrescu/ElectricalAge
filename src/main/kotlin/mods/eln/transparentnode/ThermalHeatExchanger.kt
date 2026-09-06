@@ -32,7 +32,7 @@ import net.minecraftforge.fluids.Fluid
 import net.neoforged.neoforge.fluids.FluidStack
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank
 import mods.eln.fluid.ISidedFluidHandler
-import org.lwjgl.opengl.GL11
+import mods.eln.client.gl.GL11
 import java.lang.Math.ceil
 import java.lang.Math.min
 

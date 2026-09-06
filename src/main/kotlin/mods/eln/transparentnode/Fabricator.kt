@@ -16,7 +16,7 @@ import mods.eln.sim.mna.component.Resistor
 import mods.eln.sim.mna.misc.MnaConst
 import mods.eln.sim.nbt.NbtElectricalLoad
 import net.minecraft.client.gui.screens.Screen
-import net.minecraft.client.renderer.RenderHelper
+import mods.eln.client.gl.RenderHelper
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.inventory.AbstractContainerMenu
 import net.minecraft.world.Container
@@ -24,7 +24,7 @@ import net.minecraft.world.inventory.Slot
 import net.minecraft.world.item.ItemStack
 import net.minecraft.nbt.CompoundTag
 import mods.eln.client.itemrender.IItemRenderer
-import org.lwjgl.opengl.GL11
+import mods.eln.client.gl.GL11
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException

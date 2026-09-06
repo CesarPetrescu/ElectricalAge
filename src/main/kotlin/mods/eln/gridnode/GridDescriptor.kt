@@ -11,7 +11,7 @@ import mods.eln.client.itemrender.IItemRenderer
 
 import java.util.ArrayList
 
-import org.lwjgl.opengl.GL11.*
+import mods.eln.client.gl.GL11.*
 import mods.eln.misc.xCoord
 import mods.eln.misc.yCoord
 import mods.eln.misc.zCoord

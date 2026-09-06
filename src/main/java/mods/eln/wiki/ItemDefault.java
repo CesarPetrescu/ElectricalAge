@@ -51,7 +51,7 @@ public class ItemDefault extends Default {
 
             self = new GuiItemStack(6, y, stack, helper);
             extender.add(self);
-            extender.add(new GuiLabel(6 + 21, y + 3, $1.getHoverName()));
+            extender.add(new GuiLabel(6 + 21, y + 3, stack.getHoverName()));
             y += 24;
 
             if (plugIn != null) y = plugIn.top(y, extender, stack);

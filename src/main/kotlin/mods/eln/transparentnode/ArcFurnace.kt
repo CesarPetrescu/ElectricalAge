@@ -22,7 +22,7 @@ import net.minecraft.world.Container
 import net.minecraft.world.inventory.Slot
 import net.minecraft.world.item.ItemStack
 import mods.eln.client.itemrender.IItemRenderer
-import org.lwjgl.opengl.GL11
+import mods.eln.client.gl.GL11
 
 class ArcFurnaceDescriptor(val name: String, val obj: Obj3D): TransparentNodeDescriptor(name, ArcFurnaceElement::class.java, ArcFurnaceRender::class.java) {
     private var main: Obj3DPart? = null

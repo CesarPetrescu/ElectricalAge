@@ -4,7 +4,7 @@ import mods.eln.misc.Direction.Companion.fromInt
 import mods.eln.misc.UtilsClient.glDefaultColor
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer
-import org.lwjgl.opengl.GL11
+import mods.eln.client.gl.GL11
 
 class SixNodeRender : BlockEntityRenderer<SixNodeEntity>() {
     override fun render(entity: SixNodeEntity, x: Double, y: Double, z: Double, partialTicks: Float, destroyStage: Int, alpha: Float) {

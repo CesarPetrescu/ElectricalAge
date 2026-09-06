@@ -31,7 +31,7 @@ class ElectricMinecartItem(name: String) : GenericItemUsingDamageDescriptor(name
                     (z.toFloat() + 0.5f).toDouble()
                 )
                 if (stack.hasDisplayName()) {
-                    minecart.customNameTag = $1.hoverName
+                    minecart.customNameTag = stack.hoverName
                 }
                 world.addFreshEntity(minecart)
             }

@@ -18,7 +18,7 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.resources.ResourceLocation
 import mods.eln.client.itemrender.IItemRenderer
-import org.lwjgl.opengl.GL11
+import mods.eln.client.gl.GL11
 import java.util.HashMap
 
 class PortableNaNDescriptor(name: String, renderIn: CableRenderDescriptor): GenericCableDescriptor(name, PortableNaNElement::class.java, PortableNaNRender::class.java) {

@@ -5,7 +5,7 @@ import mods.eln.misc.Obj3D.Obj3DPart;
 import mods.eln.sim.ThermalLoadInitializer;
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor;
 import net.minecraft.world.entity.item.ItemEntity;
-import org.lwjgl.opengl.GL11;
+import mods.eln.client.gl.GL11;
 
 public class CompressorDescriptor extends ElectricalMachineDescriptor {
     private float tyOn;

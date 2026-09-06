@@ -51,7 +51,7 @@ class SixNodeWailaProvider : IWailaDataProvider {
 
     override fun getWailaHead(itemStack: ItemStack?, currenttip: MutableList<String>, accessor: IWailaDataAccessor,
                               config: IWailaConfigHandler?): MutableList<String> = if (!itemStack.isNothing()) {
-        mutableListOf("${SpecialChars.WHITE}${$1.hoverName}")
+        mutableListOf("${SpecialChars.WHITE}${itemStack.hoverName}")
     } else {
         currenttip
     }

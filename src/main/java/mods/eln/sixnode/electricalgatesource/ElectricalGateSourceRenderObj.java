@@ -5,7 +5,7 @@ import mods.eln.misc.Obj3D.Obj3DPart;
 import mods.eln.misc.UtilsClient;
 import mods.eln.sixnode.electricalgatesource.ElectricalGateSourceDescriptor.ObjType;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import org.lwjgl.opengl.GL11;
+import mods.eln.client.gl.GL11;
 
 import java.awt.*;
 

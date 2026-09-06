@@ -1,7 +1,7 @@
 package mods.eln.item;
 
 import net.minecraft.world.entity.Entity;
-import org.lwjgl.opengl.GL11;
+import mods.eln.client.gl.GL11;
 
 public class EntitySensorFilterDescriptor extends GenericItemUsingDamageDescriptorUpgrade {
 

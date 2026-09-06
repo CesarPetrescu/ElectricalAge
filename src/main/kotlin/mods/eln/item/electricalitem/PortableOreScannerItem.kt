@@ -22,7 +22,7 @@ import net.minecraft.util.Mth
 import net.minecraft.world.level.Level
 import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
 import mods.eln.client.itemrender.IItemRenderer.ItemRendererHelper
-import org.lwjgl.opengl.GL11
+import mods.eln.client.gl.GL11
 import mods.eln.misc.isNothing
 
 @ExperimentalUnsignedTypes

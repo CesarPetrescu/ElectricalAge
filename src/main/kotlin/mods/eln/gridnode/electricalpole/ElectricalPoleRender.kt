@@ -11,7 +11,7 @@ import mods.eln.node.transparent.TransparentNodeEntity
 import mods.eln.sound.LoopedSound
 import net.minecraft.client.resources.sounds.SoundInstance
 import net.minecraft.world.phys.Vec3
-import org.lwjgl.opengl.GL11
+import mods.eln.client.gl.GL11
 
 import java.io.DataInputStream
 import java.io.IOException

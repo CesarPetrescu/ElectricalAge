@@ -6,7 +6,7 @@ import mods.eln.misc.UtilsClient;
 import mods.eln.misc.VoltageLevelColor;
 import mods.eln.node.six.SixNodeDescriptor;
 import net.minecraft.world.item.ItemStack;
-import org.lwjgl.opengl.GL11;
+import mods.eln.client.gl.GL11;
 
 public class TutorialSignDescriptor extends SixNodeDescriptor {
 
