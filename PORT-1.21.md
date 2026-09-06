@@ -8,18 +8,26 @@ JSON) and because its `McBridge`/boundary-class discipline is what keeps this po
 
 ## Where it stands
 
-Phases 0 to 3 are done; phase 4 (cross-mod integrations) is open. What that means, verifiably:
+Phases 0 to 3 are done and Jade from phase 4; CC:Tweaked and the biome data are open. What that
+means, verifiably:
 
-    ./gradlew portStatus        454 java + 423 kotlin files included of 897 (the 20 left out are listed below)
-    ./gradlew test              301 tests, through NeoForge's JUnit launcher (the mod is constructed first)
+    ./gradlew portStatus        454 java + 424 kotlin files included of 893 (the 15 left out are listed below)
+    ./gradlew test              303 tests, through NeoForge's JUnit launcher (the mod is constructed first)
     ./gradlew runData           recipes, tags, loot, ore worldgen, ~600 item models -> src/generated/resources
     ./gradlew runServer -PsmokeTest=place    a 50 V source, cables, a 100 Ohm resistor, a ground and a 48 V
                                             macerator placed through the item-use path; every meter reads 500 mA;
-                                            /eln ls, version and a zone command run on the console
-    ./gradlew runServer -PsmokeTest=verify   the same readings after a restart against the saved world
+                                            a 120 V source, an MV cable and a classic lamp socket with a bulb:
+                                            the socket's block light (13) reaches the light engine and the
+                                            projected light block carries the same level; /eln ls, version and
+                                            a zone command run on the console
+    ./gradlew runServer -PsmokeTest=verify   the same readings, light included, after a restart against the saved world
+    ./gradlew runServer -PsmokeTest=all      every six-node and transparent-node descriptor placed on a grid
+                                            (388 of 401 take; the rest want a wall, a ceiling or water), 414 nodes
+                                            alive after 80 ticks, no exception
     DISPLAY=:99 ./gradlew runClient -PsmokeClient=smoke   joins a copy of that world: the circuit, the macerator,
-                                            the items (hotbar, hand, floor, creative tab), the resistor GUI and
-                                            the macerator's container GUI all draw; docs/port/smoke-*-1.21.png
+                                            the lit lamp by day and by night, the items (hotbar, hand in first and
+                                            third person, floor, creative tab), the resistor GUI, the macerator's
+                                            container GUI and the Jade overlay all draw; docs/port/smoke-*-1.21.png
 
 `tools/port/headless.md` has the X server recipe, the world copy and the greps that matter.
 
@@ -42,11 +50,14 @@ Phases 0 to 3 are done; phase 4 (cross-mod integrations) is open. What that mean
 | Textures | Kept under `textures/items/`, `textures/blocks/`, `textures/voltages/` (1.12 layout). 1.19.3+ only stitches the directories listed in `atlases/blocks.json`, so `assets/minecraft/atlases/blocks.json` adds those three sources. Resource paths are `[a-z0-9/._-]`: the registrations still name sprites the 1.7.10 way and are lowercased where they are built (cable sprites, model textures), `festive items` is `festive_items`, `(noswing)` is `_noswing`. |
 | Rendering | A fixed-function OpenGL emulator (`mods.eln.client.gl`: `GL11`, `FixedFunction`, display lists) on top of 1.21's `PoseStack`/`VertexConsumer`/`RenderSystem`, so the ~150 `draw()` bodies keep their shape. Frame-level `FixedFunction.begin(pose, buffers, light, overlay)`/`beginGui(graphics)`/`finish()`; `SixNodeRender`/`TransparentNodeRender` are `BlockEntityRenderer`s wrapping it. Node blocks have no JSON model (invisible blockstate); the slab/box shapes come from the node. |
 | Hit sides | 1.7.10's ray trace named the block face an element sits on; 1.21's names the face of the element's slab that was hit (a floor element's top is UP). `SixNodeBlock.elementSide` maps a hit back to the element whose slab holds it, for activation and breaking. |
+| Node light | A node's light is live data, not a state property. The server's light engine runs off the main thread (where `Level.getBlockEntity` is null) and lights chunks straight from disk before their entities exist, so the node blocks declare `hasDynamicLightEmission` and read the chunk's `AuxiliaryLightManager`; the node writes its light there when it changes, the client writes what the publish frame carries, and a node's block entity re-syncs the record when its chunk loads (nodes simulate while unloaded). The record is saved and sent with the chunk. The invisible light block a lamp projects keeps its level in a state property (`light`). |
+| Node lighting when drawn | 1.7.10's `NodeBlock` set `useNeighborBrightness`: a tile entity was lit by the brightest of its six neighbours. The dispatcher lights a block entity with its own position's light, which inside a machine that blocks light is next to none, so the two node renderers take the neighbour maximum themselves (`NodeRenderSupport.neighbourLight`). |
 | Node state to clients | The node's publish frame rides in the block entity's chunk-sync tag (`getUpdateTag`/`handleUpdateTag`, `PublishSync`), the way 1.7.10's description packet delivered it; later changes go over the mod's channel (`ElnNetwork.RawPayload`, the unchanged byte protocol) to the players watching the chunk. |
 | GUIs | One `MenuType`; the four numbers of the 1.7.10 gui handler travel in the menu's buffer. Element screens build their own container (the 1.7.10 design): `BasicContainer` reads the vanilla-assigned id from `GuiHandler.pendingContainerId`. Container-less screens open through the byte protocol as before. |
 | Capabilities | `RegisterCapabilitiesEvent`: item handlers on the transparent node entities (1.7.10's ISidedInventory), the side-aware fluid handler through a per-side adapter (`SidedFluidAdapter`), the energy exporter's `IEnergyStorage`. IC2 and OpenComputers have no 1.21 releases; their exporters are gone. |
 | Fluids | `hot_water`/`cold_water` are a `FluidType`, a still/flowing `BaseFlowingFluid` pair, a `LiquidBlock` and a bucket item; sprites and tint through `IClientFluidTypeExtensions`. |
 | Damage, advancements, saves | Damage types are data (`data/eln/damage_type/`), advancements are data (`data/eln/advancement/`), the per-dimension node/ghost saves are `SavedData` factories; the `electricalAgeWorld<dim>.dat` file format is unchanged. |
+| Overlay | Jade (`maven.modrinth:jade`, optional at runtime): `ElnJadePlugin` registers block component and icon providers for the six-node, transparent-node and ghost blocks. The data still travels the mod's own way (`WailaCache` request packets); the providers only read the cache, as the 1.12 Hwyla providers did. A six-node's tooltip and icon are the element under the cursor (`SixNodeBlock.elementSide`); a ghost block answers for the machine it belongs to. |
 | Console | `/eln <command> [args]` is one Brigadier literal with a greedy argument; the sub-commands parse their own words, permissions are decided per sub-command, tab completion comes from each command's list. |
 | Tests | ModDevGradle `unitTest` hooks the test task onto NeoForge's JUnit launcher: the mod is constructed and the registries bootstrapped before any test runs (plain `Bootstrap.bootStrap()` cannot work under NeoForge). JUnit 4 tests run on the platform through the vintage engine; tests that read repository files resolve them against `eln.projectDir`. |
 | World compat | None (fresh worlds only); nothing from 1.7.10/1.12.2 saves is migrated. |
@@ -68,11 +79,17 @@ Phases 0 to 3 are done; phase 4 (cross-mod integrations) is open. What that mean
 - The ore scanner's default factors name the flattened ores and the deepslate variants; the 1.7.10
   `Eln:Eln.Ore:<meta>` spelling in an old config still resolves.
 - Analytics use the JDK HTTP client (Minecraft no longer ships Apache HttpClient); same requests.
+- **Empty slots are `ItemStack.EMPTY`.** `Container.getItem` has not returned null since 1.11, so the
+  1.7.10 null checks on slot contents never fired: lamp sockets and floodlights cast EMPTY to a lamp
+  descriptor, hubs looked up the cable of an empty slot, the wire machines and the fabricator took an
+  empty output slot for a full one, inventory insertion never found a free slot. All test `isEmpty` now.
+- **Element inventories save their items.** `ItemStack.save(provider, prefix)` returns a copy since
+  1.20.5; the `writeToNBT(tag)` bridge returned it and every caller ignored it, so a saved slot carried
+  only its index and every machine came back empty after a restart. The bridge merges into the tag
+  (`InventoryNbtRoundTripTest`).
 
-## Left out (the 20 files) and open items
+## Left out (the 15 files) and open items
 
-- `integration/waila/*Provider.kt`, `WailaIntegration.kt`: Waila is Jade on 1.21 (phase 4). The data
-  carriers the packets share stay in.
 - `transparentnode/computercraftio/**`, `simplenode/computerprobe/**`, `energyconverter/*Ic2*`, `*Oc*`:
   ComputerCraft/OpenComputers peripherals and IC2/OC energy exporters; CC:Tweaked is a phase-4 candidate,
   IC2 and OC do not exist on 1.21.
@@ -80,8 +97,12 @@ Phases 0 to 3 are done; phase 4 (cross-mod integrations) is open. What that mean
   `generic/GenericItemBlock.java`: upstream scaffolding nothing registers or references.
 - `biomes.json` still keys the 1.7.10 biome names: 18 of the 68 profiles match 1.21 ids, the other 50
   biomes fall back to Plains (the startup audit lists them). A data update, not code.
-- The in-hand and on-ground display transforms of node items are vanilla's block transforms; a visual
-  pass per family (six-node models lie on a face, transparent nodes stand) is still to do.
+- The in-hand and on-ground display transforms of node items are vanilla's block transforms
+  (`smoke-hand-*-1.21.png`: a machine reads as a block in hand and on the floor, a cable as a rod);
+  the 1.7.10 per-family hand tweaks are not reproduced.
+- Of the 401 placeable descriptors, `-PsmokeTest=all` cannot place 13 on a flat grid (the wall-mounted
+  sensors and sockets, the suspended lamp sockets, the water turbine, the radial motor, the string
+  lights, the auto miner's ghost footprint); nothing is known to be wrong with them.
 - The IC2-era `Eln.cfg` dictionary names (`runtime.dictionary.*`) still drive which `c:` tag a recipe
   wants; nothing on 1.21 fills `c:dusts/eln_tungsten` but this mod.
 - Sound: no audio device in the headless runs, so the looped sounds are untested past construction.
@@ -96,7 +117,7 @@ Phases 0 to 3 are done; phase 4 (cross-mod integrations) is open. What that mean
 2. Content registration, recipes/tags/worldgen through datagen, config, SavedData, networking,
    entities, sounds, fluids, capabilities, the console -> the dedicated server runs a circuit and
    keeps it across a restart. **Done** (`a2383fba`, `e3657966`, `e3e79e85`, `63c90815`).
-3. Rendering: the emulator, the block entity renderers, the item renderer, the GUI layer. **Done**
-   for everything the smoke world exercises (`4caf850d`, `5fb41035`, `ba2ed33c`); the per-family
-   hand transforms and a lamp/light-block check remain.
-4. Jade, CC:Tweaked, the biome data, a GameTest wrapper around the smoke test.
+3. Rendering: the emulator, the block entity renderers, the item renderer, the GUI layer, the node
+   light and the light block, the renderers' lighting. **Done** (`4caf850d`, `5fb41035`, `ba2ed33c`,
+   `c0bfc2f7`, `37c4936a`).
+4. Jade **done** (`ea4440f5`). CC:Tweaked, the biome data, a GameTest wrapper around the smoke test remain.

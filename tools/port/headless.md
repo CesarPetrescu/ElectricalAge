@@ -66,18 +66,26 @@ OpenAL device" and carries on; everything else is real.
 
 ## The smoke tests
 
-The dedicated server places a circuit through the real item-use path (a FakePlayer), reads the
-meters, and reads them again after a restart against the saved world:
+The dedicated server places a circuit and a lamp through the real item-use path (a FakePlayer),
+reads the meters and the light, and reads them again after a restart against the saved world:
 
     ./gradlew runServer -PsmokeTest=place      # SMOKE PASS ... energised=true current flowing=true
+                                               # SMOKE PASS lamp: node light=13 aux=13 block light at socket=13; ...
     ./gradlew runServer -PsmokeTest=verify     # the same after the restart; also runs /eln on the console
+    ./gradlew runServer -PsmokeTest=all        # place, plus every placeable descriptor on a grid north of it:
+                                               # SMOKE ALL placed 388 of 401 descriptors / 414 nodes alive after 80 ticks
 
-The ore count in the `place` log is only meaningful on normal terrain (`level-type=minecraft:normal`
-in `run/server/server.properties`); on the flat dev world it says SKIP.
+The chunks under the test are force-loaded by the test (nobody is online, and a chunk that is only
+touched by a block access drops out a tick later, taking its ticking block entities with it). The
+ore count in the `place` log is only meaningful on normal terrain (`level-type=minecraft:normal`
+in `run/server/server.properties`); on the flat dev world it says SKIP. `all` is the run to make
+after touching anything an element does at placement or in its first ticks: an exception in one
+of them stops the server, and the log names the descriptor.
 
-The client joins a copy of that world, flies to the circuit and screenshots the world, a
-third-person view with items on the floor, the resistor GUI, the macerator's container GUI, the
-inventory and an Electrical Age creative tab into `run/client/screenshots/`:
+The client joins a copy of that world, flies to the circuit and screenshots the world by day and
+by midnight (the lamp), a third-person view with items on the floor, the macerator in hand from
+the front and through the player's eyes, a cable in hand, the resistor GUI, the macerator's
+container GUI, the inventory and an Electrical Age creative tab into `run/client/screenshots/`:
 
     cp -r run/server/world run/client/saves/smoke
     DISPLAY=:99 ./gradlew runClient -PsmokeClient=smoke
