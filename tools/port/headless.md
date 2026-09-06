@@ -116,6 +116,28 @@ are the evidence (`docs/port/smoke-*-1.21.png` are the committed ones). Software
 about a minute per run; do not run two game processes at once on a small box, the second Gradle
 daemon and the Kotlin compile daemon together push it into swap.
 
+## The same on GitHub Actions
+
+`.github/workflows/ci.yml` runs all of it on every push and pull request, in three jobs on
+`ubuntu-latest` with Temurin 21 and `gradle/actions/setup-gradle` (the NeoForge, Parchment and
+dependency caches are ~1 GB cold, cached between runs):
+
+- `build`: `./gradlew build` - compiles and runs the unit tests under NeoForge's JUnit launcher,
+  uploads `build/libs/*.jar` and the test reports.
+- `benchmark`: `./gradlew benchmarkTest` and `script/extract_benchmark_stats.py`, results as an
+  artifact.
+- `smoke`: installs `xserver-xorg-video-dummy` + Mesa, starts `Xorg :99` on the dummy config
+  above (`-ac`, so the runner user can connect to a root-owned server), writes the run
+  directories exactly as this page does by hand, then runs `tools/port/smoke.sh`. The screenshots,
+  both `latest.log`s, any crash report and the Xorg log are uploaded whether it passed or not.
+  The X server is checked (`xset q`, `glxinfo -B`) before the game starts: a client without a
+  display loops on NeoForge's early-window prompt instead of failing, and the job would run to
+  its timeout.
+
+`tools/port/env.sh` leaves a `JAVA_HOME`/`GRADLE_USER_HOME` that is already set alone, which is
+what lets `smoke.sh` run unchanged under `setup-java`. Runner budget: the whole suite takes
+20-30 minutes on the 2-core runner (the client is software-rendered); `smoke` is given 90.
+
 ## What to grep for
 
     grep -c 'Missing textures in model' <log>          # atlas / model texture problems
