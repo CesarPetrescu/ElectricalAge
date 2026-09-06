@@ -8,26 +8,28 @@ JSON) and because its `McBridge`/boundary-class discipline is what keeps this po
 
 ## Where it stands
 
-Phases 0 to 3 are done and Jade from phase 4; CC:Tweaked and the biome data are open. What that
-means, verifiably:
+All four phases are done. What that means, verifiably (`tools/port/smoke.sh` runs the three game
+runs in order; each exits 1 on a failed check):
 
-    ./gradlew portStatus        454 java + 424 kotlin files included of 893 (the 15 left out are listed below)
+    ./gradlew portStatus        454 java + 427 kotlin files included of 893 (the 12 left out are listed below)
     ./gradlew test              303 tests, through NeoForge's JUnit launcher (the mod is constructed first)
     ./gradlew runData           recipes, tags, loot, ore worldgen, ~600 item models -> src/generated/resources
     ./gradlew runServer -PsmokeTest=place    a 50 V source, cables, a 100 Ohm resistor, a ground and a 48 V
                                             macerator placed through the item-use path; every meter reads 500 mA;
                                             a 120 V source, an MV cable and a classic lamp socket with a bulb:
                                             the socket's block light (13) reaches the light engine and the
-                                            projected light block carries the same level; /eln ls, version and
-                                            a zone command run on the console
+                                            projected light block carries the same level; the computer probe
+                                            answers CC: Tweaked's capability with all ten Lua methods bound;
+                                            /eln ls, version and a zone command run on the console
     ./gradlew runServer -PsmokeTest=verify   the same readings, light included, after a restart against the saved world
     ./gradlew runServer -PsmokeTest=all      every six-node and transparent-node descriptor placed on a grid
                                             (388 of 401 take; the rest want a wall, a ceiling or water), 414 nodes
                                             alive after 80 ticks, no exception
     DISPLAY=:99 ./gradlew runClient -PsmokeClient=smoke   joins a copy of that world: the circuit, the macerator,
-                                            the lit lamp by day and by night, the items (hotbar, hand in first and
-                                            third person, floor, creative tab), the resistor GUI, the macerator's
-                                            container GUI and the Jade overlay all draw; docs/port/smoke-*-1.21.png
+                                            the lit lamp by day and by night, the descriptor grid from above, the
+                                            items (hotbar, hand in first and third person, floor, creative tab),
+                                            the resistor GUI, the macerator's container GUI and the Jade overlay
+                                            all draw; docs/port/smoke-*-1.21.png
 
 `tools/port/headless.md` has the X server recipe, the world copy and the greps that matter.
 
@@ -58,6 +60,7 @@ means, verifiably:
 | Fluids | `hot_water`/`cold_water` are a `FluidType`, a still/flowing `BaseFlowingFluid` pair, a `LiquidBlock` and a bucket item; sprites and tint through `IClientFluidTypeExtensions`. |
 | Damage, advancements, saves | Damage types are data (`data/eln/damage_type/`), advancements are data (`data/eln/advancement/`), the per-dimension node/ghost saves are `SavedData` factories; the `electricalAgeWorld<dim>.dat` file format is unchanged. |
 | Overlay | Jade (`maven.modrinth:jade`, optional at runtime): `ElnJadePlugin` registers block component and icon providers for the six-node, transparent-node and ghost blocks. The data still travels the mod's own way (`WailaCache` request packets); the providers only read the cache, as the 1.12 Hwyla providers did. A six-node's tooltip and icon are the element under the cursor (`SixNodeBlock.elementSide`); a ghost block answers for the machine it belongs to. |
+| Computers | CC: Tweaked (`cc.tweaked:cc-tweaked-1.21.1-forge`, the NeoForge build; optional at run time, `-PwithoutCc` runs without it): the computer probe's node keeps the callable operations as plain methods and `ComputerProbePeripheral` (`integration/computercraft`) exposes them as `@LuaFunction`s under the 1.7.10 names, served through `PeripheralCapability` from the probe's block entity. Calls run on the server thread. OpenComputers has no 1.21 release; the probe's OC half and the OC/IC2 energy exporters are gone. |
 | Console | `/eln <command> [args]` is one Brigadier literal with a greedy argument; the sub-commands parse their own words, permissions are decided per sub-command, tab completion comes from each command's list. |
 | Tests | ModDevGradle `unitTest` hooks the test task onto NeoForge's JUnit launcher: the mod is constructed and the registries bootstrapped before any test runs (plain `Bootstrap.bootStrap()` cannot work under NeoForge). JUnit 4 tests run on the platform through the vintage engine; tests that read repository files resolve them against `eln.projectDir`. |
 | World compat | None (fresh worlds only); nothing from 1.7.10/1.12.2 saves is migrated. |
@@ -83,16 +86,20 @@ means, verifiably:
   1.7.10 null checks on slot contents never fired: lamp sockets and floodlights cast EMPTY to a lamp
   descriptor, hubs looked up the cable of an empty slot, the wire machines and the fabricator took an
   empty output slot for a full one, inventory insertion never found a free slot. All test `isEmpty` now.
+- **A six-node's collision shape can be asked without a world.** Vanilla does that for path finding
+  (`EmptyBlockGetter`, the origin); the block cast the block entity there and the first mob walking near
+  a six-node crashed the server. No entity now means no body.
+- **The single-node blocks are visible.** The energy exporter and the computer probe pointed at the
+  empty model; they are the textured cubes of 1.7.10 again (generated models from the face textures).
 - **Element inventories save their items.** `ItemStack.save(provider, prefix)` returns a copy since
   1.20.5; the `writeToNBT(tag)` bridge returned it and every caller ignored it, so a saved slot carried
   only its index and every machine came back empty after a restart. The bridge merges into the tag
   (`InventoryNbtRoundTripTest`).
 
-## Left out (the 15 files) and open items
+## Left out (the 12 files) and open items
 
-- `transparentnode/computercraftio/**`, `simplenode/computerprobe/**`, `energyconverter/*Ic2*`, `*Oc*`:
-  ComputerCraft/OpenComputers peripherals and IC2/OC energy exporters; CC:Tweaked is a phase-4 candidate,
-  IC2 and OC do not exist on 1.21.
+- `transparentnode/computercraftio/**`: a ComputerCraft transparent node upstream never registered.
+  `energyconverter/*Ic2*`, `*Oc*`: IC2 and OpenComputers do not exist on 1.21.
 - `simplenode/DeviceProbe.kt`, `simplenode/test/**`, `entity/ReplicatorModel.kt`, `node/NodeBlockItem.kt`,
   `generic/GenericItemBlock.java`: upstream scaffolding nothing registers or references.
 - `biomes.json` keys every 1.21 biome: the 1.21 ids were added to the 1.7.10 profiles they descend
@@ -109,6 +116,10 @@ means, verifiably:
 - The IC2-era `Eln.cfg` dictionary names (`runtime.dictionary.*`) still drive which `c:` tag a recipe
   wants; nothing on 1.21 fills `c:dusts/eln_tungsten` but this mod.
 - Sound: no audio device in the headless runs, so the looped sounds are untested past construction.
+- The probe's Lua surface is exercised up to CC's method generator and a call through the binding;
+  no computer has run a program against it in these runs.
+- The electrical items' recipes carry a random `rand` value in the result's custom data (the
+  1.7.10 item put one in every fresh stack), so `runData` rewrites four recipe files each run.
 
 ## Phases
 
@@ -123,5 +134,6 @@ means, verifiably:
 3. Rendering: the emulator, the block entity renderers, the item renderer, the GUI layer, the node
    light and the light block, the renderers' lighting. **Done** (`4caf850d`, `5fb41035`, `ba2ed33c`,
    `c0bfc2f7`, `37c4936a`).
-4. Jade **done** (`ea4440f5`), the biome data **done**. CC:Tweaked and a GameTest wrapper around the
-   smoke test remain.
+4. Jade (`ea4440f5`), the biome data (`4007d4ff`), CC: Tweaked (`df2a6539`). **Done.** The GameTest
+   wrapper was dropped in favour of the smoke runs failing the build themselves (`ea4ae843`): a GameTest
+   needs structure templates and its own world, and cannot express the restart check.

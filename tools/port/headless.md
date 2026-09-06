@@ -66,11 +66,17 @@ OpenAL device" and carries on; everything else is real.
 
 ## The smoke tests
 
-The dedicated server places a circuit and a lamp through the real item-use path (a FakePlayer),
-reads the meters and the light, and reads them again after a restart against the saved world:
+`tools/port/smoke.sh` runs everything below in order and stops at the first failed run: every
+check logs `SMOKE PASS`/`SMOKE FAIL`, and a run with a failed check exits 1 once the game has
+stopped, which fails the Gradle task. `-PwithoutCc` leaves CC: Tweaked out of a run.
+
+The dedicated server places a circuit, a lamp and the computer probe through the real item-use
+path (a FakePlayer), reads the meters, the light and the peripheral, and reads them again after a
+restart against the saved world:
 
     ./gradlew runServer -PsmokeTest=place      # SMOKE PASS ... energised=true current flowing=true
                                                # SMOKE PASS lamp: node light=13 aux=13 block light at socket=13; ...
+                                               # SMOKE PASS computer probe ... peripheral type=ElnProbe methods=[...]
     ./gradlew runServer -PsmokeTest=verify     # the same after the restart; also runs /eln on the console
     ./gradlew runServer -PsmokeTest=all        # place, plus every placeable descriptor on a grid north of it:
                                                # SMOKE ALL placed 388 of 401 descriptors / 414 nodes alive after 80 ticks
@@ -83,7 +89,7 @@ after touching anything an element does at placement or in its first ticks: an e
 of them stops the server, and the log names the descriptor.
 
 The client joins a copy of that world, flies to the circuit and screenshots the world by day and
-by midnight (the lamp), a third-person view with items on the floor, the macerator in hand from
+by midnight (the lamp), the descriptor grid from above, a third-person view with items on the floor, the macerator in hand from
 the front and through the player's eyes, a cable in hand, the resistor GUI, the macerator's
 container GUI, the inventory and an Electrical Age creative tab into `run/client/screenshots/`:
 
