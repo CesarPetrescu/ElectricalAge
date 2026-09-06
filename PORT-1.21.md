@@ -95,8 +95,11 @@ means, verifiably:
   IC2 and OC do not exist on 1.21.
 - `simplenode/DeviceProbe.kt`, `simplenode/test/**`, `entity/ReplicatorModel.kt`, `node/NodeBlockItem.kt`,
   `generic/GenericItemBlock.java`: upstream scaffolding nothing registers or references.
-- `biomes.json` still keys the 1.7.10 biome names: 18 of the 68 profiles match 1.21 ids, the other 50
-  biomes fall back to Plains (the startup audit lists them). A data update, not code.
+- `biomes.json` keys every 1.21 biome: the 1.21 ids were added to the 1.7.10 profiles they descend
+  from (windswept hills = Extreme Hills, old growth taigas = the mega taigas, the nether biomes = Hell,
+  the end = Sky) and four profiles are new (cold, lukewarm and warm oceans; the cave biomes). The
+  startup audit reports no fallback. The figures for the new profiles are guesses in the spirit of the
+  old ones, not measurements.
 - The in-hand and on-ground display transforms of node items are vanilla's block transforms
   (`smoke-hand-*-1.21.png`: a machine reads as a block in hand and on the floor, a cable as a rod);
   the 1.7.10 per-family hand tweaks are not reproduced.
@@ -120,4 +123,5 @@ means, verifiably:
 3. Rendering: the emulator, the block entity renderers, the item renderer, the GUI layer, the node
    light and the light block, the renderers' lighting. **Done** (`4caf850d`, `5fb41035`, `ba2ed33c`,
    `c0bfc2f7`, `37c4936a`).
-4. Jade **done** (`ea4440f5`). CC:Tweaked, the biome data, a GameTest wrapper around the smoke test remain.
+4. Jade **done** (`ea4440f5`), the biome data **done**. CC:Tweaked and a GameTest wrapper around the
+   smoke test remain.
