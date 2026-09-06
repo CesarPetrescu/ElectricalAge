@@ -32,11 +32,27 @@ public final class ClientSmokeTest {
     private static final String PREFIX = "SMOKE";
     private static final int X = 512, Z = 512, GROUND = 64;
 
-    private enum Phase { OPEN, JOIN, SETUP, WORLD_SHOT, NIGHT_SHOT, THIRD_PERSON_SHOT, HAND_THIRD_SHOT, HAND_FIRST_SHOT, HAND_CABLE_SHOT, GUI, GUI_SHOT, MACHINE_GUI, MACHINE_GUI_SHOT, INVENTORY, INVENTORY_SHOT, CREATIVE_TAB, CREATIVE_SHOT, DONE }
+    private enum Phase { OPEN, JOIN, SETUP, WORLD_SHOT, NIGHT_SHOT, GRID_SHOT, THIRD_PERSON_SHOT, HAND_THIRD_SHOT, HAND_FIRST_SHOT, HAND_CABLE_SHOT, GUI, GUI_SHOT, MACHINE_GUI, MACHINE_GUI_SHOT, INVENTORY, INVENTORY_SHOT, CREATIVE_TAB, CREATIVE_SHOT, DONE }
 
     private final String save;
     private Phase phase = Phase.OPEN;
     private int wait;
+    private int failures;
+
+    /** One check: a PASS/FAIL log line, and the run's exit status. */
+    private boolean check(boolean ok, String what, Object... args) {
+        if (!ok) failures++;
+        Object[] all = new Object[args.length + 2];
+        all[0] = PREFIX;
+        all[1] = ok ? "PASS" : "FAIL";
+        System.arraycopy(args, 0, all, 2, args.length);
+        if (ok) Eln.LOGGER.info("{} {} " + what, all); else Eln.LOGGER.error("{} {} " + what, all);
+        return ok;
+    }
+
+    private void fail(String what, Object... args) {
+        check(false, what, args);
+    }
 
     private ClientSmokeTest(String save) {
         this.save = save;
@@ -55,8 +71,8 @@ public final class ClientSmokeTest {
         try {
             tick(mc);
         } catch (Throwable t) {
-            Eln.LOGGER.error("{} FAIL client phase {} threw", PREFIX, phase, t);
-            mc.stop();
+            fail("client phase {} threw", phase, t);
+            System.exit(1);
         }
     }
 
@@ -67,8 +83,8 @@ public final class ClientSmokeTest {
                 if (wait++ < 20) return;
                 Eln.LOGGER.info("{} opening world '{}'", PREFIX, save);
                 mc.createWorldOpenFlows().openWorld(save, () -> {
-                    Eln.LOGGER.error("{} FAIL could not open world '{}'", PREFIX, save);
-                    mc.stop();
+                    fail("could not open world '{}'", save);
+                    System.exit(1);
                 });
                 phase = Phase.JOIN;
                 wait = 0;
@@ -101,10 +117,24 @@ public final class ClientSmokeTest {
             case NIGHT_SHOT -> {
                 if (wait++ < 60) return;
                 shot(mc, "smoke-night");
-                // third person from behind, with a macerator and a cable lying on the floor: the in-hand and on-ground item transforms
+                // from above the -PsmokeTest=all grid, when the world has one: every descriptor's renderer in one frame
                 var server = mc.getSingleplayerServer();
                 server.execute(() -> {
                     server.overworld().setDayTime(6000);
+                    ServerPlayer player = server.getPlayerList().getPlayers().get(0);
+                    player.teleportTo(player.serverLevel(), X + 45, GROUND + 16, Z + 2, 180f, 40f);
+                });
+                phase = Phase.GRID_SHOT;
+                wait = 0;
+            }
+            case GRID_SHOT -> {
+                if (wait++ < 80) return;
+                shot(mc, "smoke-all");
+                // back at the circuit; third person from behind, with a macerator and a cable lying on the floor: the in-hand and on-ground item transforms
+                var server = mc.getSingleplayerServer();
+                server.execute(() -> {
+                    ServerPlayer player = server.getPlayerList().getPlayers().get(0);
+                    player.teleportTo(player.serverLevel(), X + 2.5, GROUND + 1.5, Z + 4.5, 180f, 25f);
                     dropItems(server);
                 });
                 mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
@@ -152,7 +182,7 @@ public final class ClientSmokeTest {
             }
             case GUI_SHOT -> {
                 if (wait++ < 40) return;
-                Eln.LOGGER.info("{} {} screen open: {}", PREFIX, mc.screen == null ? "FAIL no" : "PASS", mc.screen == null ? null : mc.screen.getClass().getName());
+                check(mc.screen != null, "screen open: {}", mc.screen == null ? null : mc.screen.getClass().getName());
                 shot(mc, "smoke-gui");
                 if (mc.screen != null) mc.screen.onClose();
                 phase = Phase.MACHINE_GUI;
@@ -170,7 +200,7 @@ public final class ClientSmokeTest {
             }
             case MACHINE_GUI_SHOT -> {
                 if (wait++ < 40) return;
-                Eln.LOGGER.info("{} {} machine screen open: {}", PREFIX, mc.screen == null ? "FAIL no" : "PASS", mc.screen == null ? null : mc.screen.getClass().getName());
+                check(mc.screen != null, "machine screen open: {}", mc.screen == null ? null : mc.screen.getClass().getName());
                 shot(mc, "smoke-machine-gui");
                 if (mc.screen != null) mc.screen.onClose();
                 phase = Phase.INVENTORY;
@@ -200,7 +230,7 @@ public final class ClientSmokeTest {
                         m.invoke(creative, tab);
                         Eln.LOGGER.info("{} creative tab '{}' selected", PREFIX, tab == null ? null : tab.getDisplayName().getString());
                     } catch (Exception e) {
-                        Eln.LOGGER.error("{} FAIL selecting the creative tab", PREFIX, e);
+                        fail("selecting the creative tab", e);
                     }
                 }
                 phase = Phase.CREATIVE_SHOT;
@@ -214,7 +244,12 @@ public final class ClientSmokeTest {
             }
             case DONE -> {
                 if (wait++ < 10) return;
-                Eln.LOGGER.info("{} client done, stopping", PREFIX);
+                // the game's own exit is System.exit(0); a failed check leaves through exit 1 so a script can tell
+                if (failures > 0) {
+                    Eln.LOGGER.error("{} {} check(s) FAILED, stopping", PREFIX, failures);
+                    System.exit(1);
+                }
+                Eln.LOGGER.info("{} all checks passed, stopping", PREFIX);
                 mc.stop();
             }
         }

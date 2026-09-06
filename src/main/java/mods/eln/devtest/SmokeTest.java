@@ -72,14 +72,14 @@ public final class SmokeTest {
                 if (placing) place();
                 if (everything) placeEverything();
             } catch (Throwable t) {
-                Eln.logger.error("{} FAIL placement threw", PREFIX, t);
+                fail("placement threw", t);
                 shutdown();
             }
         } else if (ticks == 80) {
             try {
                 verify();
             } catch (Throwable t) {
-                Eln.logger.error("{} FAIL verification threw", PREFIX, t);
+                fail("verification threw", t);
             }
             shutdown();
         }
@@ -87,6 +87,23 @@ public final class SmokeTest {
 
     private ServerLevel world() {
         return ServerLifecycleHooks.getCurrentServer().overworld();
+    }
+
+    private int failures;
+
+    /** One check: a PASS/FAIL log line, and the run's exit status. */
+    private boolean check(boolean ok, String what, Object... args) {
+        if (!ok) failures++;
+        Object[] all = new Object[args.length + 2];
+        all[0] = PREFIX;
+        all[1] = ok ? "PASS" : "FAIL";
+        System.arraycopy(args, 0, all, 2, args.length);
+        if (ok) Eln.logger.info("{} {} " + what, all); else Eln.logger.error("{} {} " + what, all);
+        return ok;
+    }
+
+    private void fail(String what, Object... args) {
+        check(false, what, args);
     }
 
     /**
@@ -145,7 +162,7 @@ public final class SmokeTest {
             socket.inventoryChange(socket.getInventory());
             Eln.logger.info("{} lamp socket loaded with a bulb and a cable", PREFIX);
         } else {
-            Eln.logger.error("{} FAIL no lamp socket element after placement", PREFIX);
+            fail("no lamp socket element after placement");
         }
 
         // The computer probe at the end of the lamp row: a node block on its own, a peripheral with CC: Tweaked.
@@ -175,7 +192,7 @@ public final class SmokeTest {
     private void setVoltage(ServerLevel world, FakePlayer player, int x, int z, double voltage) {
         SixNodeElement source = element(world, x, z);
         if (!(source instanceof mods.eln.item.IConfigurable configurable)) {
-            Eln.logger.error("{} FAIL no source element at ({},{})", PREFIX, x, z);
+            fail("no source element at ({},{})", x, z);
             return;
         }
         CompoundTag cfg = new CompoundTag();
@@ -198,7 +215,7 @@ public final class SmokeTest {
                     if (state.getBlock() instanceof mods.eln.ore.OreBlock)
                         counts.merge(BuiltInRegistries.BLOCK.getKey(state.getBlock()).getPath(), 1, Integer::sum);
                 }
-        Eln.logger.info("{} {} ore blocks in chunk ({},{}): {}", PREFIX, counts.isEmpty() ? "FAIL no" : "PASS", cx, cz, counts);
+        check(!counts.isEmpty(), "ore blocks in chunk ({},{}): {}", cx, cz, counts);
     }
 
     private void placeSixNode(ServerLevel world, FakePlayer player, String descriptorName, int x, int z) {
@@ -214,7 +231,7 @@ public final class SmokeTest {
         player.setYHeadRot(yaw);
         ItemStack stack = Eln.findItemStack(descriptorName, 1);
         if (stack == null || stack.isEmpty()) {
-            Eln.logger.error("{} FAIL no item stack named '{}'", PREFIX, descriptorName);
+            fail("no item stack named '{}'", descriptorName);
             return;
         }
         player.setItemInHand(InteractionHand.MAIN_HAND, stack.copy());
@@ -237,7 +254,7 @@ public final class SmokeTest {
     private void placeEverything() {
         ServerLevel world = world();
         FakePlayer player = FakePlayerFactory.getMinecraft(world);
-        int placed = 0, failed = 0, i = 0;
+        int placed = 0, failed = 0, threw = 0, i = 0;
         java.util.List<Object[]> descriptors = new java.util.ArrayList<>();
         for (var d : Eln.sixNodeItem.subItemList.values()) descriptors.add(new Object[]{"six", d});
         for (var d : Eln.transparentNodeItem.subItemList.values()) descriptors.add(new Object[]{"transparent", d});
@@ -268,10 +285,12 @@ public final class SmokeTest {
                 }
             } catch (Throwable t) {
                 failed++;
+                threw++;
                 Eln.logger.error("{} ALL placing '{}' ({}) threw", PREFIX, descriptor.name, entry[0], t);
             }
         }
-        Eln.logger.info("{} ALL placed {} of {} descriptors ({} not placed)", PREFIX, placed, descriptors.size(), failed);
+        // the grid cannot satisfy every placement rule (walls, ceilings, water); an exception is the failure
+        check(threw == 0, "ALL placed {} of {} descriptors ({} not placed, {} threw)", placed, descriptors.size(), failed, threw);
     }
 
     /** A transparent node stands on the block; the item's placement path creates node and block. */
@@ -280,7 +299,7 @@ public final class SmokeTest {
         player.setYHeadRot(0f);
         ItemStack stack = Eln.findItemStack(descriptorName, 1);
         if (stack == null || stack.isEmpty()) {
-            Eln.logger.error("{} FAIL no item stack named '{}'", PREFIX, descriptorName);
+            fail("no item stack named '{}'", descriptorName);
             return;
         }
         player.setItemInHand(InteractionHand.MAIN_HAND, stack.copy());
@@ -316,8 +335,7 @@ public final class SmokeTest {
         if (ground != null) Eln.logger.info("{} ground meter: {}", PREFIX, ground.multiMeterString());
 
         if (source == null || cable == null || load == null) {
-            Eln.logger.error("{} FAIL node missing after {}: source={} cable={} load={}",
-                PREFIX, placing ? "placement" : "restart", source, cable, load);
+            fail("node missing after {}: source={} cable={} load={}", placing ? "placement" : "restart", source, cable, load);
             return;
         }
 
@@ -332,8 +350,7 @@ public final class SmokeTest {
         // world; current proves the load is actually drawing through it.
         boolean energised = cableMeter != null && cableMeter.contains("V") && !cableMeter.contains(" 0V");
         boolean current = cableMeter != null && !cableMeter.contains("I 0A");
-        Eln.logger.info("{} {} nodes present, energised={} current flowing={}",
-            PREFIX, (energised && current) ? "PASS" : "FAIL", energised, current);
+        check(energised && current, "nodes present, energised={} current flowing={}", energised, current);
         if (everything) Eln.logger.info("{} ALL {} nodes alive after {} ticks", PREFIX, NodeManager.instance.getNodeList().size(), ticks);
         verifyLamp(world);
         verifyProbe(world);
@@ -346,7 +363,7 @@ public final class SmokeTest {
         NodeBase node = NodeManager.instance.getNodeFromCoordonate(new Coordinate(pos.getX(), pos.getY(), pos.getZ(), world));
         boolean nodeOk = node instanceof mods.eln.simplenode.computerprobe.ComputerProbeNode;
         if (!net.neoforged.fml.ModList.get().isLoaded(mods.eln.integration.computercraft.ComputerCraftIntegration.MOD_ID)) {
-            Eln.logger.info("{} {} computer probe node present={}; CC: Tweaked not loaded, peripheral SKIP", PREFIX, nodeOk ? "PASS" : "FAIL", nodeOk);
+            check(nodeOk, "computer probe node present={}; CC: Tweaked not loaded, peripheral SKIP", nodeOk);
             return;
         }
         String type = mods.eln.integration.computercraft.ComputerCraftIntegration.peripheralTypeAt(world, pos);
@@ -355,7 +372,7 @@ public final class SmokeTest {
         boolean methodsOk = description.contains("methods=[signalGetDir, signalGetIn, signalGetOut, signalSetDir, signalSetOut, version, wirelessGet, wirelessRemove, wirelessRemoveAll, wirelessSet]")
             && description.contains("version=" + mods.eln.misc.Version.INSTANCE.getSimpleVersionName());
         boolean pass = nodeOk && "ElnProbe".equals(type) && methodsOk;
-        Eln.logger.info("{} {} computer probe node present={} peripheral {}", PREFIX, pass ? "PASS" : "FAIL", nodeOk, description);
+        check(pass, "computer probe node present={} peripheral {}", nodeOk, description);
     }
 
     /**
@@ -366,7 +383,7 @@ public final class SmokeTest {
     private void verifyLamp(ServerLevel world) {
         SixNodeElement socket = element(world, X + 2, LAMP_Z);
         if (socket == null) {
-            Eln.logger.error("{} FAIL lamp socket missing after {}", PREFIX, placing ? "placement" : "restart");
+            fail("lamp socket missing after {}", placing ? "placement" : "restart");
             return;
         }
         Eln.logger.info("{} lamp   meter: {}", PREFIX, socket.multiMeterString());
@@ -389,8 +406,8 @@ public final class SmokeTest {
             }
         }
         boolean pass = nodeLight > 0 && auxLight == nodeLight && blockLight == nodeLight && spot != null && spotBrightness == spotLevel;
-        Eln.logger.info("{} {} lamp: node light={} aux={} block light at socket={}; {} light block(s), brightest {} at {} reads {}",
-            PREFIX, pass ? "PASS" : "FAIL", nodeLight, auxLight, blockLight, lightBlocks, spotLevel, spot, spotBrightness);
+        check(pass, "lamp: node light={} aux={} block light at socket={}; {} light block(s), brightest {} at {} reads {}",
+            nodeLight, auxLight, blockLight, lightBlocks, spotLevel, spot, spotBrightness);
     }
 
     /** The /eln console, as the server console would run it; its output lands in the log. */
@@ -403,8 +420,20 @@ public final class SmokeTest {
         }
     }
 
+    /** Stops the server; a failed check makes the process exit 1 once the server thread is done, so a script can tell. */
     private void shutdown() {
-        Eln.logger.info("{} done, stopping server", PREFIX);
-        ServerLifecycleHooks.getCurrentServer().halt(false);
+        var server = ServerLifecycleHooks.getCurrentServer();
+        if (failures > 0) {
+            Eln.logger.error("{} {} check(s) FAILED, stopping server", PREFIX, failures);
+            Thread serverThread = server.getRunningThread();
+            Thread exit = new Thread(() -> {
+                try { serverThread.join(); } catch (InterruptedException ignored) { }
+                System.exit(1);
+            }, "smoke-exit");
+            exit.start();
+        } else {
+            Eln.logger.info("{} all checks passed, stopping server", PREFIX);
+        }
+        server.halt(false);
     }
 }

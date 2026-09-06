@@ -182,7 +182,7 @@ class SixNodeBlock : NodeBlock(nodeProperties().strength(0.3f, 1.0f), 0) {
     override fun onDestroyedByPlayer(state: BlockState, world: Level, pos: BlockPos, entityPlayer: Player, willHarvest: Boolean, fluid: FluidState): Boolean {
         if (world.isClientSide) return false
         val x = pos.x; val y = pos.y; val z = pos.z
-        val tileEntity = world.getBlockEntity(pos) as SixNodeEntity
+        val tileEntity = world.getBlockEntity(pos) as? SixNodeEntity ?: return true
         val sixNode = tileEntity.node as SixNode? ?: return true
         if (sixNode.sixNodeCacheBlock !== Blocks.AIR) {
             if (isCreative((entityPlayer as ServerPlayer)) == false) {
@@ -219,7 +219,7 @@ class SixNodeBlock : NodeBlock(nodeProperties().strength(0.3f, 1.0f), 0) {
     override fun neighborChanged(state: BlockState, world: Level, pos: BlockPos, b: Block, fromPos: BlockPos, movedByPiston: Boolean) {
         if (world.isClientSide) return
         val x = pos.x; val y = pos.y; val z = pos.z
-        val tileEntity = world.getBlockEntity(pos) as SixNodeEntity
+        val tileEntity = world.getBlockEntity(pos) as? SixNodeEntity ?: return
         val sixNode = tileEntity.node as SixNode? ?: return
         for (direction in Direction.values()) {
             if (sixNode.getSideEnable(direction)) {
@@ -355,16 +355,16 @@ class SixNodeBlock : NodeBlock(nodeProperties().strength(0.3f, 1.0f), 0) {
         return state.isSolidRender(world, other)
     }
 
+    /**
+     * Whether the node wears a camouflage block. Vanilla also asks a state's collision shape
+     * with no world at all (EmptyBlockGetter and the origin, for path finding): no block entity
+     * there, so no body.
+     */
     fun nodeHasCache(world: BlockGetter, x: Int, y: Int, z: Int): Boolean {
-        if (isRemote(world)) {
-            val tileEntity = world.getBlockEntity(x, y, z)
-            if (tileEntity != null && tileEntity is SixNodeEntity) return tileEntity.sixNodeCacheBlock !== Blocks.AIR else println("ASSERT B public boolean nodeHasCache(Level world, int x, int y, int z) ")
-        } else {
-            val tileEntity = world.getBlockEntity(x, y, z) as SixNodeEntity
-            val sixNode = tileEntity.node as SixNode?
-            if (sixNode != null) return sixNode.sixNodeCacheBlock !== Blocks.AIR else println("ASSERT A public boolean nodeHasCache(Level world, int x, int y, int z) ")
-        }
-        return false
+        val tileEntity = world.getBlockEntity(x, y, z) as? SixNodeEntity ?: return false
+        if (isRemote(world)) return tileEntity.sixNodeCacheBlock !== Blocks.AIR
+        val sixNode = tileEntity.node as SixNode? ?: return false
+        return sixNode.sixNodeCacheBlock !== Blocks.AIR
     }
 
     override fun getLightBlock(state: BlockState, w: BlockGetter, pos: BlockPos): Int {
