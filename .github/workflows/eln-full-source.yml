@@ -10,7 +10,7 @@ concurrency:
   group: eln-full-source-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  import:
+  migrate:
     if: github.ref == 'refs/heads/port/1.21.1-full-source'
     runs-on: ubuntu-24.04
     permissions:
@@ -19,39 +19,30 @@ jobs:
       source_sha: ${{ steps.source.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          path: work
-      - uses: actions/checkout@v4
-        with:
-          repository: brambora69123/electrical-age-rewired
-          ref: 3a0088b384aa4111c3a7f984d4cbc5f4ff142ed9
-          path: rewired
-          persist-credentials: false
-      - name: Import original source once, without overwriting edits
-        working-directory: work
+      - name: Apply reviewed mechanical migration once
         shell: bash
         run: |
           set -euo pipefail
-          if [[ ! -f ports/1.21.1-full/reference/rewired-1.12.2/SNAPSHOT.json ]]; then
-            python3 ports/1.21.1-full/tools/import_source.py ../rewired
+          python3 -m unittest discover -s ports/1.21.1-full/tools -p 'test_*.py' -v
+          if [[ ! -f ports/1.21.1-full/migrations/001-type-remap.json ]]; then
+            python3 ports/1.21.1-full/tools/rewrite_types.py --apply
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git add -f ports/1.21.1-full/src ports/1.21.1-full/reference ports/1.21.1-full/SOURCE-MANIFEST.json ports/1.21.1-full/gradlew ports/1.21.1-full/gradlew.bat ports/1.21.1-full/gradle
-            git commit -m 'port: import entire Re-Wired source and immutable reference [skip ci]'
+            git add ports/1.21.1-full/src ports/1.21.1-full/migrations
+            git commit -m 'port: migrate shared Minecraft and NeoForge type references in original source [skip ci]'
             git push origin HEAD:refs/heads/port/1.21.1-full-source
           fi
       - name: Record exact source revision
         id: source
-        working-directory: work
         run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
   compile:
-    needs: import
+    needs: migrate
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ needs.import.outputs.source_sha }}
+          ref: ${{ needs.migrate.outputs.source_sha }}
           persist-credentials: false
       - uses: actions/setup-java@v4
         with:
@@ -60,21 +51,25 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           cache-read-only: false
+      - name: Inspect actual target classpath
+        working-directory: ports/1.21.1-full
+        run: ./gradlew -I tools/export_api.init.gradle exportMigrationApi --no-daemon --console=plain
       - name: Compile every original active Java and Kotlin source
         working-directory: ports/1.21.1-full
         shell: bash
         run: |
           mkdir -p build/migration
           git rev-parse HEAD > build/migration/source-commit.txt
-          python3 tools/compile_report.py --label round1
+          python3 tools/compile_report.py --label round2
       - name: Export compiler report and complete migration project
         if: always()
         working-directory: ports/1.21.1-full
         shell: bash
         run: |
           mkdir -p build/migration
-          cat build/migration/round1/SUMMARY.md >> "$GITHUB_STEP_SUMMARY" || true
-          git archive --format=zip HEAD:ports/1.21.1-full -o "$PWD/build/full-source-migration.zip"
+          cat build/migration/round2/SUMMARY.md >> "$GITHUB_STEP_SUMMARY" || true
+          git -C ../.. archive --format=zip HEAD:ports/1.21.1-full -o "$PWD/build/full-source-migration.zip"
+          python3 -c "import zipfile; z=zipfile.ZipFile('build/full-source-migration.zip'); assert len(z.namelist()) > 4000, 'Incomplete source archive'"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -1,0 +1,31 @@
+allprojects {
+    afterEvaluate { p ->
+        if (p.plugins.hasPlugin('java')) {
+            p.tasks.register('exportMigrationApi') {
+                dependsOn p.configurations.compileClasspath
+                doLast {
+                    def dir = p.layout.buildDirectory.dir('migration/api').get().asFile
+                    dir.mkdirs()
+                    def cp = p.configurations.compileClasspath.asPath
+                    new File(dir, 'classpath.txt').text = cp
+                    def names = new TreeSet<String>()
+                    p.configurations.compileClasspath.files.each { f ->
+                        if (f.name.endsWith('.jar')) {
+                            new java.util.jar.JarFile(f).withCloseable { jar ->
+                                jar.entries().each { e ->
+                                    if (e.name.endsWith('.class') && !e.name.startsWith('META-INF/')) names.add(e.name.substring(0, e.name.length()-6).replace('/', '.'))
+                                }
+                            }
+                        }
+                    }
+                    new File(dir, 'class-index.txt').text = names.join('\n') + '\n'
+                    ['net.minecraft.nbt.CompoundTag', 'net.minecraft.world.Container', 'net.minecraft.world.WorldlyContainer', 'net.minecraft.world.level.block.entity.BlockEntity', 'net.minecraft.world.level.Level', 'net.minecraft.world.item.Item', 'net.minecraft.world.item.ItemStack', 'net.minecraft.resources.ResourceLocation', 'net.minecraft.world.entity.player.Player', 'net.minecraft.world.inventory.AbstractContainerMenu', 'net.minecraft.client.gui.screens.Screen', 'net.minecraft.client.gui.components.Button', 'net.minecraft.client.gui.components.EditBox', 'net.minecraft.client.gui.GuiGraphics', 'net.neoforged.fml.common.Mod', 'net.neoforged.neoforge.registries.RegisterEvent'].each { type ->
+                        def process = new ProcessBuilder('javap', '-classpath', cp, type).redirectErrorStream(true).start()
+                        new File(dir, type + '.txt').text = process.inputStream.getText('UTF-8')
+                        if (process.waitFor() != 0) throw new GradleException('Cannot inspect target API ' + type)
+                    }
+                }
+            }
+        }
+    }
+}
