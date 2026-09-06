@@ -164,7 +164,7 @@ object ElnRegistry {
     @JvmStatic
     fun registerOre(name: String?, stack: Supplier<ItemStack>) {
         if (name == null) {
-            Eln.LOGGER.warn("Ore dictionary registration skipped: no dictionary name")
+            Eln.LOGGER.debug("Ore dictionary registration skipped: no dictionary name")
             return
         }
         ores.add(name to stack)

@@ -2107,3 +2107,19 @@ death.attack.eln.turret.player=%1$s was shot by a turret whilst fighting %2$s
 config.jade.plugin_eln.six_node=Electrical Age: node faces
 config.jade.plugin_eln.transparent_node=Electrical Age: machines
 config.jade.plugin_eln.ghost_node=Electrical Age: multiblock parts
+
+# 1.21 names keyed by registry id: the blocks that have no descriptor item, the fluids, the entities.
+block.eln.sixnode=Electrical Age Element
+block.eln.transparentnode=Electrical Age Machine
+block.eln.ghostblock=Electrical Age Machine Part
+block.eln.lightblock=Light
+fluid.eln.hot_water=Hot Water
+fluid.eln.cold_water=Cold Water
+block.eln.hot_water=Hot Water
+block.eln.cold_water=Cold Water
+item.eln.hot_water_bucket=Hot Water Bucket
+item.eln.cold_water_bucket=Cold Water Bucket
+entity.eln.replicator=Replicator
+entity.eln.electric_minecart=Electric Minecart
+item.eln.replicator_spawn_egg=Replicator Spawn Egg
+tile.eln.ConduitSingle.name=Conduit (development)

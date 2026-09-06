@@ -584,7 +584,12 @@ public class Eln {
         return subId + (group << 6);
     }
 
+    /**
+     * Development-only content (the conduits, the isolation transformer) exists in the IDE runs
+     * only. Data generation is a dev run too, but its output ships: it must see the production set,
+     * or the generated recipes, tags and loot tables name items a player's game does not have.
+     */
     public boolean isDevelopmentRun() {
-        return !FMLLoader.isProduction();
+        return !FMLLoader.isProduction() && !net.neoforged.neoforge.data.loading.DatagenModLoader.isRunningDataGen();
     }
 }

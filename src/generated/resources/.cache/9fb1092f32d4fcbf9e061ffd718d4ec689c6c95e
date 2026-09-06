@@ -1,4 +1,4 @@
-// 1.21.1	2026-09-06T11:14:14.462123025	Recipes
+// 1.21.1	2026-09-06T11:59:09.048521775	Recipes
 c45ab92bbdd9de0dab6c23fed31d9bcc1fda2fb0 data/eln/advancement/recipes/misc/100a_electrical_breaker.json
 af52ea42900df2bf3acdcf235f7428450d1fd083 data/eln/advancement/recipes/misc/100a_switch.json
 38ca3c6c63f437a5255f40208e37e8d84ea1924e data/eln/advancement/recipes/misc/10a_diode.json
@@ -230,7 +230,6 @@ c1aab03862f9dcd5e47c1031dabd8732dd7886a8 data/eln/advancement/recipes/misc/iron_
 4a5c3cfcd54a1dcfab29d64e32628ce0c52d98c2 data/eln/advancement/recipes/misc/iron_ingot_from_smelting_iron_dust.json
 5c0bd1d42767a81cdfdd7d31c13602575698341c data/eln/advancement/recipes/misc/iron_turbine_blade.json
 f134111da8ed25b7f12f0d2c05703557bdefb298 data/eln/advancement/recipes/misc/irresponsible_electrical_drill.json
-04b89dc71a8abeb7110061484d51cca9675c8461 data/eln/advancement/recipes/misc/isolation_transformer.json
 8fc6605e7fa24580b6272ae9ec838077b1b13162 data/eln/advancement/recipes/misc/jk_flip_flop_chip.json
 765e0053b0d3a216c8aadfe94c74038a45c1687a data/eln/advancement/recipes/misc/joint.json
 ce23b5c6dd00034b7d6f9066f0c7fe396c9dd4db data/eln/advancement/recipes/misc/joint_hub.json
@@ -653,7 +652,7 @@ f3887651a18aaa1b6d8bf8e111971bf61cc51043 data/eln/recipe/high_voltage_relay.json
 50adeac3a4d996d228bf3a0cf1e0cf5be5b3598a data/eln/recipe/high_voltage_switch.json
 9925e6c604ea1f09c18585fd3681505f60a5c9cd data/eln/recipe/hub.json
 f676ba55e71a0b4616b3756de30ee06574d4db9d data/eln/recipe/humidity_sensor.json
-1915f653900023617ff0713c0d57c63d83c03b56 data/eln/recipe/improved_flashlight.json
+f5983a37aef7fe69cf60ba6c1cf34f7ccf0c7e5e data/eln/recipe/improved_flashlight.json
 402aef558fd431320d84b8a3b9fef2ef0fbf7b41 data/eln/recipe/industrial_data_logger.json
 b75f3ccd9a167242b1eaa4a3c3f72696f71b2408 data/eln/recipe/inert_canister.json
 a42a4f75ab100b7d8d8bbd1755a9e6c3d57ff0d2 data/eln/recipe/iron_cable.json
@@ -661,7 +660,6 @@ ee33c1b9eb1c54593f4d2177c0fcff29bec53899 data/eln/recipe/iron_clutch_plate.json
 cb36b6c9c4e9dc5322d0892e1cfdd78bf7b6d77e data/eln/recipe/iron_ingot_from_smelting_iron_dust.json
 e8e16b100eac5b4111dceab4524f0f8c12497b68 data/eln/recipe/iron_turbine_blade.json
 1bf647d05c26dd2587494372168e42ee82e0526f data/eln/recipe/irresponsible_electrical_drill.json
-90aaf07bce4065f692c1c3cb00dd2d5b8d98dcc7 data/eln/recipe/isolation_transformer.json
 e9f6929d1acf2b23f076762e7fb93b5ab9395fc5 data/eln/recipe/jk_flip_flop_chip.json
 810e00a80dc22367193efd68f9bccb444b6ef254 data/eln/recipe/joint.json
 9fdb17821dcec76a62a2760a4fdef69a6ef1146f data/eln/recipe/joint_hub.json
@@ -741,8 +739,8 @@ d9f2c288f95f1e68b909c0d78b28bf10a7c0f0a8 data/eln/recipe/portable_battery.json
 a68bb79033c919695e1d601bda42f408cfff6462 data/eln/recipe/portable_battery_pack.json
 e6d91ce57fdeeec070964a1c66fa37be18b206ed data/eln/recipe/portable_condensator.json
 eae1215dbbd0ed05a355ffd536a6bf13254b6fb6 data/eln/recipe/portable_condensator_pack.json
-954b060f684deb08a0e2f181d5b63512e8ce0eb8 data/eln/recipe/portable_electrical_axe.json
-0a19d53534c25959696623dc623d647387587a0f data/eln/recipe/portable_electrical_mining_drill.json
+06ce88a3858422cf7940f6b9c329b84bbfb15842 data/eln/recipe/portable_electrical_axe.json
+5ad02ce1eb45db89da742cd57f7e0ce1a7f3db92 data/eln/recipe/portable_electrical_mining_drill.json
 41119b66f055ca246bb16034fdef8ecbbff7d9b3 data/eln/recipe/power_capacitor.json
 c865958c2db519f2435e80b4bfce3d8c709cd863 data/eln/recipe/power_inductor.json
 00ddf01683f0239d999ed1363434cf6d19eae241 data/eln/recipe/power_resistor.json
@@ -783,7 +781,7 @@ ecca63262ae6804d9c2bcf30b5df670e47bf8363 data/eln/recipe/small_240v_tungsten_hea
 d315990e20dd809f7829dc9993874de7dd3a73f6 data/eln/recipe/small_48v_copper_heating_element.json
 08455ac3239d3aeda74a33b66ea59d44e65f9f79 data/eln/recipe/small_48v_iron_heating_element.json
 ec2a2e75513f4df9c6cc1d92978ed0017c98ce71 data/eln/recipe/small_48v_tungsten_heating_element.json
-731239f25b5c5ab73e490dabb3f28299ba7ee272 data/eln/recipe/small_flashlight.json
+7cea23d2d9aa1d93118336a1a17b7430a613a920 data/eln/recipe/small_flashlight.json
 8a49eebafc47cdcce2594c0a01bea304eb797d03 data/eln/recipe/small_fuel_burner.json
 810a086f30ff724f7678fdc40473f29d78bf7d1a data/eln/recipe/small_passive_thermal_dissipator.json
 550df8b4afaf2c2ba599794b983422831ebe7051 data/eln/recipe/small_rotating_solar_panel.json

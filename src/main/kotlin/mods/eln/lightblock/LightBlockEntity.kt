@@ -67,7 +67,8 @@ class LightBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(TYPE.get(
     private val lightList: MutableList<LightHandle> = mutableListOf()
 
     private fun addLight(light: Int, timeout: Int) {
-        lightList.add(LightHandle(light, timeout))
+        // block light is 0..15 (a state property now; 1.7.10's metadata nibble silently wrapped 25 to 9)
+        lightList.add(LightHandle(light.coerceIn(0, 15), timeout))
     }
 
     internal class LightHandle(var value: Int = 0, var timeout: Int = 0) : INBTTReady {
@@ -105,6 +106,7 @@ class LightBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(TYPE.get(
         }
 
         val state = world.getBlockState(blockPos)
+        light = light.coerceIn(0, 15)
         if (state.block === Eln.lightBlock && light != state.getValue(LightBlock.LIGHT)) {
             // The light level is a blockstate property, not a metadata nibble; the light engine follows the state change.
             world.setBlock(blockPos, state.setValue(LightBlock.LIGHT, light), 2)

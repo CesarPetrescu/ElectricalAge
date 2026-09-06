@@ -91,6 +91,17 @@ runs in order; each exits 1 on a failed check):
   a six-node crashed the server. No entity now means no body.
 - **The single-node blocks are visible.** The energy exporter and the computer probe pointed at the
   empty model; they are the textured cubes of 1.7.10 again (generated models from the face textures).
+- **The generated data names production content only.** Data generation is a dev run, so the
+  recipes, tags and loot tables it wrote named the dev-only conduit and isolation transformer, which a
+  player's game does not register: a broken `mineable/pickaxe` tag and two data-pack errors on every
+  world load. The electrical tools' random `rand` nonce is pinned in recipe results, so `runData` is
+  reproducible.
+- **Light blocks clamp to 15.** The turret's muzzle flash asked for light 25; 1.7.10's metadata nibble
+  wrapped that to 9, the state property threw and took the server down on the first shot.
+- **The single-node blocks have names and a creative tab.** The energy exporter and the computer probe
+  read as `block.eln.…` and were in no tab; they use their `tile.…name` keys and sit in Power
+  Electronics / Signal Processing as on 1.7.10. The fluids, buckets, entities and the descriptor-less
+  blocks have lang entries under their 1.21 registry keys.
 - **Element inventories save their items.** `ItemStack.save(provider, prefix)` returns a copy since
   1.20.5; the `writeToNBT(tag)` bridge returned it and every caller ignored it, so a saved slot carried
   only its index and every machine came back empty after a restart. The bridge merges into the tag
@@ -118,8 +129,9 @@ runs in order; each exits 1 on a failed check):
 - Sound: no audio device in the headless runs, so the looped sounds are untested past construction.
 - The probe's Lua surface is exercised up to CC's method generator and a call through the binding;
   no computer has run a program against it in these runs.
-- The electrical items' recipes carry a random `rand` value in the result's custom data (the
-  1.7.10 item put one in every fresh stack), so `runData` rewrites four recipe files each run.
+- Development-only content (the conduits, the isolation transformer) is absent from the generated
+  data: `isDevelopmentRun` is false during data generation, so what ships names only what a player
+  has. In the IDE runs those three items have no model (three `Unable to load model` lines).
 
 ## Phases
 

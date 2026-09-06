@@ -1,6 +1,7 @@
 package mods.eln.registration
 
 import mods.eln.Eln
+import mods.eln.generic.CreativeTabPopulator
 import mods.eln.i18n.I18N
 import mods.eln.node.NodeManager.Companion.registerUuid
 import mods.eln.node.simple.SimpleNodeItem
@@ -16,6 +17,7 @@ import mods.eln.simplenode.energyconverter.EnergyConverterElnToOtherNode.Compani
 import mods.eln.simplenode.computerprobe.ComputerProbeBlock
 import mods.eln.simplenode.computerprobe.ComputerProbeEntity
 import mods.eln.simplenode.computerprobe.ComputerProbeNode
+import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.block.Block
 import java.util.function.Function
 import java.util.function.Supplier
@@ -37,10 +39,11 @@ object SingleNodeRegistration {
         val entityName = I18N.TR_NAME(I18N.Type.TILE, "eln.ElnProbe")
         registerUuid(ComputerProbeNode.getNodeUuidStatic(), ComputerProbeNode::class.java)
         val block: Supplier<Block> = ElnRegistry.registerBlock(entityName, {
-            Eln.instance.computerProbeBlock = ComputerProbeBlock()
+            Eln.instance.computerProbeBlock = ComputerProbeBlock().apply { translationName = entityName }
             Eln.instance.computerProbeBlock
         }, Function { SimpleNodeItem(it) })
         ComputerProbeEntity.TYPE = ElnRegistry.registerBlockEntity(entityName, block) { pos, state -> ComputerProbeEntity(pos, state) }
+        CreativeTabPopulator.register(Eln.creativeTabSignalProcessing) { ItemStack(block.get()) }
         Eln.computerProbeRegistered = true
     }
 
@@ -49,7 +52,7 @@ object SingleNodeRegistration {
         // this dev-only single node block is eln:conduitsingle.
         val entityName = I18N.TR_NAME(I18N.Type.TILE, "eln.ConduitSingle")
         registerUuid(getNodeUuidStatic(), ConduitNode::class.java)
-        val block: Supplier<Block> = ElnRegistry.registerBlock(entityName, { ConduitBlock() }, Function { SimpleNodeItem(it) })
+        val block: Supplier<Block> = ElnRegistry.registerBlock(entityName, { ConduitBlock().apply { translationName = entityName } }, Function { SimpleNodeItem(it) })
         ConduitEntity.TYPE = ElnRegistry.registerBlockEntity(entityName, block) { pos, state -> ConduitEntity(pos, state) }
     }
 
@@ -59,10 +62,11 @@ object SingleNodeRegistration {
             val blockName = I18N.TR_NAME(I18N.Type.TILE, "eln.EnergyConverter")
             val desc = EnergyConverterElnToOtherDescriptor("EnergyConverterElnToOtherLVU", Eln.instance.ELN_CONVERTER_MAX_POWER)
             val block: Supplier<Block> = ElnRegistry.registerBlock(blockName, {
-                Eln.instance.elnToOtherBlockConverter = EnergyConverterElnToOtherBlock(desc)
+                Eln.instance.elnToOtherBlockConverter = EnergyConverterElnToOtherBlock(desc).apply { translationName = blockName }
                 Eln.instance.elnToOtherBlockConverter
             }, Function { SimpleNodeItem(it) })
             EnergyConverterElnToOtherEntity.TYPE = ElnRegistry.registerBlockEntity("eln.EnergyConverterElnToOtherEntity", block) { pos, state -> EnergyConverterElnToOtherEntity(pos, state) }
+            CreativeTabPopulator.register(Eln.creativeTabPowerElectronics) { ItemStack(block.get()) }
         }
     }
 }

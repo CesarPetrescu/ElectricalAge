@@ -1,6 +1,8 @@
 package mods.eln.datagen
 
 import mods.eln.Eln
+import mods.eln.misc.editTag
+import mods.eln.misc.tagCompound
 import mods.eln.craft.CraftingRecipes
 import mods.eln.craft.ElnRecipe
 import mods.eln.craft.RecipeBook
@@ -67,6 +69,17 @@ internal object ElnData {
 class ElnRecipeProvider(output: PackOutput, lookup: CompletableFuture<HolderLookup.Provider>) : RecipeProvider(output, lookup) {
     private val used = HashMap<String, Int>()
 
+    /**
+     * The electrical tools stamp a random "rand" into every fresh stack (1.7.10's way of keeping
+     * them from stacking). A recipe result is one fixed stack anyway, and a value that changes on
+     * every run makes the generated files churn, so it is pinned.
+     */
+    private fun deterministic(stack: ItemStack): ItemStack {
+        val tag = stack.tagCompound ?: return stack
+        if (!tag.contains("rand")) return stack
+        return stack.copy().also { copy -> copy.editTag { it.putInt("rand", 0) } }
+    }
+
     /** eln:<output item>, then _2, _3 ... when several recipes make the same item. */
     private fun nameFor(output: ItemStack, suffix: String = ""): ResourceLocation {
         val base = BuiltInRegistries.ITEM.getKey(output.item).path + suffix
@@ -87,19 +100,20 @@ class ElnRecipeProvider(output: PackOutput, lookup: CompletableFuture<HolderLook
         CraftingRecipes.itemCrafting()
         for (recipe in RecipeBook.recipes) {
             if (recipe.output.isEmpty) continue
+            val output = deterministic(recipe.output)
             when (recipe) {
                 is ElnRecipe.Shaped -> {
-                    val builder = ShapedRecipeBuilder.shaped(RecipeCategory.MISC, recipe.output)
+                    val builder = ShapedRecipeBuilder.shaped(RecipeCategory.MISC, output)
                     recipe.rows.forEach { builder.pattern(it) }
                     recipe.keys.forEach { (c, spec) -> builder.define(c, ElnRecipe.ingredient(spec)) }
                     val (name, criterion) = unlock(recipe.keys.values.first())
-                    builder.unlockedBy(name, criterion).save(out, nameFor(recipe.output))
+                    builder.unlockedBy(name, criterion).save(out, nameFor(output))
                 }
                 is ElnRecipe.Shapeless -> {
-                    val builder = ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, recipe.output)
+                    val builder = ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, output)
                     recipe.inputs.forEach { builder.requires(ElnRecipe.ingredient(it)) }
                     val (name, criterion) = unlock(recipe.inputs.first())
-                    builder.unlockedBy(name, criterion).save(out, nameFor(recipe.output))
+                    builder.unlockedBy(name, criterion).save(out, nameFor(output))
                 }
             }
         }

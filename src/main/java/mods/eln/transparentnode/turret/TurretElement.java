@@ -107,7 +107,8 @@ public class TurretElement extends TransparentNodeElement implements IConfigurab
         Coordinate lightSourceCoordinate = new Coordinate();
         lightSourceCoordinate.copyFrom(coordinate());
         lightSourceCoordinate.move(front);
-        LightBlockEntity.addLight(lightSourceCoordinate, 25, 2);
+        // the muzzle flash: full block light (1.7.10 asked for 25, which its metadata nibble wrapped to 9)
+        LightBlockEntity.addLight(lightSourceCoordinate, 15, 2);
         if (simulation.shoot()) needPublish();
     }
 

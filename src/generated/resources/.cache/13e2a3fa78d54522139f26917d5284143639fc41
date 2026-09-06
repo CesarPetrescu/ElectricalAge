@@ -1,4 +1,4 @@
-// 1.21.1	2026-09-06T11:14:14.469301322	Item Models: eln
+// 1.21.1	2026-09-06T11:57:59.894473036	Item Models: eln
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/100a_electrical_breaker.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/100a_switch.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/10a_diode.json
@@ -175,8 +175,6 @@ bccb8ea1a6c77a6b4993d14597522636084b051e assets/eln/models/item/coal_dust.json
 b3f5c08fef413d34de5d04f90f38a47802d6040c assets/eln/models/item/coal_plate.json
 bd09508cd82023d722b33b7b34e8074e133d7222 assets/eln/models/item/cold_water_bucket.json
 9355a672186204780bd8b59b2516700f268bdf62 assets/eln/models/item/combustion_chamber.json
-c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/conduit.json
-bb502eb46e72e39c7d21dd57a362ef943ded9793 assets/eln/models/item/conduitsingle.json
 6cbabb8768e1e1b262c23bd54ed3b1421ece334d assets/eln/models/item/config_copy_tool.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/configurable_summing_unit.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/copper_1000_kcmil_cable_1000v.json
@@ -383,7 +381,6 @@ f2108791b2409dd2603ed639399a535356cd7445 assets/eln/models/item/iron_dust.json
 cf3c3d702d665f3ed0f7008c1ad3c7cf7a810391 assets/eln/models/item/iron_roller_wheel.json
 a267f5fa9f8cb26be37b6e2d80dac3b06cb42d19 assets/eln/models/item/iron_turbine_blade.json
 e253356995442ccc2cb1d654c59b3a090051ef00 assets/eln/models/item/irresponsible_electrical_drill.json
-c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/isolation_transformer.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/jk_flip_flop_chip.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/joint.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/joint_hub.json

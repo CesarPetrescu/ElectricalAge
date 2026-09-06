@@ -2720,8 +2720,12 @@ object CraftingRecipes {
         val used = rows.joinToString("").toSet() - ' '
         val undefined = used - keys.keys
         val unused = keys.keys - used
-        if (undefined.isNotEmpty() || unused.isNotEmpty()) {
+        // upstream's own recipes carry spare keys (1.7.10 ignored them); a symbol without a key is worth a look
+        if (undefined.isNotEmpty()) {
             Eln.logger.warn("Recipe for {}: pattern symbols without key {} treated as empty, unused keys {} dropped",
+                net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(output.item), undefined, unused)
+        } else if (unused.isNotEmpty()) {
+            Eln.logger.debug("Recipe for {}: pattern symbols without key {} treated as empty, unused keys {} dropped",
                 net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(output.item), undefined, unused)
         }
         return ElnRecipe.Shaped(

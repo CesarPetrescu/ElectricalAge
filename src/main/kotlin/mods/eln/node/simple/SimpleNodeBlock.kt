@@ -31,6 +31,11 @@ import mods.eln.misc.getBlockEntity
  */
 abstract class SimpleNodeBlock protected constructor(properties: Properties) : Block(properties), EntityBlock {
     var descriptorKey: String? = null
+
+    /** 1.7.10's `setBlockName(name)`: the block and its item read as `tile.<name>.name` in the lang files. */
+    var translationName: String? = null
+
+    override fun getDescriptionId(): String = translationName?.let { "tile.$it.name" } ?: super.getDescriptionId()
     fun setDescriptorKey(descriptorKey: String?): SimpleNodeBlock {
         this.descriptorKey = descriptorKey
         return this
