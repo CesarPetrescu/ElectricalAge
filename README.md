@@ -8,10 +8,14 @@ The port includes generators and turbines, shaft networks, large motors and gene
 
 ## Download and install
 
-Get the [latest tested 1.21.1 development build](https://github.com/CesarPetrescu/ElectricalAge/releases/tag/latest-1.21.1), or [download the mod JAR directly](https://github.com/CesarPetrescu/ElectricalAge/releases/download/latest-1.21.1/ElectricalAge-1.21.1-latest.jar). These links become available after the first successful release run.
+**Required dependency: [Kotlin for Forge by thedarkcolour](https://modrinth.com/mod/kotlin-for-forge/versions), version 5.12.0 for Minecraft 1.21.1 / NeoForge.** Install it alongside Electrical Age on both the client and dedicated server. Electrical Age's JAR does not include this dependency.
+
+**KotlinLangForge by btwonion is a different mod and is not required by Electrical Age.** It does not replace the `kotlinforforge` loader this port declares. You do not need both Kotlin mods for Electrical Age; other mods in your pack may have their own requirements.
+
+Get the [latest tested 1.21.1 development build](https://github.com/CesarPetrescu/ElectricalAge/releases/tag/latest-1.21.1), or [download the mod JAR directly](https://github.com/CesarPetrescu/ElectricalAge/releases/download/latest-1.21.1/ElectricalAge-1.21.1-latest.jar).
 
 1. Create a **Minecraft 1.21.1** instance with **NeoForge 21.1.249** and **Java 21**.
-2. Install **Kotlin for Forge 5.12.0**, using its NeoForge-compatible build, in the instance's `mods` folder.
+2. Download **[Kotlin for Forge 5.12.0 by thedarkcolour](https://modrinth.com/mod/kotlin-for-forge/versions)**, using its Minecraft 1.21.1 / NeoForge-compatible build, and put its JAR in the instance's `mods` folder.
 3. Put `ElectricalAge-1.21.1-latest.jar` in the same `mods` folder. Install it and Kotlin for Forge on both the client and dedicated server when playing multiplayer.
 4. Start with a fresh world. Saves from the 1.7.10 and 1.12.2 versions are not migrated by this port.
 

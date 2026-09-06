@@ -32,7 +32,11 @@ title='Latest 1.21.1 development build'
 notes=release-output/notes.md
 cat > "$notes" <<EOF
 Automated development build for **Minecraft 1.21.1 / NeoForge 21.1.249 / Java 21**.
-Requires the NeoForge build of **Kotlin for Forge 5.12.0**. Use a fresh world; legacy saves are not migrated.
+**Required dependency: [Kotlin for Forge 5.12.0 by thedarkcolour](https://modrinth.com/mod/kotlin-for-forge/versions)**, using the Minecraft 1.21.1 / NeoForge-compatible build. Download it separately and install its JAR alongside Electrical Age on both the client and dedicated server.
+
+**KotlinLangForge by btwonion is a separate mod and is not required by Electrical Age.** You do not need both Kotlin mods for this port; KotlinLangForge does not replace its required Kotlin for Forge loader.
+
+Use a fresh world; legacy saves are not migrated.
 
 Source commit: [$GITHUB_SHA]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/commit/$GITHUB_SHA)
 Passed build, unit tests, benchmarks, and server/restart/client smoke tests: [CI run]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID).
