@@ -1,39 +1,75 @@
 package mods.eln.fluid
 
-import mods.eln.Eln.MODID
-import mods.eln.Eln.fluidBlocks
-import mods.eln.Eln.fluids
+import mods.eln.Eln
+import mods.eln.registration.ElnRegistry
+import net.minecraft.core.registries.Registries
+import net.minecraft.world.item.BucketItem
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.Items
 import net.minecraft.world.level.block.Block
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.level.block.LiquidBlock
+import net.minecraft.world.level.block.state.BlockBehaviour
+import net.minecraft.world.level.material.FlowingFluid
 import net.minecraft.world.level.material.Fluid
-import mods.eln.fluid.FluidRegistry
+import net.neoforged.neoforge.fluids.BaseFlowingFluid
+import net.neoforged.neoforge.fluids.FluidType
+import net.neoforged.neoforge.registries.NeoForgeRegistries
+import java.util.function.Supplier
 
 /**
- * 1.12.2: a Fluid carries its own still/flow sprites, and the per-fluid ItemBucket +
- * FluidContainerRegistry pair is replaced by Forge's universal bucket
- * (FluidRegistry.addBucketForFluid; enabled in Eln's static initializer). Picking the
- * fluid back up is handled by the universal bucket's FillBucketEvent listener, so the
- * BuildCraft-derived BucketHandler is no longer needed.
+ * The mod's own fluids ([ElnFluidRegistry]) on the 1.21 shape: a [FluidType] carries what
+ * 1.7.10's `Fluid` did (density, viscosity, light, temperature), the fluid itself is a
+ * still/flowing pair, the world block is a [LiquidBlock], and the bucket is an item of its own
+ * (the universal bucket of 1.12 is gone again). Textures and tint come from the client
+ * extensions registered in [mods.eln.client.ClientSetup].
  */
-fun registerElnFluids() {
-    ElnFluidRegistry.values().forEach {
-        val fluid = Fluid(
-            it.name,
-            ResourceLocation.fromNamespaceAndPath(MODID, "blocks/fluids/${it.name}_still"),
-            ResourceLocation.fromNamespaceAndPath(MODID, "blocks/fluids/${it.name}_flow"),
-            it.color or 0xFF000000.toInt()
-        ).setDensity(it.density).setViscosity(it.viscosity).setLuminosity(it.luminosity)
-            .setTemperature(it.temperature).setGaseous(it.isGaseous)
-        FluidRegistry.registerFluid(fluid)
-        val fluidBlock: Block
-        if (!fluid.canBePlacedInWorld()) {
-            fluidBlock = BlockElnFluid(it.name, fluid, it.material, it.color)
-            fluid.block = fluidBlock
-            fluid.unlocalizedName = fluidBlock.translationKey.substring(5)
-            fluids[ElnFluidRegistry.valueOf(it.name)] = fluid
-            fluidBlocks[ElnFluidRegistry.valueOf(it.name)] = fluidBlock
-            if (it.isBucketable) {
-                FluidRegistry.addBucketForFluid(fluid)
+object FluidRegistration {
+    class Entry(val def: ElnFluidRegistry) {
+        lateinit var type: Supplier<FluidType>
+        lateinit var source: Supplier<Fluid>
+        lateinit var flowing: Supplier<Fluid>
+        lateinit var block: Supplier<Block>
+        lateinit var bucket: Supplier<Item>
+    }
+
+    @JvmStatic
+    val entries = LinkedHashMap<ElnFluidRegistry, Entry>()
+
+    @JvmStatic
+    fun registerElnFluids() {
+        for (def in ElnFluidRegistry.values()) {
+            val entry = Entry(def)
+            entries[def] = entry
+            entry.type = ElnRegistry.register(NeoForgeRegistries.Keys.FLUID_TYPES, def.name) {
+                FluidType(
+                    FluidType.Properties.create()
+                        .descriptionId("fluid.eln.${def.name}")
+                        .density(def.density).viscosity(def.viscosity)
+                        .lightLevel(def.luminosity).temperature(def.temperature)
+                        .canConvertToSource(false)
+                )
+            }
+            val properties = BaseFlowingFluid.Properties({ entry.type.get() }, { entry.source.get() }, { entry.flowing.get() })
+                .block { entry.block.get() as LiquidBlock }
+                .bucket { entry.bucket.get() }
+            entry.source = ElnRegistry.register(Registries.FLUID, def.name) { BaseFlowingFluid.Source(properties) }
+            entry.flowing = ElnRegistry.register(Registries.FLUID, "flowing_${def.name}") { BaseFlowingFluid.Flowing(properties) }
+            entry.block = ElnRegistry.registerBlock(def.name, {
+                LiquidBlock(entry.source.get() as FlowingFluid, BlockBehaviour.Properties.ofFullCopy(Blocks.WATER))
+            }, null)
+            if (def.isBucketable) {
+                entry.bucket = ElnRegistry.registerItem("${def.name}_bucket", {
+                    BucketItem(entry.source.get(), Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1))
+                })
+                val bucket = entry.bucket
+                ElnRegistry.registerCustomItemStack("${def.name}_bucket") { net.minecraft.world.item.ItemStack(bucket.get()) }
+            } else {
+                entry.bucket = Supplier { Items.AIR }
+            }
+            ElnRegistry.afterItems {
+                Eln.fluids[def] = entry.source.get()
+                Eln.fluidBlocks[def] = entry.block.get()
             }
         }
     }

@@ -298,6 +298,7 @@ public class Eln {
         modBus.addListener(this::commonSetup);
         modBus.addListener(this::loadComplete);
         modBus.addListener(this::buildCreativeTabContents);
+        modBus.addListener(ElnCapabilities::register);
         NeoForge.EVENT_BUS.addListener(this::onServerAboutToStart);
         NeoForge.EVENT_BUS.addListener(this::onServerStarting);
         NeoForge.EVENT_BUS.addListener(this::onServerStopped);
@@ -406,6 +407,7 @@ public class Eln {
         TransparentNodeRegistration.INSTANCE.registerTransparent();
         ItemRegistration.INSTANCE.registerItem();
         EntityRegistration.INSTANCE.registerEntities();
+        mods.eln.fluid.FluidRegistration.registerElnFluids();
 
         ElnRegistry.afterItems(this::updateCreativeTabIcons);
 

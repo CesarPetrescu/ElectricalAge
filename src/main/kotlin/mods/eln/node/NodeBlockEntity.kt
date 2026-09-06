@@ -239,6 +239,10 @@ abstract class NodeBlockEntity(type: BlockEntityType<*>, pos: BlockPos, state: B
         return node.publishPacket?.toByteArray()
     }
 
+    override fun getUpdateTag(registries: HolderLookup.Provider): CompoundTag = PublishSync.updateTag(buildPublishPayload())
+
+    override fun handleUpdateTag(tag: CompoundTag, registries: HolderLookup.Provider) = PublishSync.handle(tag, this)
+
     open fun preparePacketForServer(stream: DataOutputStream) {
         try {
             stream.writeByte(Eln.packetPublishForNode.toInt())

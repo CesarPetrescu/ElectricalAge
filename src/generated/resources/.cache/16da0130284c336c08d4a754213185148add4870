@@ -1,6 +1,8 @@
-// 1.21.1	2026-09-06T06:00:51.666472875	Block States: eln
+// 1.21.1	2026-09-06T09:16:41.873766239	Block States: eln
 3f3711dc8a63efa9eac0ed4942886027c0f1f674 assets/eln/blockstates/cinnabar_ore.json
+e5a33b4a2db42195222fa1709b3d9533ac41e453 assets/eln/blockstates/cold_water.json
 6aae9c353f68a97a0e6f30307786641e17fa8acc assets/eln/blockstates/copper_ore.json
+e5a33b4a2db42195222fa1709b3d9533ac41e453 assets/eln/blockstates/hot_water.json
 6b4e046226a8ac17e41f60d800cbae86579ad0f4 assets/eln/blockstates/lead_ore.json
 ed1c6eeda501cee977a04c31afbf74537eb84f70 assets/eln/blockstates/tungsten_ore.json
 249b572af77b493f1d8fb801a3767a40324d368f assets/eln/models/block/cinnabar_ore.json

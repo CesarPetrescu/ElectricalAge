@@ -150,6 +150,10 @@ abstract class SimpleNodeEntity(type: BlockEntityType<*>, pos: BlockPos, state: 
         return node.publishPacket?.toByteArray()
     }
 
+    override fun getUpdateTag(registries: HolderLookup.Provider): CompoundTag = mods.eln.node.PublishSync.updateTag(buildPublishPayload())
+
+    override fun handleUpdateTag(tag: CompoundTag, registries: HolderLookup.Provider) = mods.eln.node.PublishSync.handle(tag, this)
+
     open lateinit var sender: NodeEntityClientSender
 
     init {

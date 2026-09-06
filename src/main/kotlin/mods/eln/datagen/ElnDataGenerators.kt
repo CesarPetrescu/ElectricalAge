@@ -88,6 +88,8 @@ class ElnBlockStateProvider(output: PackOutput, helper: ExistingFileHelper) : Bl
         ElnRegistry.registeredBlocks.forEach { (id, block) ->
             when (block) {
                 is OreBlock -> simpleBlock(block, models().cubeAll(id.path, modLoc("blocks/${block.descriptor.iconName}")))
+                // a fluid block renders through the fluid's client extensions; vanilla's water model is the empty one
+                is net.minecraft.world.level.block.LiquidBlock -> simpleBlock(block, models().getExistingFile(mcLoc("block/water")))
             }
         }
     }

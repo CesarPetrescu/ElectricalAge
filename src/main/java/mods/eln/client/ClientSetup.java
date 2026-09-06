@@ -38,6 +38,31 @@ public final class ClientSetup {
             context -> new ReplicatorRender(context, new SilverfishModel<>(context.bakeLayer(ModelLayers.SILVERFISH)), 0.3f));
     }
 
+    /** The mod's fluids: still/flowing sprites and tint, what 1.7.10's Fluid carried itself. */
+    @SubscribeEvent
+    public static void onRegisterClientExtensions(net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent event) {
+        for (mods.eln.fluid.FluidRegistration.Entry entry : mods.eln.fluid.FluidRegistration.getEntries().values()) {
+            String name = entry.getDef().name();
+            int tint = entry.getDef().getColor() | 0xFF000000;
+            event.registerFluidType(new net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions() {
+                @Override
+                public net.minecraft.resources.ResourceLocation getStillTexture() {
+                    return net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(Eln.MODID, "blocks/fluids/" + name + "_still");
+                }
+
+                @Override
+                public net.minecraft.resources.ResourceLocation getFlowingTexture() {
+                    return net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(Eln.MODID, "blocks/fluids/" + name + "_flow");
+                }
+
+                @Override
+                public int getTintColor() {
+                    return tint;
+                }
+            }, entry.getType().get());
+        }
+    }
+
     /** Key mappings are registered through the mod bus (1.7.10's ClientRegistry.registerKeyBinding). */
     @SubscribeEvent
     public static void onRegisterKeyMappings(RegisterKeyMappingsEvent event) {

@@ -63,6 +63,8 @@ object ElnRegistry {
     private val entityTypes = LinkedHashMap<ResourceLocation, Staged<net.minecraft.world.entity.EntityType<*>>>()
     private val attributes = ArrayList<Pair<Supplier<net.minecraft.world.entity.EntityType<out net.minecraft.world.entity.LivingEntity>>, Supplier<net.minecraft.world.entity.ai.attributes.AttributeSupplier.Builder>>>()
     private val namedStacks = HashMap<String, Supplier<ItemStack>>()
+    /** Registries without a dedicated staging map (fluid types, fluids): staged per registry key. */
+    private val others = LinkedHashMap<ResourceKey<out net.minecraft.core.Registry<*>>, LinkedHashMap<ResourceLocation, Staged<Any>>>()
     private val itemBlocks = HashMap<ResourceLocation, Staged<Item>>()
     private var itemsRegistered = false
 
@@ -94,6 +96,14 @@ object ElnRegistry {
     @JvmOverloads
     fun registerItem(id: ResourceLocation, factory: Supplier<Item>, onRegistered: Consumer<Item>? = null): Supplier<Item> =
         stage(items, id, factory, onRegistered, "item")
+
+    /** Stages an object of any other registry ([net.neoforged.neoforge.registries.NeoForgeRegistries.Keys.FLUID_TYPES], [Registries.FLUID]). */
+    @JvmStatic
+    fun <T : Any> register(registry: ResourceKey<out net.minecraft.core.Registry<T>>, name: String, factory: Supplier<T>): Supplier<T> {
+        @Suppress("UNCHECKED_CAST")
+        val staged = stage(others.getOrPut(registry) { LinkedHashMap() }, registryName(name), factory as Supplier<Any>, null, registry.location().path)
+        return Supplier { @Suppress("UNCHECKED_CAST") (staged.get() as T) }
+    }
 
     /**
      * [registerItem] for a descriptor's item. Two descriptors of one family may share a display
@@ -262,6 +272,10 @@ object ElnRegistry {
                 event.register(net.neoforged.neoforge.registries.NeoForgeRegistries.Keys.BIOME_MODIFIER_SERIALIZERS) { helper ->
                     helper.register(registryName("ores"), mods.eln.worldgen.ElnOreBiomeModifier.CODEC)
                 }
+        }
+        others[event.registryKey]?.let { staged ->
+            @Suppress("UNCHECKED_CAST")
+            registerAll(event, event.registryKey as ResourceKey<out net.minecraft.core.Registry<Any>>, staged)
         }
     }
 

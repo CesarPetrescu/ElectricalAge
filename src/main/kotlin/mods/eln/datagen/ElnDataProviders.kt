@@ -125,7 +125,8 @@ class ElnBlockTags(output: PackOutput, lookup: CompletableFuture<HolderLookup.Pr
             if (oreName != null) tag(BlockTags.create(OreDict.tagFor(oreName).location())).add(desc.block)
         }
         for ((id, block) in ElnRegistry.registeredBlocks) {
-            if (block !is OreBlock && id.path != "sixnode" && id.path != "transparentnode" && id.path != "ghostblock" && id.path != "lightblock") pickaxe.add(block)
+            if (block !is OreBlock && block !is net.minecraft.world.level.block.LiquidBlock &&
+                id.path != "sixnode" && id.path != "transparentnode" && id.path != "ghostblock" && id.path != "lightblock") pickaxe.add(block)
         }
     }
 }
@@ -148,8 +149,9 @@ class ElnItemTags(output: PackOutput, lookup: CompletableFuture<HolderLookup.Pro
 }
 
 class ElnBlockLoot(provider: HolderLookup.Provider) : BlockLootSubProvider(emptySet(), FeatureFlags.REGISTRY.allFlags(), provider) {
-    private val blocks: List<Block> = ElnRegistry.registeredBlocks.filter { (id, _) ->
-        id.path != "sixnode" && id.path != "transparentnode" && id.path != "ghostblock" && id.path != "lightblock"
+    private val blocks: List<Block> = ElnRegistry.registeredBlocks.filter { (id, block) ->
+        id.path != "sixnode" && id.path != "transparentnode" && id.path != "ghostblock" && id.path != "lightblock" &&
+            block !is net.minecraft.world.level.block.LiquidBlock
     }.values.toList()
 
     override fun generate() = blocks.forEach { dropSelf(it) }
