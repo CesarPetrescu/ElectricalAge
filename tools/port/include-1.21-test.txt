@@ -4,5 +4,3 @@ mods/eln/**
 !mods/eln/misc/UtilsClient.java
 !org/lwjgl/**
 !mods/eln/misc/Obj3DRenderCoverageTest.kt
-# console commands are phase 4
-!mods/eln/server/console/**

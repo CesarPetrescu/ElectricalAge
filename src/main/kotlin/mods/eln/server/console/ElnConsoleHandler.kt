@@ -1,12 +1,16 @@
 package mods.eln.server.console
 
+import com.mojang.brigadier.arguments.StringArgumentType
+import com.mojang.brigadier.context.CommandContext
+import com.mojang.brigadier.suggestion.SuggestionProvider
 import mods.eln.misc.FC
-import net.minecraft.command.ICommand
-import net.minecraft.command.ICommandSender
+import net.minecraft.commands.CommandSourceStack
+import net.minecraft.commands.Commands
+import net.minecraft.commands.SharedSuggestionProvider
 import net.minecraft.network.chat.ClickEvent
-import net.minecraft.server.MinecraftServer
-import net.minecraft.core.BlockPos
 import net.minecraft.network.chat.Component
+import net.minecraft.server.MinecraftServer
+import net.neoforged.neoforge.event.RegisterCommandsEvent
 
 val ElnConsoleCommandList = mutableListOf<IConsoleCommand>()
 
@@ -17,7 +21,12 @@ internal fun findConsoleCommand(
     return commands.firstOrNull { it.name.equals(name, ignoreCase = true) }
 }
 
-class ElnConsoleCommands: ICommand {
+/**
+ * `/eln <command> [args]`: the 1.7.10 command tree kept as-is behind one Brigadier literal with a
+ * greedy argument (the sub-commands parse their own words, as they always did). Registered on
+ * [RegisterCommandsEvent]; permission is decided per sub-command, so the literal itself is open.
+ */
+class ElnConsoleCommands {
 
     init {
         ElnConsoleCommandList.addAll(listOf(
@@ -53,7 +62,7 @@ class ElnConsoleCommands: ICommand {
 
         fun cprint(ics: ICommandSender, text: String, url: String) {
             val msg = Component.literal(FC.BRIGHT_GREY + text)
-            msg.style.setClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, url))
+            msg.style = msg.style.withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, url))
             ics.sendMessage(msg)
         }
 
@@ -104,31 +113,46 @@ class ElnConsoleCommands: ICommand {
         }
     }
 
-    // ICommand is Comparable<ICommand> on 1.12, not Comparable<Object>: commands sort by name.
-    override fun compareTo(other: ICommand): Int = name.compareTo(other.name)
 
-    override fun getName() = "eln"
+    fun register(event: RegisterCommandsEvent) {
+        val suggestions = SuggestionProvider<CommandSourceStack> { context, builder ->
+            val typed = try { StringArgumentType.getString(context, "args") } catch (e: IllegalArgumentException) { "" }
+            val words = typed.split(' ')
+            val completions = if (words.size <= 1) {
+                ElnConsoleCommandList.map { it.name }.filter { it.startsWith(words.getOrElse(0) { "" }, ignoreCase = true) }
+            } else {
+                val command = findConsoleCommand(words[0])
+                command?.getTabCompletion(words.drop(1))?.map { (words.dropLast(1) + it).joinToString(" ") } ?: emptyList()
+            }
+            // the suggestion replaces the whole greedy argument
+            val offset = builder.createOffset(builder.start)
+            SharedSuggestionProvider.suggest(completions, offset)
+        }
+        event.dispatcher.register(
+            Commands.literal("eln")
+                .executes { context -> execute(context, emptyList()); 1 }
+                .then(Commands.argument("args", StringArgumentType.greedyString())
+                    .suggests(suggestions)
+                    .executes { context -> execute(context, StringArgumentType.getString(context, "args").split(' ').filter { it.isNotEmpty() }); 1 })
+        )
+    }
 
-    override fun getUsage(sender: ICommandSender) =
-        "${FC.DARK_CYAN}Electrical Age Console, run /eln ls for commands${FC.BRIGHT_GREY }"
-
-    override fun getAliases() = mutableListOf<String>()
-
-    override fun execute(server: MinecraftServer, ics: ICommandSender, args: Array<out String>) {
+    private fun execute(context: CommandContext<CommandSourceStack>, args: List<String>) {
+        val ics = ICommandSender(context.source)
         if (args.isEmpty()) {
-            cprint(ics,"${FC.DARK_CYAN}Electrical Age Console, run /eln ls for commands${FC.BRIGHT_GREY }")
+            cprint(ics, "${FC.DARK_CYAN}Electrical Age Console, run /eln ls for commands${FC.BRIGHT_GREY }")
             return
         }
-        val permissions = determinePermissionsList(server, ics)
+        val permissions = determinePermissionsList(context.source.server, ics)
         val command = findConsoleCommand(args[0])
         if (command == null) {
-            cprint(ics,"${FC.DARK_CYAN}Command not found, run /eln ls for commands${FC.BRIGHT_GREY }")
+            cprint(ics, "${FC.DARK_CYAN}Command not found, run /eln ls for commands${FC.BRIGHT_GREY }")
             return
         }
         cprint(ics, "${FC.DARK_CYAN}${ics.name} $${FC.DARK_YELLOW} /eln ${args.joinToString(" ")}")
         val canRun = permissions.any { command.requiredPermission().contains(it) }
         if (canRun) {
-            command.runCommand(ics, args.toList().drop(1))
+            command.runCommand(ics, args.drop(1))
         } else {
             cprint(ics, "${FC.DARK_CYAN}You do not have permission to run that command. " +
                 "You need to have one of the following: ${command.requiredPermission()}${FC.BRIGHT_GREY }")
@@ -139,12 +163,12 @@ class ElnConsoleCommands: ICommand {
         var creative = false
         var singlePlayer = false
         var isOperator = false
-        val player = ics.entityWorld.getPlayerEntityByName(ics.name)
+        val player = ics.player
         val console = player == null
-        if (!console) {
-            creative = player.isCreative()
-            singlePlayer = server.isSinglePlayer
-                isOperator = server.playerList.oppedPlayers.getEntry(player.gameProfile) != null
+        if (player != null) {
+            creative = player.isCreative
+            singlePlayer = server.isSingleplayer
+            isOperator = server.playerList.isOp(player.gameProfile)
         }
         val playerPerms = mutableListOf<UserPermission>()
         if (creative)
@@ -158,25 +182,5 @@ class ElnConsoleCommands: ICommand {
         if (singlePlayer)
             playerPerms.add(UserPermission.IS_OPERATOR)
         return playerPerms.toList()
-    }
-
-    // We don't actually use this because we do it on command execution for more control
-    override fun checkPermission(server: MinecraftServer, ics: ICommandSender) = true
-
-    override fun getTabCompletions(
-        server: MinecraftServer, ics: ICommandSender, args: Array<out String>, targetPos: BlockPos?
-    ): MutableList<String> {
-        if (args.toList().isEmpty() || args[0] == "") {
-            return ElnConsoleCommandList.map {it.name}.toMutableList()
-        }
-        val command = findConsoleCommand(args[0])
-        if (command == null) {
-            return ElnConsoleCommandList.filter {it.name.startsWith(args[0], ignoreCase = true)}.map{it.name}.toMutableList()
-        }
-        return command.getTabCompletion(args.drop(1)).toMutableList()
-    }
-
-    override fun isUsernameIndex(args: Array<out String>, index: Int): Boolean {
-        return false
     }
 }

@@ -207,6 +207,17 @@ public final class SmokeTest {
         boolean current = cableMeter != null && !cableMeter.contains("I 0A");
         Eln.logger.info("{} {} nodes present, energised={} current flowing={}",
             PREFIX, (energised && current) ? "PASS" : "FAIL", energised, current);
+        runConsoleCommands(world);
+    }
+
+    /** The /eln console, as the server console would run it; its output lands in the log. */
+    private void runConsoleCommands(ServerLevel world) {
+        var server = world.getServer();
+        var source = server.createCommandSourceStack();
+        for (String command : new String[]{"eln", "eln ls", "eln version", "eln zoneDump 4"}) {
+            Eln.logger.info("{} running /{}", PREFIX, command);
+            server.getCommands().performPrefixedCommand(source, command);
+        }
     }
 
     private void shutdown() {

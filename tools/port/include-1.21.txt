@@ -4,7 +4,6 @@ mods/eln/**
 # --- not yet ported: packets and the sided proxies (phase 2)
 # --- not yet ported: content registration and recipes (phase 2)
 # --- not yet ported: commands (brigadier) and cross-mod integrations (phase 4); IC2/OC are gone on 1.21
-!mods/eln/server/console/**
 # (the Waila data carriers - WailaCache, *WailaData, SixNodeCoordonate, TransparentNodeWailaEntry - are plain
 #  classes the packets and elements share and stay in; only the providers/plugin wait for Jade, phase 4)
 !mods/eln/integration/waila/*Provider.kt

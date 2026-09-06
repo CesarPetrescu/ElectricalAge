@@ -1,6 +1,5 @@
 package mods.eln.server.console
 
-import net.minecraft.command.ICommandSender
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull

@@ -27,7 +27,6 @@ import mods.eln.server.ElnDestroyHelper
 import mods.eln.server.console.ElnConsoleCommands.Companion.boolToStr
 import mods.eln.server.console.ElnConsoleCommands.Companion.cprint
 import mods.eln.server.console.ElnConsoleCommands.Companion.getArgBool
-import net.minecraft.command.ICommandSender
 import net.minecraft.server.level.ServerPlayer
 import java.io.BufferedWriter
 import java.io.File
@@ -57,7 +56,7 @@ private data class ZoneBounds(
     val maxZ: Int
 )
 
-private fun parseZoneBounds(ics: ServerPlayer, args: List<String>, commandName: String): ZoneBounds? {
+private fun parseZoneBounds(ics: ICommandSender, args: List<String>, commandName: String): ZoneBounds? {
     if (args.size == 1) {
         val radius = args[0].toIntOrNull()
         if (radius == null || radius < 0) {
@@ -353,7 +352,7 @@ class ElnZoneDumpCommand : IConsoleCommand {
     override val name = "zonedump"
 
     override fun runCommand(ics: ICommandSender, args: List<String>) {
-        if (ics !is ServerPlayer) {
+        if (ics.player == null) {
             cprint(ics, "${FC.BRIGHT_RED}This command can only be run by a player.", indent = 1)
             return
         }
@@ -366,7 +365,7 @@ class ElnZoneDumpCommand : IConsoleCommand {
         val maxZ = bounds.maxZ
 
         val world = ics.level
-        val dim = world.dimension()
+        val dim = mods.eln.misc.DimensionIds.id(world)
         val rangeDescription = "($minX,$minY,$minZ) -> ($maxX,$maxY,$maxZ) in dim $dim"
 
         val nodeManager = NodeManager.instance
@@ -417,7 +416,7 @@ class ElnZoneDumpCommand : IConsoleCommand {
                 }
                 val actualBlock = world.getBlock(coord.x, coord.y, coord.z)
                 if (expectedBlock != null && actualBlock != expectedBlock) {
-                    warnings.add("Node ${coord} (${node.javaClass.simpleName}) expected ${expectedBlock.translationKey} but found ${actualBlock.translationKey}")
+                    warnings.add("Node ${coord} (${node.javaClass.simpleName}) expected ${net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(expectedBlock)} but found ${net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(actualBlock)}")
                 }
             }
         }
@@ -438,10 +437,10 @@ class ElnZoneDumpCommand : IConsoleCommand {
                     val block = world.getBlock(x, y, z)
                     val meta = world.getBlockMetadata(x, y, z)
                     val tile = world.getBlockEntity(x, y, z)
-                    builder.append("  ($x,$y,$z): ${block.translationKey} meta=$meta tile=${tile?.javaClass?.simpleName}\n")
+                    builder.append("  ($x,$y,$z): ${net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block)} meta=$meta tile=${tile?.javaClass?.simpleName}\n")
                     val coord = Coordinate(x, y, z, dim)
                     if ((block == Eln.sixNodeBlock || block == Eln.transparentNodeBlock) && !coordToNode.containsKey(coord)) {
-                        warnings.add("Block ${block.translationKey} at $coord has no registered node")
+                        warnings.add("Block ${net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block)} at $coord has no registered node")
                     }
                     if (block == Eln.ghostBlock && !coordToNode.containsKey(coord) && Eln.ghostManager.getGhost(coord) == null) {
                         warnings.add("Ghost block at $coord has no registered node or ghost manager entry")
@@ -596,7 +595,7 @@ class ElnZoneCleanCommand : IConsoleCommand {
     override val name = "zoneclean"
 
     override fun runCommand(ics: ICommandSender, args: List<String>) {
-        if (ics !is ServerPlayer) {
+        if (ics.player == null) {
             cprint(ics, "${FC.BRIGHT_RED}This command can only be run by a player.", indent = 1)
             return
         }
@@ -609,7 +608,7 @@ class ElnZoneCleanCommand : IConsoleCommand {
         val maxZ = bounds.maxZ
 
         val world = ics.level
-        val dim = world.dimension()
+        val dim = mods.eln.misc.DimensionIds.id(world)
         val nodeManager = NodeManager.instance
         val nodes = nodeManager?.nodeList ?: emptyList()
         val nodesToProcess = nodes.filter {
@@ -686,7 +685,7 @@ class ElnZoneRemoveCommand : IConsoleCommand {
     override val name = "zoneremove"
 
     override fun runCommand(ics: ICommandSender, args: List<String>) {
-        if (ics !is ServerPlayer) {
+        if (ics.player == null) {
             cprint(ics, "${FC.BRIGHT_RED}This command can only be run by a player.", indent = 1)
             return
         }
@@ -699,7 +698,7 @@ class ElnZoneRemoveCommand : IConsoleCommand {
         val maxZ = bounds.maxZ
 
         val world = ics.level
-        val dim = world.dimension()
+        val dim = mods.eln.misc.DimensionIds.id(world)
         val nodeManager = NodeManager.instance
         if (nodeManager == null) {
             cprint(ics, "${FC.BRIGHT_RED}Node manager unavailable, cannot run zoneremove.", indent = 1)
@@ -791,7 +790,7 @@ class ElnZoneDestroyCommand : IConsoleCommand {
     override val name = "zonedestroy"
 
     override fun runCommand(ics: ICommandSender, args: List<String>) {
-        if (ics !is ServerPlayer) {
+        if (ics.player == null) {
             cprint(ics, "${FC.BRIGHT_RED}This command can only be run by a player.", indent = 1)
             return
         }
@@ -811,7 +810,7 @@ class ElnZoneDestroyCommand : IConsoleCommand {
             maxY = bounds.maxY,
             minZ = bounds.minZ,
             maxZ = bounds.maxZ,
-            player = ics
+            player = ics.player!!
         )
 
         cprint(
@@ -833,7 +832,7 @@ class ElnStopShaftCommand : IConsoleCommand {
     override val name = "stop-shaft"
 
     override fun runCommand(ics: ICommandSender, args: List<String>) {
-        if (ics !is ServerPlayer) {
+        if (ics.player == null) {
             cprint(ics, "${FC.BRIGHT_RED}This command can only be run by a player.", indent = 1)
             return
         }
@@ -851,7 +850,7 @@ class ElnStopShaftCommand : IConsoleCommand {
         }
 
         val world = ics.level
-        val dim = world.dimension()
+        val dim = mods.eln.misc.DimensionIds.id(world)
         var bestDistanceSq = Double.MAX_VALUE
         var bestShaftElement: ShaftElement? = null
 
@@ -908,7 +907,7 @@ class ElnResetAmbientTempsCommand : IConsoleCommand {
     override val name = "resetAmbientTemps"
 
     override fun runCommand(ics: ICommandSender, args: List<String>) {
-        if (ics !is ServerPlayer) {
+        if (ics.player == null) {
             cprint(ics, "${FC.BRIGHT_RED}This command can only be run by a player.", indent = 1)
             return
         }
@@ -930,7 +929,7 @@ class ElnResetAmbientTempsCommand : IConsoleCommand {
         }
 
         val rangeSq = range.toDouble() * range.toDouble()
-        val dim = ics.level.dimension()
+        val dim = mods.eln.misc.DimensionIds.id(ics.level)
         var devicesTouched = 0
         var thermalLoadsReset = 0
         var minAmbientC = Double.POSITIVE_INFINITY

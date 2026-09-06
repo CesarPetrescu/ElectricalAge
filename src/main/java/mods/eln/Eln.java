@@ -302,6 +302,9 @@ public class Eln {
         NeoForge.EVENT_BUS.addListener(this::onServerAboutToStart);
         NeoForge.EVENT_BUS.addListener(this::onServerStarting);
         NeoForge.EVENT_BUS.addListener(this::onServerStopped);
+        // /eln: the command tree is built once; Brigadier asks for it on every server start.
+        var consoleCommands = new mods.eln.server.console.ElnConsoleCommands();
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.RegisterCommandsEvent e) -> consoleCommands.register(e));
         mods.eln.devtest.DevHooks.registerIfRequested();
     }
 
