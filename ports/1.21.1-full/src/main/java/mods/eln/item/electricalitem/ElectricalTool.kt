@@ -21,7 +21,7 @@ open class ElectricalTool(name: String, private var strengthOn: Float, private v
     internal var range: Int = 0
 
     override fun onEntitySwing(entityLiving: LivingEntity, stack: ItemStack): Boolean {
-        if (entityLiving.world.isClientSide) return false
+        if (entityLiving.level().isClientSide) return false
 
         Eln.itemEnergyInventoryProcess.addExclusion(this, 2.0)
         return super.onEntitySwing(entityLiving, stack)
@@ -66,7 +66,7 @@ open class ElectricalTool(name: String, private var strengthOn: Float, private v
     }
 
     override fun setEnergy(stack: ItemStack, value: Double) {
-        getNbt(stack).setDouble("energy", value)
+        getNbt(stack).putDouble("energy", value)
     }
 
     override fun getEnergyMax(stack: ItemStack): Double {

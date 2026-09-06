@@ -114,7 +114,7 @@ class PortableOreScannerItem(name: String, obj: Obj3D,
     }
 
     override fun setEnergy(stack: ItemStack, value: Double) {
-        getNbt(stack).setDouble("e", value)
+        getNbt(stack).putDouble("e", value)
     }
 
     private fun getState(stack: ItemStack): State {
@@ -163,7 +163,7 @@ class PortableOreScannerItem(name: String, obj: Obj3D,
     }
 
     override fun onBlockStartBreak(itemstack: ItemStack, x: Int, y: Int, z: Int, player: Player): Boolean {
-        if (!player.world.isClientSide) {
+        if (!player.level().isClientSide) {
             setDamage(itemstack, (getDamage(itemstack) + 1).toByte())
         }
         return super.onBlockStartBreak(itemstack, x, y, z, player)

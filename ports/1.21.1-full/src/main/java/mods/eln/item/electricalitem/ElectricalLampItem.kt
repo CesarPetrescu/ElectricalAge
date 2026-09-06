@@ -105,7 +105,7 @@ class ElectricalLampItem(name: String, private var lightMin: Int, private var ra
     }
 
     override fun setEnergy(stack: ItemStack, value: Double) {
-        getNbt(stack).setDouble("energy", value)
+        getNbt(stack).putDouble("energy", value)
     }
 
     override fun getEnergyMax(stack: ItemStack): Double {

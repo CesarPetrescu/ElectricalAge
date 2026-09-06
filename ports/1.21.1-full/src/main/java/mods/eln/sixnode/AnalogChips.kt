@@ -255,9 +255,9 @@ class PIDRegulator : AnalogFunction() {
     }
 
     override fun writeToNBT(nbt: CompoundTag?, str: String?): CompoundTag? {
-        nbt?.setDouble("Kp", Kp)
-        nbt?.setDouble("Ki", Ki)
-        nbt?.setDouble("Kd", Kd)
+        nbt?.putDouble("Kp", Kp)
+        nbt?.putDouble("Ki", Ki)
+        nbt?.putDouble("Kd", Kd)
         pid.writeToNBT(nbt, "pid")
         return nbt
     }
@@ -411,7 +411,7 @@ open class VoltageControlledSawtoothOscillator : AnalogFunction() {
     }
 
     override fun writeToNBT(nbt: CompoundTag?, str: String?): CompoundTag? {
-        nbt?.setDouble("out", out)
+        nbt?.putDouble("out", out)
         return nbt
     }
 }
@@ -435,7 +435,7 @@ class Amplifier : AnalogFunction() {
     }
 
     override fun writeToNBT(nbt: CompoundTag?, str: String?): CompoundTag? {
-        nbt?.setDouble("gain", gain)
+        nbt?.putDouble("gain", gain)
         return nbt
     }
 
@@ -558,7 +558,7 @@ class SummingUnit : AnalogFunction() {
 
     override fun writeToNBT(nbt: CompoundTag?, str: String?): CompoundTag? {
         for (i in gains.indices) {
-            nbt?.setDouble("gain$i", gains[i])
+            nbt?.putDouble("gain$i", gains[i])
         }
         return nbt
     }
@@ -681,8 +681,8 @@ class SampleAndHold : AnalogFunction() {
     }
 
     override fun writeToNBT(nbt: CompoundTag?, str: String?): CompoundTag? {
-        nbt?.setBoolean("clock", clock)
-        nbt?.setDouble("value", value)
+        nbt?.putBoolean("clock", clock)
+        nbt?.putDouble("value", value)
         return nbt
     }
 }
@@ -709,8 +709,8 @@ class Filter: AnalogFunction() {
 
     override fun writeToNBT(nbt: CompoundTag?, str: String?): CompoundTag? {
         nbt?.apply {
-            setDouble("feedback", feedback)
-            setDouble("output", output)
+            putDouble("feedback", feedback)
+            putDouble("output", output)
         }
         return nbt
     }

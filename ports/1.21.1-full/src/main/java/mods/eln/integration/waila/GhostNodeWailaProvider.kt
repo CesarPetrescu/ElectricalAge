@@ -18,7 +18,6 @@ import net.minecraft.util.math.RayTraceResult
 import net.minecraft.ChatFormatting
 import net.minecraft.world.level.Level
 import net.minecraftforge.fml.common.Optional
-import javax.xml.soap.Text
 
 @Optional.Interface(iface = "mcp.mobius.waila.api.IWailaDataProvider", modid = "Waila")
 class GhostNodeWailaProvider(private val transparentNodeProvider: TransparentNodeWailaProvider,

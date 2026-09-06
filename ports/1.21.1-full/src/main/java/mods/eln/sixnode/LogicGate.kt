@@ -306,7 +306,7 @@ class SchmittTrigger : LogicFunction() {
     }
 
     override fun writeToNBT(nbt: CompoundTag?, str: String?): CompoundTag? {
-        nbt?.setBoolean(str + "state", state)
+        nbt?.putBoolean(str + "state", state)
         return nbt
     }
 }
@@ -339,8 +339,8 @@ class Oscillator : LogicFunction() {
     }
 
     override fun writeToNBT(nbt: CompoundTag?, str: String?): CompoundTag? {
-        nbt?.setDouble(str + "ramp", ramp)
-        nbt?.setBoolean(str + "state", state)
+        nbt?.putDouble(str + "ramp", ramp)
+        nbt?.putBoolean(str + "state", state)
         return nbt
     }
 }
@@ -374,8 +374,8 @@ abstract class TriggeredLogicFunction(private val triggerIndex: Int) : LogicFunc
     }
 
     override fun writeToNBT(nbt: CompoundTag?, str: String?): CompoundTag? {
-        nbt?.setBoolean(str + "trigger", trigger)
-        nbt?.setBoolean(str + "state", state)
+        nbt?.putBoolean(str + "trigger", trigger)
+        nbt?.putBoolean(str + "state", state)
         return nbt
     }
 }

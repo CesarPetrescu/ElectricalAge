@@ -81,7 +81,7 @@ class ElectricalArmor(materialIn: ArmorItem.ArmorMaterial,
     }
 
     override fun setEnergy(stack: ItemStack, value: Double) {
-        getNbt(stack).setDouble("energy", value)
+        getNbt(stack).putDouble("energy", value)
     }
 
     override fun getEnergyMax(stack: ItemStack): Double {
