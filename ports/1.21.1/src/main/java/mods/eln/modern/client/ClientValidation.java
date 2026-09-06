@@ -13,7 +13,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 
-/** Independent readiness marker for CI: title screen plus real non-missing block and item geometry. */
+/** Opt-in CI probe. Normal play and user resource packs do not run diagnostic assertions. */
 @EventBusSubscriber(modid = ElectricalAgeModern.MODID, value = Dist.CLIENT)
 public final class ClientValidation {
     private static boolean validated;
@@ -24,21 +24,27 @@ public final class ClientValidation {
         return count;
     }
     @SubscribeEvent public static void afterClientTick(ClientTickEvent.Post event) {
+        if (!Boolean.getBoolean("eln.validateClient")) return;
         Minecraft client = Minecraft.getInstance();
         if (validated || !(client.screen instanceof TitleScreen)) return;
-        BlockState state = ElectricalAgeModern.CIRCUIT_BENCH.get().defaultBlockState();
-        BakedModel block = client.getBlockRenderer().getBlockModel(state);
-        BakedModel item = client.getItemRenderer().getModel(new ItemStack(ElectricalAgeModern.CIRCUIT_BENCH_ITEM.get()), null, null, 0);
         BakedModel missing = client.getModelManager().getMissingModel();
-        int blockQuads = count(block,state), itemQuads = count(item,null);
-        if (block == missing || item == missing || blockQuads == 0 || itemQuads == 0) throw new IllegalStateException("ELN circuit bench model did not bake correctly");
+        int blockQuads = 0;
+        for (BlockState state : ElectricalAgeModern.CIRCUIT_BENCH.get().getStateDefinition().getPossibleStates()) {
+            BakedModel block = client.getBlockRenderer().getBlockModel(state);
+            int quads = count(block,state);
+            if (block == missing || quads != 12) throw new IllegalStateException("ELN circuit bench block model is incomplete: " + state + " quads=" + quads);
+            blockQuads += quads;
+        }
+        BakedModel item = client.getItemRenderer().getModel(new ItemStack(ElectricalAgeModern.CIRCUIT_BENCH_ITEM.get()), null, null, 0);
+        int itemQuads = count(item,null);
+        if (item == missing || itemQuads != 12) throw new IllegalStateException("ELN circuit bench item model is incomplete: quads=" + itemQuads);
         if (Boolean.getBoolean("eln.verifyPackagedRuntime")) {
             String origin=ElectricalAgeModern.class.getProtectionDomain().getCodeSource().getLocation().toExternalForm();
             if (!origin.contains(".jar")) throw new IllegalStateException("Packaged probe loaded development classes: "+origin);
             try {
                 Class.forName("mods.eln.modern.gametest.CircuitBenchGameTests",false,ElectricalAgeModern.class.getClassLoader());
                 throw new IllegalStateException("GameTest classes leaked into the packaged runtime");
-            } catch (ClassNotFoundException expected) { /* The production jar must not contain test classes. */ }
+            } catch (ClassNotFoundException expected) { /* Production jar excludes GameTests. */ }
             ElectricalAgeModern.LOGGER.info("ELN_PACKAGED_RUNTIME_OK origin={}",origin);
         }
         validated = true;

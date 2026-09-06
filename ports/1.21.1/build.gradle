@@ -9,8 +9,7 @@ java { toolchain.languageVersion = JavaLanguageVersion.of(21); withSourcesJar() 
 repositories { mavenCentral() }
 dependencies { implementation project(':sim-core') }
 evaluationDependsOn(':sim-core')
-// The empty source set deliberately has NO dependency on main or sim-core.
-// Packaged-client tests must load the actual jar from their own mods directory.
+// No dependency on main or sim-core: the packaged probe loads only the built jar.
 sourceSets { packaged {} }
 sourceSets.main.java.srcDir 'src/gametest/java'
 sourceSets.main.resources.srcDir 'src/gametest/resources'
@@ -20,12 +19,17 @@ neoForge {
     runs {
         client { client(); gameDirectory = project.file('run/client') }
         server { server(); gameDirectory = project.file('run/server'); programArgument '--nogui' }
-        smokeClient { client(); gameDirectory = project.file('run/smoke-client') }
+        smokeClient {
+            client()
+            gameDirectory = project.file('run/smoke-client')
+            systemProperty 'eln.validateClient', 'true'
+        }
         packagedClient {
             client()
             gameDirectory = project.file('run/packaged-smoke-client')
             sourceSet = sourceSets.packaged
             loadedMods = []
+            systemProperty 'eln.validateClient', 'true'
             systemProperty 'eln.verifyPackagedRuntime', 'true'
         }
         gameTestServer {
