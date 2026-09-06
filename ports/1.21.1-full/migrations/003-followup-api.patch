@@ -1,0 +1,204 @@
+--- a/src/main/java/mods/eln/item/electricalitem/BatteryItem.kt
++++ b/src/main/java/mods/eln/item/electricalitem/BatteryItem.kt
+@@ -40,7 +40,7 @@
+     }
+ 
+     override fun setEnergy(stack: ItemStack, value: Double) {
+-        getNbt(stack).setDouble("energy", Math.max(0.0, value))
++        getNbt(stack).putDouble("energy", Math.max(0.0, value))
+     }
+ 
+     override fun getEnergyMax(stack: ItemStack): Double {
+--- a/src/main/java/mods/eln/item/electricalitem/ElectricalArmor.kt
++++ b/src/main/java/mods/eln/item/electricalitem/ElectricalArmor.kt
+@@ -81,7 +81,7 @@
+     }
+ 
+     override fun setEnergy(stack: ItemStack, value: Double) {
+-        getNbt(stack).setDouble("energy", value)
++        getNbt(stack).putDouble("energy", value)
+     }
+ 
+     override fun getEnergyMax(stack: ItemStack): Double {
+--- a/src/main/java/mods/eln/item/electricalitem/ElectricalLampItem.kt
++++ b/src/main/java/mods/eln/item/electricalitem/ElectricalLampItem.kt
+@@ -105,7 +105,7 @@
+     }
+ 
+     override fun setEnergy(stack: ItemStack, value: Double) {
+-        getNbt(stack).setDouble("energy", value)
++        getNbt(stack).putDouble("energy", value)
+     }
+ 
+     override fun getEnergyMax(stack: ItemStack): Double {
+--- a/src/main/java/mods/eln/item/electricalitem/ElectricalTool.kt
++++ b/src/main/java/mods/eln/item/electricalitem/ElectricalTool.kt
+@@ -21,7 +21,7 @@
+     internal var range: Int = 0
+ 
+     override fun onEntitySwing(entityLiving: LivingEntity, stack: ItemStack): Boolean {
+-        if (entityLiving.world.isClientSide) return false
++        if (entityLiving.level().isClientSide) return false
+ 
+         Eln.itemEnergyInventoryProcess.addExclusion(this, 2.0)
+         return super.onEntitySwing(entityLiving, stack)
+@@ -66,7 +66,7 @@
+     }
+ 
+     override fun setEnergy(stack: ItemStack, value: Double) {
+-        getNbt(stack).setDouble("energy", value)
++        getNbt(stack).putDouble("energy", value)
+     }
+ 
+     override fun getEnergyMax(stack: ItemStack): Double {
+--- a/src/main/java/mods/eln/item/electricalitem/PortableOreScannerItem.kt
++++ b/src/main/java/mods/eln/item/electricalitem/PortableOreScannerItem.kt
+@@ -114,7 +114,7 @@
+     }
+ 
+     override fun setEnergy(stack: ItemStack, value: Double) {
+-        getNbt(stack).setDouble("e", value)
++        getNbt(stack).putDouble("e", value)
+     }
+ 
+     private fun getState(stack: ItemStack): State {
+@@ -163,7 +163,7 @@
+     }
+ 
+     override fun onBlockStartBreak(itemstack: ItemStack, x: Int, y: Int, z: Int, player: Player): Boolean {
+-        if (!player.world.isClientSide) {
++        if (!player.level().isClientSide) {
+             setDamage(itemstack, (getDamage(itemstack) + 1).toByte())
+         }
+         return super.onBlockStartBreak(itemstack, x, y, z, player)
+--- a/src/main/java/mods/eln/item/electricalitem/ElectricalAxe.kt
++++ b/src/main/java/mods/eln/item/electricalitem/ElectricalAxe.kt
+@@ -46,7 +46,7 @@
+     }
+ 
+     private fun setCapitation(p: Player?, stack: ItemStack, capitation: Boolean) {
+-        getNbt(stack).setBoolean("capitation", capitation)
++        getNbt(stack).putBoolean("capitation", capitation)
+         if (p != null) {
+             Utils.sendMessage(p, "Set treecapitation to $capitation")
+         }
+--- a/src/main/java/mods/eln/sixnode/AnalogChips.kt
++++ b/src/main/java/mods/eln/sixnode/AnalogChips.kt
+@@ -255,9 +255,9 @@
+     }
+ 
+     override fun writeToNBT(nbt: CompoundTag?, str: String?): CompoundTag? {
+-        nbt?.setDouble("Kp", Kp)
+-        nbt?.setDouble("Ki", Ki)
+-        nbt?.setDouble("Kd", Kd)
++        nbt?.putDouble("Kp", Kp)
++        nbt?.putDouble("Ki", Ki)
++        nbt?.putDouble("Kd", Kd)
+         pid.writeToNBT(nbt, "pid")
+         return nbt
+     }
+@@ -411,7 +411,7 @@
+     }
+ 
+     override fun writeToNBT(nbt: CompoundTag?, str: String?): CompoundTag? {
+-        nbt?.setDouble("out", out)
++        nbt?.putDouble("out", out)
+         return nbt
+     }
+ }
+@@ -435,7 +435,7 @@
+     }
+ 
+     override fun writeToNBT(nbt: CompoundTag?, str: String?): CompoundTag? {
+-        nbt?.setDouble("gain", gain)
++        nbt?.putDouble("gain", gain)
+         return nbt
+     }
+ 
+@@ -558,7 +558,7 @@
+ 
+     override fun writeToNBT(nbt: CompoundTag?, str: String?): CompoundTag? {
+         for (i in gains.indices) {
+-            nbt?.setDouble("gain$i", gains[i])
++            nbt?.putDouble("gain$i", gains[i])
+         }
+         return nbt
+     }
+@@ -681,8 +681,8 @@
+     }
+ 
+     override fun writeToNBT(nbt: CompoundTag?, str: String?): CompoundTag? {
+-        nbt?.setBoolean("clock", clock)
+-        nbt?.setDouble("value", value)
++        nbt?.putBoolean("clock", clock)
++        nbt?.putDouble("value", value)
+         return nbt
+     }
+ }
+@@ -709,8 +709,8 @@
+ 
+     override fun writeToNBT(nbt: CompoundTag?, str: String?): CompoundTag? {
+         nbt?.apply {
+-            setDouble("feedback", feedback)
+-            setDouble("output", output)
++            putDouble("feedback", feedback)
++            putDouble("output", output)
+         }
+         return nbt
+     }
+--- a/src/main/java/mods/eln/sixnode/LogicGate.kt
++++ b/src/main/java/mods/eln/sixnode/LogicGate.kt
+@@ -306,7 +306,7 @@
+     }
+ 
+     override fun writeToNBT(nbt: CompoundTag?, str: String?): CompoundTag? {
+-        nbt?.setBoolean(str + "state", state)
++        nbt?.putBoolean(str + "state", state)
+         return nbt
+     }
+ }
+@@ -339,8 +339,8 @@
+     }
+ 
+     override fun writeToNBT(nbt: CompoundTag?, str: String?): CompoundTag? {
+-        nbt?.setDouble(str + "ramp", ramp)
+-        nbt?.setBoolean(str + "state", state)
++        nbt?.putDouble(str + "ramp", ramp)
++        nbt?.putBoolean(str + "state", state)
+         return nbt
+     }
+ }
+@@ -374,8 +374,8 @@
+     }
+ 
+     override fun writeToNBT(nbt: CompoundTag?, str: String?): CompoundTag? {
+-        nbt?.setBoolean(str + "trigger", trigger)
+-        nbt?.setBoolean(str + "state", state)
++        nbt?.putBoolean(str + "trigger", trigger)
++        nbt?.putBoolean(str + "state", state)
+         return nbt
+     }
+ }
+--- a/src/main/java/mods/eln/transparentnode/FuelGenerator.kt
++++ b/src/main/java/mods/eln/transparentnode/FuelGenerator.kt
+@@ -215,8 +215,8 @@
+ 
+     override fun writeToNBT(nbt: CompoundTag?): CompoundTag? {
+         super.writeToNBT(nbt)
+-        nbt?.setDouble("tankLevel", tankLevel)
+-        nbt?.setBoolean("on", on)
++        nbt?.putDouble("tankLevel", tankLevel)
++        nbt?.putBoolean("on", on)
+         return nbt;
+     }
+ 
+--- a/src/main/java/mods/eln/integration/waila/GhostNodeWailaProvider.kt
++++ b/src/main/java/mods/eln/integration/waila/GhostNodeWailaProvider.kt
+@@ -18,7 +18,6 @@
+ import net.minecraft.ChatFormatting
+ import net.minecraft.world.level.Level
+ import net.minecraftforge.fml.common.Optional
+-import javax.xml.soap.Text
+ 
+ @Optional.Interface(iface = "mcp.mobius.waila.api.IWailaDataProvider", modid = "Waila")
+ class GhostNodeWailaProvider(private val transparentNodeProvider: TransparentNodeWailaProvider,

@@ -19,19 +19,20 @@ jobs:
       source_sha: ${{ steps.source.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
-      - name: Restore exact asset bytes and apply reviewed member migration once
+      - name: Apply reviewed ten-file API followup once
         shell: bash
         run: |
           set -euo pipefail
           python3 -m unittest discover -s ports/1.21.1-full/tools -p 'test_*.py' -v
-          if [[ ! -f ports/1.21.1-full/migrations/002-members.json ]]; then
-            python3 ports/1.21.1-full/tools/restore_binary_assets.py
-            python3 ports/1.21.1-full/tools/rewrite_members.py --apply
+          if [[ ! -f ports/1.21.1-full/migrations/003-applied.txt ]]; then
+            git apply --check --directory=ports/1.21.1-full ports/1.21.1-full/migrations/003-followup-api.patch
+            git apply --directory=ports/1.21.1-full ports/1.21.1-full/migrations/003-followup-api.patch
             python3 ports/1.21.1-full/tools/verify_preservation.py
+            sha256sum ports/1.21.1-full/migrations/003-followup-api.patch > ports/1.21.1-full/migrations/003-applied.txt
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git add ports/1.21.1-full/src ports/1.21.1-full/reference ports/1.21.1-full/migrations
-            git commit -m 'port: migrate original API members and restore binary import integrity [skip ci]'
+            git add ports/1.21.1-full/src ports/1.21.1-full/migrations
+            git commit -m 'port: correct original item and logic-chip NBT calls without replacing behavior [skip ci]'
             git push origin HEAD:refs/heads/port/1.21.1-full-source
           fi
       - name: Record exact source revision
@@ -73,7 +74,7 @@ jobs:
         run: |
           mkdir -p build/migration
           git rev-parse HEAD > build/migration/source-commit.txt
-          python3 tools/compile_report.py --label round3
+          python3 tools/compile_report.py --label round4
       - name: Enforce independent API probe
         if: ${{ always() && steps.api_probe.outcome == 'failure' }}
         run: exit 1
@@ -83,7 +84,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p build/migration
-          cat build/migration/round3/SUMMARY.md >> "$GITHUB_STEP_SUMMARY" || true
+          cat build/migration/round4/SUMMARY.md >> "$GITHUB_STEP_SUMMARY" || true
           git -C ../.. archive --format=zip HEAD:ports/1.21.1-full -o "$PWD/build/full-source-migration.zip"
           python3 -c "import zipfile; z=zipfile.ZipFile('build/full-source-migration.zip'); assert len(z.namelist()) > 4000, 'Incomplete source archive'"
       - uses: actions/upload-artifact@v4
