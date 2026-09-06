@@ -32,7 +32,7 @@ public final class ClientSmokeTest {
     private static final String PREFIX = "SMOKE";
     private static final int X = 512, Z = 512, GROUND = 64;
 
-    private enum Phase { OPEN, JOIN, SETUP, WORLD_SHOT, GUI, GUI_SHOT, INVENTORY, INVENTORY_SHOT, CREATIVE_TAB, CREATIVE_SHOT, DONE }
+    private enum Phase { OPEN, JOIN, SETUP, WORLD_SHOT, GUI, GUI_SHOT, MACHINE_GUI, MACHINE_GUI_SHOT, INVENTORY, INVENTORY_SHOT, CREATIVE_TAB, CREATIVE_SHOT, DONE }
 
     private final String save;
     private Phase phase = Phase.OPEN;
@@ -116,6 +116,24 @@ public final class ClientSmokeTest {
                 if (wait++ < 40) return;
                 Eln.LOGGER.info("{} {} screen open: {}", PREFIX, mc.screen == null ? "FAIL no" : "PASS", mc.screen == null ? null : mc.screen.getClass().getName());
                 shot(mc, "smoke-gui");
+                if (mc.screen != null) mc.screen.onClose();
+                phase = Phase.MACHINE_GUI;
+                wait = 0;
+            }
+            case MACHINE_GUI -> {
+                if (wait++ < 10) return;
+                // right-click the macerator (a transparent node with a container GUI)
+                BlockPos pos = new BlockPos(X + 2, GROUND + 1, Z + 2);
+                BlockHitResult hit = new BlockHitResult(new Vec3(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 1.0), Direction.SOUTH, pos, false);
+                var result = mc.gameMode.useItemOn(mc.player, InteractionHand.MAIN_HAND, hit);
+                Eln.LOGGER.info("{} right-click on the macerator -> {}", PREFIX, result);
+                phase = Phase.MACHINE_GUI_SHOT;
+                wait = 0;
+            }
+            case MACHINE_GUI_SHOT -> {
+                if (wait++ < 40) return;
+                Eln.LOGGER.info("{} {} machine screen open: {}", PREFIX, mc.screen == null ? "FAIL no" : "PASS", mc.screen == null ? null : mc.screen.getClass().getName());
+                shot(mc, "smoke-machine-gui");
                 if (mc.screen != null) mc.screen.onClose();
                 phase = Phase.INVENTORY;
                 wait = 0;

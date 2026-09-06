@@ -102,6 +102,10 @@ public final class SmokeTest {
         // nothing flows and the resistor reads 0 V across a floating terminal.
         placeSixNode(world, player, "Ground Cable", X + 4, Z);
 
+        // A transparent node (a machine with a container GUI) two blocks south, on its own stone.
+        world.setBlock(new BlockPos(X + 2, GROUND, Z + 2), Blocks.STONE.defaultBlockState(), 3);
+        placeTransparentNode(world, player, "48V Macerator", X + 2, Z + 2);
+
         // The creative source defaults to 0 V; readConfigTool is the public setter.
         SixNodeElement source = element(world, X, Z);
         if (source == null) {
@@ -160,6 +164,21 @@ public final class SmokeTest {
         BlockState placed = world.getBlockState(new BlockPos(x, GROUND + 1, z));
         Eln.logger.info("{} place '{}' at ({},{},{}) -> {} block={}",
             PREFIX, descriptorName, x, GROUND + 1, z, result, BuiltInRegistries.BLOCK.getKey(placed.getBlock()));
+    }
+
+    /** A transparent node stands on the block; the item's placement path creates node and block. */
+    private void placeTransparentNode(ServerLevel world, FakePlayer player, String descriptorName, int x, int z) {
+        player.setYRot(0f);
+        player.setYHeadRot(0f);
+        ItemStack stack = Eln.findItemStack(descriptorName, 1);
+        if (stack == null || stack.isEmpty()) {
+            Eln.logger.error("{} FAIL no item stack named '{}'", PREFIX, descriptorName);
+            return;
+        }
+        player.setItemInHand(InteractionHand.MAIN_HAND, stack.copy());
+        boolean placed = Eln.transparentNodeItem.placeBlockAt(stack, player, world, new BlockPos(x, GROUND + 1, z), net.minecraft.core.Direction.UP);
+        BlockState state = world.getBlockState(new BlockPos(x, GROUND + 1, z));
+        Eln.logger.info("{} place '{}' at ({},{},{}) -> {} block={}", PREFIX, descriptorName, x, GROUND + 1, z, placed, BuiltInRegistries.BLOCK.getKey(state.getBlock()));
     }
 
     private void orient(ServerLevel world, int x, int z, mods.eln.misc.LRDU front) {
