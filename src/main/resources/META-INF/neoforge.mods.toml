@@ -24,6 +24,13 @@ ordering="NONE"
 side="BOTH"
 
 [[dependencies.${modId}]]
+modId="create"
+type="optional"
+versionRange="[6.0.10,6.1)"
+ordering="AFTER"
+side="BOTH"
+
+[[dependencies.${modId}]]
 modId="minecraft"
 type="required"
 versionRange="[${minecraftVersion}]"

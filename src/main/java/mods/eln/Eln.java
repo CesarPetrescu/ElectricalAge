@@ -416,6 +416,9 @@ public class Eln {
         ItemRegistration.INSTANCE.registerItem();
         EntityRegistration.INSTANCE.registerEntities();
         mods.eln.fluid.FluidRegistration.registerElnFluids();
+        if (net.neoforged.fml.ModList.get().isLoaded("create")) {
+            mods.eln.integration.create.CreateIntegration.register();
+        }
 
         ElnRegistry.afterItems(this::updateCreativeTabIcons);
 

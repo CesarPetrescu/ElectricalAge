@@ -23,6 +23,18 @@ These are development prereleases. Keep backups of worlds used for testing. Jade
 
 ## Build and test
 
+### Inventory and Create integration
+
+Items are organized into **Wires & Cables, Signals & Control, Power, Mechanics, Processing,
+Lighting, Materials, Tools & Armor, and Creative Only**. Ground Cable is in Wires & Cables.
+
+With **Create 6.0.10 for Minecraft 1.21.1 / NeoForge** installed, the Mechanics tab also contains
+4 kW and 16 kW **Create shaft adapters**. They drive ELN machinery from Create rotation using
+load-dependent stress, selectable gearing, and overload protection. See the
+[connection, crafting, and controls guide](docs/create-shaft-adapters.md).
+
+### Compile from source
+
 Use JDK 21 and the included Gradle wrapper. On Linux/macOS:
 
 ```sh

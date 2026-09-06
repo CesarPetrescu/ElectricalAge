@@ -19,4 +19,6 @@ If you learn things about making the Gradle build work in the sandbox, document 
 
 # Sandbox
 
+* On Windows, run the 1.21.1 build with a full JDK 21 in JAVA_HOME. A launcher-provided JRE can start Gradle but NeoForm's Minecraft recompilation fails because javax.tools.JavaCompiler is absent. Gradle's provisioned JDK under its user-home jdks directory works. `generateLangFiles` regenerates translation keys using the existing Java/Kotlin source parser.
+
 * When `./gradlew` fails inside the sandbox claiming it “Could not determine a usable wildcard IP”, rerun with `GRADLE_USER_HOME=$PWD/.gradle` and, if needed, request escalation—the build otherwise succeeds once it can write its cache and bind to an IP.

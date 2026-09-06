@@ -1,0 +1,33 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "create"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ISI",
+    "CMC",
+    "ISI"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "S": {
+      "item": "create:shaft"
+    },
+    "C": {
+      "item": "create:cogwheel"
+    },
+    "M": {
+      "item": "create:precision_mechanism"
+    }
+  },
+  "result": {
+    "id": "eln:create_shaft_adapter",
+    "count": 1
+  }
+}

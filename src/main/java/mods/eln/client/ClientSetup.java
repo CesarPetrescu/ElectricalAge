@@ -32,6 +32,7 @@ public final class ClientSetup {
 
     @SubscribeEvent
     public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        if (net.neoforged.fml.ModList.get().isLoaded("create")) mods.eln.integration.create.CreateAdapterClient.renderers(event);
         event.registerBlockEntityRenderer(SixNodeEntity.TYPE.get(), context -> new SixNodeRender());
         event.registerBlockEntityRenderer(TransparentNodeEntity.TYPE.get(), context -> new TransparentNodeRender());
         // the fluid-handling transparent nodes (EntityMetaTag.Fluid: the steam and gas turbines, the

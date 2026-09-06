@@ -11,6 +11,7 @@ import java.io.File
 import java.nio.charset.StandardCharsets
 
 internal object JavaAstParser {
+    init { StaticJavaParser.getParserConfiguration().setLanguageLevel(com.github.javaparser.ParserConfiguration.LanguageLevel.JAVA_21) }
 
     fun parseFile(file: File): Set<TranslationItem> {
         try {

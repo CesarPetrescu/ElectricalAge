@@ -75,6 +75,7 @@ public final class ClientGuiHandler {
 
     @SubscribeEvent
     public static void onRegisterScreens(RegisterMenuScreensEvent event) {
+        if (net.neoforged.fml.ModList.get().isLoaded("create")) mods.eln.integration.create.CreateAdapterClient.screens(event);
         event.<AbstractContainerMenu, AbstractContainerScreen<AbstractContainerMenu>>register(GuiHandler.MENU.get(), (menu, inventory, title) -> {
             Screen s = pendingScreen;
             pendingScreen = null;

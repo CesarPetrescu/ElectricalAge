@@ -89,11 +89,16 @@ jobs:
             build/reports/tests/benchmarkTest/**
 
   smoke:
-    name: In-world smoke (server, restart, client)
+    name: In-world smoke (${{ matrix.integration }})
+    strategy:
+      fail-fast: false
+      matrix:
+        integration: [standalone, create]
     runs-on: ubuntu-latest
     timeout-minutes: 90
     env:
       DISPLAY: ":99"
+      WITH_CREATE: ${{ matrix.integration == 'create' && '1' || '0' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -157,7 +162,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: smoke-runs
+          name: smoke-runs-${{ matrix.integration }}
           if-no-files-found: warn
           path: |
             build/smoke-artifacts/**

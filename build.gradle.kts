@@ -121,6 +121,7 @@ neoForge {
             if (project.hasProperty("stopAfterStart")) systemProperty("eln.stopAfterStart", project.property("stopAfterStart").toString())
             if (project.hasProperty("stopAtTitle")) systemProperty("eln.stopAtTitle", "true")
             if (project.hasProperty("smokeClient")) systemProperty("eln.smokeClient", project.property("smokeClient").toString())
+            if (project.hasProperty("createSmoke")) systemProperty("eln.createSmoke", project.property("createSmoke").toString())
         }
     }
 
@@ -212,6 +213,7 @@ tasks.processResources {
 
 // --------------------------------------------------------------- dependencies
 repositories {
+    maven { url = uri("https://maven.createmod.net") }
     maven {
         name = "Kotlin for Forge"
         url = uri("https://thedarkcolour.github.io/KotlinForForge/")
@@ -230,6 +232,9 @@ repositories {
 }
 
 dependencies {
+    compileOnly("maven.modrinth:create:6.0.10+mc1.21.1")
+    compileOnly("net.createmod.ponder:ponder-neoforge:1.0.82+mc1.21.1")
+    if (project.hasProperty("withCreate")) runtimeOnly("maven.modrinth:create:6.0.10+mc1.21.1")
     // Kotlin runtime comes from the Kotlin for Forge mod at run time (no shading, no relocation).
     implementation("thedarkcolour:kotlinforforge-neoforge:${property("kffVersion")}")
 
@@ -267,6 +272,15 @@ dependencies {
 }
 
 // ---------------------------------------------------------------------- tests
+tasks.register<JavaExec>("generateLangFiles") {
+    group = "build"
+    description = "Regenerate translation keys from Java and Kotlin sources."
+    dependsOn(tasks.named("classes"))
+    classpath = sourceSets.main.get().output + configurations.compileClasspath.get()
+    mainClass.set("mods.eln.i18n.LanguageFileUpdater")
+    args("src/main", "src/main/resources/assets/eln/lang")
+}
+
 tasks.named<Test>("test") {
     useJUnitPlatform()
     exclude("**/*BenchmarkTest.*", "**/*ProfilingTest.*")

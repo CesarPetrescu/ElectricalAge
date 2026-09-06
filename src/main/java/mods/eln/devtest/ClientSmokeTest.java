@@ -34,7 +34,7 @@ public final class ClientSmokeTest {
     /** The server test's mechanical rows (SmokeTest.MECH_Z, LARGE_Z). */
     private static final int MECH_Z = Z + 14, LARGE_Z = Z + 21, GALLERY_Z = Z + 28;
 
-    private enum Phase { OPEN, JOIN, SETUP, WORLD_SHOT, NIGHT_SHOT, GRID_SHOT, MECH_SHOT, MECH_SPIN_SHOT, TACHOMETER_GUI, TACHOMETER_GUI_SHOT, LARGE_SHOT, GALLERY_SHOT, THIRD_PERSON_SHOT, HAND_THIRD_SHOT, HAND_FIRST_SHOT, HAND_CABLE_SHOT, GUI, GUI_SHOT, MACHINE_GUI, MACHINE_GUI_SHOT, INVENTORY, INVENTORY_SHOT, CREATIVE_TAB, CREATIVE_SHOT, CREATIVE_TAB_POWER, CREATIVE_POWER_SHOT, DONE }
+    private enum Phase { OPEN, JOIN, SETUP, WORLD_SHOT, NIGHT_SHOT, GRID_SHOT, MECH_SHOT, MECH_SPIN_SHOT, TACHOMETER_GUI, TACHOMETER_GUI_SHOT, LARGE_SHOT, GALLERY_SHOT, THIRD_PERSON_SHOT, HAND_THIRD_SHOT, HAND_FIRST_SHOT, HAND_CABLE_SHOT, GUI, GUI_SHOT, MACHINE_GUI, MACHINE_GUI_SHOT, INVENTORY, INVENTORY_SHOT, CREATIVE_TAB, CREATIVE_SHOT, CREATIVE_TAB_POWER, CREATIVE_POWER_SHOT, ADAPTER_VIEW, ADAPTER_GUI, ADAPTER_GUI_SHOT, DONE }
 
     private final String save;
     private Phase phase = Phase.OPEN;
@@ -295,7 +295,7 @@ public final class ClientSmokeTest {
             case CREATIVE_TAB -> {
                 if (wait++ < 10) return;
                 // the creative inventory (a creative player's inventory screen) on one of the mod's tabs
-                selectCreativeTab(mc, "Machines");
+                selectCreativeTab(mc, "Processing");
                 phase = Phase.CREATIVE_SHOT;
                 wait = 0;
             }
@@ -308,14 +308,53 @@ public final class ClientSmokeTest {
             case CREATIVE_TAB_POWER -> {
                 if (wait++ < 10) return;
                 // the tab with the shaft machines: their inventory icons are their models
-                selectCreativeTab(mc, "Power Electronics");
+                selectCreativeTab(mc, CREATIVE_CATEGORIES[creativeCategory]);
                 phase = Phase.CREATIVE_POWER_SHOT;
                 wait = 0;
             }
             case CREATIVE_POWER_SHOT -> {
                 if (wait++ < 40) return;
-                shot(mc, "smoke-creative-power");
-                phase = Phase.DONE;
+                shot(mc, "smoke-creative-category-" + creativeCategory);
+                creativeCategory++;
+                phase = creativeCategory < CREATIVE_CATEGORIES.length ? Phase.CREATIVE_TAB_POWER : (net.neoforged.fml.ModList.get().isLoaded("create") ? Phase.ADAPTER_VIEW : Phase.DONE);
+                wait = 0;
+            }
+            case ADAPTER_VIEW -> {
+                if (wait == 0) {
+                    mc.setScreen(null);
+                    mc.getSingleplayerServer().execute(() -> {
+                        var player = mc.getSingleplayerServer().getPlayerList().getPlayers().get(0);
+                        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                        player.teleportTo(player.serverLevel(), 643.5, 69, 654.5, 180f, 35f);
+                    });
+                }
+                if (wait++ < 100) return;
+                shot(mc, "smoke-create-adapters");
+                phase = Phase.ADAPTER_GUI;
+                wait = 0;
+            }
+            case ADAPTER_GUI -> {
+                if (wait == 0) {
+                    mc.setScreen(null);
+                    mc.getSingleplayerServer().execute(() -> {
+                        var player = mc.getSingleplayerServer().getPlayerList().getPlayers().get(0);
+                        player.teleportTo(player.serverLevel(), 640.5, 65, 642.5 + adapterIndex * 8, 180f, 20f);
+                    });
+                }
+                if (wait++ < 40) return;
+                var pos = new BlockPos(640, 65, 640 + adapterIndex * 8);
+                mc.gameMode.useItemOn(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND,
+                    new net.minecraft.world.phys.BlockHitResult(pos.getCenter(), net.minecraft.core.Direction.SOUTH, pos, false));
+                phase = Phase.ADAPTER_GUI_SHOT;
+                wait = 0;
+            }
+            case ADAPTER_GUI_SHOT -> {
+                if (wait++ < 40) return;
+                check(mc.player.containerMenu instanceof mods.eln.integration.create.CreateAdapterMenu, "Create adapter configuration screen opened");
+                shot(mc, "smoke-create-adapter-menu-" + adapterIndex);
+                adapterIndex++;
+                mc.player.closeContainer();
+                phase = adapterIndex < 2 ? Phase.ADAPTER_GUI : Phase.DONE;
                 wait = 0;
             }
             case DONE -> {
@@ -365,7 +404,7 @@ public final class ClientSmokeTest {
     private void selectCreativeTab(Minecraft mc, String name) {
         if (!(mc.screen instanceof net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen creative)) return;
         var tab = net.minecraft.core.registries.BuiltInRegistries.CREATIVE_MODE_TAB.stream()
-            .filter(t -> t.getDisplayName().getString().contains(name)).findFirst().orElse(null);
+            .filter(t -> t.getDisplayName().getString().equals("Electrical Age - " + name)).findFirst().orElse(null);
         try {
             var m = net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen.class.getDeclaredMethod("selectTab", net.minecraft.world.item.CreativeModeTab.class);
             m.setAccessible(true);
@@ -377,6 +416,9 @@ public final class ClientSmokeTest {
     }
 
     private double mechAngle = Double.NaN;
+    private int creativeCategory = 0;
+    private int adapterIndex = 0;
+    private static final String[] CREATIVE_CATEGORIES = {"Wires & Cables", "Signals & Control", "Power", "Mechanics", "Processing", "Lighting", "Materials", "Tools & Armor", "Creative Only"};
 
     private mods.eln.mechanical.ShaftRender shaftRender(Minecraft mc, int x, int y, int z) {
         var entity = mc.level.getBlockEntity(new BlockPos(x, y, z));

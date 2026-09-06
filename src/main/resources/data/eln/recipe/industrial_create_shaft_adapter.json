@@ -1,0 +1,33 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "create"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "BSB",
+    "PMP",
+    "BSB"
+  ],
+  "key": {
+    "B": {
+      "item": "create:brass_ingot"
+    },
+    "S": {
+      "item": "create:shaft"
+    },
+    "P": {
+      "item": "create:precision_mechanism"
+    },
+    "M": {
+      "item": "eln:create_shaft_adapter"
+    }
+  },
+  "result": {
+    "id": "eln:industrial_create_shaft_adapter",
+    "count": 1
+  }
+}

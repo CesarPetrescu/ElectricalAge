@@ -391,6 +391,10 @@ open class ShaftNetwork() : INBTTReady {
     }
 
     private fun findShaftElementAt(coordinate: Coordinate): ShaftElement? {
+        if (coordinate.worldExist && coordinate.blockExist) {
+            val external = coordinate.tileEntity
+            if (external is ShaftElement && !external.isShaftElementDestructing()) return external
+        }
         val node = NodeManager.instance?.getNodeFromCoordonate(coordinate) ?: return null
         if (node is TransparentNode) {
             val element = node.element
