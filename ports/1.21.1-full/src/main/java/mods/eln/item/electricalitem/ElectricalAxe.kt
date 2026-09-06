@@ -35,7 +35,7 @@ class ElectricalAxe(name: String, strengthOn: Float, strengthOff: Float,
 
 
     override fun onItemRightClick(s: ItemStack, w: Level, p: Player?): InteractionResultHolder<ItemStack> {
-        if (!w.isRemote) {
+        if (!w.isClientSide) {
             setCapitation(p, s, !getCapitation(s))
         }
         return InteractionResultHolder(InteractionResult.PASS, s)
@@ -136,7 +136,7 @@ object TreeCapitation : IProcess {
         val swapper = BlockSwapper(world, player, tool, origCoords, BLOCK_RANGE, leaves, stack)
 
         // Block swapper registration should only occur on the server
-        if (world.isRemote)
+        if (world.isClientSide)
             return
 
         val dim = world.provider.dimension
@@ -354,7 +354,7 @@ object TreeCapitation : IProcess {
      * The bits below, however, are from ToolCommons.java. Mostly. Maybe about half, by now.
      */
     fun removeBlockWithDrops(player: Player, tool: ElectricalTool, stack: ItemStack, world: Level, pos: BlockPos) {
-        if (world.isRemote)
+        if (world.isClientSide)
             return
 
         val state = world.getBlockState(pos)

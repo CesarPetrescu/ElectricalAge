@@ -28,7 +28,7 @@ public class GuiButtonEln extends Button implements IGuiObject {
     @Override
     public void idraw(int x, int y, float f) {
         GL11.glColor4f(1f, 1f, 1f, 1f);
-        drawButton(Minecraft.getMinecraft(), x, y, 2.0f);
+        drawButton(Minecraft.getInstance(), x, y, 2.0f);
     }
 
     @Override
@@ -46,8 +46,8 @@ public class GuiButtonEln extends Button implements IGuiObject {
 
     @Override
     public void imouseClicked(int x, int y, int code) {
-        if (mousePressed(Minecraft.getMinecraft(), x, y)) {
-            SoundManager soundHandler = Minecraft.getMinecraft().getSoundHandler();
+        if (mousePressed(Minecraft.getInstance(), x, y)) {
+            SoundManager soundHandler = Minecraft.getInstance().getSoundHandler();
             playPressSound(soundHandler);
             onMouseClicked();
             if (observer != null) {
@@ -67,7 +67,7 @@ public class GuiButtonEln extends Button implements IGuiObject {
     @Override
     public void idraw2(int x, int y) {
         if (helper != null && visible && x >= this.x && y >= this.y && x < this.x + width && y < this.y + height)
-            helper.drawHoveringText(comment, x, y, Minecraft.getMinecraft().fontRenderer);
+            helper.drawHoveringText(comment, x, y, Minecraft.getInstance().fontRenderer);
     }
 
     @Override

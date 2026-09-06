@@ -21,7 +21,7 @@ public class SimpleNodeItem extends BlockItem {
     @Override
     public boolean placeBlockAt(ItemStack stack, Player player, Level world, BlockPos pos, Direction side, float hitX, float hitY, float hitZ, BlockState newState) {
         SimpleNode node = null;
-        if (!world.isRemote) {
+        if (!world.isClientSide) {
             node = block.newNode();
             node.setDescriptorKey(block.descriptorKey);
             node.onBlockPlacedBy(new Coordinate(pos, world), block.getFrontForPlacement(player), player, stack);

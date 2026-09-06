@@ -15,27 +15,27 @@ public class FakeSideInventory implements WorldlyContainer {
     }
 
     @Override
-    public int getSizeInventory() {
+    public int getContainerSize() {
         return 0;
     }
 
     @Override
-    public ItemStack getStackInSlot(int var1) {
-        return null;
+    public ItemStack getItem(int var1) {
+        return ItemStack.EMPTY;
     }
 
     @Override
-    public ItemStack decrStackSize(int var1, int var2) {
-        return null;
+    public ItemStack removeItem(int var1, int var2) {
+        return ItemStack.EMPTY;
     }
 
     @Override
-    public ItemStack removeStackFromSlot(int var1) {
-        return null;
+    public ItemStack removeItemNoUpdate(int var1) {
+        return ItemStack.EMPTY;
     }
 
     @Override
-    public void setInventorySlotContents(int var1, ItemStack var2) {
+    public void setItem(int var1, ItemStack var2) {
     }
 
     @Override
@@ -43,67 +43,67 @@ public class FakeSideInventory implements WorldlyContainer {
         return true;
     }
 
-    @Override
+    
     public String getName() {
         return "FakeSideInventory";
     }
 
-    @Override
+    
     public boolean hasCustomName() {
         return false;
     }
 
-    @Override
+    
     public Component getDisplayName() {
-        return null;
+        return Component.literal(getName());
     }
 
     @Override
-    public int getInventoryStackLimit() {
+    public int getMaxStackSize() {
         return 0;
     }
 
     @Override
-    public void markDirty() {
+    public void setChanged() {
     }
 
     @Override
-    public boolean isUsableByPlayer(Player player) {
+    public boolean stillValid(Player player) {
         return false;
     }
 
     @Override
-    public void openInventory(Player var1) {
+    public void startOpen(Player var1) {
 
     }
 
     @Override
-    public void closeInventory(Player var1) {
+    public void stopOpen(Player var1) {
 
     }
 
     @Override
-    public boolean isItemValidForSlot(int var1, ItemStack var2) {
+    public boolean canPlaceItem(int var1, ItemStack var2) {
         return false;
     }
 
-    @Override
+    
     public int getField(int id) {
         return 0;
     }
 
-    @Override
+    
     public void setField(int id, int value) {
 
     }
 
-    @Override
+    
     public int getFieldCount() {
         return 0;
     }
 
     @Override
-    public void clear() {
+    public void clearContent() {
 
     }
 
@@ -113,12 +113,12 @@ public class FakeSideInventory implements WorldlyContainer {
     }
 
     @Override
-    public boolean canInsertItem(int var1, ItemStack var2, Direction var3) {
+    public boolean canPlaceItemThroughFace(int var1, ItemStack var2, Direction var3) {
         return false;
     }
 
     @Override
-    public boolean canExtractItem(int var1, ItemStack var2, Direction var3) {
+    public boolean canTakeItemThroughFace(int var1, ItemStack var2, Direction var3) {
         return false;
     }
 }

@@ -158,7 +158,7 @@ public class WirelessSignalTxElement extends SixNodeElement implements IWireless
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setString("channel", channel);
+        nbt.putString("channel", channel);
         return nbt;
     }
 

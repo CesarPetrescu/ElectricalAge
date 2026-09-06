@@ -50,14 +50,14 @@ public class UtilsClient {
 
     private static int uuid = Integer.MIN_VALUE;
 
-    final static ResourceLocation whiteTexture = new ResourceLocation("eln", "sprites/cable.png");
+    final static ResourceLocation whiteTexture = ResourceLocation.fromNamespaceAndPath("eln", "sprites/cable.png");
 
     private UtilsClient() {
     }
 
     private static float distanceFromClientPlayer(Level world, int xCoord, int yCoord, int zCoord) {
         // TODO(1.10): Not sure this will work in multiplayer.
-        LocalPlayer player = Minecraft.getMinecraft().player;
+        LocalPlayer player = Minecraft.getInstance().player;
 
         return (float) Math.sqrt((xCoord - player.posX) * (xCoord - player.posX)
             + (yCoord - player.posY) * (yCoord - player.posY)
@@ -70,7 +70,7 @@ public class UtilsClient {
     }
 
     public static LocalPlayer getClientPlayer() {
-        return Minecraft.getMinecraft().player;
+        return Minecraft.getInstance().player;
     }
 
     public static void drawHaloNoLightSetup(Obj3DPart halo, float r, float g, float b, Level w, BlockPos pos, boolean bilinear) {
@@ -304,7 +304,7 @@ public class UtilsClient {
 //    }
 
     public static void bindTexture(ResourceLocation resource) {
-        Minecraft.getMinecraft().renderEngine.bindTexture(resource);
+        Minecraft.getInstance().renderEngine.bindTexture(resource);
     }
 
     public static void ledOnOffColor(boolean on) {
@@ -378,7 +378,7 @@ public class UtilsClient {
         entityItem.motionY = 0.0;
         entityItem.motionZ = 0.0;
 
-        EntityRenderer<? super ItemEntity> render = Minecraft.getMinecraft().getRenderManager().getEntityRenderObject(entityItem);
+        EntityRenderer<? super ItemEntity> render = Minecraft.getInstance().getRenderManager().getEntityRenderObject(entityItem);
         if (render == null) return;
 
         GL11.glPushMatrix();
@@ -387,7 +387,7 @@ public class UtilsClient {
         GL11.glRotatef(roty, 0, 1, 0);
         GL11.glScalef(scale, scale, scale);
         GL11.glTranslatef(0.0f, -0.25f, 0.0f);
-        render.doRender(entityItem, 0, 0, 0, 0, Minecraft.getMinecraft().getRenderPartialTicks());
+        render.doRender(entityItem, 0, 0, 0, 0, Minecraft.getInstance().getRenderPartialTicks());
         RenderHelper.disableStandardItemLighting();
         GL11.glPopMatrix();
     }
@@ -460,7 +460,7 @@ public class UtilsClient {
 //    }
 
     static Minecraft mc() {
-        return Minecraft.getMinecraft();
+        return Minecraft.getInstance();
     }
 
 //    public static void drawItemStack(ItemStack par1ItemStack, int x, int y, String par4Str, boolean gui) {
@@ -512,7 +512,7 @@ public class UtilsClient {
     public static double clientDistanceTo(Entity e) {
         if (e == null)
             return 100000000.0;
-        Entity c = Minecraft.getMinecraft().player;
+        Entity c = Minecraft.getInstance().player;
         double x = (c.posX - e.posX), y = (c.posY - e.posY), z = (c.posZ - e.posZ);
         return Math.sqrt(x * x + y * y + z * z);
     }
@@ -520,7 +520,7 @@ public class UtilsClient {
     public static double clientDistanceTo(TransparentNodeEntity t) {
         if (t == null)
             return 100000000.0;
-        Entity c = Minecraft.getMinecraft().player;
+        Entity c = Minecraft.getInstance().player;
         BlockPos pos = t.getPos();
         double x = (c.posX - pos.getX()), y = (c.posY - pos.getY()), z = (c.posZ - pos.getZ());
         return Math.sqrt(x * x + y * y + z * z);

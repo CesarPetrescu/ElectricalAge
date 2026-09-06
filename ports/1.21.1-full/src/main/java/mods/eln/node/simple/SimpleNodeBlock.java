@@ -68,7 +68,7 @@ public abstract class SimpleNodeBlock extends BaseEntityBlock {
 
     @Override
     public boolean removedByPlayer(BlockState state, Level world, BlockPos pos, Player entityPlayer, boolean willHarvest) {
-        if (!world.isRemote) {
+        if (!world.isClientSide) {
             SimpleNode node = getNode(world, pos);
             if (node != null) {
                 node.removedByPlayer = (ServerPlayer) entityPlayer;
@@ -89,7 +89,7 @@ public abstract class SimpleNodeBlock extends BaseEntityBlock {
     // server
     @Override
     public void onBlockAdded(Level par1World, BlockPos pos, BlockState state) {
-        if (!par1World.isRemote) {
+        if (!par1World.isClientSide) {
             SimpleNodeEntity entity = (SimpleNodeEntity) par1World.getTileEntity(pos);
             entity.onBlockAdded();
         }
@@ -106,7 +106,7 @@ public abstract class SimpleNodeBlock extends BaseEntityBlock {
 
     @Override
     public void onNeighborChange(BlockGetter world, BlockPos pos, BlockPos neighbor) {
-        if (!Utils.isRemote(world)) {
+        if (!Utils.isClientSide(world)) {
             SimpleNodeEntity entity = (SimpleNodeEntity) world.getTileEntity(pos);
             entity.onNeighborBlockChange();
         }

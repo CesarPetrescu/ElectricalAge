@@ -19,8 +19,6 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.util.ITickable;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
@@ -32,7 +30,7 @@ public abstract class SimpleNodeEntity extends BlockEntity implements INodeEntit
     private SimpleNode node;
 
     public SimpleNode getNode() {
-        if (world.isRemote) {
+        if (world.isClientSide) {
             Utils.fatal();
             return null;
         }
@@ -58,7 +56,7 @@ public abstract class SimpleNodeEntity extends BlockEntity implements INodeEntit
     }
 
     public void onBreakBlock() {
-        if (!world.isRemote) {
+        if (!world.isClientSide) {
             if (getNode() == null) return;
             getNode().onBreakBlock();
         }
@@ -66,7 +64,7 @@ public abstract class SimpleNodeEntity extends BlockEntity implements INodeEntit
 
     public void onChunkUnload() {
         super.onChunkUnload();
-        if (world.isRemote) {
+        if (world.isClientSide) {
             destructor();
         }
     }
@@ -77,14 +75,14 @@ public abstract class SimpleNodeEntity extends BlockEntity implements INodeEntit
 
     @Override
     public void invalidate() {
-        if (world.isRemote) {
+        if (world.isClientSide) {
             destructor();
         }
         super.invalidate();
     }
 
     public boolean onBlockActivated(Player entityPlayer, Direction side, float vx, float vy, float vz) {
-        if (!world.isRemote) {
+        if (!world.isClientSide) {
             if (getNode() == null) return false;
             getNode().onBlockActivated(entityPlayer, side, vx, vy, vz);
             return true;
@@ -93,7 +91,7 @@ public abstract class SimpleNodeEntity extends BlockEntity implements INodeEntit
     }
 
     void onNeighborBlockChange() {
-        if (!world.isRemote) {
+        if (!world.isClientSide) {
             if (getNode() == null) return;
             getNode().onNeighborBlockChange();
         }
@@ -121,7 +119,7 @@ public abstract class SimpleNodeEntity extends BlockEntity implements INodeEntit
             return null;
         }
         CompoundTag tagCompound = new CompoundTag();
-        tagCompound.setByteArray("eln", node.getPublishPacket().toByteArray());
+        tagCompound.putByteArray("eln", node.getPublishPacket().toByteArray());
         return new ClientboundBlockEntityDataPacket(
             getPos(),
             getBlockMetadata(),
@@ -131,10 +129,10 @@ public abstract class SimpleNodeEntity extends BlockEntity implements INodeEntit
 
     @Override
     public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
-        assert(world.isRemote);
+        assert(world.isClientSide);
         byte[] bytes = pkt.getNbtCompound().getByteArray("eln");
         DataInputStream dataInputStream = new DataInputStream(new ByteArrayInputStream(bytes));
-        Eln.packetHandler.packetRx(dataInputStream, net, Minecraft.getMinecraft().player);
+        Eln.packetHandler.packetRx(dataInputStream, net, Minecraft.getInstance().player);
     }
 
     @Override
@@ -163,7 +161,7 @@ public abstract class SimpleNodeEntity extends BlockEntity implements INodeEntit
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @net.neoforged.api.distmarker.OnlyIn(net.neoforged.api.distmarker.Dist.CLIENT)
     public Screen newGuiDraw(Direction side, Player player) {
         return null;
     }

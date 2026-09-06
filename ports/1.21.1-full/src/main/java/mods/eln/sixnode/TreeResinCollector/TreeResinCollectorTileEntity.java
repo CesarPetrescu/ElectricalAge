@@ -22,7 +22,7 @@ public class TreeResinCollectorTileEntity extends BlockEntity implements ITickab
     float timeCounter = 0;
 
     boolean onBlockActivated() {
-        if (world.isRemote) return true;
+        if (world.isClientSide) return true;
         while (occupancy >= 1f) {
             Utils.dropItem(Items.treeResin.newItemStack(1), new Coordinate( this.pos.getX(), this.pos.getY(), this.pos.getZ(), world));
             occupancy -= 1f;
@@ -32,7 +32,7 @@ public class TreeResinCollectorTileEntity extends BlockEntity implements ITickab
 
     @Override
     public void update() {
-        if (world.isRemote) return;
+        if (world.isClientSide) return;
         timeCounter += 1f / 20f;
         if (timeCounter > timeTarget) {
             int[] posWood = new int[3];
@@ -81,7 +81,7 @@ public class TreeResinCollectorTileEntity extends BlockEntity implements ITickab
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setFloat("occupancy", occupancy);
+        nbt.putFloat("occupancy", occupancy);
         //	woodDirection.writeToNBT(nbt, "woodDirection");
         return nbt;
     }

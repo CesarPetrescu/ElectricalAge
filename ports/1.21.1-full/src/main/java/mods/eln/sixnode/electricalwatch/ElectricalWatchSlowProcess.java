@@ -18,7 +18,7 @@ public class ElectricalWatchSlowProcess implements IProcess, INBTTReady {
     }
 
     double getBatteryLevel() {
-        ItemStack batteryStack = element.getInventory().getStackInSlot(ElectricalWatchContainer.batteryId);
+        ItemStack batteryStack = element.getInventory().getItem(ElectricalWatchContainer.batteryId);
         BatteryItem battery = (BatteryItem) BatteryItem.getDescriptor(batteryStack);
         if (battery != null) {
             return battery.getEnergy(batteryStack) / battery.getEnergyMax(batteryStack);
@@ -29,7 +29,7 @@ public class ElectricalWatchSlowProcess implements IProcess, INBTTReady {
 
     @Override
     public void process(double time) {
-        ItemStack batteryStack = element.getInventory().getStackInSlot(ElectricalWatchContainer.batteryId);
+        ItemStack batteryStack = element.getInventory().getItem(ElectricalWatchContainer.batteryId);
         BatteryItem battery = (BatteryItem) BatteryItem.getDescriptor(batteryStack);
         double energy;
         if (battery == null || (energy = battery.getEnergy(batteryStack)) < element.descriptor.powerConsumtion * time * 4) {
@@ -56,8 +56,8 @@ public class ElectricalWatchSlowProcess implements IProcess, INBTTReady {
 
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt, String str) {
-        nbt.setBoolean(str + "upToDate", upToDate);
-        nbt.setLong(str + "oldDate", oldDate);
+        nbt.putBoolean(str + "upToDate", upToDate);
+        nbt.putLong(str + "oldDate", oldDate);
         return nbt;
     }
 }

@@ -14,14 +14,14 @@ import net.minecraft.resources.ResourceLocation
 
 class BrushDescriptor(name: String): GenericItemUsingDamageDescriptor(name) {
 
-    private val icon = ResourceLocation("eln", "textures/items/" + name.lowercase().replace(" ", "") + ".png")
+    private val icon = ResourceLocation.fromNamespaceAndPath("eln", "textures/items/" + name.lowercase().replace(" ", "") + ".png")
 
     init {
         this.name = name
     }
 
     override fun getName(stack: ItemStack): String {
-        val creative = Minecraft.getMinecraft().player.capabilities.isCreativeMode
+        val creative = Minecraft.getInstance().player.capabilities.isCreativeMode
         val color = getColor(stack)
         val life = getLife(stack)
         return if (!creative && color == 15 && life == 0) "Empty " + (name ?: "Brush") else (name ?: "Brush")
@@ -36,18 +36,18 @@ class BrushDescriptor(name: String): GenericItemUsingDamageDescriptor(name) {
 
     private fun getLife(stack: ItemStack?): Int {
         val nbt = stack?.tagCompound ?: return 32
-        return if (nbt.hasKey("life")) nbt.getInteger("life") else 32
+        return if (nbt.contains("life")) nbt.getInt("life") else 32
     }
 
     fun setLife(stack: ItemStack, life: Int) {
         val nbt = stack.tagCompound ?: CompoundTag()
-        nbt.setInteger("life", life)
+        nbt.putInt("life", life)
         stack.tagCompound = nbt
     }
 
     override fun getDefaultNBT(): CompoundTag? {
         val nbt = CompoundTag()
-        nbt.setInteger("life", 32)
+        nbt.putInt("life", 32)
         return nbt
     }
 
@@ -55,7 +55,7 @@ class BrushDescriptor(name: String): GenericItemUsingDamageDescriptor(name) {
         super.addInformation(itemStack, entityPlayer, list, par4)
 
         if (itemStack != null) {
-            val creative = Minecraft.getMinecraft().player.capabilities.isCreativeMode
+            val creative = Minecraft.getInstance().player.capabilities.isCreativeMode
             list.add(tr("Can paint %s blocks", if (creative) "infinite" else getLife(itemStack)))
         }
     }
@@ -65,11 +65,11 @@ class BrushDescriptor(name: String): GenericItemUsingDamageDescriptor(name) {
         if (creative) return true
         
         val nbt = stack.tagCompound ?: getDefaultNBT()!!
-        var life = if (nbt.hasKey("life")) nbt.getInteger("life") else 32
+        var life = if (nbt.contains("life")) nbt.getInt("life") else 32
         
         return if (life != 0) {
             life--
-            nbt.setInteger("life", life)
+            nbt.putInt("life", life)
             stack.tagCompound = nbt
             true
         } else {
@@ -94,6 +94,6 @@ class BrushDescriptor(name: String): GenericItemUsingDamageDescriptor(name) {
 //    }
 
     companion object {
-        private val dryOverlay = ResourceLocation("eln", "textures/items/brushdryoverlay.png")
+        private val dryOverlay = ResourceLocation.fromNamespaceAndPath("eln", "textures/items/brushdryoverlay.png")
     }
 }

@@ -40,7 +40,7 @@ public class ElectricalMachineInventory extends TransparentNodeElementInventory 
     }
 
     @Override
-    public boolean canInsertItem(int var1, ItemStack var2, net.minecraft.core.Direction side) {
+    public boolean canPlaceItemThroughFace(int var1, ItemStack var2, net.minecraft.core.Direction side) {
         switch (Direction.fromFacing(side)) {
             case YP:
                 return true;
@@ -50,7 +50,7 @@ public class ElectricalMachineInventory extends TransparentNodeElementInventory 
     }
 
     @Override
-    public boolean canExtractItem(int var1, ItemStack var2, net.minecraft.core.Direction side) {
+    public boolean canTakeItemThroughFace(int var1, ItemStack var2, net.minecraft.core.Direction side) {
         switch (Direction.fromFacing(side)) {
             case YP:
                 return false;

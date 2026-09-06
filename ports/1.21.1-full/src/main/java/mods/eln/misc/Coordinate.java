@@ -59,7 +59,7 @@ public class Coordinate implements INBTTReady {
     public Coordinate(int x, int y, int z, Level world) {
         pos.setPos(x, y, z);
         dimension = world.provider.getDimension();
-        if (world.isRemote)
+        if (world.isClientSide)
             this.w = world;
     }
 
@@ -101,19 +101,19 @@ public class Coordinate implements INBTTReady {
 
     @Override
     public void readFromNBT(CompoundTag nbt, String str) {
-        int x = nbt.getInteger(str + "x");
-        int y = nbt.getInteger(str + "y");
-        int z = nbt.getInteger(str + "z");
+        int x = nbt.getInt(str + "x");
+        int y = nbt.getInt(str + "y");
+        int z = nbt.getInt(str + "z");
         pos.setPos(x, y, z);
-        dimension = nbt.getInteger(str + "d");
+        dimension = nbt.getInt(str + "d");
     }
 
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt, String str) {
-        nbt.setInteger(str + "x", pos.getX());
-        nbt.setInteger(str + "y", pos.getY());
-        nbt.setInteger(str + "z", pos.getZ());
-        nbt.setInteger(str + "d", dimension);
+        nbt.putInt(str + "x", pos.getX());
+        nbt.putInt(str + "y", pos.getY());
+        nbt.putInt(str + "z", pos.getZ());
+        nbt.putInt(str + "d", dimension);
         return nbt;
     }
 
@@ -189,7 +189,7 @@ public class Coordinate implements INBTTReady {
     }
 
     public void setWorld(Level world) {
-        if (world.isRemote)
+        if (world.isClientSide)
             w = world;
         dimension = world.provider.getDimension();
     }

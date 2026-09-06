@@ -29,7 +29,7 @@ public class ElectricalFireDetectorSlowProcess implements IProcess {
     }
 
     double getBatteryLevel() {
-        ItemStack batteryStack = element.getInventory().getStackInSlot(ElectricalWatchContainer.batteryId);
+        ItemStack batteryStack = element.getInventory().getItem(ElectricalWatchContainer.batteryId);
         BatteryItem battery = (BatteryItem) BatteryItem.getDescriptor(batteryStack);
         if (battery != null) {
             return battery.getEnergy(batteryStack) / battery.getEnergyMax(batteryStack);
@@ -41,7 +41,7 @@ public class ElectricalFireDetectorSlowProcess implements IProcess {
     @Override
     public void process(double time) {
         if (element.descriptor.batteryPowered) {
-            ItemStack batteryStack = element.getInventory().getStackInSlot(ElectricalFireDetectorContainer.Companion.getBatteryId());
+            ItemStack batteryStack = element.getInventory().getItem(ElectricalFireDetectorContainer.Companion.getBatteryId());
             BatteryItem battery = (BatteryItem) BatteryItem.getDescriptor(batteryStack);
             double energy;
             if (battery == null || (energy = battery.getEnergy(batteryStack)) < element.descriptor.PowerComsumption * time * 4) {

@@ -126,7 +126,7 @@ public class ElectricalEntitySensorElement extends SixNodeElement {
         super.networkSerialize(stream);
         try {
             stream.writeBoolean(slowProcess.state);
-            Utils.serialiseItemStack(stream, getInventory().getStackInSlot(ElectricalEntitySensorContainer.filterId));
+            Utils.serialiseItemStack(stream, getInventory().getItem(ElectricalEntitySensorContainer.filterId));
         } catch (IOException e) {
 
             e.printStackTrace();

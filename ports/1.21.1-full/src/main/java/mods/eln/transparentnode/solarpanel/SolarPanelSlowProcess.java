@@ -41,7 +41,7 @@ public class SolarPanelSlowProcess implements IProcess {
         //	Utils.print("solarAlpha : " + solarAlpha + "  ");
         if (solarAlpha >= Math.PI) return 0.0;
 
-        ItemStack trackerStack = solarPanel.getInventory().getStackInSlot(SolarPanelContainer.trackerSlotId);
+        ItemStack trackerStack = solarPanel.getInventory().getItem(SolarPanelContainer.trackerSlotId);
         if (trackerStack != null && !trackerStack.isEmpty()) {
             solarPanel.panelAlpha = solarPanel.descriptor.alphaTrunk(solarAlpha);
         }

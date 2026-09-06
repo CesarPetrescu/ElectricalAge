@@ -23,8 +23,8 @@ public class NbtBatteryProcess extends BatteryProcess implements INBTTReady {
 
     @Override
     public CompoundTag writeToNBT(CompoundTag nbttagcompound, String str) {
-        nbttagcompound.setDouble(str + "NBP" + "Q", Q);
-        nbttagcompound.setDouble(str + "NBP" + "life", life);
+        nbttagcompound.putDouble(str + "NBP" + "Q", Q);
+        nbttagcompound.putDouble(str + "NBP" + "life", life);
         return nbttagcompound;
     }
 

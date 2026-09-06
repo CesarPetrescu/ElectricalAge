@@ -18,8 +18,8 @@ import net.minecraft.world.level.Level
 class ElectricalLampItem(name: String, private var lightMin: Int, private var rangeMin: Int, private var dischargeMin: Double, private var lightMax: Int,
                          private var rangeMax: Int, internal var dischargeMax: Double, internal var energyStorage: Double, internal var chargePower: Double) : LampItem(name), IItemEnergyBattery {
 
-    internal var on: ResourceLocation = ResourceLocation("eln", "textures/items/" + name.replace(" ", "").lowercase() + "on.png")
-    internal var off: ResourceLocation = ResourceLocation("eln", "textures/items/" + name.replace(" ", "").lowercase() + "off.png")
+    internal var on: ResourceLocation = ResourceLocation.fromNamespaceAndPath("eln", "textures/items/" + name.replace(" ", "").lowercase() + "on.png")
+    internal var off: ResourceLocation = ResourceLocation.fromNamespaceAndPath("eln", "textures/items/" + name.replace(" ", "").lowercase() + "off.png")
 
     init {
         setDefaultIcon(name + "off")
@@ -54,9 +54,9 @@ class ElectricalLampItem(name: String, private var lightMin: Int, private var ra
 
     override fun getDefaultNBT(): CompoundTag? {
         val nbt = CompoundTag()
-        nbt.setDouble("energy", 0.0)
-        nbt.setBoolean("powerOn", false)
-        nbt.setInteger("rand", (Math.random() * 0xFFFFFFF).toInt())
+        nbt.putDouble("energy", 0.0)
+        nbt.putBoolean("powerOn", false)
+        nbt.putInt("rand", (Math.random() * 0xFFFFFFF).toInt())
         return nbt
     }
 
@@ -73,7 +73,7 @@ class ElectricalLampItem(name: String, private var lightMin: Int, private var ra
     }
 
     override fun onItemRightClick(s: ItemStack, w: Level, p: Player): InteractionResultHolder<ItemStack> {
-        if (!w.isRemote) {
+        if (!w.isClientSide) {
             var lightState = getLightState(s) + 1
             if (lightState > 2) lightState = 0
             //((EntityPlayer) entity).sendMessage("Flashlight !!!");

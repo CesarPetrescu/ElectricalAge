@@ -16,8 +16,6 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.fml.common.registry.GameRegistry;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -75,7 +73,7 @@ public class GenericItemBlockUsingDamage<Descriptor extends GenericItemBlockUsin
 
 	/*
     @Override
-	@SideOnly(Side.CLIENT)
+	@net.neoforged.api.distmarker.OnlyIn(net.neoforged.api.distmarker.Dist.CLIENT)
 	public int getIconFromDamage(int damage) {
 		return getDescriptor(damage).getIconId();
 		
@@ -108,7 +106,7 @@ public class GenericItemBlockUsingDamage<Descriptor extends GenericItemBlockUsin
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @net.neoforged.api.distmarker.OnlyIn(net.neoforged.api.distmarker.Dist.CLIENT)
     @Override
     public void getSubItems(CreativeModeTab tabs, NonNullList<ItemStack> items) {
         if (this.isInCreativeTab(tabs)) {

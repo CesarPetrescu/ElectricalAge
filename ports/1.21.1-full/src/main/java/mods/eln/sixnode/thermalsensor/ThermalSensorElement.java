@@ -93,10 +93,10 @@ public class ThermalSensorElement extends SixNodeElement {
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setByte("front", (byte) ((front.toInt() << 0)));
-        nbt.setByte("typeOfSensor", (byte) typeOfSensor);
-        nbt.setFloat("lowValue", lowValue);
-        nbt.setFloat("highValue", highValue);
+        nbt.putByte("front", (byte) ((front.toInt() << 0)));
+        nbt.putByte("typeOfSensor", (byte) typeOfSensor);
+        nbt.putFloat("lowValue", lowValue);
+        nbt.putFloat("highValue", highValue);
         return nbt;
     }
 
@@ -110,7 +110,7 @@ public class ThermalSensorElement extends SixNodeElement {
     @Override
     public ThermalLoad getThermalLoad(LRDU lrdu) {
         if (!descriptor.temperatureOnly) {
-            if (!getInventory().getStackInSlot(ThermalSensorContainer.cableSlotId).isEmpty()) {
+            if (!getInventory().getItem(ThermalSensorContainer.cableSlotId).isEmpty()) {
                 if (front.left() == lrdu) return thermalLoad;
                 if (front.right() == lrdu) return thermalLoad;
             }
@@ -123,7 +123,7 @@ public class ThermalSensorElement extends SixNodeElement {
     @Override
     public int getConnectionMask(LRDU lrdu) {
         if (!descriptor.temperatureOnly) {
-            if (!getInventory().getStackInSlot(ThermalSensorContainer.cableSlotId).isEmpty()) {
+            if (!getInventory().getItem(ThermalSensorContainer.cableSlotId).isEmpty()) {
                 if (front.left() == lrdu) return NodeBase.maskThermal;
                 if (front.right() == lrdu) return NodeBase.maskThermal;
             }
@@ -174,7 +174,7 @@ public class ThermalSensorElement extends SixNodeElement {
             stream.writeByte((front.toInt() << 4) + typeOfSensor);
             stream.writeFloat(lowValue);
             stream.writeFloat(highValue);
-            Utils.serialiseItemStack(stream, getInventory().getStackInSlot(ThermalSensorContainer.cableSlotId));
+            Utils.serialiseItemStack(stream, getInventory().getItem(ThermalSensorContainer.cableSlotId));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -194,7 +194,7 @@ public class ThermalSensorElement extends SixNodeElement {
     }
 
     public void computeElectricalLoad() {
-        ItemStack cable = getInventory().getStackInSlot(ThermalSensorContainer.cableSlotId);
+        ItemStack cable = getInventory().getItem(ThermalSensorContainer.cableSlotId);
 
         SixNodeDescriptor descriptor = Eln.sixNodeItem.getDescriptor(cable);
         if (descriptor == null) return;
@@ -213,12 +213,12 @@ public class ThermalSensorElement extends SixNodeElement {
     }
 
     boolean isItemThermalCable() {
-        SixNodeDescriptor descriptor = Eln.sixNodeItem.getDescriptor(getInventory().getStackInSlot(ThermalSensorContainer.cableSlotId));
+        SixNodeDescriptor descriptor = Eln.sixNodeItem.getDescriptor(getInventory().getItem(ThermalSensorContainer.cableSlotId));
         return descriptor != null && descriptor.getClass() == ThermalCableDescriptor.class;
     }
 
     boolean isItemElectricalCable() {
-        SixNodeDescriptor descriptor = Eln.sixNodeItem.getDescriptor(getInventory().getStackInSlot(ThermalSensorContainer.cableSlotId));
+        SixNodeDescriptor descriptor = Eln.sixNodeItem.getDescriptor(getInventory().getItem(ThermalSensorContainer.cableSlotId));
         return descriptor != null && descriptor.getClass() == ElectricalCableDescriptor.class;
     }
 

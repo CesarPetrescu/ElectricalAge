@@ -44,7 +44,6 @@ import net.minecraftforge.fml.common.network.FMLEventChannel
 import net.minecraftforge.fml.common.network.NetworkRegistry
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper
 import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
 import org.apache.logging.log4j.Logger
 
 /**
@@ -542,7 +541,7 @@ class Eln {
         // =====================================================================
         @JvmField
         val Tab = object : CreativeModeTab("eln") {
-            @SideOnly(Side.CLIENT)
+            @net.neoforged.api.distmarker.OnlyIn(net.neoforged.api.distmarker.Dist.CLIENT)
             override fun createIcon(): ItemStack {
                 return ItemStack(Blocks.REDSTONE_BLOCK)
             }

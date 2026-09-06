@@ -324,18 +324,18 @@ public class ComputerProbeNode extends SimpleNode /*implements IPeripheral */{
 
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setInteger("wirelessTxCount", wirelessTxMap.size());
+        nbt.putInt("wirelessTxCount", wirelessTxMap.size());
         int idx = 0;
         for (WirelessTx tx : wirelessTxMap.values()) {
-            nbt.setString("wirelessTx" + idx + "channel", tx.channel);
-            nbt.setDouble("wirelessTx" + idx + "value", tx.value);
+            nbt.putString("wirelessTx" + idx + "channel", tx.channel);
+            nbt.putDouble("wirelessTx" + idx + "value", tx.value);
         }
         return nbt;
     }
 
     public void readFromNBT(CompoundTag nbt) {
         super.readFromNBT(nbt);
-        int wirelessTxCount = nbt.getInteger("wirelessTxCount");
+        int wirelessTxCount = nbt.getInt("wirelessTxCount");
         for (int idx = 0; idx < wirelessTxCount; idx++) {
             WirelessTx tx = new WirelessTx();
             tx.channel = nbt.getString("wirelessTx" + idx + "channel");

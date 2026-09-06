@@ -68,8 +68,8 @@ public class GuiGroup extends Gui implements IGuiObject, IGuiObjectObserver {
         x -= getxOffset();
         y -= getYOffset();
         GL11.glPushMatrix();
-        int displayWidth = Minecraft.getMinecraft().displayWidth;
-        int displayHeight = Minecraft.getMinecraft().displayHeight;
+        int displayWidth = Minecraft.getInstance().displayWidth;
+        int displayHeight = Minecraft.getInstance().displayHeight;
         float ratioY = ((float) displayHeight) / this.helper.screen.height;
         float ratioX = ((float) displayWidth) / this.helper.screen.width;
         float ratio = Math.max(ratioY, ratioX);
@@ -94,8 +94,8 @@ public class GuiGroup extends Gui implements IGuiObject, IGuiObjectObserver {
         x -= getxOffset();
         y -= getYOffset();
         GL11.glPushMatrix();
-        int displayWidth = Minecraft.getMinecraft().displayWidth;
-        int displayHeight = Minecraft.getMinecraft().displayHeight;
+        int displayWidth = Minecraft.getInstance().displayWidth;
+        int displayHeight = Minecraft.getInstance().displayHeight;
         float ratioY = ((float) displayHeight) / this.helper.screen.height;
         float ratioX = ((float) displayWidth) / this.helper.screen.width;
         float ratio = Math.max(ratioY, ratioX);

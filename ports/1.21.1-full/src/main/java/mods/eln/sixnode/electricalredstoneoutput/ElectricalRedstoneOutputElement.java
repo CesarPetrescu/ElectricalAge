@@ -64,14 +64,14 @@ public class ElectricalRedstoneOutputElement extends SixNodeElement {
         super.readFromNBT(nbt);
         byte value = nbt.getByte("front");
         front = LRDU.fromInt((value >> 0) & 0x3);
-        redstoneValue = nbt.getInteger("redstoneValue");
+        redstoneValue = nbt.getInt("redstoneValue");
     }
 
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setByte("front", (byte) (front.toInt() << 0));
-        nbt.setInteger("redstoneValue", redstoneValue);
+        nbt.putByte("front", (byte) (front.toInt() << 0));
+        nbt.putInt("redstoneValue", redstoneValue);
         return nbt;
     }
 

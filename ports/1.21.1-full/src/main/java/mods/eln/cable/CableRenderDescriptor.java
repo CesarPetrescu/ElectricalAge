@@ -14,7 +14,7 @@ public class CableRenderDescriptor {
         this.width = width / 16;
         this.height = height / 16;
         this.widthDiv2 = width / 16 / 2;
-        this.cableTexture = new ResourceLocation(modName, cableTexture);
+        this.cableTexture = ResourceLocation.fromNamespaceAndPath(modName, cableTexture);
     }
 
     public ResourceLocation cableTexture;

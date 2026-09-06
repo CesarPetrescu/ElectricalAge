@@ -84,7 +84,7 @@ public class ElectricalGateSourceElement extends SixNodeElement {
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setByte("front", (byte) ((front.toInt() << 0)));
+        nbt.putByte("front", (byte) ((front.toInt() << 0)));
         return nbt;
     }
 

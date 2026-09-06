@@ -65,7 +65,7 @@ public class SoundCommand {
     }
 
     public void play() {
-        if (world.isRemote)
+        if (world.isClientSide)
             SoundClient.play(this);
         else
             SoundServer.play(this);

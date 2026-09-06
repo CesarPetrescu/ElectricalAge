@@ -68,7 +68,7 @@ public class EnergyConverterElnToOtherFireWallOc {
             // to continue working without interruption across loads. If the
             // node is a power connector this is also required to restore the
             // internal energy buffer of the node.
-            node.load(nbt.getCompoundTag("oc:node"));
+            node.load(nbt.getCompound("oc:node"));
         }
     }
 

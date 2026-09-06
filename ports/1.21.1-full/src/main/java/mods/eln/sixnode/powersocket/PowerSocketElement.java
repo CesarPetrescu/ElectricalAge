@@ -106,20 +106,20 @@ public class PowerSocketElement extends SixNodeElement {
 
     @Override
     public ElectricalLoad getElectricalLoad(LRDU lrdu) {
-        if (inventory.getStackInSlot(PowerSocketContainer.cableSlotId).isEmpty()) return null;
+        if (inventory.getItem(PowerSocketContainer.cableSlotId).isEmpty()) return null;
         if (front == lrdu) return powerLoad;
         return null;
     }
 
     @Override
     public ThermalLoad getThermalLoad(LRDU lrdu) {
-        if (inventory.getStackInSlot(PowerSocketContainer.cableSlotId).isEmpty()) return null;
+        if (inventory.getItem(PowerSocketContainer.cableSlotId).isEmpty()) return null;
         return null;
     }
 
     @Override
     public int getConnectionMask(LRDU lrdu) {
-        if (inventory.getStackInSlot(PowerSocketContainer.cableSlotId).isEmpty()) return 0;
+        if (inventory.getItem(PowerSocketContainer.cableSlotId).isEmpty()) return 0;
         if (front == lrdu) return NodeBase.maskElectricalPower;
         return 0;
     }
@@ -167,7 +167,7 @@ public class PowerSocketElement extends SixNodeElement {
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setString("channel", channel);
+        nbt.putString("channel", channel);
         return nbt;
     }
 
@@ -182,7 +182,7 @@ public class PowerSocketElement extends SixNodeElement {
     }
 
     void setupFromInventory() {
-        ItemStack cableStack = inventory.getStackInSlot(PowerSocketContainer.cableSlotId);
+        ItemStack cableStack = inventory.getItem(PowerSocketContainer.cableSlotId);
         if (!cableStack.isEmpty()) {
             ElectricalCableDescriptor desc = (ElectricalCableDescriptor) ElectricalCableDescriptor.getDescriptor(cableStack);
             desc.applyTo(powerLoad);
@@ -221,7 +221,7 @@ public class PowerSocketElement extends SixNodeElement {
         super.networkSerialize(stream);
         try {
             stream.writeUTF(channel);
-            Utils.serialiseItemStack(stream, inventory.getStackInSlot(PowerSocketContainer.cableSlotId));
+            Utils.serialiseItemStack(stream, inventory.getItem(PowerSocketContainer.cableSlotId));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -236,7 +236,7 @@ public class PowerSocketElement extends SixNodeElement {
     }
 
     private int getRange(PowerSocketDescriptor desc, SixNodeElementInventory inventory2) {
-        ItemStack stack = inventory.getStackInSlot(PowerSocketContainer.cableSlotId);
+        ItemStack stack = inventory.getItem(PowerSocketContainer.cableSlotId);
         return desc.range + stack.getCount();
     }
 }

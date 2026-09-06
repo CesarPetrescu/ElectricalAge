@@ -459,19 +459,19 @@ public class ModbusRtuElement extends SixNodeElement implements IModbusSlave {
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setInteger("station", station);
-        nbt.setString("name", name);
+        nbt.putInt("station", station);
+        nbt.putString("name", name);
 
         int idx;
 
-        nbt.setInteger("txCnt", wirelessTxStatusList.size());
+        nbt.putInt("txCnt", wirelessTxStatusList.size());
         idx = 0;
         for (ServerWirelessTxStatus tx : wirelessTxStatusList.values()) {
             tx.writeToNBT(nbt, "tx" + idx);
             idx++;
         }
 
-        nbt.setInteger("rxCnt", wirelessRxStatusList.size());
+        nbt.putInt("rxCnt", wirelessRxStatusList.size());
         idx = 0;
         for (ServerWirelessRxStatus rx : wirelessRxStatusList.values()) {
             rx.writeToNBT(nbt, "rx" + idx);
@@ -483,17 +483,17 @@ public class ModbusRtuElement extends SixNodeElement implements IModbusSlave {
     @Override
     public void readFromNBT(CompoundTag nbt) {
         super.readFromNBT(nbt);
-        station = nbt.getInteger("station");
+        station = nbt.getInt("station");
         name = nbt.getString("name");
 
         int cnt;
 
-        cnt = nbt.getInteger("txCnt");
+        cnt = nbt.getInt("txCnt");
         for (int idx = 0; idx < cnt; idx++) {
             ServerWirelessTxStatus tx = new ServerWirelessTxStatus(nbt, "tx" + idx, this);
             wirelessTxStatusList.put(tx.uuid, tx);
         }
-        cnt = nbt.getInteger("rxCnt");
+        cnt = nbt.getInt("rxCnt");
         for (int idx = 0; idx < cnt; idx++) {
             ServerWirelessRxStatus rx = new ServerWirelessRxStatus(nbt, "rx" + idx, this);
             wirelessRxStatusList.put(rx.uuid, rx);

@@ -178,7 +178,7 @@ public class GridLink implements INBTTReady {
         b.writeToNBT(nbt, str + "b");
         as.writeToNBT(nbt, str + "as");
         bs.writeToNBT(nbt, str + "bs");
-        nbt.setDouble(str + "rs", rs);
+        nbt.putDouble(str + "rs", rs);
         return cable.writeToNBT(nbt);
     }
 

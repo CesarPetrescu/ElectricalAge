@@ -9,7 +9,7 @@ abstract class LoopedSound(val sample: String, val coord: Coordinate,
                            val attentuationType: ISound.AttenuationType = ISound.AttenuationType.LINEAR) : ITickableSound {
     var active = true
 
-    override final fun getSoundLocation() = ResourceLocation(sample)
+    override final fun getSoundLocation() = ResourceLocation.parse(sample)
     override final fun getXPosF() = coord.pos.x.toFloat() + 0.5f
     override final fun getYPosF() = coord.pos.y.toFloat() + 0.5f
     override final fun getZPosF() = coord.pos.z.toFloat() + 0.5f

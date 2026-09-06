@@ -64,7 +64,7 @@ public class TransparentNodeBlock extends NodeBlock {
 */
 
 /*
-    //@SideOnly(Side.CLIENT)
+    //@net.neoforged.api.distmarker.OnlyIn(net.neoforged.api.distmarker.Dist.CLIENT)
     public void getSubBlocks(Items par1, CreativeTabs tab, List subItems) {
 
 
@@ -85,7 +85,7 @@ public class TransparentNodeBlock extends NodeBlock {
 
     @Override
     public boolean removedByPlayer(BlockState state, Level world, BlockPos pos, Player entityPlayer, boolean willHarvest) {
-        if (!world.isRemote) {
+        if (!world.isClientSide) {
             NodeBlockEntity entity = (NodeBlockEntity) world.getTileEntity(pos);
             if (entity != null) {
                 NodeBase nodeBase = entity.getNode();

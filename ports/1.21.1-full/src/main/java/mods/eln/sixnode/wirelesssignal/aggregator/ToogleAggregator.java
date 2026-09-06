@@ -30,8 +30,8 @@ public class ToogleAggregator extends BiggerAggregator implements INBTTReady {
 
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt, String str) {
-        nbt.setBoolean(str + "state", state);
-        nbt.setDouble(str + "oldValue", oldValue);
+        nbt.putBoolean(str + "state", state);
+        nbt.putDouble(str + "oldValue", oldValue);
         return nbt;
     }
 }

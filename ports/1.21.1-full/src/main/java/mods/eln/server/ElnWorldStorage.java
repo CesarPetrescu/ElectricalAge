@@ -33,13 +33,13 @@ public class ElnWorldStorage extends SavedData {
 
     @Override
     public void readFromNBT(CompoundTag nbt) {
-        dim = nbt.getInteger("dim");
+        dim = nbt.getInt("dim");
         ServerEventListener.readFromEaWorldNBT(nbt);
     }
 
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt) {
-        nbt.setInteger("dim", dim);
+        nbt.putInt("dim", dim);
         ServerEventListener.writeToEaWorldNBT(nbt, dim);
         return nbt;
     }

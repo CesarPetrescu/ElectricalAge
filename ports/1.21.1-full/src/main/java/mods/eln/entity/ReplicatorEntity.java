@@ -153,8 +153,8 @@ public class ReplicatorEntity extends Monster {
     @Override
     public void writeEntityToNBT(CompoundTag nbt) {
         super.writeEntityToNBT(nbt);
-        nbt.setDouble("ElnHunger", hunger);
-        nbt.setBoolean("isSpawnedFromWeather", isSpawnedFromWeather);
+        nbt.putDouble("ElnHunger", hunger);
+        nbt.putBoolean("isSpawnedFromWeather", isSpawnedFromWeather);
     }
 
     @Override

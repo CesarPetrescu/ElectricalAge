@@ -8,7 +8,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.text.TextComponentString;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -40,29 +39,29 @@ public class TransparentNodeElementInventory implements WorldlyContainer, INBTTR
     }
 
     @Override
-    public int getSizeInventory() {
+    public int getContainerSize() {
 
         return getInv().length;
     }
 
     @NotNull
     @Override
-    public ItemStack getStackInSlot(int slot) {
+    public ItemStack getItem(int slot) {
         if (slot >= getInv().length) return ItemStack.EMPTY;
         ItemStack stack = getInv()[slot];
         return stack == null ? ItemStack.EMPTY : stack;
     }
 
     @Override
-    public ItemStack decrStackSize(int slot, int amt) {
-        ItemStack stack = getStackInSlot(slot);
+    public ItemStack removeItem(int slot, int amt) {
+        ItemStack stack = getItem(slot);
         if (stack.isEmpty()) return ItemStack.EMPTY;
         if (stack.getCount() <= amt) {
             getInv()[slot] = ItemStack.EMPTY;
             return stack;
         }
 
-        ItemStack result = stack.splitStack(amt);
+        ItemStack result = stack.split(amt);
         if (stack.isEmpty()) {
             getInv()[slot] = ItemStack.EMPTY;
         }
@@ -70,33 +69,33 @@ public class TransparentNodeElementInventory implements WorldlyContainer, INBTTR
     }
 
     @Override
-    public ItemStack removeStackFromSlot(int slot) {
-        ItemStack stack = getStackInSlot(slot);
+    public ItemStack removeItemNoUpdate(int slot) {
+        ItemStack stack = getItem(slot);
         if (stack.isEmpty()) return ItemStack.EMPTY;
         getInv()[slot] = ItemStack.EMPTY;
         return stack;
     }
 
     @Override
-    public void setInventorySlotContents(int slot, @NotNull ItemStack stack) {
+    public void setItem(int slot, @NotNull ItemStack stack) {
         if (stack.isEmpty()) {
             getInv()[slot] = ItemStack.EMPTY;
             return;
         }
 
         getInv()[slot] = stack;
-        if (stack.getCount() > getInventoryStackLimit()) {
-            stack.setCount(getInventoryStackLimit());
+        if (stack.getCount() > getMaxStackSize()) {
+            stack.setCount(getMaxStackSize());
         }
     }
 
-    @Override
+    
     public String getName() {
         return "tco.TransparentNodeInventory";
     }
 
     @Override
-    public int getInventoryStackLimit() {
+    public int getMaxStackSize() {
         return stackLimit;
     }
 
@@ -109,22 +108,22 @@ public class TransparentNodeElementInventory implements WorldlyContainer, INBTTR
     }
 
     @Override
-    public boolean isUsableByPlayer(Player player) {
+    public boolean stillValid(Player player) {
         return true;
     }
 
     @Override
-    public void openInventory(Player player) {
+    public void startOpen(Player player) {
 
     }
 
     @Override
-    public void closeInventory(Player player) {
+    public void stopOpen(Player player) {
 
     }
 
     @Override
-    public void markDirty() {
+    public void setChanged() {
         if (transparentNodeElement != null && !transparentNodeElement.node.isDestructing()) {
             transparentNodeElement.inventoryChange(this);
         }
@@ -143,11 +142,11 @@ public class TransparentNodeElementInventory implements WorldlyContainer, INBTTR
     }
 
     @Override
-    public boolean isItemValidForSlot(int i, ItemStack itemstack) {
+    public boolean canPlaceItem(int i, ItemStack itemstack) {
         for (int idx = 0; idx < 6; idx++) {
-            int[] lol = getSlotsForFace(Direction.VALUES[idx]);
+            int[] lol = getSlotsForFace(Direction.values()[idx]);
             for (int hohoho : lol) {
-                if (hohoho == i && canInsertItem(i, itemstack, Direction.VALUES[idx])) {
+                if (hohoho == i && canPlaceItemThroughFace(i, itemstack, Direction.values()[idx])) {
                     return true;
                 }
             }
@@ -155,35 +154,35 @@ public class TransparentNodeElementInventory implements WorldlyContainer, INBTTR
         return false;
     }
 
-    @Override
+    
     public int getField(int id) {
         return 0;
     }
 
-    @Override
+    
     public void setField(int id, int value) {
 
     }
 
-    @Override
+    
     public int getFieldCount() {
         return 0;
     }
 
     @Override
-    public void clear() {
+    public void clearContent() {
         Arrays.fill(inv, ItemStack.EMPTY);
     }
 
-    @Override
+    
     public boolean hasCustomName() {
 
         return false;
     }
 
-    @Override
+    
     public Component getDisplayName() {
-        return new TextComponentString("TransparentNodeInventory");
+        return Component.literal("TransparentNodeInventory");
     }
 
     @Override
@@ -192,12 +191,12 @@ public class TransparentNodeElementInventory implements WorldlyContainer, INBTTR
     }
 
     @Override
-    public boolean canInsertItem(int var1, ItemStack var2, Direction var3) {
+    public boolean canPlaceItemThroughFace(int var1, ItemStack var2, Direction var3) {
         return false;
     }
 
     @Override
-    public boolean canExtractItem(int var1, ItemStack var2, Direction var3) {
+    public boolean canTakeItemThroughFace(int var1, ItemStack var2, Direction var3) {
         return false;
     }
 

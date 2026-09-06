@@ -208,7 +208,7 @@ public abstract class NodeBase {
     }
 
     public boolean onBlockActivated(Player entityPlayer, Direction side, float vx, float vy, float vz) {
-        if (!entityPlayer.world.isRemote) {
+        if (!entityPlayer.world.isClientSide) {
             if (Items.multiMeterElement.checkSameItemStack(entityPlayer.getHeldItemMainhand())) {
                 String str = multiMeterString(side);
                 if (str != null)
@@ -423,8 +423,8 @@ public abstract class NodeBase {
 
         int idx;
 
-        nbt.setByte("NBOpaque", neighborOpaque);
-        nbt.setByte("NBWrap", neighborWrapable);
+        nbt.putByte("NBOpaque", neighborOpaque);
+        nbt.putByte("NBWrap", neighborWrapable);
         return nbt;
     }
 
@@ -567,8 +567,8 @@ public abstract class NodeBase {
 
     public void dropInventory(Container inventory) {
         if (inventory == null) return;
-        for (int idx = 0; idx < inventory.getSizeInventory(); idx++) {
-            dropItem(inventory.getStackInSlot(idx));
+        for (int idx = 0; idx < inventory.getContainerSize(); idx++) {
+            dropItem(inventory.getItem(idx));
         }
     }
 

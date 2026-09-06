@@ -20,7 +20,7 @@ public abstract class GuiContainerEln extends AbstractContainerScreen implements
 
     protected abstract GuiHelperContainer newHelper();
 
-    static final ResourceLocation slotSkin = new ResourceLocation("textures/gui/container/furnace.png");
+    static final ResourceLocation slotSkin = ResourceLocation.parse("textures/gui/container/furnace.png");
 
     public GuiContainerEln(AbstractContainerMenu par1Container) {
         super(par1Container);

@@ -40,7 +40,7 @@ public abstract class Node extends NodeBase {
 
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setByte("lastLight", (byte) lastLight);
+        nbt.putByte("lastLight", (byte) lastLight);
         return nbt;
     }
 

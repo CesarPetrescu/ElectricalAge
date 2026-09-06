@@ -32,7 +32,7 @@ public class ElectricalFurnaceContainer extends BasicContainer implements INodeC
             new SlotWithSkin(inventory, ElectricalFurnaceElement.inSlotId, 7, 58, SlotSkin.medium) {
                 @Override
                 public boolean isItemValid(ItemStack stack) {
-                    return inventory.isItemValidForSlot(ElectricalFurnaceElement.inSlotId, stack);
+                    return inventory.canPlaceItem(ElectricalFurnaceElement.inSlotId, stack);
                 }
             },
 

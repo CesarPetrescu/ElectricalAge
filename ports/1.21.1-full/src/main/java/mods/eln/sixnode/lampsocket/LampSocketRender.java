@@ -151,12 +151,12 @@ public class LampSocketRender extends SixNodeElementRender {
             grounded = (b & (1 << 6)) != 0;
 
             ItemStack lampStack = Utils.unserialiseItemStack(stream);
-            inventory.setInventorySlotContents(LampSocketContainer.lampSlotId, lampStack == null ? ItemStack.EMPTY : lampStack.copy());
+            inventory.setItem(LampSocketContainer.lampSlotId, lampStack == null ? ItemStack.EMPTY : lampStack.copy());
             Object lampObject = Utils.getItemObject(lampStack);
             lampDescriptor = lampObject instanceof LampDescriptor ? (LampDescriptor) lampObject : null;
             alphaZ = stream.readFloat();
             ItemStack cableStack = Utils.unserialiseItemStack(stream);
-            inventory.setInventorySlotContents(LampSocketContainer.cableSlotId, cableStack == null ? ItemStack.EMPTY : cableStack.copy());
+            inventory.setItem(LampSocketContainer.cableSlotId, cableStack == null ? ItemStack.EMPTY : cableStack.copy());
             cable = (ElectricalCableDescriptor) ElectricalCableDescriptor.getDescriptor(cableStack, ElectricalCableDescriptor.class);
 
             poweredByLampSupply = stream.readBoolean();

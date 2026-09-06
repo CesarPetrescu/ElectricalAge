@@ -41,7 +41,7 @@ class LargeRheostatDescriptor(name: String, val dissipator: ThermalDissipatorPas
     }
 
     fun getRsValue(inventory: Container): Double {
-        val core = inventory.getStackInSlot(ResistorContainer.coreId)
+        val core = inventory.getItem(ResistorContainer.coreId)
         return series.getValue(core.count)
     }
 

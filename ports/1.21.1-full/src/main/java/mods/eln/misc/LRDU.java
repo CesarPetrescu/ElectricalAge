@@ -236,7 +236,7 @@ public enum LRDU {
     }
 
     public CompoundTag writeToNBT(CompoundTag nbt, String name) {
-        nbt.setByte(name, (byte) toInt());
+        nbt.putByte(name, (byte) toInt());
         return nbt;
     }
 

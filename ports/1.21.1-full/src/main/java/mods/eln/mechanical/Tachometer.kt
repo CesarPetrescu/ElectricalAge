@@ -108,8 +108,8 @@ open class TachometerElement(node: TransparentNode, desc_: TransparentNodeDescri
 
     override fun writeToNBT(nbt: CompoundTag): CompoundTag? {
         super.writeToNBT(nbt)
-        nbt.setFloat("minRads", minRads)
-        nbt.setFloat("maxRads", maxRads)
+        nbt.putFloat("minRads", minRads)
+        nbt.putFloat("maxRads", maxRads)
         return nbt
     }
 

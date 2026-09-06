@@ -77,7 +77,7 @@ public class HeatFurnaceGuiDraw extends GuiContainerEln {
         takeFuel.enabled = !render.controleExternal;
 
 
-        ItemStack regulatorStack = inventory.getStackInSlot(HeatFurnaceContainer.regulatorId);
+        ItemStack regulatorStack = inventory.getItem(HeatFurnaceContainer.regulatorId);
         boolean hasRegulator = !regulatorStack.isEmpty();
 
         vuMeterGain.setEnable(!render.controleExternal);

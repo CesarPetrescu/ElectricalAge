@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class ReplicatorRender extends MobRenderer {
 
-    private static final ResourceLocation res = new ResourceLocation("eln:textures/entity/replicator.png");
+    private static final ResourceLocation res = ResourceLocation.parse("eln:textures/entity/replicator.png");
 
     public ReplicatorRender(EntityRenderDispatcher rendermanagerIn, ModelBase modelbaseIn, float shadowsizeIn) {
         super(rendermanagerIn, modelbaseIn, shadowsizeIn);

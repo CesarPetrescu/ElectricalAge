@@ -393,7 +393,7 @@ object ElnContent {
         var entityId = 0
 
         EntityRegistry.registerModEntity(
-            ResourceLocation(Eln.MODID, "replicator"),
+            ResourceLocation.fromNamespaceAndPath(Eln.MODID, "replicator"),
             ReplicatorEntity::class.java,
             "replicator",
             entityId++,

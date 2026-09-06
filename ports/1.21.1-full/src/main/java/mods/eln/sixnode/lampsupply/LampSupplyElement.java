@@ -195,7 +195,7 @@ public class LampSupplyElement extends SixNodeElement {
 
     @Override
     public ElectricalLoad getElectricalLoad(LRDU lrdu) {
-        if (getInventory().getStackInSlot(LampSupplyContainer.cableSlotId).isEmpty()) return null;
+        if (getInventory().getItem(LampSupplyContainer.cableSlotId).isEmpty()) return null;
         if (front == lrdu) return powerLoad;
         return null;
     }
@@ -207,7 +207,7 @@ public class LampSupplyElement extends SixNodeElement {
 
     @Override
     public int getConnectionMask(LRDU lrdu) {
-        if (getInventory().getStackInSlot(LampSupplyContainer.cableSlotId).isEmpty()) return 0;
+        if (getInventory().getItem(LampSupplyContainer.cableSlotId).isEmpty()) return 0;
         if (front == lrdu) return NodeBase.maskElectricalPower;
         return 0;
     }
@@ -283,11 +283,11 @@ public class LampSupplyElement extends SixNodeElement {
         super.writeToNBT(nbt);
         int idx = 0;
         for (Entry e : entries) {
-            nbt.setString("entry_p" + idx, e.powerChannel);
-            nbt.setString("entry_w" + idx, e.wirelessChannel);
-            nbt.setBoolean("channelStates" + idx, channelStates[idx]);
+            nbt.putString("entry_p" + idx, e.powerChannel);
+            nbt.putString("entry_w" + idx, e.wirelessChannel);
+            nbt.putBoolean("channelStates" + idx, channelStates[idx]);
 
-            nbt.setInteger("selectedAggregator" + idx, e.aggregator);
+            nbt.putInt("selectedAggregator" + idx, e.aggregator);
             ((ToogleAggregator) aggregators[idx][2]).writeToNBT(nbt, "toogleAggregator" + idx);
 
             idx++;
@@ -303,13 +303,13 @@ public class LampSupplyElement extends SixNodeElement {
         }
 
         super.readFromNBT(nbt);
-        if (nbt.hasKey("channel")) {
+        if (nbt.contains("channel")) {
             entries.get(0).powerChannel = nbt.getString("channel");
 
         } else {
             idx = 0;
-            while (nbt.hasKey("entry_p" + idx)) {
-                entries.set(idx, new Entry(nbt.getString("entry_p" + idx), nbt.getString("entry_w" + idx), nbt.getInteger("selectedAggregator" + idx)));
+            while (nbt.contains("entry_p" + idx)) {
+                entries.set(idx, new Entry(nbt.getString("entry_p" + idx), nbt.getString("entry_w" + idx), nbt.getInt("selectedAggregator" + idx)));
                 channelStates[idx] = nbt.getBoolean("channelStates" + idx);
 
                 ((ToogleAggregator) aggregators[idx][2]).readFromNBT(nbt, "toogleAggregator" + idx);
@@ -326,7 +326,7 @@ public class LampSupplyElement extends SixNodeElement {
     }
 
     void setupFromInventory() {
-        ItemStack cableStack = getInventory().getStackInSlot(LampSupplyContainer.cableSlotId);
+        ItemStack cableStack = getInventory().getItem(LampSupplyContainer.cableSlotId);
         if (!cableStack.isEmpty()) {
             ElectricalCableDescriptor desc = (ElectricalCableDescriptor) ElectricalCableDescriptor.getDescriptor(cableStack);
             if (desc != null) {
@@ -389,7 +389,7 @@ public class LampSupplyElement extends SixNodeElement {
                 stream.writeChar(e.aggregator);
             }
 
-            Utils.serialiseItemStack(stream, getInventory().getStackInSlot(LampSupplyContainer.cableSlotId));
+            Utils.serialiseItemStack(stream, getInventory().getItem(LampSupplyContainer.cableSlotId));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -408,7 +408,7 @@ public class LampSupplyElement extends SixNodeElement {
     }
 
     private int getRange(LampSupplyDescriptor desc, Container inventory2) {
-        ItemStack stack = inventory2.getStackInSlot(LampSupplyContainer.cableSlotId);
+        ItemStack stack = inventory2.getItem(LampSupplyContainer.cableSlotId);
         return desc.range + (stack.isEmpty() ? 0 : stack.getCount());
     }
 }

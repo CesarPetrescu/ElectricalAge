@@ -42,7 +42,7 @@ public abstract class NodeElectricalGateInputHysteresisProcess implements IProce
 
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt, String str) {
-        nbt.setBoolean(str + name + "state", state);
+        nbt.putBoolean(str + name + "state", state);
         return nbt;
     }
 }

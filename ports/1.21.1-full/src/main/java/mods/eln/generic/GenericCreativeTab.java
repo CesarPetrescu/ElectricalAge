@@ -3,8 +3,6 @@ package mods.eln.generic;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class GenericCreativeTab extends CreativeModeTab {
 
@@ -16,7 +14,7 @@ public class GenericCreativeTab extends CreativeModeTab {
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @net.neoforged.api.distmarker.OnlyIn(net.neoforged.api.distmarker.Dist.CLIENT)
     public ItemStack createIcon() {
         return new ItemStack(item);
     }

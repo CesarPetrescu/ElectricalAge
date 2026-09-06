@@ -7,8 +7,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import mods.eln.Eln;
 import mods.eln.misc.Coordinate;
 import mods.eln.misc.Direction;
@@ -94,7 +92,7 @@ public class GhostBlock extends Block {
 //    }
 
 //    @Override
-//    @SideOnly(Side.CLIENT)
+//    @net.neoforged.api.distmarker.OnlyIn(net.neoforged.api.distmarker.Dist.CLIENT)
 //    public AxisAlignedBB getSelectedBoundingBoxFromPool(World w, int x, int y, int z) {
 //        int meta = w.getBlockMetadata(x, y, z);
 //
@@ -191,7 +189,7 @@ public class GhostBlock extends Block {
 
     @Override
     public void breakBlock(Level world, BlockPos pos, BlockState state) {
-        if (!world.isRemote) {
+        if (!world.isClientSide) {
             GhostElement element = getElement(world, pos);
             if (element != null) {
                 element.breakBlock();
@@ -202,7 +200,7 @@ public class GhostBlock extends Block {
 
     @Override
     public boolean onBlockActivated(Level world, BlockPos pos, BlockState state, Player player, InteractionHand hand, net.minecraft.core.Direction facing, float hitX, float hitY, float hitZ) {
-        if (!world.isRemote) {
+        if (!world.isClientSide) {
             GhostElement element = getElement(world, pos);
             if (element != null)
                 return element.onBlockActivated(player, Direction.fromFacing(facing), hitX, hitY, hitZ);

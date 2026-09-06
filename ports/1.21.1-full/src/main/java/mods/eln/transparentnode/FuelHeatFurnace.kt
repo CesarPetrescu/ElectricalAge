@@ -119,7 +119,7 @@ class FuelHeatFurnaceElement(transparentNode: TransparentNode, descriptor: Trans
     private val controlProcess = object : RegulatorProcess("controller") {
         override fun process(time: Double) {
             val nominalPower = if (mainSwitch)
-                FuelBurnerDescriptor.getDescriptor(inventory_.getStackInSlot(FuelHeatFurnaceContainer.FuelBurnerSlot))?.producedHeatPower ?: 0.0
+                FuelBurnerDescriptor.getDescriptor(inventory_.getItem(FuelHeatFurnaceContainer.FuelBurnerSlot))?.producedHeatPower ?: 0.0
             else
                 0.0
 
@@ -199,7 +199,7 @@ class FuelHeatFurnaceElement(transparentNode: TransparentNode, descriptor: Trans
         stream.writeFloat(setTemperature.toFloat())
         stream.writeFloat(actualHeatPower.toFloat())
         stream.writeFloat(thermalLoad.Tc.toFloat())
-        stream.writeInt(FuelBurnerDescriptor.getDescriptor(inventory_.getStackInSlot(FuelHeatFurnaceContainer.FuelBurnerSlot))?.type ?: -1)
+        stream.writeInt(FuelBurnerDescriptor.getDescriptor(inventory_.getItem(FuelHeatFurnaceContainer.FuelBurnerSlot))?.type ?: -1)
     }
 
     override fun networkUnserialize(stream: DataInputStream): Byte {
@@ -224,12 +224,12 @@ class FuelHeatFurnaceElement(transparentNode: TransparentNode, descriptor: Trans
     override fun writeToNBT(nbt: CompoundTag): CompoundTag? {
         super.writeToNBT(nbt)
         tank.writeToNBT(nbt, "tank")
-        nbt.setBoolean("externalControlled", externalControlled)
-        nbt.setBoolean("mainSwitch", mainSwitch)
-        nbt.setDouble("heaterControlValue", heaterControlValue)
-        nbt.setDouble("manualControl", manualControl)
-        nbt.setDouble("setTemperature", setTemperature)
-        nbt.setDouble("actualHeatPower", actualHeatPower)
+        nbt.putBoolean("externalControlled", externalControlled)
+        nbt.putBoolean("mainSwitch", mainSwitch)
+        nbt.putDouble("heaterControlValue", heaterControlValue)
+        nbt.putDouble("manualControl", manualControl)
+        nbt.putDouble("setTemperature", setTemperature)
+        nbt.putDouble("actualHeatPower", actualHeatPower)
         return nbt
     }
 
@@ -256,10 +256,10 @@ class FuelHeatFurnaceElement(transparentNode: TransparentNode, descriptor: Trans
     override fun getInventory() = inventory_
 
     override fun inventoryChange(inventory: Container?) {
-        val fuelBurnerStack = inventory_.getStackInSlot(FuelHeatFurnaceContainer.FuelBurnerSlot)
+        val fuelBurnerStack = inventory_.getItem(FuelHeatFurnaceContainer.FuelBurnerSlot)
         mainSwitch = mainSwitch && fuelBurnerStack != null && !fuelBurnerStack.isEmpty
 
-        val regulatorStack = inventory_.getStackInSlot(FuelHeatFurnaceContainer.RegulatorSlot)
+        val regulatorStack = inventory_.getItem(FuelHeatFurnaceContainer.RegulatorSlot)
         if (regulatorStack != null && !regulatorStack.isEmpty && !externalControlled) {
             val regulator = Utils.getItemObject(regulatorStack) as IRegulatorDescriptor
             regulator.applyTo(controlProcess, 500.0, 20.0, 0.2, 0.1)
@@ -373,13 +373,13 @@ class FuelHeatFurnaceGui(player: Player, val inventory: Container, val render: F
             mainSwitch.displayString = I18N.tr("Furnace is on")
         else
             mainSwitch.displayString = I18N.tr("Furnace is off")
-        val fuelBurnerStack = inventory.getStackInSlot(FuelHeatFurnaceContainer.FuelBurnerSlot)
+        val fuelBurnerStack = inventory.getItem(FuelHeatFurnaceContainer.FuelBurnerSlot)
         mainSwitch.enabled = fuelBurnerStack != null && !fuelBurnerStack.isEmpty
 
         if (render.manualControl.pending) {
             manualControl.value = render.manualControl.value
         }
-        val regulatorStack = inventory.getStackInSlot(FuelHeatFurnaceContainer.RegulatorSlot)
+        val regulatorStack = inventory.getItem(FuelHeatFurnaceContainer.RegulatorSlot)
         manualControl.setEnable((regulatorStack == null || regulatorStack.isEmpty) &&
             !render.externalControlled)
         manualControl.setComment(0, I18N.tr("Control value at %s", Utils.plotPercent("", manualControl.value.toDouble())))

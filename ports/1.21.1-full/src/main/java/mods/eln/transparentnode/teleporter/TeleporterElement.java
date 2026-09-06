@@ -168,10 +168,10 @@ public class TeleporterElement extends TransparentNodeElement implements ITelepo
 
         super.writeToNBT(nbt);
 
-        nbt.setString("name", name);
-        nbt.setString("targetName", targetName);
-        nbt.setDouble("powerCharge", powerCharge);
-        nbt.setBoolean("reset", state != StateIdle);
+        nbt.putString("name", name);
+        nbt.putString("targetName", targetName);
+        nbt.putDouble("powerCharge", powerCharge);
+        nbt.putBoolean("reset", state != StateIdle);
         return nbt;
 
     }

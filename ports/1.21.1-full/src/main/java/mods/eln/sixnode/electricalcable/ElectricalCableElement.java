@@ -83,7 +83,7 @@ public class ElectricalCableElement extends SixNodeElement {
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setByte("color", (byte) (color + (colorCare << 4)));
+        nbt.putByte("color", (byte) (color + (colorCare << 4)));
         return nbt;
     }
 

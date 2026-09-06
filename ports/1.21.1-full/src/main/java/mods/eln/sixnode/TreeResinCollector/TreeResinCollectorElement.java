@@ -158,7 +158,7 @@ public class TreeResinCollectorElement extends SixNodeElement {
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setDouble("timeFromLastActivated", timeFromLastActivated);
+        nbt.putDouble("timeFromLastActivated", timeFromLastActivated);
         return nbt;
     }
 

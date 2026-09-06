@@ -116,8 +116,8 @@ public class EnergyConverterElnToOtherNode extends SimpleNode {
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setDouble("energyBuffer", energyBuffer);
-        nbt.setDouble("inPowerFactor", inPowerFactor);
+        nbt.putDouble("energyBuffer", energyBuffer);
+        nbt.putDouble("inPowerFactor", inPowerFactor);
         return nbt;
     }
 

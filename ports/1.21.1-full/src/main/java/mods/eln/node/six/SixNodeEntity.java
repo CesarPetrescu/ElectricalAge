@@ -131,7 +131,7 @@ public class SixNodeEntity extends NodeBlockEntity {
         return 0;
     }*/
     public int getDamageValue(Level world, int x, int y, int z) {
-        if (world.isRemote) {
+        if (world.isClientSide) {
             for (int idx = 0; idx < 6; idx++) {
                 if (elementRenderList[idx] != null) {
                     return elementRenderIdList[idx];
@@ -142,7 +142,7 @@ public class SixNodeEntity extends NodeBlockEntity {
     }
 
     public boolean hasVolume(Level world, int x, int y, int z) {
-        if (world.isRemote) {
+        if (world.isClientSide) {
             for (SixNodeElementRender e : elementRenderList) {
                 if (e != null && e.sixNodeDescriptor.hasVolume())
                     return true;
@@ -182,7 +182,7 @@ public class SixNodeEntity extends NodeBlockEntity {
 
     @Override
     public int isProvidingWeakPower(Direction side) {
-        if (world.isRemote) {
+        if (world.isClientSide) {
             int max = 0;
             for (SixNodeElementRender r : elementRenderList) {
                 if (r == null) continue;

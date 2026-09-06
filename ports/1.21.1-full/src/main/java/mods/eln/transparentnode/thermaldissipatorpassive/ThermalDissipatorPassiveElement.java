@@ -91,12 +91,12 @@ public class ThermalDissipatorPassiveElement extends TransparentNodeElement {
         ItemStack stack = entityPlayer.getHeldItemMainhand();
         if (stack.getItem() == Items.WATER_BUCKET) {
             thermalLoad.Tc *= 0.5;
-            entityPlayer.inventory.setInventorySlotContents(entityPlayer.inventory.currentItem, new ItemStack(Items.BUCKET));
+            entityPlayer.inventory.setItem(entityPlayer.inventory.currentItem, new ItemStack(Items.BUCKET));
             return true;
         }
         if (stack.getItem() == Item.getItemFromBlock(Blocks.ICE)) {
             thermalLoad.Tc *= 0.2;
-            stack.splitStack(1);
+            stack.split(1);
             return true;
         }
         return false;

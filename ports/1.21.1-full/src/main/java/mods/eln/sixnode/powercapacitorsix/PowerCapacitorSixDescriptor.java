@@ -51,8 +51,8 @@ public class PowerCapacitorSixDescriptor extends SixNodeDescriptor {
     }
 
     public double getCValue(Container inventory) {
-        ItemStack core = inventory.getStackInSlot(PowerCapacitorSixContainer.redId);
-        ItemStack diel = inventory.getStackInSlot(PowerCapacitorSixContainer.dielectricId);
+        ItemStack core = inventory.getItem(PowerCapacitorSixContainer.redId);
+        ItemStack diel = inventory.getItem(PowerCapacitorSixContainer.dielectricId);
 
 
         if (core.isEmpty() || diel.isEmpty())
@@ -63,7 +63,7 @@ public class PowerCapacitorSixDescriptor extends SixNodeDescriptor {
     }
 
     public double getUNominalValue(Container inventory) {
-        ItemStack diel = inventory.getStackInSlot(PowerCapacitorSixContainer.dielectricId);
+        ItemStack diel = inventory.getItem(PowerCapacitorSixContainer.dielectricId);
         if (diel.isEmpty())
             return 10000;
         else {

@@ -56,17 +56,17 @@ public class WirelessRxStatus implements INBTTReady {
     @Override
     public void readFromNBT(CompoundTag nbt, String str) {
         name = nbt.getString(str + "name");
-        id = nbt.getInteger(str + "id");
+        id = nbt.getInt(str + "id");
         connected = nbt.getBoolean(str + "connected");
-        uuid = nbt.getInteger(str + "uuid");
+        uuid = nbt.getInt(str + "uuid");
     }
 
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt, String str) {
-        nbt.setString(str + "name", name);
-        nbt.setInteger(str + "id", id);
-        nbt.setBoolean(str + "connected", connected);
-        nbt.setInteger(str + "uuid", uuid);
+        nbt.putString(str + "name", name);
+        nbt.putInt(str + "id", id);
+        nbt.putBoolean(str + "connected", connected);
+        nbt.putInt(str + "uuid", uuid);
         return nbt;
     }
 }

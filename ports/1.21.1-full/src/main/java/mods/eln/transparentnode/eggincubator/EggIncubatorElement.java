@@ -72,10 +72,10 @@ public class EggIncubatorElement extends TransparentNodeElement {
         @Override
         public void process(double time) {
             energy -= powerResistor.getP() * time;
-            if (!inventory.getStackInSlot(EggIncubatorContainer.EggSlotId).isEmpty()) {
+            if (!inventory.getItem(EggIncubatorContainer.EggSlotId).isEmpty()) {
                 descriptor.setState(powerResistor, true);
                 if (energy <= 0) {
-                    inventory.decrStackSize(EggIncubatorContainer.EggSlotId, 1);
+                    inventory.removeItem(EggIncubatorContainer.EggSlotId, 1);
                     Chicken chicken = new Chicken(node.coordinate.world());
                     chicken.setGrowingAge(-24000);
                     chicken.setLocationAndAngles(node.coordinate.pos.getX() + 0.5, node.coordinate.pos.getY() + 0.5, node.coordinate.pos.getZ() + 0.5, Mth.wrapDegrees(node.coordinate.world().rand.nextFloat() * 360.0F), 0.0F);
@@ -102,7 +102,7 @@ public class EggIncubatorElement extends TransparentNodeElement {
 
         @Override
         public CompoundTag writeToNBT(CompoundTag nbt, String str) {
-            nbt.setDouble(str + "energyCounter", energy);
+            nbt.putDouble(str + "energyCounter", energy);
             return nbt;
         }
     }
@@ -174,7 +174,7 @@ public class EggIncubatorElement extends TransparentNodeElement {
     public void networkSerialize(DataOutputStream stream) {
         super.networkSerialize(stream);
         try {
-            ItemStack eggStack = inventory.getStackInSlot(EggIncubatorContainer.EggSlotId);
+            ItemStack eggStack = inventory.getItem(EggIncubatorContainer.EggSlotId);
             stream.writeByte(eggStack.isEmpty() ? 0 : eggStack.getCount());
 
             node.lrduCubeMask.getTranslate(front.down()).serialize(stream);
@@ -189,7 +189,7 @@ public class EggIncubatorElement extends TransparentNodeElement {
     @Override
     public Map<String, String> getWaila() {
         Map<String, String> info = new HashMap<String, String>();
-        ItemStack eggStack = inventory.getStackInSlot(EggIncubatorContainer.EggSlotId);
+        ItemStack eggStack = inventory.getItem(EggIncubatorContainer.EggSlotId);
         info.put(I18N.tr("Has egg"), !eggStack.isEmpty() ?
             I18N.tr("Yes") : I18N.tr("No"));
         if (Config.INSTANCE.getWailaEasyMode()) {

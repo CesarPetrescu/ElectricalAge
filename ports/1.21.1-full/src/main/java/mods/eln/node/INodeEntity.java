@@ -1,7 +1,5 @@
 package mods.eln.node;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import mods.eln.misc.Direction;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.world.entity.player.Player;
@@ -16,7 +14,7 @@ public interface INodeEntity {
 
     void serverPacketUnserialize(DataInputStream stream);
 
-    @SideOnly(Side.CLIENT)
+    @net.neoforged.api.distmarker.OnlyIn(net.neoforged.api.distmarker.Dist.CLIENT)
     Screen newGuiDraw(Direction side, Player player);
 
     AbstractContainerMenu newContainer(Direction side, Player player);

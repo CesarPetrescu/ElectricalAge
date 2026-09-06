@@ -40,7 +40,7 @@ public class TransparentNode extends Node {
     }
 
     public void readFromNBT(CompoundTag nbt) {
-        super.readFromNBT(nbt.getCompoundTag("node"));
+        super.readFromNBT(nbt.getCompound("node"));
 
         elementId = nbt.getShort("eid");
         try {
@@ -49,14 +49,14 @@ public class TransparentNode extends Node {
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             e.printStackTrace();
         }
-        element.readFromNBT(nbt.getCompoundTag("element"));
+        element.readFromNBT(nbt.getCompound("element"));
 
     }
 
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(Utils.newNbtTagCompund(nbt, "node"));
 
-        nbt.setShort("eid", (short) elementId);
+        nbt.putShort("eid", (short) elementId);
 
         return element.writeToNBT(Utils.newNbtTagCompund(nbt, "element"));
 

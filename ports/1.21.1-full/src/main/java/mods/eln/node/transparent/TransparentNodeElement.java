@@ -384,7 +384,7 @@ public abstract class TransparentNodeElement implements GhostObserver, IPlayer, 
         }
 
 
-        nbt.setByte("others", (byte) (front.getInt() + (grounded ? 8 : 0)));
+        nbt.putByte("others", (byte) (front.getInt() + (grounded ? 8 : 0)));
         return nbt;
     }
 

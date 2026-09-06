@@ -52,8 +52,8 @@ public class NbtElectricalGateOutputProcess extends Capacitor implements INBTTRe
 
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt, String str) {
-        nbt.setBoolean(str + name + "highImpedance", highImpedance);
-        nbt.setDouble(str + name + "U", U);
+        nbt.putBoolean(str + name + "highImpedance", highImpedance);
+        nbt.putDouble(str + name + "U", U);
         return nbt;
     }
 

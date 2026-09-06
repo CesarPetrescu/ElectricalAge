@@ -32,7 +32,7 @@ public class ClientKeyHandler {
     Minecraft mc;
 
     public ClientKeyHandler() {
-        mc = Minecraft.getMinecraft();
+        mc = Minecraft.getInstance();
 
         for (int i = 0; i < desc.length; ++i) {
             if (i != 3)

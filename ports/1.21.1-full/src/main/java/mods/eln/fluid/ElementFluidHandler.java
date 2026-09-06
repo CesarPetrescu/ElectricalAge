@@ -88,7 +88,7 @@ public class ElementFluidHandler implements IFluidHandler, INBTTReady {
 
     @Override
     public void readFromNBT(CompoundTag nbt, String str) {
-        tank.readFromNBT(nbt.getCompoundTag(str + "tank"));
+        tank.readFromNBT(nbt.getCompound(str + "tank"));
         fluid_heat_mb = nbt.getFloat(str + "fhm");
     }
 
@@ -96,8 +96,8 @@ public class ElementFluidHandler implements IFluidHandler, INBTTReady {
     public CompoundTag writeToNBT(CompoundTag nbt, String str) {
         CompoundTag t = new CompoundTag();
         tank.writeToNBT(t);
-        nbt.setTag(str + "tank", t);
-        nbt.setFloat(str + "fhm", fluid_heat_mb);
+        nbt.put(str + "tank", t);
+        nbt.putFloat(str + "fhm", fluid_heat_mb);
         return nbt;
     }
 }

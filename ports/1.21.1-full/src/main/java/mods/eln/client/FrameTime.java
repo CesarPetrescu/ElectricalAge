@@ -60,7 +60,7 @@ public class FrameTime {
 
         //Utils.println(NodeBlockEntity.clientList.size());
         Iterator<NodeBlockEntity> i = NodeBlockEntity.clientList.iterator();
-        Level w = Minecraft.getMinecraft().world;
+        Level w = Minecraft.getInstance().world;
 
         if (!Utils.isGameInPause()) {
             float deltaTcaped = getNotCaped2();

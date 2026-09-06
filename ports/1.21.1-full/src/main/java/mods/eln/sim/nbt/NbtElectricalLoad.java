@@ -21,7 +21,7 @@ public class NbtElectricalLoad extends ElectricalLoad implements INBTTReady {
     }
 
     public CompoundTag writeToNBT(CompoundTag nbttagcompound, String str) {
-        nbttagcompound.setFloat(str + name + "Uc", (float) getU());
+        nbttagcompound.putFloat(str + name + "Uc", (float) getU());
         return nbttagcompound;
     }
 }

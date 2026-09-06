@@ -25,7 +25,6 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.Map;
 
@@ -33,7 +32,7 @@ import java.util.Map;
  * Client-side proxy implementation.
  * Registers tile entity special renderers and other client-side content.
  */
-@SideOnly(Side.CLIENT)
+@net.neoforged.api.distmarker.OnlyIn(net.neoforged.api.distmarker.Dist.CLIENT)
 @Mod.EventBusSubscriber(modid = Eln.MODID, value = Side.CLIENT)
 public class ClientProxy extends CommonProxy {
 
@@ -83,7 +82,7 @@ public class ClientProxy extends CommonProxy {
                     path = path.substring(Eln.MODID.length() + 1);
                 }
                 ModelLoader.setCustomModelResourceLocation(item, (Integer)damage, 
-                    new ModelResourceLocation(new ResourceLocation(Eln.MODID, path), "inventory"));
+                    new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(Eln.MODID, path), "inventory"));
             }
         });
     }
@@ -99,11 +98,11 @@ public class ClientProxy extends CommonProxy {
                     path = path.substring(Eln.MODID.length() + 1);
                 }
                 ModelLoader.setCustomModelResourceLocation(item, (Integer)damage, 
-                    new ModelResourceLocation(new ResourceLocation(Eln.MODID, path), "inventory"));
+                    new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(Eln.MODID, path), "inventory"));
             } else if (d != null && d.name != null) {
                 String iconName = d.name.replaceAll(" ", "").toLowerCase();
                 ModelLoader.setCustomModelResourceLocation(item, (Integer)damage, 
-                    new ModelResourceLocation(new ResourceLocation(Eln.MODID, iconName), "inventory"));
+                    new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(Eln.MODID, iconName), "inventory"));
             } else {
                 ModelLoader.setCustomModelResourceLocation(item, (Integer)damage, 
                     new ModelResourceLocation(item.getRegistryName(), "inventory"));

@@ -13,8 +13,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraftforge.fml.common.Optional;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -42,7 +40,7 @@ public class EnergyConverterElnToOtherEntity extends SimpleNodeEntity implements
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @net.neoforged.api.distmarker.OnlyIn(net.neoforged.api.distmarker.Dist.CLIENT)
     public Screen newGuiDraw(Direction side, Player player) {
         return new EnergyConverterElnToOtherGui(player, this);
     }
@@ -147,7 +145,7 @@ public class EnergyConverterElnToOtherEntity extends SimpleNodeEntity implements
     public boolean canConnectEnergy(net.minecraft.core.Direction from) {
         // Utils.println("*****canConnectEnergy*****");
         // return true;
-        if (world.isRemote)
+        if (world.isClientSide)
             return false;
         if (getNode() == null)
             return false;
@@ -159,7 +157,7 @@ public class EnergyConverterElnToOtherEntity extends SimpleNodeEntity implements
     @Optional.Method(modid = Other.modIdTe)
     public int extractEnergy(net.minecraft.core.Direction from, int maxExtract, boolean simulate) {
         // Utils.println("*****extractEnergy*****");
-        if (world.isRemote)
+        if (world.isClientSide)
             return 0;
         if (getNode() == null)
             return 0;

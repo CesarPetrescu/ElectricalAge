@@ -97,7 +97,7 @@ public class TransparentNodeEntity extends NodeBlockEntity implements WorldlyCon
     }
 
     public int getDamageValue(Level world, BlockPos pos) {
-        if (world.isRemote) {
+        if (world.isClientSide) {
             return elementRenderId;
         }
         return 0;
@@ -111,7 +111,7 @@ public class TransparentNodeEntity extends NodeBlockEntity implements WorldlyCon
 
     public void addCollisionBoxesToList(AABB axisAlignedBB, List<AABB> list, Coordinate blockCoord) {
         TransparentNodeDescriptor desc = null;
-        if (world.isRemote) {
+        if (world.isClientSide) {
             desc = elementRender == null ? null : elementRender.transparentNodedescriptor;
         } else {
             TransparentNode node = (TransparentNode) getNode();
@@ -187,7 +187,7 @@ public class TransparentNodeEntity extends NodeBlockEntity implements WorldlyCon
 
     @Nullable
     WorldlyContainer getSidedInventory() {
-        if (world.isRemote) {
+        if (world.isClientSide) {
             if (elementRender == null) return null;
             Container i = elementRender.getInventory();
             if (i instanceof WorldlyContainer) {
@@ -207,36 +207,36 @@ public class TransparentNodeEntity extends NodeBlockEntity implements WorldlyCon
     }
 
     @Override
-    public int getSizeInventory() {
+    public int getContainerSize() {
         WorldlyContainer inv = getSidedInventory();
-        return inv == null ? 0 : inv.getSizeInventory();
+        return inv == null ? 0 : inv.getContainerSize();
     }
 
     @NotNull
     @Override
-    public ItemStack getStackInSlot(int var1) {
+    public ItemStack getItem(int var1) {
         WorldlyContainer inv = getSidedInventory();
-        return inv == null ? ItemStack.EMPTY : inv.getStackInSlot(var1);
+        return inv == null ? ItemStack.EMPTY : inv.getItem(var1);
     }
 
     @NotNull
     @Override
-    public ItemStack decrStackSize(int var1, int var2) {
+    public ItemStack removeItem(int var1, int var2) {
         WorldlyContainer inv = getSidedInventory();
-        return inv == null ? ItemStack.EMPTY : inv.decrStackSize(var1, var2);
+        return inv == null ? ItemStack.EMPTY : inv.removeItem(var1, var2);
     }
 
     @NotNull
     @Override
-    public ItemStack removeStackFromSlot(int var1) {
+    public ItemStack removeItemNoUpdate(int var1) {
         WorldlyContainer inv = getSidedInventory();
-        return inv == null ? ItemStack.EMPTY : inv.removeStackFromSlot(var1);
+        return inv == null ? ItemStack.EMPTY : inv.removeItemNoUpdate(var1);
     }
 
     @Override
-    public void setInventorySlotContents(int var1, @NotNull ItemStack var2) {
+    public void setItem(int var1, @NotNull ItemStack var2) {
         WorldlyContainer inv = getSidedInventory();
-        if (inv != null) inv.setInventorySlotContents(var1, var2);
+        if (inv != null) inv.setItem(var1, var2);
     }
 
     @NotNull
@@ -253,9 +253,9 @@ public class TransparentNodeEntity extends NodeBlockEntity implements WorldlyCon
     }
 
     @Override
-    public int getInventoryStackLimit() {
+    public int getMaxStackSize() {
         WorldlyContainer inv = getSidedInventory();
-        return inv == null ? 0 : inv.getInventoryStackLimit();
+        return inv == null ? 0 : inv.getMaxStackSize();
     }
 
     @Override
@@ -265,27 +265,27 @@ public class TransparentNodeEntity extends NodeBlockEntity implements WorldlyCon
     }
 
     @Override
-    public boolean isUsableByPlayer(@NotNull Player player) {
+    public boolean stillValid(@NotNull Player player) {
         WorldlyContainer inv = getSidedInventory();
-        return inv != null && inv.isUsableByPlayer(player);
+        return inv != null && inv.stillValid(player);
     }
 
     @Override
-    public void openInventory(Player player) {
+    public void startOpen(Player player) {
         WorldlyContainer inv = getSidedInventory();
-        if (inv != null) inv.openInventory(player);
+        if (inv != null) inv.startOpen(player);
     }
 
     @Override
-    public void closeInventory(Player player) {
+    public void stopOpen(Player player) {
         WorldlyContainer inv = getSidedInventory();
-        if (inv != null) inv.closeInventory(player);
+        if (inv != null) inv.stopOpen(player);
     }
 
     @Override
-    public boolean isItemValidForSlot(int var1, ItemStack stack) {
+    public boolean canPlaceItem(int var1, ItemStack stack) {
         WorldlyContainer inv = getSidedInventory();
-        return inv != null && inv.isItemValidForSlot(var1, stack);
+        return inv != null && inv.canPlaceItem(var1, stack);
     }
 
     @Override
@@ -313,14 +313,14 @@ public class TransparentNodeEntity extends NodeBlockEntity implements WorldlyCon
     }
 
     @Override
-    public boolean canInsertItem(int var1, @NotNull ItemStack stack, @NotNull net.minecraft.core.Direction facing) {
+    public boolean canPlaceItemThroughFace(int var1, @NotNull ItemStack stack, @NotNull net.minecraft.core.Direction facing) {
         WorldlyContainer inv = getSidedInventory();
-        return inv != null && inv.canInsertItem(var1, stack, facing);
+        return inv != null && inv.canPlaceItemThroughFace(var1, stack, facing);
     }
 
     @Override
-    public boolean canExtractItem(int var1, @NotNull ItemStack stack, @NotNull net.minecraft.core.Direction facing) {
+    public boolean canTakeItemThroughFace(int var1, @NotNull ItemStack stack, @NotNull net.minecraft.core.Direction facing) {
         WorldlyContainer inv = getSidedInventory();
-        return inv != null && inv.canExtractItem(var1, stack, facing);
+        return inv != null && inv.canTakeItemThroughFace(var1, stack, facing);
     }
 }

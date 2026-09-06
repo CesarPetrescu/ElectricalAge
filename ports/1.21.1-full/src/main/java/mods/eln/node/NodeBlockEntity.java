@@ -19,8 +19,6 @@ import net.minecraft.util.ITickable;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LightLayer;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nullable;
 import java.io.*;
@@ -45,7 +43,7 @@ public abstract class NodeBlockEntity extends BlockEntity implements ITileEntity
     public void update() {
         if (firstUpdate) {
             firstUpdate = false;
-            if (!world.isRemote) {
+            if (!world.isClientSide) {
                 // Reset light map on first update to fix reload issues
                 world.setLightFor(LightLayer.BLOCK, pos, 0);
                 Node node = getNode();
@@ -119,7 +117,7 @@ public abstract class NodeBlockEntity extends BlockEntity implements ITileEntity
     }
 
 
-    @SideOnly(Side.CLIENT)
+    @net.neoforged.api.distmarker.OnlyIn(net.neoforged.api.distmarker.Dist.CLIENT)
     public AABB getRenderBoundingBox() {
         if (cameraDrawOptimisation()) {
             // TODO(1.10): This may not be correct.
@@ -134,7 +132,7 @@ public abstract class NodeBlockEntity extends BlockEntity implements ITileEntity
     }
 
     public int getLightValue() {
-        if (world.isRemote) {
+        if (world.isClientSide) {
             if (lastLight == 0xFF) {
                 return 0;
             }
@@ -163,7 +161,7 @@ public abstract class NodeBlockEntity extends BlockEntity implements ITileEntity
 
     //max draw distance
     @Override
-    @SideOnly(Side.CLIENT)
+    @net.neoforged.api.distmarker.OnlyIn(net.neoforged.api.distmarker.Dist.CLIENT)
     public double getMaxRenderDistanceSquared() {
         return 4096.0 * (4) * (4);
     }
@@ -175,20 +173,20 @@ public abstract class NodeBlockEntity extends BlockEntity implements ITileEntity
 
 
     public void onBlockAdded() {
-        if (!world.isRemote && getNode() == null) {
+        if (!world.isClientSide && getNode() == null) {
             world.setBlockToAir(pos);
         }
     }
 
     public void onBreakBlock() {
-        if (!world.isRemote) {
+        if (!world.isClientSide) {
             if (getNode() == null) return;
             getNode().onBreakBlock();
         }
     }
 
     public void onChunkUnload() {
-        if (world.isRemote) {
+        if (world.isClientSide) {
             destructor();
         }
     }
@@ -201,14 +199,14 @@ public abstract class NodeBlockEntity extends BlockEntity implements ITileEntity
     @Override
     public void invalidate() {
 
-        if (world.isRemote) {
+        if (world.isClientSide) {
             destructor();
         }
         super.invalidate();
     }
 
     public boolean onBlockActivated(Player entityPlayer, Direction side, float vx, float vy, float vz) {
-        if (!world.isRemote) {
+        if (!world.isClientSide) {
             if (getNode() == null) return false;
             return getNode().onBlockActivated(entityPlayer, side, vx, vy, vz);
         }
@@ -217,7 +215,7 @@ public abstract class NodeBlockEntity extends BlockEntity implements ITileEntity
     }
 
     public void onNeighborBlockChange() {
-        if (!world.isRemote) {
+        if (!world.isClientSide) {
             if (getNode() == null) return;
             getNode().onNeighborBlockChange();
         }
@@ -225,7 +223,7 @@ public abstract class NodeBlockEntity extends BlockEntity implements ITileEntity
 
 
     public Node getNode() {
-        if (world.isRemote) {
+        if (world.isClientSide) {
             Utils.fatal();
             return null;
         }
@@ -249,7 +247,7 @@ public abstract class NodeBlockEntity extends BlockEntity implements ITileEntity
 
     public static NodeBlockEntity getEntity(BlockPos pos) {
         BlockEntity entity;
-        if ((entity = Minecraft.getMinecraft().world.getTileEntity(pos)) != null) {
+        if ((entity = Minecraft.getInstance().world.getTileEntity(pos)) != null) {
             if (entity instanceof NodeBlockEntity) {
                 return (NodeBlockEntity) entity;
             }
@@ -269,7 +267,7 @@ public abstract class NodeBlockEntity extends BlockEntity implements ITileEntity
         }
 
         CompoundTag tagCompound = new CompoundTag();
-        tagCompound.setByteArray("eln", node.getPublishPacket().toByteArray());
+        tagCompound.putByteArray("eln", node.getPublishPacket().toByteArray());
         return new ClientboundBlockEntityDataPacket(
             getPos(),
             getBlockMetadata(),
@@ -282,7 +280,7 @@ public abstract class NodeBlockEntity extends BlockEntity implements ITileEntity
         CompoundTag tag = super.getUpdateTag();
         Node node = getNode();
         if (node != null) {
-            tag.setByteArray("eln", node.getPublishPacket().toByteArray());
+            tag.putByteArray("eln", node.getPublishPacket().toByteArray());
         }
         return tag;
     }
@@ -290,12 +288,12 @@ public abstract class NodeBlockEntity extends BlockEntity implements ITileEntity
     @Override
     public void handleUpdateTag(CompoundTag tag) {
         super.handleUpdateTag(tag);
-        if (tag.hasKey("eln")) {
+        if (tag.contains("eln")) {
             byte[] bytes = tag.getByteArray("eln");
-            if (bytes.length > 0 && world.isRemote) {
-                Minecraft.getMinecraft().addScheduledTask(() -> {
+            if (bytes.length > 0 && world.isClientSide) {
+                Minecraft.getInstance().addScheduledTask(() -> {
                     DataInputStream dataInputStream = new DataInputStream(new ByteArrayInputStream(bytes));
-                    Eln.packetHandler.packetRx(dataInputStream, null, Minecraft.getMinecraft().player);
+                    Eln.packetHandler.packetRx(dataInputStream, null, Minecraft.getInstance().player);
                 });
             } else if (bytes.length > 0) {
                 DataInputStream dataInputStream = new DataInputStream(new ByteArrayInputStream(bytes));
@@ -306,14 +304,14 @@ public abstract class NodeBlockEntity extends BlockEntity implements ITileEntity
 
     @Override
     public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
-        if (world.isRemote) {
+        if (world.isClientSide) {
             CompoundTag tag = pkt.getNbtCompound();
-            if (tag.hasKey("eln")) {
+            if (tag.contains("eln")) {
                 byte[] bytes = tag.getByteArray("eln");
                 if (bytes.length > 0) {
-                    Minecraft.getMinecraft().addScheduledTask(() -> {
+                    Minecraft.getInstance().addScheduledTask(() -> {
                         DataInputStream dataInputStream = new DataInputStream(new ByteArrayInputStream(bytes));
-                        Eln.packetHandler.packetRx(dataInputStream, net, Minecraft.getMinecraft().player);
+                        Eln.packetHandler.packetRx(dataInputStream, net, Minecraft.getInstance().player);
                     });
                 }
             }
@@ -350,7 +348,7 @@ public abstract class NodeBlockEntity extends BlockEntity implements ITileEntity
     }
 
     public boolean canConnectRedstone(Direction xn) {
-        if (world.isRemote)
+        if (world.isClientSide)
             return redstone;
         else {
             if (getNode() == null) return false;

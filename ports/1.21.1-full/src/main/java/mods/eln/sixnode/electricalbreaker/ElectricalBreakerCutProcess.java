@@ -53,7 +53,7 @@ public class ElectricalBreakerCutProcess implements IProcess, INBTTReady {
 
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt, String str) {
-        nbt.setFloat(str + "T", (float) T);
+        nbt.putFloat(str + "T", (float) T);
         return nbt;
     }
 }

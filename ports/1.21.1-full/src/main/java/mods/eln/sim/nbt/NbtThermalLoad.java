@@ -26,7 +26,7 @@ public class NbtThermalLoad extends ThermalLoad implements INBTTReady {
     }
 
     public CompoundTag writeToNBT(CompoundTag nbttagcompound, String str) {
-        nbttagcompound.setFloat(str + name + "Tc", (float) Tc);
+        nbttagcompound.putFloat(str + name + "Tc", (float) Tc);
         return nbttagcompound;
     }
 }

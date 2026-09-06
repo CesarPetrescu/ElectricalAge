@@ -68,11 +68,11 @@ public class DataLogs implements INBTTReady {
 
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt, String str) {
-        nbt.setByteArray(str + "log", copyLog());
-        nbt.setFloat(str + "samplingPeriod", samplingPeriod);
-        nbt.setFloat(str + "maxValue", maxValue);
-        nbt.setFloat(str + "minValue", minValue);
-        nbt.setByte(str + "unitType", unitType);
+        nbt.putByteArray(str + "log", copyLog());
+        nbt.putFloat(str + "samplingPeriod", samplingPeriod);
+        nbt.putFloat(str + "maxValue", maxValue);
+        nbt.putFloat(str + "minValue", minValue);
+        nbt.putByte(str + "unitType", unitType);
         return nbt;
     }
 
@@ -168,7 +168,7 @@ public class DataLogs implements INBTTReady {
 		*/
         GL11.glEnable(GL11.GL_TEXTURE_2D);
 
-        Font fontrenderer = Minecraft.getMinecraft().fontRenderer;
+        Font fontrenderer = Minecraft.getInstance().fontRenderer;
         GL11.glPushMatrix();
         float scale = 0.01f;
         GL11.glScalef(scale, scale, 1f);

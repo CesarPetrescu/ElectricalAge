@@ -19,8 +19,6 @@ import net.minecraft.world.level.Level;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class GenericItemUsingDamage<Descriptor extends GenericItemUsingDamageDescriptor> extends Item implements IGenericItemUsingDamage {
     public Hashtable<Integer, Descriptor> subItemList = new Hashtable<Integer, Descriptor>();
@@ -75,7 +73,7 @@ public class GenericItemUsingDamage<Descriptor extends GenericItemUsingDamageDes
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @net.neoforged.api.distmarker.OnlyIn(net.neoforged.api.distmarker.Dist.CLIENT)
     @Override
     public void getSubItems(CreativeModeTab tabs, NonNullList<ItemStack> items) {
         if (!isInCreativeTab(tabs)) return;
@@ -129,7 +127,7 @@ public class GenericItemUsingDamage<Descriptor extends GenericItemUsingDamageDes
     }
 
     public void onUpdate(ItemStack stack, Level world, Entity entity, int par4, boolean par5) {
-        if (world.isRemote) {
+        if (world.isClientSide) {
             return;
         }
 
@@ -155,7 +153,7 @@ public class GenericItemUsingDamage<Descriptor extends GenericItemUsingDamageDes
 
     @Override
     public boolean onBlockDestroyed(ItemStack stack, Level w, BlockState state, BlockPos pos, LivingEntity entity) {
-        if (w.isRemote) {
+        if (w.isClientSide) {
             return false;
         }
 

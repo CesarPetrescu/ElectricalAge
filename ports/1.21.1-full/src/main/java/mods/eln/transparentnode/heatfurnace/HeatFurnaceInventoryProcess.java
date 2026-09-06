@@ -22,15 +22,15 @@ public class HeatFurnaceInventoryProcess implements IProcess, INBTTReady {
 
     @Override
     public void process(double time) {
-        ItemStack combustibleStack = furnace.inventory.getStackInSlot(HeatFurnaceContainer.combustibleId);
-        ItemStack combustionChamberStack = furnace.inventory.getStackInSlot(HeatFurnaceContainer.combustrionChamberId);
-        ItemStack isolatorChamberStack = furnace.inventory.getStackInSlot(HeatFurnaceContainer.isolatorId);
+        ItemStack combustibleStack = furnace.inventory.getItem(HeatFurnaceContainer.combustibleId);
+        ItemStack combustionChamberStack = furnace.inventory.getItem(HeatFurnaceContainer.combustrionChamberId);
+        ItemStack isolatorChamberStack = furnace.inventory.getItem(HeatFurnaceContainer.isolatorId);
 
         double isolationFactor = 1;
         if (isolatorChamberStack != null && !isolatorChamberStack.isEmpty()) {
             ThermalIsolatorElement isolatorDescriptor = (ThermalIsolatorElement) ThermalIsolatorElement.getDescriptor(isolatorChamberStack);
             if (isolatorDescriptor != null && furnace.thermalLoad.Tc > isolatorDescriptor.getTmax()) {
-                furnace.inventory.decrStackSize(HeatFurnaceContainer.isolatorId, 1);
+                furnace.inventory.removeItem(HeatFurnaceContainer.isolatorId, 1);
             } else if (isolatorChamberStack.getItem() instanceof GenericItemUsingDamage) {
                 ThermalIsolatorElement iso = (ThermalIsolatorElement) ((GenericItemUsingDamage) isolatorChamberStack.getItem()).getDescriptor(isolatorChamberStack);
                 if (iso != null) {
@@ -54,9 +54,9 @@ public class HeatFurnaceInventoryProcess implements IProcess, INBTTReady {
                 if (itemEnergy != 0) {
                     if (furnace.furnaceProcess.combustibleEnergy + combustibleBuffer < furnace.furnaceProcess.nominalCombustibleEnergy) {
                         combustibleBuffer += itemEnergy;
-                        furnace.inventory.decrStackSize(HeatFurnaceContainer.combustibleId, 1);
+                        furnace.inventory.removeItem(HeatFurnaceContainer.combustibleId, 1);
                         if (combustibleStack.getItem().getTranslationKey().toLowerCase().contains("bucket")) {
-                            furnace.inventory.setInventorySlotContents(HeatFurnaceContainer.combustibleId, new ItemStack(Items.BUCKET));
+                            furnace.inventory.setItem(HeatFurnaceContainer.combustibleId, new ItemStack(Items.BUCKET));
                         }
                     }
                 }
@@ -85,7 +85,7 @@ public class HeatFurnaceInventoryProcess implements IProcess, INBTTReady {
 
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt, String str) {
-        nbt.setDouble(str + "HFIP" + "combustribleBuffer", combustibleBuffer);
+        nbt.putDouble(str + "HFIP" + "combustribleBuffer", combustibleBuffer);
         return nbt;
     }
 }

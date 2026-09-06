@@ -85,7 +85,7 @@ public class LampSocketProcess implements IProcess, INBTTReady {
 
     @Override
     public void process(double time) {
-        ItemStack lampStack = lamp.getInventory().getStackInSlot(0);
+        ItemStack lampStack = lamp.getInventory().getItem(0);
         LampDescriptor lampDescriptor = getLampDescriptor(lampStack);
 
         if (boot) {
@@ -274,7 +274,7 @@ public class LampSocketProcess implements IProcess, INBTTReady {
                     lampDescriptor.setLifeInTag(lampStack, life);
                 }
                 if (life < 0 || overFactor > 3) {
-                    lamp.getInventory().setInventorySlotContents(0, ItemStack.EMPTY);
+                    lamp.getInventory().setItem(0, ItemStack.EMPTY);
                     light = 0;
                 }
 
@@ -330,14 +330,14 @@ public class LampSocketProcess implements IProcess, INBTTReady {
     public void readFromNBT(CompoundTag nbt, String str) {
         stableProb = nbt.getDouble(str + "LSP" + "stableProb");
         alphaZ = nbt.getFloat(str + "alphaZ");
-        light = nbt.getInteger(str + "light");
+        light = nbt.getInt(str + "light");
     }
 
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt, String str) {
-        nbt.setDouble(str + "LSP" + "stableProb", stableProb);
-        nbt.setFloat(str + "alphaZ", (float) alphaZ);
-        nbt.setInteger(str + "light", light);
+        nbt.putDouble(str + "LSP" + "stableProb", stableProb);
+        nbt.putFloat(str + "alphaZ", (float) alphaZ);
+        nbt.putInt(str + "light", light);
         return nbt;
     }
 

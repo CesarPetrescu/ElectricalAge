@@ -59,7 +59,7 @@ public class HubElement extends SixNodeElement {
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
         for (int idx = 0; idx < 6; idx++) {
-            nbt.setBoolean("connectionGrid" + idx, connectionGrid[idx]);
+            nbt.putBoolean("connectionGrid" + idx, connectionGrid[idx]);
         }
         return nbt;
     }
@@ -71,7 +71,7 @@ public class HubElement extends SixNodeElement {
 
     @Override
     public ElectricalLoad getElectricalLoad(LRDU lrdu) {
-        if (!inventory.getStackInSlot(HubContainer.cableSlotId + lrdu.toInt()).isEmpty())
+        if (!inventory.getItem(HubContainer.cableSlotId + lrdu.toInt()).isEmpty())
             return electricalLoad[lrdu.toInt()];
         return null;
     }
@@ -110,7 +110,7 @@ public class HubElement extends SixNodeElement {
         super.networkSerialize(stream);
         try {
             for (int idx = 0; idx < 4; idx++) {
-                Utils.serialiseItemStack(stream, inventory.getStackInSlot(HubContainer.cableSlotId + idx));
+                Utils.serialiseItemStack(stream, inventory.getItem(HubContainer.cableSlotId + idx));
             }
 
             for (int idx = 0; idx < 6; idx++) {
@@ -165,7 +165,7 @@ public class HubElement extends SixNodeElement {
             if (connectionGrid[idx]) {
                 LRDU[] lrdu = connectionIdToSide(idx);
 
-                if (!inventory.getStackInSlot(HubContainer.cableSlotId + lrdu[0].toInt()).isEmpty() && !inventory.getStackInSlot(HubContainer.cableSlotId + lrdu[1].toInt()).isEmpty()) {
+                if (!inventory.getItem(HubContainer.cableSlotId + lrdu[0].toInt()).isEmpty() && !inventory.getItem(HubContainer.cableSlotId + lrdu[1].toInt()).isEmpty()) {
                     Resistor r = new Resistor(electricalLoad[lrdu[0].toInt()], electricalLoad[lrdu[1].toInt()]);
                     r.setR(getCableDescriptorFromLrdu(lrdu[0]).electricalRs + getCableDescriptorFromLrdu(lrdu[1]).electricalRs);
                     electricalComponentList.add(r);
@@ -184,7 +184,7 @@ public class HubElement extends SixNodeElement {
     ElectricalCableDescriptor getCableDescriptorFromLrdu(LRDU lrdu) {
         ElectricalCableDescriptor cableDescriptor;
         ItemStack cable;
-        cable = inventory.getStackInSlot(HubContainer.cableSlotId + lrdu.toInt());
+        cable = inventory.getItem(HubContainer.cableSlotId + lrdu.toInt());
         cableDescriptor = (ElectricalCableDescriptor) Eln.sixNodeItem.getDescriptor(cable);
         return cableDescriptor;
     }

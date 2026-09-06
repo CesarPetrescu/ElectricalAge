@@ -21,9 +21,9 @@ public class GuiHelper {
     public Screen screen;
     public int xSize, ySize;
     ResourceLocation background;
-    static final ResourceLocation helperTexture = new ResourceLocation("eln", "sprites/gui/helpertexture.png");
+    static final ResourceLocation helperTexture = ResourceLocation.fromNamespaceAndPath("eln", "sprites/gui/helpertexture.png");
 
-    static final ResourceLocation slotSkin = new ResourceLocation("textures/gui/container/furnace.png");
+    static final ResourceLocation slotSkin = ResourceLocation.parse("textures/gui/container/furnace.png");
 
     public static final Tesselator tessellator = new Tesselator(16);
 
@@ -31,7 +31,7 @@ public class GuiHelper {
         this.screen = screen;
         this.xSize = xSize;
         this.ySize = ySize;
-        background = new ResourceLocation("eln", "sprites/gui/" + backgroundName);
+        background = ResourceLocation.fromNamespaceAndPath("eln", "sprites/gui/" + backgroundName);
     }
 
     public GuiHelper(Screen screen, int xSize, int ySize) {
@@ -48,7 +48,7 @@ public class GuiHelper {
 
     GuiTextFieldEln newGuiTextField(int x, int y, int width) {
         GuiTextFieldEln o;
-        o = new GuiTextFieldEln(getNextComponentId(), Minecraft.getMinecraft().fontRenderer,
+        o = new GuiTextFieldEln(getNextComponentId(), Minecraft.getInstance().fontRenderer,
             screen.width / 2 - xSize / 2 + x, screen.height / 2 - ySize / 2 + y, width, 12, this);
         objectList.add(o);
         return o;
@@ -196,7 +196,7 @@ public class GuiHelper {
     }
 
     public void drawString(int x, int y, int color, String str) {
-        Minecraft.getMinecraft().fontRenderer.drawString(str, screen.width / 2 - xSize / 2 + x, screen.height / 2 - ySize / 2 + y, color);
+        Minecraft.getInstance().fontRenderer.drawString(str, screen.width / 2 - xSize / 2 + x, screen.height / 2 - ySize / 2 + y, color);
     }
 
     public void draw2(int x, int y) {

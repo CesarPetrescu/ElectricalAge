@@ -136,7 +136,7 @@ public class HeatFurnaceElement extends TransparentNodeElement {
             stream.writeFloat((float) regulator.getTarget());
             stream.writeFloat((float) furnaceProcess.getP());
 
-            serialiseItemStack(stream, inventory.getStackInSlot(HeatFurnaceContainer.combustibleId));
+            serialiseItemStack(stream, inventory.getItem(HeatFurnaceContainer.combustibleId));
             
             /*Utils.println("Furnace Serialized: P=" + furnaceProcess.getP() + 
                           " T=" + thermalLoad.Tc + 
@@ -169,14 +169,14 @@ public class HeatFurnaceElement extends TransparentNodeElement {
             switch (packetType) {
                 case unserializeGain:
                     float g = stream.readFloat();
-                    if (inventory.getStackInSlot(HeatFurnaceContainer.regulatorId).isEmpty()) {
+                    if (inventory.getItem(HeatFurnaceContainer.regulatorId).isEmpty()) {
                         furnaceProcess.setGain(g);
                     }
                     needPublish();
                     break;
                 case unserializeTemperatureTarget:
                     float t = stream.readFloat();
-                    if (!inventory.getStackInSlot(HeatFurnaceContainer.regulatorId).isEmpty()) {
+                    if (!inventory.getItem(HeatFurnaceContainer.regulatorId).isEmpty()) {
                         regulator.setTarget(t);
                     }
                     needPublish();
@@ -226,7 +226,7 @@ public class HeatFurnaceElement extends TransparentNodeElement {
 
     void computeInventory() {
         if (regulator == null) return;
-        ItemStack regulatorStack = inventory.getStackInSlot(HeatFurnaceContainer.regulatorId);
+        ItemStack regulatorStack = inventory.getItem(HeatFurnaceContainer.regulatorId);
 
         if (!regulatorStack.isEmpty() && !controlExternal) {
             Object obj = Utils.getItemObject(regulatorStack);
@@ -245,8 +245,8 @@ public class HeatFurnaceElement extends TransparentNodeElement {
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
 
-        nbt.setBoolean("takeFuel", takeFuel);
-        nbt.setBoolean("controlExternal", controlExternal);
+        nbt.putBoolean("takeFuel", takeFuel);
+        nbt.putBoolean("controlExternal", controlExternal);
 
         return nbt;
     }

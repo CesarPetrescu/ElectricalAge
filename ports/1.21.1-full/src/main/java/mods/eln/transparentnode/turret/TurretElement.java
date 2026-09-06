@@ -161,7 +161,7 @@ public class TurretElement extends TransparentNodeElement {
             stream.writeBoolean(simulation.inSeekMode());
             stream.writeBoolean(simulation.isShooting());
             stream.writeBoolean(simulation.isEnabled());
-            Utils.serialiseItemStack(stream, acceptingInventory.getInventory().getStackInSlot(TurretContainer.filterId));
+            Utils.serialiseItemStack(stream, acceptingInventory.getInventory().getItem(TurretContainer.filterId));
             stream.writeBoolean(filterIsSpare);
             stream.writeFloat((float) chargePower);
         } catch (IOException e) {
@@ -172,9 +172,9 @@ public class TurretElement extends TransparentNodeElement {
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setDouble("chargePower", chargePower);
-        nbt.setBoolean("filterIsSpare", filterIsSpare);
-        nbt.setDouble("energyBuffer", energyBuffer);
+        nbt.putDouble("chargePower", chargePower);
+        nbt.putBoolean("filterIsSpare", filterIsSpare);
+        nbt.putDouble("energyBuffer", energyBuffer);
         return nbt;
     }
 
@@ -235,7 +235,7 @@ public class TurretElement extends TransparentNodeElement {
         Map<String, String> info = new HashMap<String, String>();
         info.put(I18N.tr("Charge power"), Utils.plotPower("", chargePower));
 
-        ItemStack filterStack = acceptingInventory.getInventory().getStackInSlot(TurretContainer.filterId);
+        ItemStack filterStack = acceptingInventory.getInventory().getItem(TurretContainer.filterId);
         if (filterStack != null) {
             GenericItemUsingDamageDescriptor gen = EntitySensorFilterDescriptor.getDescriptor(filterStack);
             if (gen != null && gen instanceof EntitySensorFilterDescriptor) {

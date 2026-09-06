@@ -89,19 +89,19 @@ public class ElectricalDataLoggerElement extends SixNodeElement {
         logs.readFromNBT(nbt, "logs");
         pause = nbt.getBoolean("pause");
         timeToNextSample = nbt.getDouble("timeToNextSample");
-        sampleStack = nbt.getInteger("sampleStack");
-        sampleStackNbr = nbt.getInteger("sampleStackNbr");
+        sampleStack = nbt.getInt("sampleStack");
+        sampleStackNbr = nbt.getInt("sampleStackNbr");
     }
 
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setDouble("timeToNextSample", timeToNextSample);
-        nbt.setBoolean("pause", pause);
+        nbt.putDouble("timeToNextSample", timeToNextSample);
+        nbt.putBoolean("pause", pause);
 
         logs.writeToNBT(nbt, "logs");
-        nbt.setInteger("sampleStack", sampleStack);
-        nbt.setInteger("sampleStackNbr", sampleStackNbr);
+        nbt.putInt("sampleStack", sampleStack);
+        nbt.putInt("sampleStackNbr", sampleStackNbr);
         return nbt;
     }
 

@@ -48,8 +48,8 @@ public class ResistorSwitch extends Resistor implements INBTTReady {
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt, String str) {
         str += name;
-        nbt.setDouble(str + "R", baseR);
-        nbt.setBoolean(str + "State", getState());
+        nbt.putDouble(str + "R", baseR);
+        nbt.putBoolean(str + "State", getState());
         return nbt;
     }
 

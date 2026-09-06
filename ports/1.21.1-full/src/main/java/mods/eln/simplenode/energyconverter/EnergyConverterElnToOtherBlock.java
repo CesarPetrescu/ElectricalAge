@@ -1,7 +1,5 @@
 package mods.eln.simplenode.energyconverter;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import mods.eln.misc.Direction;
 import mods.eln.node.simple.SimpleNode;
 import mods.eln.node.simple.SimpleNodeBlock;
@@ -36,7 +34,7 @@ public class EnergyConverterElnToOtherBlock extends SimpleNodeBlock {
     }
 
 //    @Override
-//    @SideOnly(Side.CLIENT)
+//    @net.neoforged.api.distmarker.OnlyIn(net.neoforged.api.distmarker.Dist.CLIENT)
 //    public IIcon getIcon(IBlockAccess w, int x, int y, int z, int side) {
 //        SimpleNodeEntity e = (SimpleNodeEntity) w.getTileEntity(x, y, z);
 //        Direction s = Direction.fromIntMinecraftSide(side);
@@ -59,7 +57,7 @@ public class EnergyConverterElnToOtherBlock extends SimpleNodeBlock {
 //        return elnIcon;
 //    }
 //
-//    @SideOnly(Side.CLIENT)
+//    @net.neoforged.api.distmarker.OnlyIn(net.neoforged.api.distmarker.Dist.CLIENT)
 //    public void registerBlockIcons(IIconRegister register) {
 //        this.blockIcon = register.registerIcon("eln:elntoic2lvu_ic2");
 //        this.elnIcon = register.registerIcon("eln:elntoic2lvu_eln");

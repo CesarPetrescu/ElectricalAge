@@ -70,7 +70,7 @@ public class ServerEventListener {
     @SubscribeEvent
     public void onWorldLoad(Load e) {
         Level w = e.getWorld();
-        if (w.isRemote) return;
+        if (w.isClientSide) return;
         loadedWorlds.add(w.provider.getDimension());
         FileNames fileNames = new FileNames(e);
 
@@ -99,7 +99,7 @@ public class ServerEventListener {
     public void onWorldUnload(Unload e) {
         Level w = e.getWorld();
         int dim = w.provider.getDimension();
-        if (w.isRemote) return;
+        if (w.isClientSide) return;
         loadedWorlds.remove(dim);
         try {
             NodeManager.instance.unload(dim);
@@ -114,7 +114,7 @@ public class ServerEventListener {
     public void onWorldSave(Save e) {
         Level w = e.getWorld();
         int dim = w.provider.getDimension();
-        if (w.isRemote) return;
+        if (w.isClientSide) return;
         if (!loadedWorlds.contains(dim)) {
             //System.out.println("I hate you minecraft");
             return;
@@ -150,12 +150,12 @@ public class ServerEventListener {
 
     static void readFromEaWorldNBT(CompoundTag nbt) {
         try {
-            NodeManager.instance.loadFromNbt(nbt.getCompoundTag("nodes"));
+            NodeManager.instance.loadFromNbt(nbt.getCompound("nodes"));
         } catch (Exception e) {
             e.printStackTrace();
         }
         try {
-            Eln.ghostManager.loadFromNBT(nbt.getCompoundTag("ghost"));
+            Eln.ghostManager.loadFromNBT(nbt.getCompound("ghost"));
         } catch (Exception e) {
             e.printStackTrace();
         }

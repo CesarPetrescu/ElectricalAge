@@ -159,9 +159,9 @@ public class ElectricalAntennaTxElement extends TransparentNodeElement {
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
         if (rxCoord == null)
-            nbt.setBoolean("rxCoordValid", false);
+            nbt.putBoolean("rxCoordValid", false);
         else {
-            nbt.setBoolean("rxCoordValid", true);
+            nbt.putBoolean("rxCoordValid", true);
             rxCoord.writeToNBT(nbt, "rxCoord");
         }
         return rot.writeToNBT(nbt, "rot");

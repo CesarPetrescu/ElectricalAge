@@ -89,9 +89,9 @@ public class ElectricalRelayElement extends SixNodeElement {
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setByte("front", (byte) (front.toInt() << 0));
-        nbt.setBoolean("switchState", switchState);
-        nbt.setBoolean("defaultOutput", defaultOutput);
+        nbt.putByte("front", (byte) (front.toInt() << 0));
+        nbt.putBoolean("switchState", switchState);
+        nbt.putBoolean("defaultOutput", defaultOutput);
         return nbt;
     }
 

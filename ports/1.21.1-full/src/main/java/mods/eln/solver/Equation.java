@@ -591,7 +591,7 @@ public class Equation implements IValue, INBTTReady {
         @Override
         public CompoundTag writeToNBT(CompoundTag nbt, String str) {
 
-            nbt.setDouble(str + "counter", counter);
+            nbt.putDouble(str + "counter", counter);
             return nbt;
         }
 
@@ -630,7 +630,7 @@ public class Equation implements IValue, INBTTReady {
 
         @Override
         public CompoundTag writeToNBT(CompoundTag nbt, String str) {
-            nbt.setDouble(str + "counter", counter);
+            nbt.putDouble(str + "counter", counter);
             return nbt;
         }
 
@@ -669,7 +669,7 @@ public class Equation implements IValue, INBTTReady {
 
         @Override
         public CompoundTag writeToNBT(CompoundTag nbt, String str) {
-            nbt.setDouble(str + "counter", counter);
+            nbt.putDouble(str + "counter", counter);
             return nbt;
         }
 
@@ -710,8 +710,8 @@ public class Equation implements IValue, INBTTReady {
 
         @Override
         public CompoundTag writeToNBT(CompoundTag nbt, String str) {
-            nbt.setDouble(str + "old", old);
-            nbt.setDouble(str + "value", value);
+            nbt.putDouble(str + "old", old);
+            nbt.putDouble(str + "value", value);
             return nbt;
         }
 
@@ -753,9 +753,9 @@ public class Equation implements IValue, INBTTReady {
 
         @Override
         public CompoundTag writeToNBT(CompoundTag nbt, String str) {
-            nbt.setDouble(str + "iStack", iStack);
-            nbt.setDouble(str + "oldError", oldError);
-            nbt.setDouble(str + "dValue", dValue);
+            nbt.putDouble(str + "iStack", iStack);
+            nbt.putDouble(str + "oldError", oldError);
+            nbt.putDouble(str + "dValue", dValue);
             return nbt;
         }
 
@@ -866,7 +866,7 @@ public class Equation implements IValue, INBTTReady {
 
         @Override
         public CompoundTag writeToNBT(CompoundTag nbt, String str) {
-            nbt.setBoolean(str + "state", state);
+            nbt.putBoolean(str + "state", state);
             return nbt;
         }
 
@@ -905,7 +905,7 @@ public class Equation implements IValue, INBTTReady {
 
         @Override
         public CompoundTag writeToNBT(CompoundTag nbt, String str) {
-            nbt.setDouble(str + "state", state);
+            nbt.putDouble(str + "state", state);
             return nbt;
         }
 

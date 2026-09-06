@@ -114,7 +114,7 @@ public class SixNodeItem extends GenericItemBlockUsingDamage<SixNodeDescriptor> 
     }
 
     public boolean placeBlockAt(ItemStack stack, Player player, Level world, BlockPos pos, net.minecraft.core.Direction side, float hitX, float hitY, float hitZ, BlockState state) {
-        if (world.isRemote) return false;
+        if (world.isClientSide) return false;
         if (!isStackValidToPlace(stack)) return false;
 
         Direction direction = Direction.fromFacing(side).getInverse();

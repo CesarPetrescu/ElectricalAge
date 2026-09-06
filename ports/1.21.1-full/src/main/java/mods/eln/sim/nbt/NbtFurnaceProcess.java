@@ -22,8 +22,8 @@ public class NbtFurnaceProcess extends FurnaceProcess implements INBTTReady {
 
     @Override
     public CompoundTag writeToNBT(CompoundTag nbttagcompound, String str) {
-        nbttagcompound.setFloat(str + name + "Q", (float) combustibleEnergy);
-        nbttagcompound.setDouble(str + name + "gain", getGain());
+        nbttagcompound.putFloat(str + name + "Q", (float) combustibleEnergy);
+        nbttagcompound.putDouble(str + name + "gain", getGain());
         return nbttagcompound;
     }
 }

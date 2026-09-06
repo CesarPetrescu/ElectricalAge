@@ -147,10 +147,10 @@ class ElectricalFuseHolderElement(sixNode: SixNode, side: Direction, descriptor:
             if (installedFuse != null) {
                 val fuseCompaound = CompoundTag()
                 installedFuse!!.newItemStack().writeToNBT(fuseCompaound)
-                nbt.setTag("fuse", fuseCompaound)
+                nbt.put("fuse", fuseCompaound)
             }
 
-            nbt.setDouble("T", T)
+            nbt.putDouble("T", T)
         }
         return nbt
     }

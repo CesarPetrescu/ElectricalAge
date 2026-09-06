@@ -133,9 +133,9 @@ public class TransformerElement extends TransparentNodeElement {
     }
 
     private void computeInventory() {
-        ItemStack primaryCable = inventory.getStackInSlot(TransformerContainer.primaryCableSlotId);
-        ItemStack secondaryCable = inventory.getStackInSlot(TransformerContainer.secondaryCableSlotId);
-        ItemStack core = inventory.getStackInSlot(TransformerContainer.ferromagneticSlotId);
+        ItemStack primaryCable = inventory.getItem(TransformerContainer.primaryCableSlotId);
+        ItemStack secondaryCable = inventory.getItem(TransformerContainer.secondaryCableSlotId);
+        ItemStack core = inventory.getItem(TransformerContainer.ferromagneticSlotId);
         ElectricalCableDescriptor primaryCableDescriptor = null, secondaryCableDescriptor = null;
 
         if (!primaryCable.isEmpty()) {
@@ -265,15 +265,15 @@ public class TransformerElement extends TransparentNodeElement {
     public void networkSerialize(DataOutputStream stream) {
         super.networkSerialize(stream);
         try {
-            ItemStack primaryStack = inventory.getStackInSlot(0);
-            ItemStack secondaryStack = inventory.getStackInSlot(1);
-            ItemStack casingStack = inventory.getStackInSlot(3);
+            ItemStack primaryStack = inventory.getItem(0);
+            ItemStack secondaryStack = inventory.getItem(1);
+            ItemStack casingStack = inventory.getItem(3);
             stream.writeByte(primaryStack == null || primaryStack.isEmpty() ? 0 : primaryStack.getCount());
             stream.writeByte(secondaryStack == null || secondaryStack.isEmpty() ? 0 : secondaryStack.getCount());
 
-            Utils.serialiseItemStack(stream, inventory.getStackInSlot(TransformerContainer.ferromagneticSlotId));
-            Utils.serialiseItemStack(stream, inventory.getStackInSlot(TransformerContainer.primaryCableSlotId));
-            Utils.serialiseItemStack(stream, inventory.getStackInSlot(TransformerContainer.secondaryCableSlotId));
+            Utils.serialiseItemStack(stream, inventory.getItem(TransformerContainer.ferromagneticSlotId));
+            Utils.serialiseItemStack(stream, inventory.getItem(TransformerContainer.primaryCableSlotId));
+            Utils.serialiseItemStack(stream, inventory.getItem(TransformerContainer.secondaryCableSlotId));
 
             node.lrduCubeMask.getTranslate(front.down()).serialize(stream);
             stream.writeBoolean(isIsolator);
@@ -294,7 +294,7 @@ public class TransformerElement extends TransparentNodeElement {
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setBoolean("isIsolated", isIsolator);
+        nbt.putBoolean("isIsolated", isIsolator);
         return nbt;
     }
 
@@ -312,7 +312,7 @@ public class TransformerElement extends TransparentNodeElement {
         if (Config.INSTANCE.getWailaEasyMode()) {
             FerromagneticCoreDescriptor core =
                 (FerromagneticCoreDescriptor) FerromagneticCoreDescriptor.getDescriptor(
-                    inventory.getStackInSlot(TransformerContainer.ferromagneticSlotId));
+                    inventory.getItem(TransformerContainer.ferromagneticSlotId));
             if (core != null) {
                 info.put(I18N.tr("Core factor"), Utils.plotValue(core.cableMultiplicator));
             }

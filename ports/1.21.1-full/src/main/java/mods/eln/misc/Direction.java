@@ -465,7 +465,7 @@ public enum Direction {
     }
 
     public CompoundTag writeToNBT(CompoundTag nbt, String name) {
-        nbt.setByte(name, (byte) getInt());
+        nbt.putByte(name, (byte) getInt());
         return nbt;
     }
 

@@ -112,7 +112,7 @@ public class EnergyMeterElement extends SixNodeElement {
 
     @Override
     public int getConnectionMask(LRDU lrdu) {
-        if (getInventory().getStackInSlot(EnergyMeterContainer.cableSlotId).isEmpty()) return 0;
+        if (getInventory().getItem(EnergyMeterContainer.cableSlotId).isEmpty()) return 0;
         if (front == lrdu) return NodeBase.maskElectricalAll;
         if (front.inverse() == lrdu) return NodeBase.maskElectricalAll;
 
@@ -158,7 +158,7 @@ public class EnergyMeterElement extends SixNodeElement {
             stream.writeDouble(timeCounter);
 
             // stream.writeDouble(energyStack);
-            Utils.serialiseItemStack(stream, getInventory().getStackInSlot(EnergyMeterContainer.cableSlotId));
+            Utils.serialiseItemStack(stream, getInventory().getItem(EnergyMeterContainer.cableSlotId));
 
             stream.writeByte(energyUnit);
             stream.writeByte(timeUnit);
@@ -187,7 +187,7 @@ public class EnergyMeterElement extends SixNodeElement {
     }
 
     public void computeElectricalLoad() {
-        ItemStack cable = getInventory().getStackInSlot(EnergyMeterContainer.cableSlotId);
+        ItemStack cable = getInventory().getItem(EnergyMeterContainer.cableSlotId);
 
         cableDescriptor = (ElectricalCableDescriptor) Eln.sixNodeItem.getDescriptor(cable);
         if (cableDescriptor == null) {
@@ -285,12 +285,12 @@ public class EnergyMeterElement extends SixNodeElement {
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
 
-        nbt.setString("mode", mod.toString());
-        nbt.setDouble("energyStack", energyStack);
-        nbt.setDouble("timeCounter", timeCounter);
-        nbt.setString("password", password);
-        nbt.setByte("energyUnit", (byte) energyUnit);
-        nbt.setByte("timeUnit", (byte) timeUnit);
+        nbt.putString("mode", mod.toString());
+        nbt.putDouble("energyStack", energyStack);
+        nbt.putDouble("timeCounter", timeCounter);
+        nbt.putString("password", password);
+        nbt.putByte("energyUnit", (byte) energyUnit);
+        nbt.putByte("timeUnit", (byte) timeUnit);
         return nbt;
     }
 

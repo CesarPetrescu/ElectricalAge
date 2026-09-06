@@ -194,9 +194,9 @@ public class NodeManager extends SavedData {
                 if (node.mustBeSaved() == false) continue;
                 if (dim != Integer.MIN_VALUE && node.coordinate.getDimension() != dim) continue;
                 CompoundTag nbtNode = new CompoundTag();
-                nbtNode.setString("tag", node.getNodeUuid());
+                nbtNode.putString("tag", node.getNodeUuid());
                 node.writeToNBT(nbtNode);
-                nbt.setTag("n" + nodeCounter++, nbtNode);
+                nbt.put("n" + nodeCounter++, nbtNode);
             } catch (Exception e) {
                 e.printStackTrace();
             }

@@ -74,9 +74,9 @@ public class PowerSourceBipole implements IRootSystemPreStepProcess, INBTTReady 
 
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt, String str) {
-        nbt.setDouble(str + "P", getP());
-        nbt.setDouble(str + "Umax", Umax);
-        nbt.setDouble(str + "Imax", Imax);
+        nbt.putDouble(str + "P", getP());
+        nbt.putDouble(str + "Umax", Umax);
+        nbt.putDouble(str + "Imax", Imax);
         return nbt;
     }
 }

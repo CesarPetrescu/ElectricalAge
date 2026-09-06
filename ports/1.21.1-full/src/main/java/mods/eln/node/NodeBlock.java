@@ -15,8 +15,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -94,9 +92,9 @@ public abstract class NodeBlock extends Block {//BlockContainer
         return true;
     }
 
-    @SideOnly(Side.SERVER)
+    @net.neoforged.api.distmarker.OnlyIn(net.neoforged.api.distmarker.Dist.DEDICATED_SERVER)
     public void onBlockAdded(Level par1World, BlockPos pos) {
-        if (!par1World.isRemote) {
+        if (!par1World.isClientSide) {
             NodeBlockEntity entity = (NodeBlockEntity) par1World.getTileEntity(pos);
             entity.onBlockAdded();
         }
@@ -105,7 +103,7 @@ public abstract class NodeBlock extends Block {//BlockContainer
 
     @Override
     public void breakBlock(Level world, BlockPos pos, BlockState state) {
-        if (!world.isRemote) {
+        if (!world.isClientSide) {
             NodeBlockEntity entity = (NodeBlockEntity) world.getTileEntity(pos);
             if (entity != null) {
                 entity.onBreakBlock();
@@ -116,7 +114,7 @@ public abstract class NodeBlock extends Block {//BlockContainer
 
     @Override
     public void onNeighborChange(BlockGetter world, BlockPos pos, BlockPos neighbor) {
-        if (!Utils.isRemote(world)) {
+        if (!Utils.isClientSide(world)) {
             NodeBlockEntity entity = (NodeBlockEntity) world.getTileEntity(pos);
             entity.onNeighborBlockChange();
         }
@@ -128,7 +126,7 @@ public abstract class NodeBlock extends Block {//BlockContainer
         return getMetaFromState(state);
     }
 
-    //@SideOnly(Side.CLIENT)
+    //@net.neoforged.api.distmarker.OnlyIn(net.neoforged.api.distmarker.Dist.CLIENT)
     public void getSubBlocks(int par1, CreativeModeTab tab, List subItems) {
         for (int ix = 0; ix < blockItemNbr; ix++) {
             subItems.add(new ItemStack(this, 1, ix));

@@ -40,11 +40,11 @@ class DirectionSet : TreeSet<Direction>() {
     }
 
     fun writeToNBT(nbt: CompoundTag, name: String): CompoundTag? {
-        nbt.setInteger(name, toInt())
+        nbt.putInt(name, toInt())
         return nbt
     }
 
     fun readFromNBT(nbt: CompoundTag, name: String) {
-        fromInt(nbt.getInteger(name))
+        fromInt(nbt.getInt(name))
     }
 }

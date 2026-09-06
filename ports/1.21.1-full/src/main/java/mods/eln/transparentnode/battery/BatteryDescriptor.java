@@ -185,8 +185,8 @@ public class BatteryDescriptor extends TransparentNodeDescriptor {
     public CompoundTag getDefaultNBT() {
         CompoundTag nbt = new CompoundTag();
 
-        nbt.setDouble("charge", startCharge);
-        nbt.setDouble("life", 1.0);
+        nbt.putDouble("charge", startCharge);
+        nbt.putDouble("life", 1.0);
         return nbt;
     }
 

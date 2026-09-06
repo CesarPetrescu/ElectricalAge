@@ -25,7 +25,7 @@ public class TutorialSignOverlay {
 
     @SubscribeEvent
     public void render(RenderGameOverlayEvent.Text event) {
-        Minecraft mc = Minecraft.getMinecraft();
+        Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
 
         if (oldRender != null) {
@@ -71,7 +71,7 @@ public class TutorialSignOverlay {
             GL11.glScalef(0.5f, 0.5f, 0.5f);
             int y = 0;
             for (String str : best.texts) {
-                Minecraft.getMinecraft().fontRenderer.drawString(str, 10/* event.resolution.getScaledWidth() / 2 - 50*/, 10 + y, 0xFFFFFF);
+                Minecraft.getInstance().fontRenderer.drawString(str, 10/* event.resolution.getScaledWidth() / 2 - 50*/, 10 + y, 0xFFFFFF);
                 y += 10;
             }
             GL11.glPopMatrix();

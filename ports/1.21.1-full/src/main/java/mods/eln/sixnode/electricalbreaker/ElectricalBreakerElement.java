@@ -87,10 +87,10 @@ public class ElectricalBreakerElement extends SixNodeElement {
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setByte("front", (byte) (front.toInt() << 0));
-        nbt.setBoolean("switchState", switchState);
-        nbt.setFloat("voltageMax", voltageMax);
-        nbt.setFloat("voltageMin", voltageMin);
+        nbt.putByte("front", (byte) (front.toInt() << 0));
+        nbt.putBoolean("switchState", switchState);
+        nbt.putFloat("voltageMax", voltageMax);
+        nbt.putFloat("voltageMin", voltageMin);
         return nbt;
     }
 
@@ -108,7 +108,7 @@ public class ElectricalBreakerElement extends SixNodeElement {
 
     @Override
     public int getConnectionMask(LRDU lrdu) {
-        if (inventory.getStackInSlot(ElectricalBreakerContainer.cableSlotId).isEmpty()) return 0;
+        if (inventory.getItem(ElectricalBreakerContainer.cableSlotId).isEmpty()) return 0;
         if (front == lrdu) return NodeBase.maskElectricalAll;
         if (front.inverse() == lrdu) return NodeBase.maskElectricalAll;
 
@@ -144,7 +144,7 @@ public class ElectricalBreakerElement extends SixNodeElement {
             stream.writeFloat(voltageMax);
             stream.writeFloat(voltageMin);
 
-            Utils.serialiseItemStack(stream, inventory.getStackInSlot(ElectricalBreakerContainer.cableSlotId));
+            Utils.serialiseItemStack(stream, inventory.getItem(ElectricalBreakerContainer.cableSlotId));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -159,7 +159,7 @@ public class ElectricalBreakerElement extends SixNodeElement {
     }
 
     public void refreshSwitchResistor() {
-        ItemStack cable = inventory.getStackInSlot(ElectricalBreakerContainer.cableSlotId);
+        ItemStack cable = inventory.getItem(ElectricalBreakerContainer.cableSlotId);
         ElectricalCableDescriptor cableDescriptor = (ElectricalCableDescriptor) Eln.sixNodeItem.getDescriptor(cable);
         if (cableDescriptor == null || !switchState) {
             switchResistor.ultraImpedance();
@@ -185,7 +185,7 @@ public class ElectricalBreakerElement extends SixNodeElement {
     }
 
     public void computeElectricalLoad() {
-        ItemStack cable = inventory.getStackInSlot(ElectricalBreakerContainer.cableSlotId);
+        ItemStack cable = inventory.getItem(ElectricalBreakerContainer.cableSlotId);
 
         if (!nbtBoot) setSwitchState(false);
         nbtBoot = false;

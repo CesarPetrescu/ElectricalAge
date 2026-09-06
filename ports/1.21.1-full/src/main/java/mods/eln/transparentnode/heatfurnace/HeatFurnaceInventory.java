@@ -21,12 +21,12 @@ public class HeatFurnaceInventory extends TransparentNodeElementInventory {
     }
 
     @Override
-    public boolean canInsertItem(int var1, ItemStack var2, Direction var3) {
+    public boolean canPlaceItemThroughFace(int var1, ItemStack var2, Direction var3) {
         return true;
     }
 
     @Override
-    public boolean canExtractItem(int var1, ItemStack var2, Direction var3) {
+    public boolean canTakeItemThroughFace(int var1, ItemStack var2, Direction var3) {
         return false;
     }
 }

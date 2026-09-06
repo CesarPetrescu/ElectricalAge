@@ -164,7 +164,7 @@ class ShaftNetwork() : INBTTReady {
     }
 
     override fun writeToNBT(nbt: CompoundTag, str: String?): CompoundTag?{
-        nbt.setFloat(str + "rads", rads.toFloat())
+        nbt.putFloat(str + "rads", rads.toFloat())
         return nbt
     }
 

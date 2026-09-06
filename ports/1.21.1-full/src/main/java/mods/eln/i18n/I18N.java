@@ -3,7 +3,6 @@ package mods.eln.i18n;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
  * Internationalization and localization helper class.
@@ -55,7 +54,7 @@ public class I18N {
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @net.neoforged.api.distmarker.OnlyIn(net.neoforged.api.distmarker.Dist.CLIENT)
     private static String trClient(final String text, Object... objects) {
         String key = "eln." + encodeLangKey(text).toLowerCase();
 

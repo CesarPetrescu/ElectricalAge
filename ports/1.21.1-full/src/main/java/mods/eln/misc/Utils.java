@@ -380,15 +380,15 @@ public class Utils {
     }
 
     public static void readFromNBT(CompoundTag nbt, String str, Container inventory) {
-        ListTag var2 = nbt.getTagList(str, 10);
+        ListTag var2 = nbt.getList(str, 10);
         inventory.clear();
 
-        for (int var3 = 0; var3 < var2.tagCount(); ++var3) {
-            CompoundTag var4 = (CompoundTag) var2.getCompoundTagAt(var3);
+        for (int var3 = 0; var3 < var2.size(); ++var3) {
+            CompoundTag var4 = (CompoundTag) var2.getCompound(var3);
             int var5 = var4.getByte("Slot") & 255;
 
-            if (var5 < inventory.getSizeInventory()) {
-                inventory.setInventorySlotContents(var5, new ItemStack(var4));
+            if (var5 < inventory.getContainerSize()) {
+                inventory.setItem(var5, new ItemStack(var4));
             }
         }
     }
@@ -396,17 +396,17 @@ public class Utils {
     public static CompoundTag writeToNBT(CompoundTag nbt, String str, Container inventory) {
         ListTag var2 = new ListTag();
 
-        for (int var3 = 0; var3 < inventory.getSizeInventory(); ++var3) {
-            ItemStack stack = inventory.getStackInSlot(var3);
+        for (int var3 = 0; var3 < inventory.getContainerSize(); ++var3) {
+            ItemStack stack = inventory.getItem(var3);
             if (stack != null && !stack.isEmpty()) {
                 CompoundTag var4 = new CompoundTag();
-                var4.setByte("Slot", (byte) var3);
+                var4.putByte("Slot", (byte) var3);
                 stack.writeToNBT(var4);
-                var2.appendTag(var4);
+                var2.add(var4);
             }
         }
 
-        nbt.setTag(str, var2);
+        nbt.put(str, var2);
         return nbt;
     }
 
@@ -623,20 +623,20 @@ public class Utils {
     public static boolean tryPutStackInInventory(ItemStack stack, Container inventory) {
         if (inventory == null) return false;
         if (stack == null || stack.isEmpty()) return true;
-        int limit = inventory.getInventoryStackLimit();
+        int limit = inventory.getMaxStackSize();
 
         // First, make a list of possible target slots.
         ArrayList<Integer> slots = new ArrayList<>(4);
         int need = stack.getCount();
-        for (int i = 0; i < inventory.getSizeInventory() && need > 0; i++) {
-            ItemStack slot = inventory.getStackInSlot(i);
+        for (int i = 0; i < inventory.getContainerSize() && need > 0; i++) {
+            ItemStack slot = inventory.getItem(i);
             if (slot != null && !slot.isEmpty() && slot.getCount() < limit && slot.isItemEqual(stack)) {
                 slots.add(i);
                 need -= limit - slot.getCount();
             }
         }
-        for (int i = 0; i < inventory.getSizeInventory() && need > 0; i++) {
-            ItemStack slot = inventory.getStackInSlot(i);
+        for (int i = 0; i < inventory.getContainerSize() && need > 0; i++) {
+            ItemStack slot = inventory.getItem(i);
             if (slot == null || slot.isEmpty()) {
                 slots.add(i);
                 need -= limit;
@@ -651,10 +651,10 @@ public class Utils {
         // Yes. Proceed.
         int toPut = stack.getCount();
         for (Integer slot : slots) {
-            ItemStack target = inventory.getStackInSlot(slot);
+            ItemStack target = inventory.getItem(slot);
             if (target == null || target.isEmpty()) {
                 int amount = Math.min(toPut, limit);
-                inventory.setInventorySlotContents(slot, new ItemStack(stack.getItem(), amount, stack.getItemDamage()));
+                inventory.setItem(slot, new ItemStack(stack.getItem(), amount, stack.getItemDamage()));
                 toPut -= amount;
             } else {
                int space = limit - target.getCount();
@@ -683,12 +683,12 @@ public class Utils {
 
     @Deprecated
     public static boolean canPutStackInInventory(ItemStack[] stackList, Container inventory, int[] slotsIdList) {
-        int limit = inventory.getInventoryStackLimit();
+        int limit = inventory.getMaxStackSize();
         ItemStack[] outputStack = new ItemStack[slotsIdList.length];
         ItemStack[] inputStack = new ItemStack[stackList.length];
 
         for (int idx = 0; idx < outputStack.length; idx++) {
-            ItemStack inventoryStack = inventory.getStackInSlot(slotsIdList[idx]);
+            ItemStack inventoryStack = inventory.getItem(slotsIdList[idx]);
             if (inventoryStack != null && !inventoryStack.isEmpty())
                 outputStack[idx] = inventoryStack.copy();
         }
@@ -733,13 +733,13 @@ public class Utils {
 
     @Deprecated
     public static boolean tryPutStackInInventory(ItemStack[] stackList, Container inventory, int[] slotsIdList) {
-        int limit = inventory.getInventoryStackLimit();
+        int limit = inventory.getMaxStackSize();
 
         for (ItemStack stack : stackList) {
             for (int i : slotsIdList) {
-                ItemStack targetStack = inventory.getStackInSlot(i);
+                ItemStack targetStack = inventory.getItem(i);
                 if (targetStack == null || targetStack.isEmpty()) {
-                    inventory.setInventorySlotContents(i, stack.copy());
+                    inventory.setItem(i, stack.copy());
                     stack.setCount(0);
                     break;
                 } else if (targetStack.isItemEqual(stack)) {
@@ -749,7 +749,7 @@ public class Utils {
                         int transfer = stack.getCount();
                         if (transfer > transferMax)
                             transfer = transferMax;
-                        inventory.decrStackSize(i, -transfer);
+                        inventory.removeItem(i, -transfer);
                         stack.setCount(stack.getCount() - transfer);
                     }
 
@@ -815,7 +815,7 @@ public class Utils {
     }
 
     public static boolean isGameInPause() {
-        return Minecraft.getMinecraft().isGamePaused();
+        return Minecraft.getInstance().isGamePaused();
     }
 
     public static int getLight(Level w, LightLayer e, BlockPos pos) {
@@ -1325,12 +1325,12 @@ public class Utils {
     }
 
     public static List<CompoundTag> getTags(CompoundTag nbt) {
-        Object[] set = nbt.getKeySet().toArray();
+        Object[] set = nbt.getAllKeys().toArray();
 
         ArrayList<CompoundTag> tags = new ArrayList<CompoundTag>();
 
         for (Object aSet : set) {
-            tags.add(nbt.getCompoundTag((String) aSet));
+            tags.add(nbt.getCompound((String) aSet));
         }
         return tags;
     }
@@ -1400,7 +1400,7 @@ public class Utils {
 
     public static CompoundTag newNbtTagCompund(CompoundTag nbt, String string) {
         CompoundTag cmp = new CompoundTag();
-        nbt.setTag(string, cmp);
+        nbt.put(string, cmp);
         return cmp;
     }
 
@@ -1448,7 +1448,7 @@ public class Utils {
         return stack.getDisplayName().toLowerCase().contains("wrench");
     }
 
-    // @SideOnly(Side.SERVER)
+    // @net.neoforged.api.distmarker.OnlyIn(net.neoforged.api.distmarker.Dist.DEDICATED_SERVER)
     public static boolean isPlayerUsingWrench(Player player) {
         if (player == null) return false;
         if (Eln.playerManager.get(player).getInteractEnable()) return true;

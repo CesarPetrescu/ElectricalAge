@@ -83,8 +83,8 @@ public class VoltageSource extends Bipole implements ISubSystemProcessI, INBTTRe
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt, String str) {
         str += name;
-        nbt.setDouble(str + "U", u);
-        nbt.setDouble(str + "Istate", currentState.state);
+        nbt.putDouble(str + "U", u);
+        nbt.putDouble(str + "Istate", currentState.state);
         return nbt;
     }
 

@@ -164,7 +164,7 @@ public class SolarPanelElement extends TransparentNodeElement {
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
         powerSource.writeToNBT(nbt, "powerSource");
-        nbt.setDouble("panelAlpha", panelAlpha);
+        nbt.putDouble("panelAlpha", panelAlpha);
         return nbt;
     }
 
@@ -179,7 +179,7 @@ public class SolarPanelElement extends TransparentNodeElement {
     public void networkSerialize(java.io.DataOutputStream stream) {
         super.networkSerialize(stream);
         try {
-            stream.writeBoolean(!getInventory().getStackInSlot(SolarPanelContainer.trackerSlotId).isEmpty());
+            stream.writeBoolean(!getInventory().getItem(SolarPanelContainer.trackerSlotId).isEmpty());
             stream.writeFloat((float) panelAlpha);
             node.lrduCubeMask.getTranslate(Direction.YN).serialize(stream);
         } catch (IOException e) {

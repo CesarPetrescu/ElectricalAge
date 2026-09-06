@@ -25,7 +25,7 @@ public class WirelessSignalAnalyserItemDescriptor extends GenericItemUsingDamage
 
     @Override
     public InteractionResult onItemUse(ItemStack stack, Player player, Level world, BlockPos pos, InteractionHand hand, net.minecraft.core.Direction side, float vx, float vy, float vz) {
-        if (world.isRemote) return InteractionResult.PASS;
+        if (world.isClientSide) return InteractionResult.PASS;
         Utils.sendMessage(player, "-------------------");
         Direction dir = Direction.fromFacing(side);
         Coordinate c = new Coordinate(pos, world);

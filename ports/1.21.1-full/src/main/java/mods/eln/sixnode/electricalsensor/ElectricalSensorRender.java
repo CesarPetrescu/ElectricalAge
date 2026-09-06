@@ -60,7 +60,7 @@ public class ElectricalSensorRender extends SixNodeElementRender {
             highValue = stream.readFloat();
             dirType = stream.readByte();
             ItemStack stack = Utils.unserialiseItemStack(stream);
-            inventory.setInventorySlotContents(ElectricalSensorContainer.cableSlotId, stack);
+            inventory.setItem(ElectricalSensorContainer.cableSlotId, stack);
             cableRender = ElectricalCableDescriptor.getCableRender(stack);
         } catch (IOException e) {
             e.printStackTrace();

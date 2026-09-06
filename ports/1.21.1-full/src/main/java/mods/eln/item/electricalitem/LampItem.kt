@@ -17,7 +17,7 @@ abstract class LampItem(name: String) : GenericItemUsingDamageDescriptor(name) {
     internal abstract fun getLight(stack: ItemStack): Int
 
     override fun onUpdate(stack: ItemStack, world: Level, entity: Entity, par4: Int, par5: Boolean) {
-        if (world.isRemote) return
+        if (world.isClientSide) return
         if (getLightState(stack) == 0) return
         val light = getLight(stack)
         if (light == 0) return

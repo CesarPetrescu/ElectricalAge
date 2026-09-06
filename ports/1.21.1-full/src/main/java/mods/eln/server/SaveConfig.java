@@ -33,11 +33,11 @@ public class SaveConfig extends SavedData {
 
     @Override
         public CompoundTag writeToNBT(CompoundTag nbt) {
-        nbt.setBoolean("heatFurnaceFuel", heatFurnaceFuel);
-        nbt.setBoolean("electricalLampAging", electricalLampAging);
-        nbt.setBoolean("batteryAging", batteryAging);
-        nbt.setBoolean("infinitPortableBattery", infinitePortableBattery);
-        nbt.setBoolean("reGenOre", reGenOre);
+        nbt.putBoolean("heatFurnaceFuel", heatFurnaceFuel);
+        nbt.putBoolean("electricalLampAging", electricalLampAging);
+        nbt.putBoolean("batteryAging", batteryAging);
+        nbt.putBoolean("infinitPortableBattery", infinitePortableBattery);
+        nbt.putBoolean("reGenOre", reGenOre);
         Eln.windProcess.writeToNBT(nbt, "wind");
         return nbt;
     }

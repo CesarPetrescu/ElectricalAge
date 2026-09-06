@@ -52,7 +52,7 @@ public class ResistorDescriptor extends SixNodeDescriptor {
     }
 
     public double getRsValue(Container inventory) {
-        ItemStack core = inventory.getStackInSlot(ResistorContainer.coreId);
+        ItemStack core = inventory.getItem(ResistorContainer.coreId);
 
         return series.getValue(core.getCount());
     }

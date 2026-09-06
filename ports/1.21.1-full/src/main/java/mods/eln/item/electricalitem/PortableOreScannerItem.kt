@@ -41,7 +41,7 @@ class PortableOreScannerItem(name: String, obj: Obj3D,
     private val damagePerBreakLevel = 3
 
     override fun onUpdate(stack: ItemStack, world: Level, entity: Entity, par4: Int, par5: Boolean) {
-        if (world.isRemote) return
+        if (world.isClientSide) return
         if (entity !is ServerPlayer) return
         val state = getState(stack)
         var counter = getCounter(stack)
@@ -68,7 +68,7 @@ class PortableOreScannerItem(name: String, obj: Obj3D,
     }
 
     override fun onItemRightClick(s: ItemStack, w: Level, p: Player): InteractionResultHolder<ItemStack> {
-        if (w.isRemote) return InteractionResultHolder(InteractionResult.SUCCESS, s)
+        if (w.isClientSide) return InteractionResultHolder(InteractionResult.SUCCESS, s)
         val energy = getEnergy(s)
         val state = getState(s)
 
@@ -93,10 +93,10 @@ class PortableOreScannerItem(name: String, obj: Obj3D,
 
     override fun getDefaultNBT(): CompoundTag? {
         val nbt = CompoundTag()
-        nbt.setDouble("e", energyStorage * 0.2)
-        nbt.setByte("s", State.Boot.serialized)
-        nbt.setShort("c", bootTime)
-        nbt.setByte("d", 0.toByte())
+        nbt.putDouble("e", energyStorage * 0.2)
+        nbt.putByte("s", State.Boot.serialized)
+        nbt.putShort("c", bootTime)
+        nbt.putByte("d", 0.toByte())
         return nbt
     }
 
@@ -163,7 +163,7 @@ class PortableOreScannerItem(name: String, obj: Obj3D,
     }
 
     override fun onBlockStartBreak(itemstack: ItemStack, x: Int, y: Int, z: Int, player: Player): Boolean {
-        if (!player.world.isRemote) {
+        if (!player.world.isClientSide) {
             setDamage(itemstack, (getDamage(itemstack) + 1).toByte())
         }
         return super.onBlockStartBreak(itemstack, x, y, z, player)

@@ -28,7 +28,7 @@ public class ElectricalFurnaceInventory extends TransparentNodeElementInventory 
     }
 
     @Override
-    public boolean canInsertItem(int slot, ItemStack stack, net.minecraft.core.Direction side) {
+    public boolean canPlaceItemThroughFace(int slot, ItemStack stack, net.minecraft.core.Direction side) {
         if (slot == ElectricalFurnaceElement.inSlotId) {
             return !net.minecraft.item.crafting.FurnaceRecipes.instance().getSmeltingResult(stack).isEmpty();
         }
@@ -36,18 +36,18 @@ public class ElectricalFurnaceInventory extends TransparentNodeElementInventory 
     }
 
     @Override
-    public boolean isItemValidForSlot(int slot, ItemStack stack) {
+    public boolean canPlaceItem(int slot, ItemStack stack) {
         if (slot == ElectricalFurnaceElement.inSlotId) {
             return !net.minecraft.item.crafting.FurnaceRecipes.instance().getSmeltingResult(stack).isEmpty();
         }
         if (slot == ElectricalFurnaceElement.outSlotId) {
             return false;
         }
-        return super.isItemValidForSlot(slot, stack);
+        return super.canPlaceItem(slot, stack);
     }
 
     @Override
-    public boolean canExtractItem(int var1, ItemStack var2, net.minecraft.core.Direction side) {
+    public boolean canTakeItemThroughFace(int var1, ItemStack var2, net.minecraft.core.Direction side) {
         switch (Direction.fromFacing(side)) {
             case YP:
                 return false;

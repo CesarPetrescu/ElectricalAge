@@ -62,9 +62,9 @@ public class ElectricalSourceElement extends SixNodeElement {
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setByte("color", (byte) (color + (colorCare << 4)));
+        nbt.putByte("color", (byte) (color + (colorCare << 4)));
 
-        nbt.setDouble("voltage", voltageSource.getU());
+        nbt.putDouble("voltage", voltageSource.getU());
         return nbt;
     }
 

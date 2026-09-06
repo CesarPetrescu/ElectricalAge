@@ -57,11 +57,11 @@ public class TransparentNodeItem extends GenericItemBlockUsingDamage<Transparent
             Coordinate coord = new Coordinate(adjustedPos, world);
             String error = descriptor.checkCanPlace(coord, front);
             if (error != null) {
-                if (!world.isRemote) Utils.sendMessage(player, error);
+                if (!world.isClientSide) Utils.sendMessage(player, error);
                 return InteractionResult.FAIL;
             }
 
-            if (world.isRemote) return InteractionResult.SUCCESS;
+            if (world.isClientSide) return InteractionResult.SUCCESS;
 
             // Plot ghosts
             GhostGroup ghostgroup = descriptor.getGhostGroup(front);

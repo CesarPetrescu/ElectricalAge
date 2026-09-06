@@ -175,9 +175,9 @@ public class SixNode extends Node {
     }
 
     public void readFromNBT(CompoundTag nbt) {
-        super.readFromNBT(nbt.getCompoundTag("node"));
+        super.readFromNBT(nbt.getCompound("node"));
 
-        sixNodeCacheBlock = Block.getBlockById(nbt.getInteger("cacheBlockId"));
+        sixNodeCacheBlock = Block.getBlockById(nbt.getInt("cacheBlockId"));
         sixNodeCacheBlockMeta = nbt.getByte("cacheBlockMeta");
         int idx;
         for (idx = 0; idx < 6; idx++) {
@@ -197,7 +197,7 @@ public class SixNode extends Node {
                     }
                     sideElementIdList[idx] = sideElementId;
                     sideElementList[idx] = (SixNodeElement) descriptor.ElementClass.getConstructor(SixNode.class, Direction.class, SixNodeDescriptor.class).newInstance(this, Direction.fromInt(idx), descriptor);
-                    sideElementList[idx].readFromNBT(nbt.getCompoundTag("ED" + idx));
+                    sideElementList[idx].readFromNBT(nbt.getCompound("ED" + idx));
                     sideElementList[idx].initialize();
                 } catch (InstantiationException e) {
                     e.printStackTrace();
@@ -226,15 +226,15 @@ public class SixNode extends Node {
 
     public CompoundTag writeToNBT(CompoundTag nbt) {
         int idx = 0;
-        nbt.setInteger("cacheBlockId", Block.getIdFromBlock(sixNodeCacheBlock));
-        nbt.setByte("cacheBlockMeta", sixNodeCacheBlockMeta);
+        nbt.putInt("cacheBlockId", Block.getIdFromBlock(sixNodeCacheBlock));
+        nbt.putByte("cacheBlockMeta", sixNodeCacheBlockMeta);
 
         for (SixNodeElement sideElement : sideElementList) {
 
             if (sideElement == null) {
-                nbt.setShort("EID" + idx, (short) 0);
+                nbt.putShort("EID" + idx, (short) 0);
             } else {
-                nbt.setShort("EID" + idx, (short) sideElementIdList[idx]);
+                nbt.putShort("EID" + idx, (short) sideElementIdList[idx]);
                 sideElement.writeToNBT(Utils.newNbtTagCompund(nbt, "ED" + idx));
             }
             idx++;
@@ -242,7 +242,7 @@ public class SixNode extends Node {
 
         CompoundTag nodeNbt = new CompoundTag();
         super.writeToNBT(nodeNbt);
-        nbt.setTag("node", nodeNbt);
+        nbt.put("node", nodeNbt);
         return nbt;
     }
 
@@ -508,7 +508,7 @@ public class SixNode extends Node {
             if (accepted) {
                 setNeedPublish(true);
                 if (Utils.isCreative((ServerPlayer) entityPlayer) == false)
-                    entityPlayer.inventory.decrStackSize(entityPlayer.inventory.currentItem, 1);
+                    entityPlayer.inventory.removeItem(entityPlayer.inventory.currentItem, 1);
 
                 //if(sixNodeCacheMapId != sixNodeCacheMapIdOld)
                 // TODO(1.10): Hopefully this is unnecessary.

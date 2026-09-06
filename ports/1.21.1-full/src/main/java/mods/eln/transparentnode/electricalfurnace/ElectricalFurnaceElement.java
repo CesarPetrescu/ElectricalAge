@@ -163,7 +163,7 @@ public class ElectricalFurnaceElement extends TransparentNodeElement {
     public void setPhysicalValue() {
         ItemStack itemStack;
         heatingCorpResistor.setState(powerOn);
-        itemStack = inventory.getStackInSlot(heatingCorpSlotId);
+        itemStack = inventory.getItem(heatingCorpSlotId);
         if (itemStack.isEmpty() || !(itemStack.getItem() instanceof GenericItemUsingDamage)) {
             thermalRegulator.setRmin(MnaConst.highImpedance);
             voltageWatchdog.setUNominal(100000);
@@ -178,7 +178,7 @@ public class ElectricalFurnaceElement extends TransparentNodeElement {
             }
         }
 
-        itemStack = inventory.getStackInSlot(thermalRegulatorSlotId);
+        itemStack = inventory.getItem(thermalRegulatorSlotId);
         if (itemStack.isEmpty() || !(itemStack.getItem() instanceof GenericItemUsingDamage)) {
             thermalRegulator.setNone();
         } else {
@@ -205,7 +205,7 @@ public class ElectricalFurnaceElement extends TransparentNodeElement {
             stream.writeShort((int) thermalLoad.Tc);
 
             ItemStack stack;
-            if ((stack = inventory.getStackInSlot(inSlotId)).isEmpty()) {
+            if ((stack = inventory.getItem(inSlotId)).isEmpty()) {
                 stream.writeShort(-1);
                 stream.writeShort(-1);
             } else {
@@ -227,8 +227,8 @@ public class ElectricalFurnaceElement extends TransparentNodeElement {
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setBoolean("powerOn", powerOn);
-        nbt.setBoolean("autoShutDown", autoShutDown);
+        nbt.putBoolean("powerOn", powerOn);
+        nbt.putBoolean("autoShutDown", autoShutDown);
         return nbt;
     }
 
@@ -276,7 +276,7 @@ public class ElectricalFurnaceElement extends TransparentNodeElement {
     public Map<String, String> getWaila() {
         Map<String, String> info = new HashMap<String, String>();
         info.put(I18N.tr("Temperature"), Utils.plotCelsius("", thermalLoad.Tc));
-        ItemStack stack = inventory.getStackInSlot(heatingCorpSlotId);
+        ItemStack stack = inventory.getItem(heatingCorpSlotId);
         if (!stack.isEmpty()) {
             info.put(I18N.tr("Heating element"), stack.getDisplayName());
         } else {

@@ -110,11 +110,11 @@ public class ElectricalSensorElement extends SixNodeElement {
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setByte("front", (byte) (front.toInt() << 0));
-        nbt.setByte("typeOfSensor", (byte) typeOfSensor);
-        nbt.setFloat("lowValue", lowValue);
-        nbt.setFloat("highValue", highValue);
-        nbt.setByte("dirType", dirType);
+        nbt.putByte("front", (byte) (front.toInt() << 0));
+        nbt.putByte("typeOfSensor", (byte) typeOfSensor);
+        nbt.putFloat("lowValue", lowValue);
+        nbt.putFloat("highValue", highValue);
+        nbt.putByte("dirType", dirType);
         return nbt;
     }
 
@@ -138,7 +138,7 @@ public class ElectricalSensorElement extends SixNodeElement {
 
     @Override
     public int getConnectionMask(LRDU lrdu) {
-        boolean cable = !getInventory().getStackInSlot(ElectricalSensorContainer.cableSlotId).isEmpty();
+        boolean cable = !getInventory().getItem(ElectricalSensorContainer.cableSlotId).isEmpty();
         if (!descriptor.voltageOnly) {
             if (front.left() == lrdu && cable) return NodeBase.maskElectricalAll;
             if (front.right() == lrdu && cable) return NodeBase.maskElectricalAll;
@@ -193,7 +193,7 @@ public class ElectricalSensorElement extends SixNodeElement {
             stream.writeFloat(lowValue);
             stream.writeFloat(highValue);
             stream.writeByte(dirType);
-            Utils.serialiseItemStack(stream, getInventory().getStackInSlot(ElectricalSensorContainer.cableSlotId));
+            Utils.serialiseItemStack(stream, getInventory().getItem(ElectricalSensorContainer.cableSlotId));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -216,7 +216,7 @@ public class ElectricalSensorElement extends SixNodeElement {
     public void computeElectricalLoad() {
         //if (!descriptor.voltageOnly)
         {
-            ItemStack cable = getInventory().getStackInSlot(ElectricalSensorContainer.cableSlotId);
+            ItemStack cable = getInventory().getItem(ElectricalSensorContainer.cableSlotId);
             ElectricalCableDescriptor cableDescriptor = (ElectricalCableDescriptor) Eln.sixNodeItem.getDescriptor(cable);
 
             if (cableDescriptor == null) {

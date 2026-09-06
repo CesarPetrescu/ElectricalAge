@@ -88,9 +88,9 @@ public class ElectricalWatchDescriptor extends SixNodeDescriptor {
             UtilsClient.enableBlend();
             //UtilsClient.enableBilinear();
             obj.bindTexture("Reflection.png");
-            float rotYaw = Minecraft.getMinecraft().player.rotationYaw / 360.f;
-            float rotPitch = Minecraft.getMinecraft().player.rotationPitch / 180.f;
-            float pos = (((float) Minecraft.getMinecraft().player.posX) + ((float) Minecraft.getMinecraft().player.posZ)) / 64.f;
+            float rotYaw = Minecraft.getInstance().player.rotationYaw / 360.f;
+            float rotPitch = Minecraft.getInstance().player.rotationPitch / 180.f;
+            float pos = (((float) Minecraft.getInstance().player.posX) + ((float) Minecraft.getInstance().player.posZ)) / 64.f;
             glass.draw(rotYaw + pos, rotPitch * 0.875f);
             //UtilsClient.disableBilinear(); //BUG: Not always disabled.
             UtilsClient.disableBlend();

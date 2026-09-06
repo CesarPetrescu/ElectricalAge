@@ -30,7 +30,7 @@ public class GuiItemStack extends Gui implements IGuiObject {
     ItemStack stack;
 
     public GuiHelper helper;
-    static final ResourceLocation slotSkin = new ResourceLocation("textures/gui/container/furnace.png");
+    static final ResourceLocation slotSkin = ResourceLocation.parse("textures/gui/container/furnace.png");
 
 
     @Override
@@ -104,8 +104,8 @@ public class GuiItemStack extends Gui implements IGuiObject {
             int px, py;
             px = posX;
             py = posY;
-            List<String> tooltip = stack.getTooltip(Minecraft.getMinecraft().player, TooltipFlags.NORMAL);
-            helper.drawHoveringText(tooltip, x, y, Minecraft.getMinecraft().fontRenderer);
+            List<String> tooltip = stack.getTooltip(Minecraft.getInstance().player, TooltipFlags.NORMAL);
+            helper.drawHoveringText(tooltip, x, y, Minecraft.getInstance().fontRenderer);
         }
     }
 

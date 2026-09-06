@@ -85,7 +85,7 @@ abstract public class GridElement extends TransparentNodeElement {
             } else {
                 if (GridLink.addLink(this, other, side, p.getRight(), cable, cableLength)) {
                     Utils.sendMessage(entityPlayer, "Added connection");
-                    stack.splitStack(cableLength);
+                    stack.split(cableLength);
                 } else {
                     Utils.sendMessage(entityPlayer, "Already connected");
                 }
@@ -157,9 +157,9 @@ abstract public class GridElement extends TransparentNodeElement {
         super.readFromNBT(nbt);
 
         assert gridLinkList.isEmpty();
-        final CompoundTag gridLinks = nbt.getCompoundTag("gridLinks");
+        final CompoundTag gridLinks = nbt.getCompound("gridLinks");
         for (Integer i = 0; ; i++) {
-            final CompoundTag linkTag = gridLinks.getCompoundTag(i.toString());
+            final CompoundTag linkTag = gridLinks.getCompound(i.toString());
             if (linkTag.isEmpty())
                 break;
             gridLinksBooting.add(new GridLink(linkTag, ""));

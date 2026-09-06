@@ -199,7 +199,7 @@ public class ElectricalMathElement extends SixNodeElement {
     }
 
     void checkRedstone() {
-        ItemStack stack = inventory.getStackInSlot(ElectricalMathContainer.restoneSlotId);
+        ItemStack stack = inventory.getItem(ElectricalMathContainer.restoneSlotId);
         int redstoneInStack = stack.getCount();
 
         redstoneReady = redstoneRequired <= redstoneInStack;
@@ -224,7 +224,7 @@ public class ElectricalMathElement extends SixNodeElement {
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setString("expression", expression);
+        nbt.putString("expression", expression);
         return equation.writeToNBT(nbt, "equation");
     }
 

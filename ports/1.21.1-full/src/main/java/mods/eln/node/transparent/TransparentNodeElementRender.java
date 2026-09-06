@@ -1,7 +1,5 @@
 package mods.eln.node.transparent;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import mods.eln.cable.CableRender;
 import mods.eln.cable.CableRenderDescriptor;
 import mods.eln.cable.CableRenderType;
@@ -256,7 +254,7 @@ public abstract class TransparentNodeElementRender {
 
     private LoopedSoundManager loopedSoundManager = new LoopedSoundManager();
 
-    @SideOnly(Side.CLIENT)
+    @net.neoforged.api.distmarker.OnlyIn(net.neoforged.api.distmarker.Dist.CLIENT)
     protected void addLoopedSound(final LoopedSound loopedSound) {
         loopedSoundManager.add(loopedSound);
     }

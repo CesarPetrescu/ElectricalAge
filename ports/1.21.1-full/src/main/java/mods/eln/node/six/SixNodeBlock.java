@@ -97,7 +97,7 @@ public class SixNodeBlock extends NodeBlock {
     }
 
     // TODO(1.12) Whatever this was, it's broken now.
-    // @SideOnly(Side.CLIENT)
+    // @net.neoforged.api.distmarker.OnlyIn(net.neoforged.api.distmarker.Dist.CLIENT)
 //    public void getSubBlocks(Items par1, CreativeTabs tab, List subItems) {
 //        Eln.sixNodeItem.getSubItems(par1, tab, subItems);
 //    }
@@ -145,7 +145,7 @@ public class SixNodeBlock extends NodeBlock {
 
     // TODO(1.10): Fix item rendering.
 //    @Override
-//    @SideOnly(Side.CLIENT)
+//    @net.neoforged.api.distmarker.OnlyIn(net.neoforged.api.distmarker.Dist.CLIENT)
 //    public IIcon getIcon(IBlockAccess w, int x, int y, int z, int side) {
 //        TileEntity e = w.getTileEntity(x, y, z);
 //        if (e == null) return blockIcon;
@@ -205,7 +205,7 @@ public class SixNodeBlock extends NodeBlock {
         if (hand != InteractionHand.MAIN_HAND) {
             return false;
         }
-        if (world.isRemote) {
+        if (world.isClientSide) {
             return true; // Let server handle it
         }
 
@@ -220,7 +220,7 @@ public class SixNodeBlock extends NodeBlock {
     @Override
     public boolean removedByPlayer(BlockState state, Level world, BlockPos pos, Player entityPlayer, boolean willHarvest) {
         
-        if (world.isRemote) {
+        if (world.isClientSide) {
             return false;
         }
 
@@ -303,7 +303,7 @@ public class SixNodeBlock extends NodeBlock {
     @Override
     public void breakBlock(Level world, BlockPos pos, BlockState state) {
 
-        if (!world.isRemote) {
+        if (!world.isClientSide) {
             SixNodeEntity tileEntity = (SixNodeEntity) world.getTileEntity(pos);
             if (tileEntity != null) {
                 SixNode sixNode = (SixNode) tileEntity.getNode();
@@ -329,7 +329,7 @@ public class SixNodeBlock extends NodeBlock {
 
     @Override
     public void neighborChanged(BlockState state, Level worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
-        if (worldIn.isRemote) return;
+        if (worldIn.isClientSide) return;
 
         SixNodeEntity tileEntity = (SixNodeEntity) worldIn.getTileEntity(pos);
         if (tileEntity == null) return;
@@ -414,7 +414,7 @@ public class SixNodeBlock extends NodeBlock {
         if (!(te instanceof SixNodeEntity)) return sides;
         SixNodeEntity tileEntity = (SixNodeEntity) te;
 
-        if (world.isRemote) {
+        if (world.isClientSide) {
             for (int i = 0; i < 6; i++) {
                 sides[i] = tileEntity.getSyncronizedSideEnable(Direction.fromInt(i));
             }
@@ -481,7 +481,7 @@ public class SixNodeBlock extends NodeBlock {
     }
 
     private boolean nodeHasCache(BlockGetter world, BlockPos pos) {
-        if (Utils.isRemote(world)) {
+        if (Utils.isClientSide(world)) {
             BlockEntity tileEntity = world.getTileEntity(pos);
             if (tileEntity != null && tileEntity instanceof SixNodeEntity)
                 return ((SixNodeEntity) tileEntity).sixNodeCacheBlock != Blocks.AIR;
@@ -532,7 +532,7 @@ public class SixNodeBlock extends NodeBlock {
 
     // TODO(1.10): Should probably be done by block states.
 //    @Override
-//    @SideOnly(Side.CLIENT)
+//    @net.neoforged.api.distmarker.OnlyIn(net.neoforged.api.distmarker.Dist.CLIENT)
 //    public AxisAlignedBB getSelectedBoundingBox(IBlockState state, World world, BlockPos pos) {
 //        if (hasVolume(w, x, y, z)) return super.getSelectedBoundingBoxFromPool(w, x, y, z);
 //        MovingObjectPosition col = collisionRayTrace(w, x, y, z, Minecraft.getMinecraft().player);

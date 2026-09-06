@@ -28,9 +28,9 @@ class ElectricalArmor(materialIn: ArmorItem.ArmorMaterial,
     private val defaultNBT: CompoundTag
         get() {
             val nbt = CompoundTag()
-            nbt.setDouble("energy", 0.0)
-            nbt.setBoolean("powerOn", false)
-            nbt.setInteger("rand", (Math.random() * 0xFFFFFFF).toInt())
+            nbt.putDouble("energy", 0.0)
+            nbt.putBoolean("powerOn", false)
+            nbt.putInt("rand", (Math.random() * 0xFFFFFFF).toInt())
             return nbt
         }
 

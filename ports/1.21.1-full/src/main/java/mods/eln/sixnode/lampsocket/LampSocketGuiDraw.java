@@ -98,7 +98,7 @@ public class LampSocketGuiDraw extends GuiContainerEln {
         if (lampRender.poweredByLampSupply) {
             buttonSupplyType.displayString = tr("Powered by Lamp Supply");
             channel.setVisible(true);
-            ItemStack cableStack = inventory.getStackInSlot(LampSocketContainer.cableSlotId);
+            ItemStack cableStack = inventory.getItem(LampSocketContainer.cableSlotId);
             if (cableStack == null || cableStack.isEmpty())
                 channel.setComment(1, "§4" + tr("Cable slot empty"));
             else if (lampRender.isConnectedToLampSupply)

@@ -61,7 +61,7 @@ public class ElectricalStackMachineProcess implements IProcess {
 
     @Override
     public void process(double time) {
-        ItemStack itemStackIn = inventory.getStackInSlot(inputSlotId);
+        ItemStack itemStackIn = inventory.getItem(inputSlotId);
         if (itemStackIn == null) itemStackIn = ItemStack.EMPTY;
 
         boolean itemTypeChanged = !Utils.areSame(itemStackIn, itemStackInOld);
@@ -95,7 +95,7 @@ public class ElectricalStackMachineProcess implements IProcess {
             if (electricalResistor != null) electricalResistor.highImpedance();
         } else {
             smeltInProcess = true;
-            ItemStack stack = inventory.getStackInSlot(inputSlotId);
+            ItemStack stack = inventory.getItem(inputSlotId);
             if (stack == null) stack = ItemStack.EMPTY;
             Recipe r = recipesList.getRecipe(stack);
             energyNeeded = r != null ? r.energy : 1.0;
@@ -113,7 +113,7 @@ public class ElectricalStackMachineProcess implements IProcess {
      * Returns true if the furnace can smelt an item, i.e. has a source item, destination stack isn't full, etc.
      */
     public boolean smeltCan() {
-        ItemStack stack = inventory.getStackInSlot(inputSlotId);
+        ItemStack stack = inventory.getItem(inputSlotId);
         if (stack == null || stack.isEmpty()) {
             return false;
         } else {
@@ -124,7 +124,7 @@ public class ElectricalStackMachineProcess implements IProcess {
     }
 
     public ItemStack[] getSmeltResult() {
-        ItemStack stack = inventory.getStackInSlot(inputSlotId);
+        ItemStack stack = inventory.getItem(inputSlotId);
         if (stack == null || stack.isEmpty()) return null;
         Recipe recipe = recipesList.getRecipe(stack);
         if (recipe == null) return null;
@@ -136,12 +136,12 @@ public class ElectricalStackMachineProcess implements IProcess {
      */
     public void smeltItem() {
         if (this.smeltCan()) {
-            ItemStack stack = inventory.getStackInSlot(inputSlotId);
+            ItemStack stack = inventory.getItem(inputSlotId);
             if (stack == null || stack.isEmpty()) return;
             Recipe recipe = recipesList.getRecipe(stack);
             if (recipe == null) return;
             Utils.tryPutStackInInventory(recipe.getOutputCopy(), inventory, outSlotIdList);
-            inventory.decrStackSize(inputSlotId, recipe.input.getCount());
+            inventory.removeItem(inputSlotId, recipe.input.getCount());
             if (observer != null) observer.done(this);
         }
     }

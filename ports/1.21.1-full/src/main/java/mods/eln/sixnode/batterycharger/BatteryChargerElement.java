@@ -150,8 +150,8 @@ public class BatteryChargerElement extends SixNodeElement {
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setBoolean("powerOn", powerOn);
-        nbt.setDouble("energyCounter", slowProcess.energyCounter);
+        nbt.putBoolean("powerOn", powerOn);
+        nbt.putDouble("energyCounter", slowProcess.energyCounter);
         return nbt;
     }
 
@@ -189,10 +189,10 @@ public class BatteryChargerElement extends SixNodeElement {
         try {
             stream.writeBoolean(powerOn);
             stream.writeFloat((float) powerLoad.getU());
-            Utils.serialiseItemStack(stream, getInventory().getStackInSlot(0));
-            Utils.serialiseItemStack(stream, getInventory().getStackInSlot(1));
-            Utils.serialiseItemStack(stream, getInventory().getStackInSlot(2));
-            Utils.serialiseItemStack(stream, getInventory().getStackInSlot(3));
+            Utils.serialiseItemStack(stream, getInventory().getItem(0));
+            Utils.serialiseItemStack(stream, getInventory().getItem(1));
+            Utils.serialiseItemStack(stream, getInventory().getItem(2));
+            Utils.serialiseItemStack(stream, getInventory().getItem(3));
 
             stream.writeByte(charged);
             stream.writeByte(presence);
@@ -218,14 +218,14 @@ public class BatteryChargerElement extends SixNodeElement {
             if (!powerOn) {
                 descriptor.setRp(powerResistor, false);
             } else {
-                ItemStack booster = (getInventory().getStackInSlot(BatteryChargerContainer.boosterSlotId));
+                ItemStack booster = (getInventory().getItem(BatteryChargerContainer.boosterSlotId));
                 double boost = Math.pow(1.25, booster.getCount());
                 double eff = Math.pow(0.9, booster.getCount());
 
                 energyCounter += powerResistor.getP() * time * eff;
 
                 for (int idx = 0; idx < 4; idx++) {
-                    ItemStack stack = getInventory().getStackInSlot(idx);
+                    ItemStack stack = getInventory().getItem(idx);
                     Object o = Utils.getItemObject(stack);
                     if (o instanceof IItemEnergyBattery) {
                         IItemEnergyBattery b = (IItemEnergyBattery) o;
@@ -244,7 +244,7 @@ public class BatteryChargerElement extends SixNodeElement {
                 }
             }
             for (int idx = 0; idx < 4; idx++) {
-                ItemStack stack = getInventory().getStackInSlot(idx);
+                ItemStack stack = getInventory().getItem(idx);
                 Object o = Utils.getItemObject(stack);
                 if (o instanceof IItemEnergyBattery) {
                     IItemEnergyBattery b = (IItemEnergyBattery) o;

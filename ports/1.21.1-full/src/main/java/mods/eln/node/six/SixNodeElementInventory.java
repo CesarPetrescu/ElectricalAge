@@ -7,7 +7,6 @@ import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.text.TextComponentString;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -40,14 +39,14 @@ public class SixNodeElementInventory implements Container, INBTTReady {
     }
 
     @Override
-    public int getSizeInventory() {
+    public int getContainerSize() {
         return getInv().length;
     }
 
 
     @NotNull
     @Override
-    public ItemStack getStackInSlot(int slot) {
+    public ItemStack getItem(int slot) {
         if (slot >= getInv().length || getInv()[slot] == null) return ItemStack.EMPTY;
         return getInv()[slot];
     }
@@ -55,15 +54,15 @@ public class SixNodeElementInventory implements Container, INBTTReady {
 
     @NotNull
     @Override
-    public ItemStack decrStackSize(int slot, int amt) {
-        ItemStack stack = getStackInSlot(slot);
+    public ItemStack removeItem(int slot, int amt) {
+        ItemStack stack = getItem(slot);
         if (stack.isEmpty()) return ItemStack.EMPTY;
         if (stack.getCount() <= amt) {
             getInv()[slot] = ItemStack.EMPTY;
             return stack;
         }
 
-        ItemStack result = stack.splitStack(amt);
+        ItemStack result = stack.split(amt);
         if (stack.isEmpty()) {
             getInv()[slot] = ItemStack.EMPTY;
         }
@@ -72,8 +71,8 @@ public class SixNodeElementInventory implements Container, INBTTReady {
 
     @NotNull
     @Override
-    public ItemStack removeStackFromSlot(int slot) {
-        ItemStack stack = getStackInSlot(slot);
+    public ItemStack removeItemNoUpdate(int slot) {
+        ItemStack stack = getItem(slot);
         if (stack.isEmpty()) return ItemStack.EMPTY;
         getInv()[slot] = ItemStack.EMPTY;
         return stack;
@@ -81,14 +80,14 @@ public class SixNodeElementInventory implements Container, INBTTReady {
 
 
     @Override
-    public void setInventorySlotContents(int slot, @NotNull ItemStack stack) {
+    public void setItem(int slot, @NotNull ItemStack stack) {
         if (stack.isEmpty()) {
             getInv()[slot] = ItemStack.EMPTY;
             return;
         }
 
         getInv()[slot] = stack;
-        int stackLimit = getInventoryStackLimit();
+        int stackLimit = getMaxStackSize();
         if (stack.getCount() > stackLimit) {
             stack.setCount(stackLimit);
         }
@@ -96,35 +95,35 @@ public class SixNodeElementInventory implements Container, INBTTReady {
 
 
     @NotNull
-    @Override
+    
     public String getName() {
         return "tco.SixNodeInventory";
     }
 
 
     @Override
-    public int getInventoryStackLimit() {
+    public int getMaxStackSize() {
         return stackLimit;
     }
 
     @Override
-    public boolean isUsableByPlayer(@NotNull Player player) {
+    public boolean stillValid(@NotNull Player player) {
         return true;
     }
 
     @Override
-    public void openInventory(@NotNull Player player) {
+    public void startOpen(@NotNull Player player) {
 
     }
 
     @Override
-    public void closeInventory(@NotNull Player player) {
+    public void stopOpen(@NotNull Player player) {
 
     }
 
 
     @Override
-    public void markDirty() {
+    public void setChanged() {
         if (sixNodeElement != null && !sixNodeElement.sixNode.isDestructing()) {
             sixNodeElement.inventoryChanged();
         }
@@ -144,40 +143,40 @@ public class SixNodeElementInventory implements Container, INBTTReady {
 
 
     @Override
-    public boolean isItemValidForSlot(int i, @NotNull ItemStack itemstack) {
+    public boolean canPlaceItem(int i, @NotNull ItemStack itemstack) {
         return false;
     }
 
-    @Override
+    
     public int getField(int id) {
         return 0;
     }
 
-    @Override
+    
     public void setField(int id, int value) {
 
     }
 
-    @Override
+    
     public int getFieldCount() {
         return 0;
     }
 
     @Override
-    public void clear() {
+    public void clearContent() {
         Arrays.fill(inv, ItemStack.EMPTY);
     }
 
-    @Override
+    
     public boolean hasCustomName() {
 
         return false;
     }
 
     @NotNull
-    @Override
+    
     public Component getDisplayName() {
-        return new TextComponentString("SixNodeInventory");
+        return Component.literal("SixNodeInventory");
     }
 
     @Override

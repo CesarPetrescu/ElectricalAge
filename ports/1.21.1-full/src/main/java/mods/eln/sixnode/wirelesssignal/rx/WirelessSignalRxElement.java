@@ -112,9 +112,9 @@ public class WirelessSignalRxElement extends SixNodeElement {
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setString("channel", channel);
-        nbt.setBoolean("connection", connection);
-        nbt.setInteger("selectedAggregator", selectedAggregator);
+        nbt.putString("channel", channel);
+        nbt.putBoolean("connection", connection);
+        nbt.putInt("selectedAggregator", selectedAggregator);
         toogleAggregator.writeToNBT(nbt, "toogleAggregator");
         return nbt;
     }
@@ -124,7 +124,7 @@ public class WirelessSignalRxElement extends SixNodeElement {
         super.readFromNBT(nbt);
         channel = nbt.getString("channel");
         connection = nbt.getBoolean("connection");
-        selectedAggregator = nbt.getInteger("selectedAggregator");
+        selectedAggregator = nbt.getInt("selectedAggregator");
         toogleAggregator.readFromNBT(nbt, "toogleAggregator");
     }
 

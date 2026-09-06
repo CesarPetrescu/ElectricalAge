@@ -46,7 +46,7 @@ public class GhostElement implements INBTTReady {
     public void readFromNBT(CompoundTag nbt, String str) {
         elementCoordinate = new Coordinate(nbt, str + "elemCoord");
         observatorCoordinate = new Coordinate(nbt, str + "obserCoord");
-        UUID = nbt.getInteger(str + "UUID");
+        UUID = nbt.getInt(str + "UUID");
     }
 
     @Override
@@ -54,7 +54,7 @@ public class GhostElement implements INBTTReady {
 
         elementCoordinate.writeToNBT(nbt, str + "elemCoord");
         observatorCoordinate.writeToNBT(nbt, str + "obserCoord");
-        nbt.setInteger(str + "UUID", UUID);
+        nbt.putInt(str + "UUID", UUID);
         return nbt;
     }
 }

@@ -107,7 +107,7 @@ public class EnergyMeterRender extends SixNodeElementRender {
             timerCouter = stream.readDouble();
             // energyStack = stream.readDouble();
             ItemStack stack = Utils.unserialiseItemStack(stream);
-            inventory.setInventorySlotContents(EnergyMeterContainer.cableSlotId, stack);
+            inventory.setItem(EnergyMeterContainer.cableSlotId, stack);
             ElectricalCableDescriptor desc = (ElectricalCableDescriptor) ElectricalCableDescriptor.getDescriptor(stack, ElectricalCableDescriptor.class);
 
             energyUnit = stream.readByte();

@@ -47,7 +47,7 @@ public class ElectricalEntitySensorSlowProcess implements IProcess, INBTTReady {
             boolean useSpeed = element.descriptor.useEntitySpeed;
             double speedFactor = element.descriptor.speedFactor;
             Coordinate coord = element.sixNode.coordinate;
-            ItemStack filterStack = element.getInventory().getStackInSlot(ElectricalEntitySensorContainer.filterId);
+            ItemStack filterStack = element.getInventory().getItem(ElectricalEntitySensorContainer.filterId);
 
             Class filterClass = LivingEntity.class;
 

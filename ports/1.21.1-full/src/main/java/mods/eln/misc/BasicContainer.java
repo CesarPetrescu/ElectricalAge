@@ -27,7 +27,7 @@ public class BasicContainer extends AbstractContainerMenu {
 
     @Override
     public boolean canInteractWith(@NotNull Player player) {
-        return inventory.isUsableByPlayer(player);
+        return inventory.stillValid(player);
     }
 
     protected void bindPlayerInventory(Inventory inventoryPlayer) {
@@ -57,7 +57,7 @@ public class BasicContainer extends AbstractContainerMenu {
         if (slot != null && slot.getHasStack()) {
             ItemStack stack = slot.getStack();
             movedStack = stack.copy();
-            int invSize = inventory.getSizeInventory();
+            int invSize = inventory.getContainerSize();
             if (slotId < invSize) {
                 this.mergeItemStack(stack, invSize, inventorySlots.size(), true);
             } else {

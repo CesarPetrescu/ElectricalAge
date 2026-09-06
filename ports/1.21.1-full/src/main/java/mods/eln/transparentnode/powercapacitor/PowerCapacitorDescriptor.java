@@ -41,8 +41,8 @@ public class PowerCapacitorDescriptor extends TransparentNodeDescriptor {
     }
 
     public double getCValue(Container inventory) {
-        ItemStack core = inventory.getStackInSlot(PowerCapacitorContainer.redId);
-        ItemStack diel = inventory.getStackInSlot(PowerCapacitorContainer.dielectricId);
+        ItemStack core = inventory.getItem(PowerCapacitorContainer.redId);
+        ItemStack diel = inventory.getItem(PowerCapacitorContainer.dielectricId);
         if (core.isEmpty() || diel.isEmpty())
             return getCValue(0, 0);
         else {
@@ -51,7 +51,7 @@ public class PowerCapacitorDescriptor extends TransparentNodeDescriptor {
     }
 
     public double getUNominalValue(Container inventory) {
-        ItemStack diel = inventory.getStackInSlot(PowerCapacitorContainer.dielectricId);
+        ItemStack diel = inventory.getItem(PowerCapacitorContainer.dielectricId);
         if (diel.isEmpty())
             return 10000;
         else {

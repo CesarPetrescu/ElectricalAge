@@ -67,9 +67,9 @@ public class ElectricalTimeoutElement extends SixNodeElement {
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setByte("front", (byte) (front.toInt() << 0));
-        nbt.setFloat("timeOutValue", (float) timeOutValue);
-        nbt.setFloat("timeOutCounter", (float) timeOutCounter);
+        nbt.putByte("front", (byte) (front.toInt() << 0));
+        nbt.putFloat("timeOutValue", (float) timeOutValue);
+        nbt.putFloat("timeOutCounter", (float) timeOutCounter);
         return nbt;
     }
 

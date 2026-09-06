@@ -21,7 +21,7 @@ open class ElectricalTool(name: String, private var strengthOn: Float, private v
     internal var range: Int = 0
 
     override fun onEntitySwing(entityLiving: LivingEntity, stack: ItemStack): Boolean {
-        if (entityLiving.world.isRemote) return false
+        if (entityLiving.world.isClientSide) return false
 
         Eln.itemEnergyInventoryProcess.addExclusion(this, 2.0)
         return super.onEntitySwing(entityLiving, stack)
@@ -47,9 +47,9 @@ open class ElectricalTool(name: String, private var strengthOn: Float, private v
 
     override fun getDefaultNBT(): CompoundTag? {
         val nbt = CompoundTag()
-        nbt.setDouble("energy", 0.0)
-        nbt.setBoolean("powerOn", false)
-        nbt.setInteger("rand", (Math.random() * 0xFFFFFFF).toInt())
+        nbt.putDouble("energy", 0.0)
+        nbt.putBoolean("powerOn", false)
+        nbt.putInt("rand", (Math.random() * 0xFFFFFFF).toInt())
         return nbt
     }
 

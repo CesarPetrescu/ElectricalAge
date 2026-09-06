@@ -102,10 +102,10 @@ public class LampSocketElement extends SixNodeElement {
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setByte("front", (byte) ((front.toInt() << 0) + (grounded ? 4 : 0)));
-        nbt.setBoolean("poweredByLampSupply", poweredByLampSupply);
-        nbt.setString("channel", channel);
-        nbt.setByte("color", (byte) (paintColor));
+        nbt.putByte("front", (byte) ((front.toInt() << 0) + (grounded ? 4 : 0)));
+        nbt.putBoolean("poweredByLampSupply", poweredByLampSupply);
+        nbt.putString("channel", channel);
+        nbt.putByte("color", (byte) (paintColor));
         return nbt;
     }
 
@@ -224,7 +224,7 @@ public class LampSocketElement extends SixNodeElement {
                 info.put(I18N.tr("Channel"), channel);
             }
             info.put(I18N.tr("Voltage"), Utils.plotVolt("", positiveLoad.getU()));
-            ItemStack lampStack = acceptingInventory.getInventory().getStackInSlot(0);
+            ItemStack lampStack = acceptingInventory.getInventory().getItem(0);
             if (lampStack != null && !lampStack.isEmpty() && lampDescriptor != null) {
                 info.put(I18N.tr("Life"), Utils.plotValue(lampDescriptor.getLifeInTag(lampStack)));
             }
@@ -243,9 +243,9 @@ public class LampSocketElement extends SixNodeElement {
         super.networkSerialize(stream);
         try {
             stream.writeByte((grounded ? (1 << 6) : 0));
-            Utils.serialiseItemStack(stream, acceptingInventory.getInventory().getStackInSlot(LampSocketContainer.lampSlotId));
+            Utils.serialiseItemStack(stream, acceptingInventory.getInventory().getItem(LampSocketContainer.lampSlotId));
             stream.writeFloat((float) lampProcess.alphaZ);
-            Utils.serialiseItemStack(stream, acceptingInventory.getInventory().getStackInSlot(LampSocketContainer.cableSlotId));
+            Utils.serialiseItemStack(stream, acceptingInventory.getInventory().getItem(LampSocketContainer.cableSlotId));
             stream.writeBoolean(poweredByLampSupply);
             stream.writeUTF(channel);
             stream.writeBoolean(isConnectedToLampSupply);
@@ -270,8 +270,8 @@ public class LampSocketElement extends SixNodeElement {
     }
 
     public void computeElectricalLoad() {
-        ItemStack lamp = acceptingInventory.getInventory().getStackInSlot(LampSocketContainer.lampSlotId);
-        ItemStack cable = acceptingInventory.getInventory().getStackInSlot(LampSocketContainer.cableSlotId);
+        ItemStack lamp = acceptingInventory.getInventory().getItem(LampSocketContainer.lampSlotId);
+        ItemStack cable = acceptingInventory.getInventory().getItem(LampSocketContainer.cableSlotId);
 
         ElectricalCableDescriptor cableDescriptor = (ElectricalCableDescriptor) Eln.sixNodeItem.getDescriptor(cable);
 
@@ -327,7 +327,7 @@ public class LampSocketElement extends SixNodeElement {
     }
 
     public boolean hasCable() {
-        ItemStack cableStack = acceptingInventory.getInventory().getStackInSlot(LampSocketContainer.cableSlotId);
+        ItemStack cableStack = acceptingInventory.getInventory().getItem(LampSocketContainer.cableSlotId);
         return cableStack != null && !cableStack.isEmpty();
     }
 

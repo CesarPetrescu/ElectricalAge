@@ -113,11 +113,11 @@ public class BatteryElement extends TransparentNodeElement {
     }
 
     public boolean hasOverVoltageProtection() {
-        return !getInventory().getStackInSlot(0).isEmpty();
+        return !getInventory().getItem(0).isEmpty();
     }
 
     public boolean hasOverHeatingProtection() {
-        return !getInventory().getStackInSlot(1).isEmpty();
+        return !getInventory().getItem(1).isEmpty();
     }
 
     @Override
@@ -249,8 +249,8 @@ public class BatteryElement extends TransparentNodeElement {
     @Override
     public CompoundTag getItemStackNBT() {
         CompoundTag nbt = new CompoundTag();
-        nbt.setDouble("charge", batteryProcess.getCharge());
-        nbt.setDouble("life", batteryProcess.life);
+        nbt.putDouble("charge", batteryProcess.getCharge());
+        nbt.putDouble("life", batteryProcess.life);
         return nbt;
     }
 

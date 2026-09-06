@@ -181,8 +181,8 @@ public class AutoMinerElement extends TransparentNodeElement {
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setBoolean("powerOk", powerOk);
-        nbt.setBoolean("silkTouch", slowProcess.silkTouch);
+        nbt.putBoolean("powerOk", powerOk);
+        nbt.putBoolean("silkTouch", slowProcess.silkTouch);
         return nbt;
     }
 

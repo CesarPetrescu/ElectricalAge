@@ -114,12 +114,12 @@ class ScannerElement(sixNode: SixNode, side: Direction, descriptor: SixNodeDescr
                 val slots = te.getSlotsForFace(targetSide)
                 when (mode) {
                     ScanMode.SIMPLE -> slots.forEach {
-                        sum += te.getStackInSlot(it)?.count ?: 0
-                        limit += te.inventoryStackLimit
+                        sum += te.getItem(it)?.count ?: 0
+                        limit += te.maxStackSize
                     }
 
                     ScanMode.SLOTS -> slots.forEach {
-                        sum += if ((te.getStackInSlot(it)?.count ?: 0) > 0) 1 else 0
+                        sum += if ((te.getItem(it)?.count ?: 0) > 0) 1 else 0
                         limit += 1
                     }
                 }
@@ -127,15 +127,15 @@ class ScannerElement(sixNode: SixNode, side: Direction, descriptor: SixNodeDescr
             }
             is Container -> {
                 val sum = when (mode) {
-                    ScanMode.SIMPLE -> (0 until te.sizeInventory).sumBy {
-                        te.getStackInSlot(it)?.count ?: 0
+                    ScanMode.SIMPLE -> (0 until te.containerSize).sumBy {
+                        te.getItem(it)?.count ?: 0
                     }.toDouble()
 
-                    ScanMode.SLOTS -> (0 until te.sizeInventory).count {
-                        (te.getStackInSlot(it)?.count ?: 0) > 0
-                    }.toDouble() * te.inventoryStackLimit
+                    ScanMode.SLOTS -> (0 until te.containerSize).count {
+                        (te.getItem(it)?.count ?: 0) > 0
+                    }.toDouble() * te.maxStackSize
                 }
-                return sum / te.inventoryStackLimit / te.sizeInventory
+                return sum / te.maxStackSize / te.containerSize
             }
             else -> return null
         }
@@ -176,7 +176,7 @@ class ScannerElement(sixNode: SixNode, side: Direction, descriptor: SixNodeDescr
 
     override fun writeToNBT(nbt: CompoundTag): CompoundTag? {
         super.writeToNBT(nbt)
-        nbt.setByte("mode", mode.value)
+        nbt.putByte("mode", mode.value)
         return nbt;
     }
 

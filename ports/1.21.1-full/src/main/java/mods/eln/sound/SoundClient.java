@@ -15,7 +15,7 @@ public class SoundClient {
     public static void play(SoundCommand p) {
         ClientProxy.soundClientEventListener.currentUuid = p.uuid; //trolilole
 
-        Player player = Minecraft.getMinecraft().player;
+        Player player = Minecraft.getInstance().player;
         if (p.world.provider.getDimension() != player.dimension) return;
         double distance = Math.sqrt(Math.pow(p.x - player.posX, 2) + Math.pow(p.y - player.posY, 2) + Math.pow(p.z - player.posZ, 2));
         if (distance >= p.rangeMax) return;
@@ -37,7 +37,7 @@ public class SoundClient {
             p.world.playSound(
                 player,
                 soundPos,
-                new SoundEvent(new ResourceLocation(p.track)),
+                new SoundEvent(ResourceLocation.parse(p.track)),
                 SoundSource.BLOCKS,  // TODO(1.10): Move this to the sound command.
                 p.volume,
                 p.pitch);
@@ -51,7 +51,7 @@ public class SoundClient {
                     p.world.playSound(
                         player,
                         soundPos,
-                        new SoundEvent(new ResourceLocation(p.track + "_" + idx + "x")),
+                        new SoundEvent(ResourceLocation.parse(p.track + "_" + idx + "x")),
                         SoundSource.BLOCKS,
                         bandVolume,
                         p.pitch);

@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
 public class TransparentNodeEntityWithFluid extends TransparentNodeEntity implements IFluidHandler {
 
     private IFluidHandler getFluidHandler() {
-        if (!world.isRemote) {
+        if (!world.isClientSide) {
             Node node = getNode();
             if (node instanceof TransparentNode) {
                 TransparentNode tn = (TransparentNode) node;

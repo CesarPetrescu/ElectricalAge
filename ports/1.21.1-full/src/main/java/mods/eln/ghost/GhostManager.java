@@ -154,7 +154,7 @@ public class GhostManager extends SavedData {
             if (dim != Integer.MIN_VALUE && ghost.elementCoordinate.getDimension() != dim) continue;
             CompoundTag nbtGhost = new CompoundTag();
             ghost.writeToNBT(nbtGhost, "");
-            nbt.setTag("n" + nodeCounter++, nbtGhost);
+            nbt.put("n" + nodeCounter++, nbtGhost);
         }
     }
 

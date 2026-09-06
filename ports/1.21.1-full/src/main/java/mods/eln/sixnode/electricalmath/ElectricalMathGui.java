@@ -49,7 +49,7 @@ public class ElectricalMathGui extends GuiContainerEln {
     protected void postDraw(float f, int x, int y) {
         super.postDraw(f, x, y);
         int c;
-        ItemStack stack = render.inventory.getStackInSlot(ElectricalMathContainer.restoneSlotId);
+        ItemStack stack = render.inventory.getItem(ElectricalMathContainer.restoneSlotId);
         int redNbr = stack.getCount();
 
         if (!expression.getText().equals(render.expression)) {

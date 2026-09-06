@@ -21,7 +21,7 @@ class BatteryItem(name: String, private var energyStorage: Double, internal var 
 
     override fun getDefaultNBT(): CompoundTag? {
         val nbt = CompoundTag()
-        nbt.setDouble("energy", 0.0)
+        nbt.putDouble("energy", 0.0)
         return nbt
     }
 

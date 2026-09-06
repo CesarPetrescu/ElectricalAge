@@ -130,7 +130,7 @@ public class ElectricalMachineElement extends TransparentNodeElement implements 
     }
 
     private void setPhysicalValue() {
-        ItemStack boosterStack = getInventory().getStackInSlot(boosterSlotId);
+        ItemStack boosterStack = getInventory().getItem(boosterSlotId);
         int boosterCount = boosterStack == null || boosterStack.isEmpty() ? 0 : boosterStack.getCount();
         double speedUp = Math.pow(descriptor.boosterSpeedUp, boosterCount);
         slowRefreshProcess.setEfficiency(Math.pow(descriptor.boosterEfficiency, boosterCount));
@@ -152,8 +152,8 @@ public class ElectricalMachineElement extends TransparentNodeElement implements 
         if (fPower > 1.9) fPower = 1.9;
         try {
             stream.writeByte((int) (fPower * 64));
-            serialiseItemStack(stream, inventory.getStackInSlot(inSlotId));
-            serialiseItemStack(stream, inventory.getStackInSlot(outSlotId));
+            serialiseItemStack(stream, inventory.getItem(inSlotId));
+            serialiseItemStack(stream, inventory.getItem(outSlotId));
             stream.writeFloat((float) slowRefreshProcess.processState());
             stream.writeFloat((float) slowRefreshProcess.processStatePerSecond());
             node.lrduCubeMask.getTranslate(front.down()).serialize(stream);
@@ -166,7 +166,7 @@ public class ElectricalMachineElement extends TransparentNodeElement implements 
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setBoolean("powerOn", powerOn);
+        nbt.putBoolean("powerOn", powerOn);
         return nbt;
     }
 

@@ -164,7 +164,7 @@ public abstract class SimpleNode extends NodeBase {
 
         front.writeToNBT(nbt, "SNfront");
 
-        nbt.setString("SNdescriptorKey", descriptorKey == null ? "" : descriptorKey);
+        nbt.putString("SNdescriptorKey", descriptorKey == null ? "" : descriptorKey);
 
         for (State electricalLoad : electricalLoadList) {
             if (electricalLoad instanceof INBTTReady) ((INBTTReady) electricalLoad).writeToNBT(nbt, "");

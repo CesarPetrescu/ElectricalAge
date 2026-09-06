@@ -63,7 +63,7 @@ public class GroundCableElement extends SixNodeElement {
     @Override
     public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setByte("color", (byte) (color + (colorCare << 4)));
+        nbt.putByte("color", (byte) (color + (colorCare << 4)));
         return nbt;
     }
 
@@ -110,7 +110,7 @@ public class GroundCableElement extends SixNodeElement {
         super.networkSerialize(stream);
         try {
             stream.writeByte(color << 4);
-            Utils.serialiseItemStack(stream, inventory.getStackInSlot(GroundCableContainer.cableSlotId));
+            Utils.serialiseItemStack(stream, inventory.getItem(GroundCableContainer.cableSlotId));
         } catch (IOException e) {
             e.printStackTrace();
         }

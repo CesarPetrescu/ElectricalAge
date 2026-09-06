@@ -1,7 +1,5 @@
 package mods.eln.simplenode.computerprobe;
 
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import mods.eln.node.simple.SimpleNode;
 import mods.eln.node.simple.SimpleNodeBlock;
 import net.minecraft.block.material.Material;
@@ -31,7 +29,7 @@ public class ComputerProbeBlock extends SimpleNodeBlock {
 //        return icon[side];
 //    }
 //
-//    @SideOnly(Side.CLIENT)
+//    @net.neoforged.api.distmarker.OnlyIn(net.neoforged.api.distmarker.Dist.CLIENT)
 //    public void registerBlockIcons(IIconRegister register) {
 //        icon[4] = register.registerIcon("eln:computerprobe_xn");
 //        icon[5] = register.registerIcon("eln:computerprobe_xp");
