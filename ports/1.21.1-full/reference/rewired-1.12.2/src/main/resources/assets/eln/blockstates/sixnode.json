@@ -1,0 +1,12 @@
+{
+    "forge_marker": 1,
+    "defaults": {
+        "model": "builtin/generated",
+        "textures": {
+            "layer0": "eln:blocks/air"
+        }
+    },
+    "variants": {
+        "normal": [{}]
+    }
+}

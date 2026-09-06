@@ -1,0 +1,263 @@
+{
+    "smallalarm_critical": {
+        "category": "record",
+        "sounds": [
+            {
+                "name": "eln:smallalarm_critical",
+                "stream": false
+            }
+        ]
+    },
+    "alarma": {
+        "category": "record",
+        "sounds": [
+            {
+                "name": "eln:alarma",
+                "stream": false
+            }
+        ]
+    },
+    "wind_turbine": {
+        "category": "block",
+        "sounds": [
+            {
+                "name": "eln:wind_turbine",
+                "stream": false
+            }
+        ]
+    },
+    "water_turbine": {
+        "category": "block",
+        "sounds": [
+            {
+                "name": "eln:water_turbine",
+                "stream": false
+            }
+        ]
+    },
+    "heat_turbine_200v": {
+        "category": "block",
+        "sounds": [
+            {
+                "name": "eln:heat_turbine_200v",
+                "stream": false
+            }
+        ]
+    },
+    "heat_turbine_50v": {
+        "category": "block",
+        "sounds": [
+            {
+                "name": "eln:heat_turbine_50v",
+                "stream": false
+            }
+        ]
+    },
+    "autominer": {
+        "category": "block",
+        "sounds": [
+            {
+                "name": "eln:autominer",
+                "stream": false
+            }
+        ]
+    },
+    "compressor_run": {
+        "category": "block",
+        "sounds": [
+            {
+                "name": "eln:compressor_run",
+                "stream": false
+            }
+        ]
+    },
+    "compressor_end": {
+        "category": "block",
+        "sounds": [
+            {
+                "name": "eln:compressor_end",
+                "stream": false
+            }
+        ]
+    },
+    "macerator": {
+        "category": "block",
+        "sounds": [
+            {
+                "name": "eln:macerator",
+                "stream": false
+            }
+        ]
+    },
+    "plate_machine": {
+        "category": "block",
+        "sounds": [
+            {
+                "name": "eln:plate_machine",
+                "stream": false
+            }
+        ]
+    },
+    "timer": {
+        "category": "block",
+        "sounds": [
+            {
+                "name": "eln:timer",
+                "stream": false
+            }
+        ]
+    },
+    "transporter": {
+        "category": "block",
+        "sounds": [
+            {
+                "name": "eln:transporter",
+                "stream": false
+            }
+        ]
+    },
+    "NEON_LFNOISE": {
+        "category": "block",
+        "sounds": [
+            {
+                "name": "eln:neon_lfnoise",
+                "stream": false
+            }
+        ]
+    },
+    "WINDTURBINE_BIG_FF": {
+        "category": "block",
+        "sounds": [
+            {
+                "name": "eln:windturbine_big_ff",
+                "stream": false
+            }
+        ]
+    },
+    "WINDTURBINE_BIG_SF": {
+        "category": "block",
+        "sounds": [
+            {
+                "name": "eln:windturbine_big_sf",
+                "stream": false
+            }
+        ]
+    },
+    "neon_lamp": {
+        "category": "block",
+        "sounds": [
+            {
+                "name": "eln:neon_lamp",
+                "stream": false
+            }
+        ]
+    },
+    "Transformer": {
+        "category": "block",
+        "sounds": [
+            {
+                "name": "eln:transformer",
+                "stream": false
+            }
+        ]
+    },
+    "Motor": {
+        "category": "block",
+        "sounds": [
+            {
+                "name": "eln:motor",
+                "stream": false
+            }
+        ]
+    },
+    "LaserGun": {
+        "category": "block",
+        "sounds": [
+            {
+                "name": "eln:lasergun",
+                "stream": false
+            }
+        ]
+    },
+    "TurretActivated": {
+        "category": "block",
+        "sounds": [
+            {
+                "name": "eln:turretactivated",
+                "stream": false
+            }
+        ]
+    },
+    "TurretDeactivated": {
+        "category": "block",
+        "sounds": [
+            {
+                "name": "eln:turretdeactivated",
+                "stream": false
+            }
+        ]
+    },
+    "TurretFire": {
+        "category": "block",
+        "sounds": [
+            {
+                "name": "eln:turretfire",
+                "stream": false
+            }
+        ]
+    },
+    "FuelGenerator": {
+        "category": "block",
+        "sounds": [
+            {
+                "name": "eln:fuelgenerator",
+                "stream": false
+            }
+        ]
+    },
+    "FireAlarm": {
+        "category": "block",
+        "sounds": [
+            {
+                "name": "eln:firealarm",
+                "stream": false
+            }
+        ]
+    },
+    "fuelheatfurnace": {
+        "category": "block",
+        "sounds": [
+            {
+                "name": "eln:fuelheatfurnace",
+                "stream": false
+            }
+        ]
+    },
+    "generator": {
+        "category": "block",
+        "sounds": [
+            {
+                "name": "eln:generator",
+                "stream": false
+            }
+        ]
+    },
+    "gas_turbine": {
+        "category": "block",
+        "sounds": [
+            {
+                "name": "eln:gas_turbine",
+                "stream": false
+            }
+        ]
+    },
+    "steam_turbine": {
+        "category": "block",
+        "sounds": [
+            {
+                "name": "eln:steam_turbine",
+                "stream": false
+            }
+        ]
+    }
+}

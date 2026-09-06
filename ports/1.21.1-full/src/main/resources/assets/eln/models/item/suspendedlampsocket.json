@@ -1,0 +1,7 @@
+{
+    "parent": "item/generated",
+    "textures": {
+        "layer0": "eln:voltages/neutral",
+        "layer1": "eln:blocks/suspendedlampsocket"
+    }
+}

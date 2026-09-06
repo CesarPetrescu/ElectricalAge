@@ -1,0 +1,14 @@
+[
+    {
+        "modid":"eln",
+        "version": "${version}",
+        "mcversion": "${mcversion}",
+        "name":"Electrical Age: Re-Wired",
+        "url":"https://github.com/brambora69123/electrical-age-rewired/",
+		"credits": "The Electrical Age Team",
+        "logoFile": "assets/eln/logo.png",
+        "requiredMods":[
+            "Forge"
+        ]
+    }
+]

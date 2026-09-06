@@ -1,0 +1,511 @@
+/**
+ * ElectricalAge - RetroFuturaGradle Build Script
+ * Migrated from ForgeGradle 2.3 to CleanroomMC RFG 2.0.2
+ */
+import com.gtnewhorizons.retrofuturagradle.mcp.InjectTagsTask
+import org.jetbrains.changelog.Changelog
+import org.jetbrains.gradle.ext.Gradle
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
+plugins {
+    id 'java'
+    id 'java-library'
+    id 'maven-publish'
+    id 'org.jetbrains.gradle.plugin.idea-ext' version '1.3'
+    id 'com.gtnewhorizons.retrofuturagradle' version '2.0.2'
+    id 'org.jetbrains.kotlin.jvm' version '2.2.21'
+    id 'com.matthewprenger.cursegradle' version '1.4.0' apply false
+    id 'com.modrinth.minotaur' version '2.+' apply false
+    id 'org.jetbrains.changelog' version '2.5.0'
+}
+
+apply from: 'gradle/scripts/helpers.gradle'
+
+def getGitVersion() {
+    try {
+        def proc = "git describe --tags --always --dirty".execute()
+        proc.waitFor()
+        def gitVer = proc.in.text.trim()
+        if (gitVer.isEmpty()) return "0.0.0-unknown"
+        if (gitVer.startsWith("v")) gitVer = gitVer.substring(1)
+        return gitVer
+    } catch (Exception ignored) {
+        return "0.0.0-unknown"
+    }
+}
+
+def fullVersion = getGitVersion()
+def versionMatcher = (fullVersion =~ /(\d+)\.(\d+)\.(\d+)/)
+def (vMajor, vMinor, vRevision) = ["0", "0", "0"]
+if (versionMatcher.find()) {
+    vMajor = versionMatcher.group(1)
+    vMinor = versionMatcher.group(2)
+    vRevision = versionMatcher.group(3)
+}
+
+// Early Assertions
+assertProperty 'root_package'
+assertProperty 'mod_id'
+assertProperty 'mod_name'
+
+assertSubProperties 'use_tags', 'tag_class_name'
+assertSubProperties 'use_access_transformer', 'access_transformer_locations'
+assertSubProperties 'use_mixins', 'mixin_booter_version', 'mixin_refmap'
+assertSubProperties 'is_coremod', 'coremod_includes_mod', 'coremod_plugin_class_name'
+assertSubProperties 'use_asset_mover', 'asset_mover_version'
+
+setDefaultProperty 'use_modern_java_syntax', false, false
+setDefaultProperty 'generate_sources_jar', true, false
+setDefaultProperty 'generate_javadocs_jar', true, false
+setDefaultProperty 'mapping_channel', true, 'stable'
+setDefaultProperty 'mapping_version', true, '39'
+setDefaultProperty 'use_dependency_at_files', true, true
+setDefaultProperty 'minecraft_username', true, 'Developer'
+setDefaultProperty 'extra_jvm_args', false, ''
+setDefaultProperty 'extra_tweak_classes', false, ''
+setDefaultProperty 'change_minecraft_sources', false, false
+
+version = fullVersion
+group = propertyString('root_package')
+
+base {
+    archivesName.set(propertyString('mod_id'))
+}
+
+tasks.decompressDecompiledSources.enabled = !propertyBool('change_minecraft_sources')
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(propertyBool('use_modern_java_syntax') ? 16 : 8))
+        vendor.set(JvmVendorSpec.AZUL)
+    }
+    if (propertyBool('generate_sources_jar')) {
+        withSourcesJar()
+    }
+    if (propertyBool('generate_javadocs_jar')) {
+        withJavadocJar()
+    }
+}
+
+configurations {
+    embed
+    implementation.extendsFrom(embed)
+}
+
+minecraft {
+    mcVersion.set('1.12.2')
+    mcpMappingChannel.set(propertyString('mapping_channel'))
+    mcpMappingVersion.set(propertyString('mapping_version'))
+    useDependencyAccessTransformers.set(propertyBool('use_dependency_at_files'))
+    username.set(propertyString('minecraft_username'))
+
+    extraTweakClasses.addAll(propertyStringList('extra_tweak_classes'))
+
+    def args = ['-ea:' + group]
+    if (propertyBool('use_mixins')) {
+        args << '-Dmixin.hotSwap=true'
+        args << '-Dmixin.checks.interfaces=true'
+        args << '-Dmixin.debug.export=true'
+    }
+    extraRunJvmArguments.addAll(args)
+    extraRunJvmArguments.addAll(propertyStringList('extra_jvm_args'))
+
+    if (propertyBool('use_tags')) {
+        if (file('tags.properties').exists()) {
+            Properties props = new Properties().tap { it.load(file('tags.properties').newInputStream()); it }
+            if (!props.isEmpty()) {
+                injectedTags.set(props.collectEntries { k, v -> [(k): interpolate(v)] })
+            }
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        name 'CleanroomMC Maven'
+        url 'https://maven.cleanroommc.com'
+    }
+    maven {
+        name 'Forge Maven'
+        url 'https://files.minecraftforge.net/maven'
+    }
+    maven { url 'https://maven.shadowfacts.net/' }
+    maven { url 'https://maven.cil.li/' }
+    maven { url = "https://maven.firstdarkdev.xyz/releases/" }
+}
+
+dependencies {
+    // Kotlin (embedded to avoid NoClassDefFoundError at runtime)
+    embed("org.jetbrains.kotlin:kotlin-stdlib:2.2.21")
+
+    // Optional integrations (compileOnly = provided at runtime by user)
+    compileOnly "dan200.computercraft:ComputerCraft:1.80pr1-build0"
+    compileOnly "li.cil.oc:OpenComputers:MC1.12.2-1.7.4.153"
+
+    // Runtime dependencies
+    implementation "mcp.mobius.waila:Hwyla:1.8.26-B41_1.12.2:api"
+
+    // Jabel support for modern Java syntax (if enabled)
+    if (propertyBool('use_modern_java_syntax')) {
+        annotationProcessor 'com.github.bsideup.jabel:jabel-javac-plugin:1.0.0'
+        annotationProcessor 'net.java.dev.jna:jna-platform:5.13.0'
+        compileOnly('com.github.bsideup.jabel:jabel-javac-plugin:1.0.0') { transitive = false }
+        patchedMinecraft 'me.eigenraven.java8unsupported:java-8-unsupported-shim:1.0.0'
+        testAnnotationProcessor 'com.github.bsideup.jabel:jabel-javac-plugin:1.0.0'
+        testCompileOnly('com.github.bsideup.jabel:jabel-javac-plugin:1.0.0') { transitive = false }
+    }
+
+    // AssetMover support (if enabled)
+    if (propertyBool('use_asset_mover')) {
+        implementation "com.cleanroommc:assetmover:${propertyString('asset_mover_version')}"
+    }
+
+    // Mixin support (if enabled)
+    if (propertyBool('use_mixins')) {
+        String mixin = modUtils.enableMixins("zone.rong:mixinbooter:${propertyString('mixin_booter_version')}", propertyString('mixin_refmap'))
+        api(mixin) { transitive = false }
+        annotationProcessor 'org.ow2.asm:asm-debug-all:5.2'
+        annotationProcessor 'com.google.guava:guava:32.1.2-jre'
+        annotationProcessor 'com.google.code.gson:gson:2.8.9'
+        annotationProcessor(mixin) { transitive = false }
+    }
+
+    // JUnit testing (if enabled)
+    if (propertyBool('enable_junit_testing')) {
+        testImplementation 'org.junit.jupiter:junit-jupiter:5.7.1'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    }
+}
+
+apply from: 'gradle/scripts/dependencies.gradle'
+
+// Access Transformer handling
+if (propertyBool('use_access_transformer')) {
+    for (def location : propertyStringList('access_transformer_locations')) {
+        def fileLocation = file("${projectDir}/src/main/resources/${location}")
+        if (fileLocation.exists()) {
+            tasks.deobfuscateMergedJarToSrg.accessTransformerFiles.from(fileLocation)
+            tasks.srgifyBinpatchedJar.accessTransformerFiles.from(fileLocation)
+        } else {
+            throw new GradleException("Access Transformer file [$fileLocation] does not exist!")
+        }
+    }
+}
+
+// Version source generation task
+tasks.register('processVersionSource', Copy) {
+    from 'src/main/resources/Version.java'
+    into 'build/generated/source/version/main/mods/eln/misc'
+    expand (
+        'MAJORVERSION': vMajor,
+        'MINORVERSION': vMinor,
+        'REVISION': vRevision,
+        'VERSION_STRING': fullVersion
+    )
+}
+
+// Resource processing with version replacement
+processResources {
+    inputs.property 'mod_id', propertyString('mod_id')
+    inputs.property 'mod_name', propertyString('mod_name')
+    inputs.property 'mod_version', fullVersion
+    inputs.property 'mod_description', propertyString('mod_description')
+    inputs.property 'mod_authors', "${propertyStringList('mod_authors', ',').join(', ')}"
+    inputs.property 'mod_credits', propertyString('mod_credits')
+    inputs.property 'mod_url', propertyString('mod_url')
+    inputs.property 'mod_update_json', propertyString('mod_update_json')
+    inputs.property 'mod_logo_path', propertyString('mod_logo_path')
+    inputs.property 'mixin_refmap', propertyString('mixin_refmap')
+    inputs.property 'mixin_package', propertyString('mixin_package')
+    inputs.property 'mixin_configs', propertyStringList('mixin_configs').join(' ')
+    def filterList = ['mcmod.info', 'pack.mcmeta']
+
+
+    filterList.addAll(propertyStringList('mixin_configs').collect { config ->
+        "mixins.${config}.json".toString()
+    })
+
+    filesMatching(filterList) { fcd ->
+        fcd.expand(
+            'mod_id': propertyString('mod_id'),
+            'mod_name': propertyString('mod_name'),
+            'mod_version': fullVersion,
+            'mod_description': propertyString('mod_description'),
+            // Call .toString() on this join as well to be safe
+            'mod_authors': "${propertyStringList('mod_authors', ',').join(', ')}".toString(),
+            'mod_credits': propertyString('mod_credits'),
+            'mod_url': propertyString('mod_url'),
+            'mod_update_json': propertyString('mod_update_json'),
+            'mod_logo_path': propertyString('mod_logo_path'),
+            'mixin_refmap': propertyString('mixin_refmap'),
+            'mixin_package': propertyString('mixin_package'),
+
+            'version': fullVersion,
+            'mcversion': '1.12.2',
+
+            'VERSION@': fullVersion,
+            'MAJORVERSION@': vMajor,
+            'MINORVERSION@': vMinor,
+            'REVISION@': vRevision
+        )
+    }
+
+
+    if (propertyBool('use_access_transformer')) {
+        rename '(.+_at.cfg)', 'META-INF/$1'
+    }
+}
+
+// Configure Kotlin source directories
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java']
+            srcDir 'build/generated/source/version/main'
+            exclude '**/Eln_old.java'
+        }
+        kotlin {
+            srcDirs = ['src/main/java']
+            srcDir 'build/generated/source/version/main'
+        }
+        resources {
+            srcDirs = ['src/main/resources']
+            exclude 'Version.java'
+            exclude '**/*.psd'
+            exclude '**/*.bbmodel' // Blockbench sources
+            exclude '**/*.blend'
+            exclude '**/_Common/**' // Common in ELN to have "hidden" source folders
+            exclude '**/_TEMPLATES/**'
+            exclude '**/export_*.png' // Exclude raw exports
+        }
+    }
+}
+
+tasks.named('compileJava') {
+    dependsOn 'processVersionSource'
+}
+
+tasks.named('compileKotlin') {
+    dependsOn 'processVersionSource'
+}
+
+// JAR configuration with manifest and asset filtering
+jar {
+    manifest {
+        def attribute_map = [:]
+
+        // Coremod attributes (if applicable)
+        if (propertyBool('is_coremod')) {
+            attribute_map['FMLCorePlugin'] = propertyString('coremod_plugin_class_name')
+            if (propertyBool('coremod_includes_mod')) {
+                attribute_map['FMLCorePluginContainsFMLMod'] = true
+                def currentTasks = gradle.startParameter.taskNames
+                if (currentTasks[0] in ['build', 'prepareObfModsFolder', 'runObfClient']) {
+                    attribute_map['ForceLoadAsMod'] = true
+                }
+            }
+        }
+
+        // Access Transformer attribute
+        if (propertyBool('use_access_transformer')) {
+            attribute_map['FMLAT'] = propertyString('access_transformer_locations')
+        }
+
+        // Original ElectricalAge manifest attributes
+        attribute_map['Built-By'] = 'Electrical-Age Team'
+        attribute_map['Build-Date'] = new Date().format("yyyy-MM-dd HH:mm:ss")
+        attribute_map['Built-JDK'] = System.getProperty('java.version')
+        attribute_map['Implementation-Title'] = project.name
+        attribute_map['Implementation-URL'] = 'https://github.com/Electrical-Age'
+        attribute_map['Implementation-Vendor'] = 'Electrical-Age Team'
+        attribute_map['Implementation-Vendor-Id'] = 'net.electricalage.eln'
+        attribute_map['Project-Url'] = 'https://electrical-age.net/'
+        attribute_map['Source-Compatibility'] = project.extensions.getByType(JavaPluginExtension).sourceCompatibility.toString()
+        attribute_map['Target-Compatibility'] = project.extensions.getByType(JavaPluginExtension).targetCompatibility.toString()
+
+        attributes(attribute_map)
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    // Embed dependencies if using 'embed' configuration
+    from(provider { configurations.embed.collect { it.isDirectory() ? it : zipTree(it) } })
+
+    // Include README and LICENSE
+    from(['README.md', 'LICENSE.md'])
+
+    // Exclude API classes that are provided by other mods to avoid repacking conflicts
+    exclude 'cofh/**'
+
+    // Clean up META-INF from embedded dependencies
+    exclude 'META-INF/versions/**'
+    exclude 'META-INF/*.SF'
+    exclude 'META-INF/*.DSA'
+    exclude 'META-INF/*.RSA'
+}
+
+// Exclude CoFH API from sources jar
+if (tasks.findByName('sourcesJar')) {
+    tasks.named('sourcesJar') {
+        dependsOn 'processVersionSource'
+        exclude 'cofh/**'
+    }
+}
+
+
+// Helper to get Minecraft directory for copying JAR
+def getMinecraftDir() {
+    String outDir = ""
+    final String osName = System.getProperty("os.name").toLowercase()
+    if (osName.contains('windows'))
+        outDir = System.getenv("APPDATA") + "/.minecraft"
+    else if (osName.contains('os x') || osName.contains('mac'))
+        outDir = System.getProperty("user.home") + "/Library/Application Support/minecraft"
+    else if (osName.contains('linux'))
+        outDir = System.getProperty("user.home") + "/.minecraft"
+    return outDir
+}
+
+// Custom task: Build and copy JAR to local Minecraft mods folder
+tasks.register('buildAndCopyJar', Copy) {
+    group = 'ELN'
+    description = 'Build and copy the mod JAR to the default local Minecraft folder.'
+    dependsOn 'build'
+    outputs.upToDateWhen { false }
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+
+    from("build/libs")
+    into(getMinecraftDir() + "/mods")
+    include("*.jar")
+}
+
+// Custom task: Update master language file (i18n helper)
+tasks.register('updateMasterLanguageFile', JavaExec) {
+    group = 'ELN'
+    description = 'Generate or update the master language file.'
+    dependsOn 'classes'
+    main = 'mods.eln.i18n.LanguageFileUpdater'
+    classpath = sourceSets.main.runtimeClasspath
+    args = ['./src', './src/main/resources/assets/eln/lang/en_US.lang']
+}
+
+// IntelliJ IDEA configuration
+idea {
+    module {
+        inheritOutputDirs = true
+        generatedSourceDirs += file('build/generated/source/version/main')
+    }
+    project {
+        settings {
+            runConfigurations {
+                "1. Run Client"(Gradle) { taskNames = ["runClient"] }
+                "2. Run Server"(Gradle) { taskNames = ["runServer"] }
+                "3. Run Obfuscated Client"(Gradle) { taskNames = ["runObfClient"] }
+                "4. Run Obfuscated Server"(Gradle) { taskNames = ["runObfServer"] }
+            }
+            compiler.javac {
+                afterEvaluate {
+                    javacAdditionalOptions = "-encoding utf8"
+                    moduleJavacAdditionalOptions = [
+                        (project.name + ".main"): tasks.compileJava.options.compilerArgs.collect { '"' + it + '"' }.join(' ')
+                    ]
+                }
+            }
+        }
+    }
+}
+
+// Test configuration
+compileTestJava {
+    sourceCompatibility = targetCompatibility = 8
+}
+
+test {
+    useJUnitPlatform()
+    javaLauncher.set(javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(8)
+    })
+    if (propertyBool('show_testing_output')) {
+        testLogging { showStandardStreams = true }
+    }
+}
+
+// Java compilation configuration
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    if (propertyBool('use_modern_java_syntax')) {
+        if (it.name in ['compileMcLauncherJava', 'compilePatchedMcJava']) return
+        sourceCompatibility = 17
+        options.release.set(8)
+        javaCompiler.set(javaToolchains.compilerFor {
+            languageVersion.set(JavaLanguageVersion.of(16))
+            vendor.set(JvmVendorSpec.AZUL)
+        })
+    }
+}
+
+// Javadoc configuration for modern Java
+if (propertyBool('use_modern_java_syntax')) {
+    tasks.withType(Javadoc).configureEach {
+        sourceCompatibility = 17
+    }
+}
+
+// Tag injection task configuration
+tasks.named('injectTags', InjectTagsTask).configure {
+    onlyIf { propertyBool('use_tags') && !it.getTags().get().isEmpty() }
+    it.outputClassName.set(propertyString('tag_class_name'))
+}
+
+// Coremod prioritization for obfuscated runs
+tasks.named('prepareObfModsFolder').configure {
+    finalizedBy 'prioritizeCoremods'
+}
+
+tasks.register('prioritizeCoremods') {
+    dependsOn 'prepareObfModsFolder'
+    doLast {
+        fileTree('run/obfuscated').forEach {
+            if (it.isFile() && it.name =~ /(mixinbooter|configanytime)(-)([0-9])+\.([0-9])+(.jar)/) {
+                it.renameTo(new File(it.parentFile, "!${it.name}"))
+            }
+        }
+    }
+}
+
+// Gradle sync hooks
+afterEvaluate {
+    tasks.register('cleanroomAfterSync') {
+        group 'cleanroom helpers'
+
+        // Only depend on injectTags if use_tags is true
+        if (propertyBool('use_tags')) {
+            dependsOn 'injectTags'
+        }
+
+        // Only depend on generateMixinJson if the task was actually created
+        if (tasks.findByName('generateMixinJson')) {
+            dependsOn 'generateMixinJson'
+        }
+    }
+}
+
+idea.project.settings {
+    taskTriggers {
+        afterSync 'cleanroomAfterSync'
+    }
+}
+
+// Apply publishing and extra scripts
+apply from: 'gradle/scripts/publishing.gradle'
+apply from: 'gradle/scripts/extra.gradle'
+
+tasks.withType(KotlinCompile).configureEach {
+    if (name.contains("PatchedMc")) {
+        dependsOn "decompressDecompiledSources"
+    }
+    if (name.contains("McLauncher")) {
+        dependsOn "createMcLauncherFiles"
+    }
+}

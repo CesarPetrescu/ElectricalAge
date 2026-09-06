@@ -1,0 +1,2184 @@
+eln.electrical_age_[wip]=Electrical Age [WIP]
+
+eln.achievement.craft_50v_macerator=Crushing Novice
+
+eln.achievement.craft_50v_macerator.desc=Craft a 50V Macerator
+
+eln.achievement.open_guide=Wiki Power
+
+eln.achievement.open_guide.desc=Open the wiki guide
+
+
+
+# ./src/main/java/mods/eln/Eln.java
+
+eln.10a_diode.name=10A Diode
+
+eln.200v_active_thermal_dissipator.name=200V Active Thermal Dissipator
+
+eln.200v_battery_charger.name=200V Battery Charger
+
+eln.200v_compressor.name=200V Compressor
+
+eln.200v_condensator.name=200V Capacitor
+
+eln.200v_copper_heating_corp.name=200V Copper Heating Corp
+
+eln.200v_economic_light_bulb.name=200V Economic Light Bulb
+
+eln.200v_emergency_lamp.name=200V Emergency Lamp
+
+eln.200v_farming_lamp.name=200V Farming Lamp
+
+eln.200v_fuel_generator.name=200V Fuel Generator
+
+eln.200v_incandescent_light_bulb.name=200V Incandescent Light Bulb
+
+eln.200v_iron_heating_corp.name=200V Iron Heating Corp
+
+eln.200v_led_bulb.name=200V LED Bulb
+
+eln.200v_macerator.name=200V Macerator
+
+eln.200v_magnetizer.name=200V Magnetizer
+
+eln.200v_plate_machine.name=200V Plate Machine
+
+eln.200v_power_socket.name=200V Power Socket
+
+eln.200v_tungsten_heating_corp.name=200V Tungsten Heating Corp
+
+eln.200v_turbine.name=200V Turbine
+
+eln.25a_diode.name=25A Diode
+
+eln.2x3_rotating_solar_panel.name=2x3 Rotating Solar Panel
+
+eln.2x3_solar_panel.name=2x3 Solar Panel
+
+eln.50v_battery_charger.name=50V Battery Charger
+
+eln.50v_carbon_incandescent_light_bulb.name=50V Carbon Incandescent Light Bulb
+
+eln.50v_compressor.name=50V Compressor
+
+eln.50v_condensator.name=50V Capacitor
+
+eln.50v_copper_heating_corp.name=50V Copper Heating Corp
+
+eln.50v_economic_light_bulb.name=50V Economic Light Bulb
+
+eln.50v_egg_incubator.name=50V Egg Incubator
+
+eln.50v_emergency_lamp.name=50V Emergency Lamp
+
+eln.50v_farming_lamp.name=50V Farming Lamp
+
+eln.50v_fuel_generator.name=50V Fuel Generator
+
+eln.50v_incandescent_light_bulb.name=50V Incandescent Light Bulb
+
+eln.50v_iron_heating_corp.name=50V Iron Heating Corp
+
+eln.50v_led_bulb.name=50V LED Bulb
+
+eln.50v_macerator.name=50V Macerator
+
+eln.50v_magnetizer.name=50V Magnetizer
+
+eln.50v_plate_machine.name=50V Plate Machine
+
+eln.50v_power_socket.name=50V Power Socket
+
+eln.50v_tungsten_heating_corp.name=50V Tungsten Heating Corp
+
+eln.50v_turbine.name=50V Turbine
+
+eln.800v_defence_turret.name=800V Defence Turret
+
+eln.and_chip.name=AND Chip
+
+eln.advanced_chip.name=Advanced Chip
+
+eln.advanced_electrical_motor.name=Advanced Electrical Motor
+
+eln.advanced_energy_meter.name=Advanced Energy Meter
+
+eln.advanced_machine_block.name=Advanced Machine Block
+
+eln.advanced_magnet.name=Advanced Magnet
+
+eln.allmeter.name=Universal-Meter
+
+eln.alloy_dust.name=Alloy Dust
+
+eln.alloy_ingot.name=Alloy Ingot
+
+eln.alloy_plate.name=Alloy Plate
+
+eln.amplifier.name=Amplifier
+
+eln.analog_watch.name=Analog watch
+
+eln.analog_vumeter.name=Analog Gauge
+
+eln.analogic_regulator.name=Analogic Regulator
+
+eln.animal_filter.name=Animal Filter
+
+eln.auto_miner.name=Auto Miner
+
+eln.average_electrical_drill.name=Average Electrical Drill
+
+eln.average_ferromagnetic_core.name=Average Ferromagnetic Core
+
+eln.basic_magnet.name=Basic Magnet
+
+eln.big_fuel_burner.name=Big Fuel Burner
+
+eln.black_brush.name=Black Brush
+
+eln.blown_lead_fuse.name=Blown Lead Fuse
+
+eln.blue_brush.name=Blue Brush
+
+eln.brown_brush.name=Brown Brush
+
+eln.capacity_oriented_battery.name=Capacity Oriented Battery
+
+eln.casing.name=Casing
+
+eln.cheap_chip.name=Cheap Chip
+
+eln.cheap_electrical_drill.name=Cheap Electrical Drill
+
+eln.cheap_ferromagnetic_core.name=Cheap Ferromagnetic Core
+
+eln.cinnabar_dust.name=Cinnabar Dust
+
+eln.ore.cinnabar_ore.name=Cinnabar Ore
+
+eln.coal_dust.name=Coal Dust
+
+eln.coal_plate.name=Coal Plate
+
+eln.combustion_chamber.name=Combustion Chamber
+
+eln.configurable_summing_unit.name=Configurable summing unit
+
+eln.copper_cable.name=Copper Cable
+
+eln.copper_dust.name=Copper Dust
+
+eln.copper_ingot.name=Copper Ingot
+
+eln.ore.copper_ore.name=Copper Ore
+
+eln.copper_plate.name=Copper Plate
+
+eln.copper_thermal_cable.name=Copper Thermal Cable
+
+eln.cost_oriented_battery.name=Cost Oriented Battery
+
+eln.current_oriented_battery.name=Current Oriented Battery
+
+eln.cyan_brush.name=Cyan Brush
+
+eln.dc-dc_converter.name=DC-DC Converter
+
+eln.d_flip_flop_chip.name=D Flip Flop Chip
+
+eln.data_logger.name=Data Logger
+
+eln.data_logger_print.name=Data Logger Print
+
+eln.dielectric.name=Dielectric
+
+eln.digital_watch.name=Digital Watch
+
+eln.electrical_anemometer_sensor.name=Electrical Anemometer Sensor
+
+eln.electrical_breaker.name=Electrical Breaker
+
+eln.electrical_daylight_sensor.name=Electrical Daylight Sensor
+
+eln.electrical_entity_sensor.name=Electrical Entity Sensor
+
+eln.electrical_fire_buzzer.name=Electrical Fire Buzzer
+
+eln.electrical_fire_detector.name=Electrical Fire Detector
+
+eln.electrical_furnace.name=Electrical Furnace
+
+eln.electrical_fuse_holder.name=Electrical Fuse Holder
+
+eln.electrical_light_sensor.name=Electrical Light Sensor
+
+eln.electrical_motor.name=Electrical Motor
+
+eln.electrical_probe.name=Electrical Probe
+
+eln.electrical_probe_chip.name=Electrical Probe Chip
+
+eln.electrical_source.name=Electrical Source
+
+eln.electrical_timer.name=Electrical Timer
+
+eln.electrical_weather_sensor.name=Electrical Weather Sensor
+
+eln.electrical_age_wrench,ncan_be_used_to_turnnsmall_wall_blocks=Electrical age wrench,\nCan be used to turn\nsmall wall blocks
+
+eln.energy_meter.name=Energy Meter
+
+eln.experimental_transporter.name=Experimental Transporter
+
+eln.fast_electrical_drill.name=Fast Electrical Drill
+
+eln.ferrite_ingot.name=Ferrite Ingot
+
+eln.flat_lamp_socket.name=Flat Lamp Socket
+
+eln.fluorescent_lamp_socket.name=Fluorescent Lamp Socket
+
+eln.flywheel.name=Flywheel
+
+eln.fuel_heat_furnace.name=Fuel Heat Furnace
+
+eln.gas_turbine.name=Gas Turbine
+
+eln.generator.name=Generator
+
+eln.gold_dust.name=Gold Dust
+
+eln.gold_plate.name=Gold Plate
+
+eln.gray_brush.name=Gray Brush
+
+eln.green_brush.name=Green Brush
+
+eln.ground_cable.name=Ground Cable
+
+eln.high_power_receiver_antenna.name=High Power Receiver Antenna
+
+eln.high_power_transmitter_antenna.name=High Power Transmitter Antenna
+
+eln.high_voltage_cable.name=High Voltage Cable
+
+eln.high_voltage_relay.name=High Voltage Relay
+
+eln.high_voltage_switch.name=High Voltage Switch
+
+eln.hub.name=Hub
+
+eln.industrial_data_logger.name=Industrial Data Logger
+
+eln.iron_cable.name=Iron Cable
+
+eln.iron_dust.name=Iron Dust
+
+eln.iron_plate.name=Iron Plate
+
+eln.jk_flip_flop_chip.name=JK Flip Flop Chip
+
+eln.joint.name=Joint
+
+eln.joint_hub.name=Joint hub
+
+eln.led_vumeter.name=LED vuMeter
+
+eln.lamp_socket_a.name=Lamp Socket A
+
+eln.lamp_socket_b_projector.name=Lamp Socket B Projector
+
+eln.lamp_supply.name=Lamp Supply
+
+eln.large_rheostat.name=Large Rheostat
+
+eln.lead_dust.name=Lead Dust
+
+eln.lead_fuse_for_high_voltage_cables.name=Lead Fuse for high voltage cables
+
+eln.lead_fuse_for_low_voltage_cables.name=Lead Fuse for low voltage cables
+
+eln.lead_fuse_for_medium_voltage_cables.name=Lead Fuse for medium voltage cables
+
+eln.lead_fuse_for_very_high_voltage_cables.name=Lead Fuse for very high voltage cables
+
+eln.lead_ingot.name=Lead Ingot
+
+eln.ore.lead_ore.name=Lead Ore
+
+eln.lead_plate.name=Lead Plate
+
+eln.life_oriented_battery.name=Life Oriented Battery
+
+eln.light_blue_brush.name=Light Blue Brush
+
+eln.lime_brush.name=Lime Brush
+
+eln.long_suspended_lamp_socket.name=Long Suspended Lamp Socket
+
+eln.low_power_receiver_antenna.name=Low Power Receiver Antenna
+
+eln.low_power_transmitter_antenna.name=Low Power Transmitter Antenna
+
+eln.low_voltage_cable.name=Low Voltage Cable
+
+eln.low_voltage_relay.name=Low Voltage Relay
+
+eln.low_voltage_switch.name=Low Voltage Switch
+
+eln.lowpass_filter.name=Lowpass filter
+
+eln.machine_block.name=Machine Block
+
+eln.machine_booster.name=Machine Booster
+
+eln.magenta_brush.name=Magenta Brush
+
+eln.medium_fuel_burner.name=Medium Fuel Burner
+
+eln.medium_power_receiver_antenna.name=Medium Power Receiver Antenna
+
+eln.medium_power_transmitter_antenna.name=Medium Power Transmitter Antenna
+
+eln.medium_voltage_cable.name=Medium Voltage Cable
+
+eln.medium_voltage_relay.name=Medium Voltage Relay
+
+eln.medium_voltage_switch.name=Medium Voltage Switch
+
+eln.mercury.name=Mercury
+
+eln.mining_pipe.name=Mining Pipe
+
+eln.modbus_rtu.name=Modbus RTU
+
+eln.modern_data_logger.name=Modern Data Logger
+
+eln.monster_filter.name=Monster Filter
+
+eln.multimeter.name=Multimeter
+
+eln.nand_chip.name=NAND Chip
+
+eln.nor_chip.name=NOR Chip
+
+eln.not_chip.name=NOT Chip
+
+eln.nuclear_alarm.name=Nuclear Alarm
+
+eln.or_chip.name=OR Chip
+
+eln.on_off_regulator_10_percent.name=On/off regulator 10%
+
+eln.on_off_regulator_1_percent.name=On/off regulator 1%
+
+eln.opamp.name=OpAmp
+
+eln.optimal_ferromagnetic_core.name=Optimal Ferromagnetic Core
+
+eln.orange_brush.name=Orange Brush
+
+eln.ore_scanner.name=Ore Scanner
+
+eln.oscillator_chip.name=Oscillator Chip
+
+eln.overheating_protection.name=Overheating Protection
+
+eln.overvoltage_protection.name=Overvoltage Protection
+
+eln.pal_chip.name=PAL Chip
+
+eln.pid_regulator.name=PID Regulator
+
+eln.pink_brush.name=Pink Brush
+
+eln.player_filter.name=Player Filter
+
+eln.portable_battery.name=Portable Battery
+
+eln.portable_battery_pack.name=Portable Battery Pack
+
+eln.portable_condensator.name=Portable Capacitor
+
+eln.portable_condensator_pack.name=Portable Capacitor Pack
+
+eln.portable_electrical_axe.name=Portable Electrical Axe
+
+eln.portable_electrical_mining_drill.name=Portable Electrical Mining Drill
+
+eln.power_capacitor.name=Power Capacitor
+
+eln.power_inductor.name=Power Inductor
+
+eln.power_resistor.name=Power Resistor
+
+eln.power_capacitor.name=Power capacitor
+
+eln.power_inductor.name=Power inductor
+
+eln.purple_brush.name=Purple Brush
+
+eln.red_brush.name=Red Brush
+
+eln.redstone-to-voltage_converter.name=Redstone-to-Voltage Converter
+
+eln.rheostat.name=Rheostat
+
+eln.robust_lamp_socket.name=Robust Lamp Socket
+
+eln.rubber.name=Rubber
+
+eln.sample_and_hold.name=Sample and hold
+
+eln.scanner.name=Scanner
+
+eln.schmitt_trigger_chip.name=Schmitt Trigger Chip
+
+eln.sconce_lamp_socket.name=Sconce Lamp Socket
+
+eln.signal_20h_inductor.name=Signal 20H inductor
+
+eln.signal_antenna.name=Signal Antenna
+
+eln.signal_button.name=Signal Button
+
+eln.signal_cable.name=Signal Cable
+
+eln.signal_diode.name=Signal Diode
+
+eln.signal_processor.name=Signal Processor
+
+eln.signal_relay.name=Signal Relay
+
+eln.signal_source.name=Signal Source
+
+eln.signal_switch.name=Signal Switch
+
+eln.signal_switch_with_led.name=Signal Switch with LED
+
+eln.signal_trimmer.name=Signal Trimmer
+
+eln.silicon_dust.name=Silicon Dust
+
+eln.silicon_ingot.name=Silicon Ingot
+
+eln.silicon_plate.name=Silicon Plate
+
+eln.silver_brush.name=Silver Brush
+
+eln.simple_lamp_socket.name=Simple Lamp Socket
+
+eln.single-use_battery.name=Single-use Battery
+
+eln.small_200v_copper_heating_corp.name=Small 200V Copper Heating Corp
+
+eln.small_200v_iron_heating_corp.name=Small 200V Iron Heating Corp
+
+eln.small_200v_tungsten_heating_corp.name=Small 200V Tungsten Heating Corp
+
+eln.small_50v_carbon_incandescent_light_bulb.name=Small 50V Carbon Incandescent Light Bulb
+
+eln.small_50v_copper_heating_corp.name=Small 50V Copper Heating Corp
+
+eln.small_50v_economic_light_bulb.name=Small 50V Economic Light Bulb
+
+eln.small_50v_incandescent_light_bulb.name=Small 50V Incandescent Light Bulb
+
+eln.small_50v_iron_heating_corp.name=Small 50V Iron Heating Corp
+
+eln.small_50v_tungsten_heating_corp.name=Small 50V Tungsten Heating Corp
+
+eln.small_active_thermal_dissipator.name=Small Active Thermal Dissipator
+
+eln.small_flashlight.name=Small Flashlight
+
+eln.small_fuel_burner.name=Small Fuel Burner
+
+eln.small_passive_thermal_dissipator.name=Small Passive Thermal Dissipator
+
+eln.small_rotating_solar_panel.name=Small Rotating Solar Panel
+
+eln.small_solar_panel.name=Small Solar Panel
+
+eln.solar_tracker.name=Solar Tracker
+
+eln.standard_alarm.name=Standard Alarm
+
+eln.steam_turbine.name=Steam Turbine
+
+eln.stone_heat_furnace.name=Stone Heat Furnace
+
+eln.street_light.name=Streetlight
+
+eln.suspended_lamp_socket.name=Suspended Lamp Socket
+
+eln.tachometer.name=Tachometer
+
+eln.temperature_probe.name=Temperature Probe
+
+eln.thermal_probe.name=Thermal Probe
+
+eln.thermal_probe_chip.name=Thermal Probe Chip
+
+eln.thermistor.name=Thermistor
+
+eln.thermometer.name=Thermometer
+
+eln.tree_resin.name=Tree Resin
+
+eln.tree_resin_collector.name=Tree Resin Collector
+
+eln.tungsten_cable.name=Tungsten Cable
+
+eln.tungsten_dust.name=Tungsten Dust
+
+eln.tungsten_ingot.name=Tungsten Ingot
+
+eln.ore.tungsten_ore.name=Tungsten Ore
+
+eln.tutorial_sign.name=Tutorial Sign
+
+eln.very_high_voltage_cable.name=Very High Voltage Cable
+
+eln.very_high_voltage_relay.name=Very High Voltage Relay
+
+eln.very_high_voltage_switch.name=Very High Voltage Switch
+
+eln.voltage-to-redstone_converter.name=Voltage-to-Redstone Converter
+
+eln.voltage_oriented_battery.name=Voltage Oriented Battery
+
+eln.voltage_probe.name=Voltage Probe
+
+eln.voltage_controlled_amplifier.name=Voltage controlled amplifier
+
+eln.voltage_controlled_sawtooth_oscillator.name=Voltage controlled sawtooth oscillator
+
+eln.voltage_controlled_sine_oscillator.name=Voltage controlled sine oscillator
+
+eln.water_turbine.name=Water Turbine
+
+eln.weak_50v_battery_charger.name=Weak 50V Battery Charger
+
+eln.white_brush.name=White Brush
+
+eln.wind_turbine.name=Wind Turbine
+
+eln.wireless_analyser.name=Wireless Analyzer
+
+eln.wireless_button.name=Wireless Button
+
+eln.wireless_signal_receiver.name=Wireless Signal Receiver
+
+eln.wireless_signal_repeater.name=Wireless Signal Repeater
+
+eln.wireless_signal_transmitter.name=Wireless Signal Transmitter
+
+eln.wireless_switch.name=Wireless Switch
+
+eln.wrench.name=Wrench
+
+eln.x-ray_scanner.name=X-Ray Scanner
+
+eln.xnor_chip.name=XNOR Chip
+
+eln.xor_chip.name=XOR Chip
+
+eln.yellow_brush.name=Yellow Brush
+
+eln.entity.eareplicator.name=Replicator
+
+eln.item.copper_axe.name=Copper Axe
+
+eln.item.copper_boots.name=Copper Boots
+
+eln.item.copper_chestplate.name=Copper Chestplate
+
+eln.item.copper_helmet.name=Copper Helmet
+
+eln.item.copper_hoe.name=Copper Hoe
+
+eln.item.copper_leggings.name=Copper Leggings
+
+eln.item.copper_pickaxe.name=Copper Pickaxe
+
+eln.item.copper_shovel.name=Copper Shovel
+
+eln.item.copper_sword.name=Copper Sword
+
+eln.item.e-coal_boots.name=E-Coal Boots
+
+eln.item.e-coal_chestplate.name=E-Coal Chestplate
+
+eln.item.e-coal_helmet.name=E-Coal Helmet
+
+eln.item.e-coal_leggings.name=E-Coal Leggings
+
+eln.itemgroup.eln=Electrical Age
+
+eln.mod.meta.desc=Electricity in your base!
+
+eln.tile.eln.elnprobe.name=Eln Computer Probe
+
+eln.tile.eln.energyconverterelntootherhvublock.name=800V Electrical Age to other energy exporter
+
+eln.tile.eln.energyconverterelntootherlvublock.name=50V Electrical Age to other energy exporter
+
+eln.tile.eln.energyconverterelntoothermvublock.name=200V Electrical Age to other energy exporter
+
+
+
+# ./src/main/java/mods/eln/i18n/I18N.java
+
+eln.you_have_%s_lives_left=You have %s lives left
+
+
+
+# ./src/main/java/mods/eln/item/BrushDescriptor.kt
+
+eln.brush_is_dry=Brush is dry
+
+eln.can_paint_%s_blocks=Can paint %s blocks
+
+
+
+# ./src/main/java/mods/eln/item/CaseItemDescriptor.kt
+
+eln.can_be_used_to_encase_ea_items_that_support_it=Can be used to encase EA items that support it
+
+
+
+# ./src/main/java/mods/eln/item/CombustionChamber.java
+
+eln.upgrade_for_the_stone_heat_furnace.=Upgrade for the Stone Heat Furnace.
+
+
+
+# ./src/main/java/mods/eln/item/ElectricalDrillDescriptor.java
+
+eln._%sj=Energy per operation: %sJ
+
+eln._%sh=Time per operation: %sh
+
+
+
+# ./src/main/java/mods/eln/item/FerromagneticCoreDescriptor.java
+
+eln._%s=Cable loss factor: %s
+
+
+
+# ./src/main/java/mods/eln/item/FuelBurnerDescriptor.kt
+
+eln.burn_unit_for_the_gas_heat_furnace.=Burn unit for the gas heat furnace.
+
+eln._=Produced heat power:
+
+
+
+# ./src/main/java/mods/eln/item/HeatingCorpElement.java
+
+
+
+# ./src/main/java/mods/eln/item/LampDescriptor.java
+
+eln.bad=Bad
+
+eln.=Condition:
+
+eln.end_of_life=End of life
+
+eln.good=Good
+
+eln.new=New
+
+eln._%sh=Nominal lifetime: %sh
+
+eln._%s=Technology: %s
+
+eln.used=Used
+
+
+
+# ./src/main/java/mods/eln/item/LampSlot.java
+
+eln.lamp_slot=Lamp slot
+
+
+
+# ./src/main/java/mods/eln/item/OverHeatingProtectionDescriptor.java
+
+eln.useful_to_prevent_overheatingnof_batteries=Useful to prevent overheating\nof Batteries
+
+
+
+# ./src/main/java/mods/eln/item/OverVoltageProtectionDescriptor.java
+
+eln.useful_to_prevent_over-voltagenof_batteries=Useful to prevent over-voltage\nof Batteries
+
+
+
+# ./src/main/java/mods/eln/item/SolarTrackerDescriptor.java
+
+eln.solar_panel_upgrade=Solar panel upgrade
+
+
+
+# ./src/main/java/mods/eln/item/electricalitem/BatteryItem.java
+
+
+
+# ./src/main/java/mods/eln/item/electricalitem/ElectricalLampItem.java
+
+eln.=State:
+
+eln._%sj_(%s)=Stored Energy: %sJ (%s)
+
+
+
+# ./src/main/java/mods/eln/item/regulator/RegulatorSlot.java
+
+
+
+# ./src/main/java/mods/eln/mechanical/Tachometer.kt
+
+
+
+# ./src/main/java/mods/eln/misc/UtilsClient.java
+
+eln.hold_shift=Hold shift
+
+
+
+# ./src/main/java/mods/eln/misc/Version.java
+
+eln.mod.name=Electrical Age
+
+
+
+# ./src/main/java/mods/eln/node/six/SixNodeDescriptor.java
+
+
+
+# ./src/main/java/mods/eln/simplenode/energyconverter/EnergyConverterElnToOtherGui.java
+
+eln.input_power_is_limited_to_%sw=Input power is limited to %sW
+
+
+
+# ./src/main/java/mods/eln/sixnode/AnalogChips.kt
+
+eln.a_voltage-controlled_amplifier_(vca)nis_an_electronic_amplifier_that_variesnits_gain_depending_on_the_control_voltage.=A voltage-controlled amplifier (VCA)\nis an electronic amplifier that varies\nits gain depending on the control voltage.
+
+eln.a_voltage-controlled_oscillator_or_vco_isnan_electronic_oscillator_whose_oscillationnfrequency_is_controlled_by_a_voltage_input.=A voltage-controlled oscillator or VCO is\nan electronic oscillator whose oscillation\nfrequency is controlled by a voltage input.
+
+eln.an_amplifier_increases_the_voltagenof_an_input_signal_by_a_configurablengain_and_outputs_that_voltage.=An amplifier increases the voltage\nof an input signal by a configurable\ngain and outputs that voltage.
+
+eln.cut-off_frequency_%s_hz=Cut-off frequency %s Hz
+
+eln.gain=Gain
+
+eln.gain_for_input_u00a713=Gain for input \u00a713
+
+eln.gain_for_input_u00a722=Gain for input \u00a722
+
+eln.gain_for_input_u00a741=Gain for input \u00a741
+
+eln.lowpass_filter_-_passes_signals_with_anfrequency_lower_than_a_certain_cutoff_frequencynand_attenuates_signals_with_frequencies_highernthan_the_cutoff_frequency.=Lowpass filter - Passes signals with a\nfrequency lower than a certain cutoff frequency\nand attenuates signals with frequencies higher\nthan the cutoff frequency.
+
+eln.operational_amplifier_-_dc_couplednhigh-gain_voltage_amplifier_withndifferential_input._can_be_used_toncompare_voltages_or_as_configurable_amplifier.=Operational Amplifier - DC coupled\nhigh-gain voltage amplifier with\ndifferential input. Can be used to\ncompare voltages or as configurable amplifier.
+
+eln.params=Params
+
+eln.proportional–integral–derivative_controller._a_pidncontroller_continuously_calculates_an_error_value_asnthe_difference_between_a_desired_setpoint_and_a_measurednprocess_variable_and_applies_a_correction_based_onnproportional,_integral,_and_derivative_terms.=Proportional–integral–derivative controller. A PID\ncontroller continuously calculates an error value as\nthe difference between a desired setpoint and a measured\nprocess variable and applies a correction based on\nproportional, integral, and derivative terms.
+
+eln.samples_the_voltage_of_a_varying_analog_signal_whennthe_clock_input_changes_from_0_to_1_and_holds_itsnoutput_voltage_at_a_constant_level_until_next_clock_pulse.nyou_can_see_it_as_an_analog_d-flipflop.=Samples the voltage of a varying analog signal when\nthe clock input changes from 0 to 1 and holds its\noutput voltage at a constant level until next clock pulse.\nYou can see it as an analog D-Flipflop.
+
+eln.the_summing_unit_outputs_the_sum_ofnthe_three_weighted_inputs.thengain_for_each_input_can_be_configured.=The summing unit outputs the sum of\nthe three weighted inputs.The\ngain for each input can be configured.
+
+
+
+# ./src/main/java/mods/eln/sixnode/ElectricalFuse.kt
+
+eln.protects_electrical_components.nfuse_melts_if_current_exceeds_thenfuse_limit=Protects electrical components.\nFuse melts if current exceeds the\nfuse limit
+
+
+
+# ./src/main/java/mods/eln/sixnode/EmergencyLamp.kt
+
+
+
+# ./src/main/java/mods/eln/sixnode/LogicGate.kt
+
+eln.a_programmable_array_logic_(pal)_is_a_programmablenlogic_device_semiconductors_used_to__implement_any_logicnfunction_in_only_one_digital_circuit._the_function_isnstateless,_which_means_that_no_intermediate_state_is_saved.=A Programmable Array Logic (PAL) is a programmable\nlogic device semiconductors used to  implement any logic\nfunction in only one digital circuit. The function is\nstateless, which means that no intermediate state is saved.
+
+eln.if_the_input_j_is_1_(high)_and_k_is_0_(low)nduring_a_clock_pulse,_the_output_becomes_1_(high).nif_j_is_0_(low)_and_k_is_1_(high)_during_the_pulse,nthe_output_becomes_0_(low)._if_both_inputs_are_0_(low)nduring_the_clock_pulse,_the_state_is_maintained._if_bothninputs_are_1_(high)_the_input_is_toggled_if_a_rising_edgenwas_detected_at_the_clock_input.=If the input J is 1 (high) and K is 0 (low)\nduring a clock pulse, the output becomes 1 (high).\nIf J is 0 (low) and K is 1 (high) during the pulse,\nthe output becomes 0 (low). If both inputs are 0 (low)\nduring the clock pulse, the state is maintained. If both\ninputs are 1 (high) the input is toggled if a rising edge\nwas detected at the clock input.
+
+eln.if_the_input_voltage_is_lower_than_10v,_thenoutput_is_0_(low),_if_the_output_is_bigger_ornequal_to_30v,_the_output_will_be_1_(high)._fornall_voltages_in_between,_the_output_does_not_change.=If the input voltage is lower than 10V, the\noutput is 0 (low), if the output is bigger or\nequal to 30V, the output will be 1 (high). For\nall voltages in between, the output does not change.
+
+eln.implements_an_exclusive_or.nan_output_of_1_(high)_results_if_one_ornall_three_inputs_to_the_gate_are_1_(high).=Implements an exclusive or.\nAn output of 1 (high) results if one or\nall three inputs to the gate are 1 (high).
+
+eln.implements_logical_conjunction.na_1_(high)_output_results_only_if_all_ofnthe_three_inputs_to_the_and_gate_are_1_(high).=Implements logical conjunction.\nA 1 (high) output results only if all of\nthe three inputs to the AND gate are 1 (high).
+
+eln.implements_logical_disjunction.na_1_(high)_output_results_if_at_leastnone_input_to_the_gate_is_1_(high).=Implements logical disjunction.\nA 1 (high) output results if at least\none input to the gate is 1 (high).
+
+eln.inverts_the_input_signal.noutputs_a_voltage_representing_thenopposite_logic-level_to_its_input.=Inverts the input signal.\nOutputs a voltage representing the\nopposite logic-level to its input.
+
+eln.its_output_is_complement_(inverted)nto_that_of_the_and_gate.=Its output is complement (inverted)\nto that of the AND gate.
+
+eln.its_output_is_complement_(inverted)nto_that_of_the_or_gate.=Its output is complement (inverted)\nto that of the OR gate.
+
+eln.its_output_is_complement_(inverted)nto_that_of_the_xor_gate.=Its output is complement (inverted)\nto that of the XOR gate.
+
+eln.outputs_a_rectangular_signal_which's_frequencyndepends_to_the_input_voltage._the_higher_theninput_voltage_-_the_higher_the_frequency.=Outputs a rectangular signal which's frequency\ndepends to the input voltage. The higher the\ninput voltage - the higher the frequency.
+
+eln.the_d_flip-flop_captures_the_valuenof_the_d-input_at_a_rising_edgenportion_of_the_clock_cycle.=The D flip-flop captures the value\nof the D-input at a rising edge\nportion of the clock cycle.
+
+eln.undef=UNDEF
+
+
+
+# ./src/main/java/mods/eln/sixnode/Scanner.kt
+
+eln.-_for_inventories,_outputs_either_total_fill_or_fraction_of_slots_with_any_items.=- For inventories, outputs either total fill or fraction of slots with any items.
+
+eln.-_for_tanks,_outputs_fill_percentage.=- For tanks, outputs fill percentage.
+
+eln.otherwise_behaves_as_a_vanilla_comparator.=Otherwise behaves as a vanilla comparator.
+
+eln.right-click_to_change_mode.=Right-click to change mode.
+
+eln.scans_blocks_to_produce_signals.=Scans blocks to produce signals.
+
+
+
+# ./src/main/java/mods/eln/sixnode/TreeResinCollector/TreeResinCollectorDescriptor.java
+
+eln.produces_tree_resin_overntime_when_put_on_a_tree.=Produces Tree Resin over\ntime when put on a tree.
+
+eln.this_block_can_only_be_placed_on_the_side_of_a_tree!=This block can only be placed on the side of a tree!
+
+
+
+# ./src/main/java/mods/eln/sixnode/batterycharger/BatteryChargerContainer.java
+
+eln.battery_slot=Battery slot
+
+
+
+# ./src/main/java/mods/eln/sixnode/batterycharger/BatteryChargerDescriptor.java
+
+eln.nflash_light,_x-ray_scannernand_portable_battery_..=Can be used to recharge\nelectrical items like:\nFlash Light, X-Ray scanner\nand Portable Battery ...
+
+
+
+# ./src/main/java/mods/eln/sixnode/batterycharger/BatteryChargerElement.java
+
+eln.charge_current=Charge Current
+
+
+
+# ./src/main/java/mods/eln/sixnode/batterycharger/BatteryChargerGui.java
+
+
+
+# ./src/main/java/mods/eln/sixnode/diode/DiodeDescriptor.java
+
+eln.electrical_current_can_onlynflow_through_the_diodenfrom_anode_to_cathode=Electrical current can only\nflow through the diode\nfrom anode to cathode
+
+
+
+# ./src/main/java/mods/eln/sixnode/diode/DiodeElement.java
+
+eln.forward_voltage=Forward Voltage
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalalarm/ElectricalAlarmDescriptor.java
+
+eln.emits_an_acoustic_alarm_ifnthe_input_signal_is_high=Emits an acoustic alarm if\nthe input signal is high
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalalarm/ElectricalAlarmElement.java
+
+eln.engaged=Engaged
+
+eln.input_voltage=Input Voltage
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalalarm/ElectricalAlarmGui.java
+
+eln.sound_is_muted=Sound is muted
+
+eln.sound_is_not_muted=Sound is not muted
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalbreaker/ElectricalBreakerContainer.java
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalbreaker/ElectricalBreakerDescriptor.java
+
+eln.n__-_voltage_exceeds_a_certain_leveln-_current_exceeds_the_cable_limit=Protects electrical components\nOpens contact if:\n  - Voltage exceeds a certain level\n- Current exceeds the cable limit
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalbreaker/ElectricalBreakerElement.java
+
+eln.contact=Contact
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalbreaker/ElectricalBreakerGui.java
+
+eln.maximum_voltage_before_cutting_off=Maximum voltage before cutting off
+
+eln.minimum_voltage_before_cutting_off=Minimum voltage before cutting off
+
+eln.switch_is_off=Switch is off
+
+eln.switch_is_on=Switch is on
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalcable/ElectricalCableDescriptor.java
+
+eln.a_signal_is_electrical_informationnwhich_must_be_between_0v_and_%s=A signal is electrical information\nwhich must be between 0V and %s
+
+eln.cable_is_adapted_to_conductnelectrical_signals.=Cable is adapted to conduct\nelectrical signals.
+
+eln._%sa=Current: %sA
+
+eln.not_adapted_to_transport_power.=Not adapted to transport power.
+
+eln.=Save usage:
+
+eln._%su2126=Serial resistance: %s\u2126
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalcable/ElectricalCableElement.java
+
+eln.signal_voltage=Signal Voltage
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricaldatalogger/ElectricalDataLoggerDescriptor.java
+
+eln.it_can_store_up_to_256_points.=It can store up to 256 points.
+
+eln.measures_the_voltage_of_annelectrical_signal_and_plotsnthe_data_in_real_time.=Measures the voltage of an\nelectrical signal and plots\nthe data in real time.
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricaldatalogger/ElectricalDataLoggerElement.java
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricaldatalogger/ElectricalDataLoggerGui.java
+
+eln.back_to_display=Back to display
+
+eln.configuration=Configuration
+
+eln.current_[a]=Current [A]
+
+eln.energy_[j]=Energy [J]
+
+eln.power_[w]=Power [W]
+
+eln.print=Print
+
+eln.sampling_period=Sampling period
+
+eln.temp._[*c]=Temp. [*C]
+
+eln.voltage_[v]=Voltage [V]
+
+eln.y-axis_max=Y-axis max
+
+eln.y-axis_min=Y-axis min
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalentitysensor/ElectricalEntitySensorContainer.java
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalentitysensor/ElectricalEntitySensorDescriptor.java
+
+eln.output_voltage_increasesnif_entities_are_moving_around.=Output voltage increases\nif entities are moving around.
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalentitysensor/ElectricalEntitySensorElement.java
+
+eln.entity_present=Entity present
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalfiredetector/ElectricalFireDetectorContainer.kt
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalfiredetector/ElectricalFireDetectorDescriptor.java
+
+eln.battery_powered_buzzer_nactivated_in_presence_of_fire.=Battery powered buzzer \nactivated in presence of fire.
+
+eln.output_voltage_increasesnif_a_fire_has_been_detected.=Output voltage increases\nif a fire has been detected.
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalfiredetector/ElectricalFireDetectorElement.java
+
+eln._=Fire detected:
+
+eln.fire_present=Fire present
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalgatesource/ElectricalGateSourceDescriptor.java
+
+eln.provides_configurable_signalnvoltage.=Provides configurable signal\nvoltage.
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalgatesource/ElectricalGateSourceGui.java
+
+eln.output_at_%s=Output at %s
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricallightsensor/ElectricalLightSensorDescriptor.java
+
+eln.0v_at_night,_%sv_at_noon.=0V at night, %sV at noon.
+
+eln.provides_an_electrical_voltagenin_the_presence_of_light.=Provides an electrical voltage\nin the presence of light.
+
+eln.provides_an_electrical_voltagenwhich_is_proportional_tonthe_intensity_of_daylight.=Provides an electrical voltage\nwhich is proportional to\nthe intensity of daylight.
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricallightsensor/ElectricalLightSensorElement.java
+
+eln.light_level=Light level
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalmath/ElectricalMathContainer.java
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalmath/ElectricalMathDescriptor.java
+
+eln.=Applicable boolean operators:
+
+eln.=Applicable functions:
+
+eln.=Applicable mathematical operators:
+
+eln.calculates_an_output_signal_fromn3_inputs_(a,_b,_c)_using_an_equation.=Calculates an output signal from\n3 inputs (A, B, C) using an equation.
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalmath/ElectricalMathElement.java
+
+eln.equation=Equation
+
+eln.input_voltages=Input voltages
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalmath/ElectricalMathGui.java
+
+eln.%s_redstone(s)_required=%s Redstone(s) required
+
+eln.equation_required!=Equation required!
+
+eln.inputs_are=Inputs are
+
+eln.invalid_equation!=Invalid equation!
+
+eln.output_voltage_formula=Output voltage formula
+
+eln.waiting_for_completion..=Waiting for completion...
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalredstoneinput/ElectricalRedstoneInputDescriptor.java
+
+eln.converts_redstone_signalnto_an_electrical_voltage.=Converts Redstone signal\nto an electrical voltage.
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalredstoneinput/ElectricalRedstoneInputElement.java
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalredstoneoutput/ElectricalRedstoneOutputDescriptor.java
+
+eln.converts_electrical_voltageninto_a_redstone_signal.=Converts electrical voltage\ninto a Redstone signal.
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalredstoneoutput/ElectricalRedstoneOutputElement.java
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalrelay/ElectricalRelayDescriptor.java
+
+eln.a_relay_is_an_electricalncontact_that_conducts_electricncurrent_or_not,_dependingnthe_actual_input_signal_voltage.=A relay is an electrical\ncontact that conducts electric\ncurrent or not, depending\nthe actual input signal voltage.
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalrelay/ElectricalRelayElement.java
+
+eln.default_position=Default position
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalrelay/ElectricalRelayGui.java
+
+eln.normally_closed=Normally closed
+
+eln.normally_open=Normally open
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalsensor/ElectricalSensorDescriptor.java
+
+eln.can_measure_voltage_power_current=Can measure Voltage/Power/Current
+
+eln.measures_electrical_values_on_cables.=Measures electrical values on cables.
+
+eln.measures_voltage_on_cables.=Measures voltage on cables.
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalsensor/ElectricalSensorElement.java
+
+eln.measured_current=Measured current
+
+eln.measured_power=Measured power
+
+eln.measured_voltage=Measured voltage
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalsensor/ElectricalSensorGui.java
+
+eln.measured_voltagencorrespondingnto_0percent_output=Measured voltage\ncorresponding\nto 0% output
+
+eln.measured_voltagencorrespondingnto_100percent_output=Measured voltage\ncorresponding\nto 100% output
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalsource/ElectricalSourceDescriptor.java
+
+eln.creative_block.=Creative block.
+
+eln.provides_an_ideal_voltage_sourcenwithout_energy_or_power_limitation.=Provides an ideal voltage source\nwithout energy or power limitation.
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalswitch/ElectricalSwitchDescriptor.java
+
+eln.can_break_an_electrical_circuitninterrupting_the_current.=Can break an electrical circuit\ninterrupting the current.
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricaltimeout/ElectricalTimeoutDescriptor.java
+
+eln.upon_application_of_a_high_signal,nthe_timer_maintains_the_output_high_forna_configurable_interval._can_be_re-triggered.=Upon application of a high signal,\nthe timer maintains the output high for\na configurable interval. Can be re-triggered.
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricaltimeout/ElectricalTimeoutElement.java
+
+eln.output=Output
+
+eln.remaining=Remaining
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricaltimeout/ElectricalTimeoutGui.java
+
+eln.set=Set
+
+eln.the_time_interval_thenoutput_is_kept_high.=The time interval the\noutput is kept high.
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalvumeter/ElectricalVuMeterDescriptor.java
+
+eln.displays_the_value_of_a_signal.=Displays the value of a signal.
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalweathersensor/ElectricalWeatherSensorDescriptor.java
+
+eln._%sv=Clear: %sV
+
+eln.provides_an_electrical_signalndepending_the_actual_weather.=Provides an electrical signal\ndepending the actual weather.
+
+eln._%sv=Rain: %sV
+
+eln._%sv=Storm: %sV
+
+
+
+# ./src/main/java/mods/eln/sixnode/electricalwindsensor/ElectricalWindSensorDescriptor.java
+
+eln.maximum_wind_speed_is_%sm_s=Maximum wind speed is %sm/s
+
+eln.provides_an_electrical_signalndependant_on_wind_speed.=Provides an electrical signal\ndependant on wind speed.
+
+eln.you_can't_place_this_block_on_the_floor_or_the_ceiling=You can't place this block on the floor or the ceiling
+
+
+
+# ./src/main/java/mods/eln/sixnode/energymeter/EnergyMeterElement.java
+
+eln.counter=Counter
+
+eln.energy_left=Energy left
+
+eln.mode=Mode
+
+eln.prepay=Prepay
+
+
+
+# ./src/main/java/mods/eln/sixnode/energymeter/EnergyMeterGui.java
+
+eln.change_password=Change password
+
+eln.counter_mode=Counter Mode
+
+eln.counts_the_energy_conducted_fromnu00a74redu00a7f_to_u00a71blueu00a7f.=Counts the energy conducted from\n\u00a74red\u00a7f to \u00a71blue\u00a7f.
+
+eln._%sj=Energy counter: %sJ
+
+eln.enter_new_energy=Enter new energy
+
+eln.enter_password=Enter password
+
+eln.prepay_mode=Prepay Mode
+
+eln.reset_time_counter=Reset time counter
+
+eln.set_energy_counter=Set energy counter
+
+eln.=Time counter:
+
+eln.try_password=Try password
+
+eln.you_can_set_an_initialnamount_of_available_energy.nwhen_the_counter_arrives_at_0nthe_contact_will_be_opened.=You can set an initial\namount of available energy.\nWhen the counter arrives at 0\nthe contact will be opened.
+
+eln.is_off=is off
+
+eln.is_on=is on
+
+eln.value_in_kj=value in kJ
+
+
+
+# ./src/main/java/mods/eln/sixnode/groundcable/GroundCableDescriptor.java
+
+eln.can_be_used_to_set_a_point_of_annelectrical_network_to_0v_potential.nfor_example_to_ground_negative_battery_contacts.=Can be used to set a point of an\nelectrical network to 0V potential.\nFor example to ground negative battery contacts.
+
+eln.provides_a_zero_volt_reference.=Provides a zero volt reference.
+
+
+
+# ./src/main/java/mods/eln/sixnode/hub/HubDescriptor.java
+
+eln.allows_crossing_cablesnon_one_single_block.=Allows crossing cables\non one single block.
+
+
+
+# ./src/main/java/mods/eln/sixnode/lampsocket/LampSocketDescriptor.java
+
+eln._%s°_to_%s°=Angle: %s° to %s°
+
+eln._%s_blocks=Spot range: %s blocks
+
+
+
+# ./src/main/java/mods/eln/sixnode/lampsocket/LampSocketElement.java
+
+eln.bulb=Bulb
+
+
+
+# ./src/main/java/mods/eln/sixnode/lampsocket/LampSocketGuiDraw.java
+
+eln.cable_slot_empty=Cable slot empty
+
+eln._%s°=Orientation: %s°
+
+eln.parallel=Parallel
+
+eln.serial=Serial
+
+
+
+# ./src/main/java/mods/eln/sixnode/lampsupply/LampSupplyContainer.java
+
+eln.electrical_cable_slotnbase_range_is_32_blocks.neach_additional_cablenincreases_range_by_one.=Electrical cable slot\nBase range is 32 blocks.\nEach additional cable\nincreases range by one.
+
+
+
+# ./src/main/java/mods/eln/sixnode/lampsupply/LampSupplyDescriptor.java
+
+eln.supplies_all_lamps_on_the_channel.=Supplies all lamps on the channel.
+
+
+
+# ./src/main/java/mods/eln/sixnode/lampsupply/LampSupplyElement.java
+
+eln.total_power=Total power
+
+
+
+# ./src/main/java/mods/eln/sixnode/lampsupply/LampSupplyGui.java
+
+eln.power_channel_name=Power channel name
+
+eln.wireless_channel_name=Wireless channel name
+
+
+
+# ./src/main/java/mods/eln/sixnode/modbusrtu/ModbusRtuElement.java
+
+eln.modbus_tcp=Modbus TCP
+
+eln.modbus_unit_id=Modbus Unit ID
+
+eln.modbus_is_disabled,_enable_it_in_eln.cfg=Modbus is disabled, enable it in Eln.cfg
+
+
+
+# ./src/main/java/mods/eln/sixnode/modbusrtu/ModbusRtuGui.java
+
+eln.add=Add
+
+eln.channel_name=Channel name
+
+eln.modbus_id=Modbus ID
+
+eln.modbus_rtu=Modbus RTU
+
+eln.station_id=Station ID
+
+eln.station_name=Station name
+
+eln.wireless_rx=Wireless RX
+
+eln.wireless_tx=Wireless TX
+
+
+
+# ./src/main/java/mods/eln/sixnode/powercapacitorsix/PowerCapacitorSixContainer.java
+
+eln.(increases_maximum_voltage)=(Increases maximum voltage)
+
+
+
+# ./src/main/java/mods/eln/sixnode/powercapacitorsix/PowerCapacitorSixElement.java
+
+eln.capacity=Capacity
+
+
+
+# ./src/main/java/mods/eln/sixnode/powercapacitorsix/PowerCapacitorSixGui.java
+
+
+
+# ./src/main/java/mods/eln/sixnode/powerinductorsix/PowerInductorSixContainer.java
+
+
+
+# ./src/main/java/mods/eln/sixnode/powerinductorsix/PowerInductorSixElement.java
+
+eln.inductance=Inductance
+
+
+
+# ./src/main/java/mods/eln/sixnode/powerinductorsix/PowerInductorSixGui.java
+
+
+
+# ./src/main/java/mods/eln/sixnode/powersocket/PowerSocketDescriptor.java
+
+eln.supplies_any_devicenplugged_in_with_energy.=Supplies any device\nplugged in with energy.
+
+
+
+# ./src/main/java/mods/eln/sixnode/powersocket/PowerSocketGui.java
+
+eln.specify_the_device_to_supply_through_this_socket.=Specify the device to supply through this socket.
+
+
+
+# ./src/main/java/mods/eln/sixnode/resistor/ResistorContainer.java
+
+eln.(sets_resistance)=(Sets resistance)
+
+eln.coal_dust_slot=Coal dust slot
+
+
+
+# ./src/main/java/mods/eln/sixnode/resistor/ResistorElement.java
+
+
+
+# ./src/main/java/mods/eln/sixnode/thermalcable/ThermalCableDescriptor.java
+
+eln.high_parallel_resistancen_=> Low power dissipation.=High parallel resistance\n => Low power dissipation.
+
+eln.low_serial_resistancen_=> High conductivity.=Low serial resistance\n => High conductivity.
+
+eln._%sk_w=Parallel resistance: %sK/W
+
+eln._%sk_w=Serial resistance: %sK/W
+
+
+
+# ./src/main/java/mods/eln/sixnode/thermalcable/ThermalCableElement.java
+
+eln.thermic_power=Thermic power
+
+
+
+# ./src/main/java/mods/eln/sixnode/thermalsensor/ThermalSensorContainer.java
+
+eln.cable_slot=Cable slot
+
+
+
+# ./src/main/java/mods/eln/sixnode/thermalsensor/ThermalSensorDescriptor.java
+
+eln.=Can measure:
+
+eln.measures_temperature_of_cables.=Measures temperature of cables.
+
+eln.measures_thermal_values_on_cables.=Measures thermal values on cables.
+
+eln.__temperature_power_conducted=Temperature/Power conducted
+
+
+
+# ./src/main/java/mods/eln/sixnode/thermalsensor/ThermalSensorElement.java
+
+eln.measured_temperature=Measured temperature
+
+eln.measured_thermal_power=Measured thermal power
+
+
+
+# ./src/main/java/mods/eln/sixnode/thermalsensor/ThermalSensorGui.java
+
+eln.measured_temperaturencorrespondingnto_0percent_output=Measured temperature\ncorresponding\nto 0% output
+
+eln.measured_temperaturencorrespondingnto_100percent_output=Measured temperature\ncorresponding\nto 100% output
+
+
+
+# ./src/main/java/mods/eln/sixnode/tutorialsign/TutorialSignElement.java
+
+eln.no_text_associated_to_this_beacon=No text associated to this beacon
+
+
+
+# ./src/main/java/mods/eln/sixnode/tutorialsign/TutorialSignGui.java
+
+eln.set_beacon_name=Set beacon name
+
+
+
+# ./src/main/java/mods/eln/sixnode/wirelesssignal/rx/WirelessSignalRxGui.java
+
+
+
+# ./src/main/java/mods/eln/transparentnode/FuelGenerator.kt
+
+eln.fuel_level=Fuel level
+
+eln._%s_w=Nominal power: %s W
+
+eln._%s_v=Nominal voltage: %s V
+
+eln.produces_electricity_using_gasoline.=Produces electricity using gasoline.
+
+eln.state=State
+
+
+
+# ./src/main/java/mods/eln/transparentnode/FuelHeatFurnace.kt
+
+eln._%s=Actual: %s
+
+eln.analog_regulator_slot=Analog regulator slot
+
+eln.control_value_at_%s=Control value at %s
+
+eln.fuel_burner_slot=Fuel burner slot
+
+eln.furnace_is_off=Furnace is off
+
+eln.furnace_is_on=Furnace is on
+
+eln._%s=Heat Power: %s
+
+eln._%s=Set point: %s
+
+eln._=  Max. temperature:
+
+
+
+# ./src/main/java/mods/eln/transparentnode/LargeRheostat.kt
+
+eln._%s=Nom. Resistance: %s
+
+eln.power_loss=Power loss
+
+
+
+# ./src/main/java/mods/eln/transparentnode/autominer/AutoMinerContainer.java
+
+eln.drill_slot=Drill slot
+
+eln.mining_pipe_slot=Mining pipe slot
+
+eln.ore_scanner_slot=Ore scanner slot
+
+
+
+# ./src/main/java/mods/eln/transparentnode/autominer/AutoMinerDescriptor.java
+
+eln.n10_blocks_radius_after_10_blocks_depth.=Excavates on a small radius.\nExtracts ore on a bigger radius:\n10 blocks radius after 10 blocks depth.
+
+
+
+# ./src/main/java/mods/eln/transparentnode/autominer/AutoMinerElement.java
+
+eln.depth=Depth
+
+eln.silk_touch=Silk touch
+
+
+
+# ./src/main/java/mods/eln/transparentnode/autominer/AutoMinerGuiDraw.java
+
+eln.chest_missing_on_thenback_of_the_auto_miner!=Chest missing on the\nback of the auto miner!
+
+eln.halves_speed,_triples_power_draw=Halves speed, triples power draw
+
+eln.silk_touch=Silk Touch
+
+
+
+# ./src/main/java/mods/eln/transparentnode/battery/BatteryContainer.java
+
+eln.overheating_protection=Overheating protection
+
+eln.overvoltage_protection=Overvoltage protection
+
+
+
+# ./src/main/java/mods/eln/transparentnode/battery/BatteryDescriptor.java
+
+eln._=Actual charge:
+
+eln._=Energy capacity:
+
+eln._=Internal resistance:
+
+eln._=Life :
+
+eln._=Nominal power:
+
+eln._=Nominal voltage:
+
+eln._charged_at_=charged at
+
+
+
+# ./src/main/java/mods/eln/transparentnode/battery/BatteryGuiDraw.java
+
+eln.charged=Charged
+
+eln.discharge=Discharge
+
+eln.=Energy:
+
+eln._%s=Energy: %s
+
+eln.=Life:
+
+eln.no_charge=No charge
+
+eln.=Power in:
+
+eln.=Power out:
+
+
+
+# ./src/main/java/mods/eln/transparentnode/eggincubator/EggIncubatorContainer.java
+
+eln.egg_slot=Egg slot
+
+
+
+# ./src/main/java/mods/eln/transparentnode/eggincubator/EggIncubatorElement.java
+
+eln.has_egg=Has egg
+
+
+
+# ./src/main/java/mods/eln/transparentnode/electricalantennarx/ElectricalAntennaRxDescriptor.java
+
+eln.wireless_energy_receiver.=Wireless energy receiver.
+
+
+
+# ./src/main/java/mods/eln/transparentnode/electricalantennarx/ElectricalAntennaRxElement.java
+
+eln.effective_power=Effective power
+
+eln.power_received=Power received
+
+eln.receiving=Receiving
+
+
+
+# ./src/main/java/mods/eln/transparentnode/electricalantennatx/ElectricalAntennaTxDescriptor.java
+
+eln._%s_up_to_%s=Efficiency: %s up to %s
+
+eln.wireless_energy_transmitter.=Wireless energy transmitter.
+
+
+
+# ./src/main/java/mods/eln/transparentnode/electricalantennatx/ElectricalAntennaTxElement.java
+
+eln.efficiency=Efficiency
+
+eln.transmitting=Transmitting
+
+
+
+# ./src/main/java/mods/eln/transparentnode/electricalfurnace/ElectricalFurnaceContainer.java
+
+eln.heating_corp_slot=Heating corp slot
+
+
+
+# ./src/main/java/mods/eln/transparentnode/electricalfurnace/ElectricalFurnaceDescriptor.java
+
+eln.similar_to_a_vanilla_furnace,nbut_heats_with_electricity.=Similar to a vanilla furnace,\nbut heats with electricity.
+
+
+
+# ./src/main/java/mods/eln/transparentnode/electricalfurnace/ElectricalFurnaceElement.java
+
+eln.heating_element=Heating element
+
+
+
+# ./src/main/java/mods/eln/transparentnode/electricalfurnace/ElectricalFurnaceGuiDraw.java
+
+eln.auto_shutdown=Auto shutdown
+
+eln.manual_shutdown=Manual shutdown
+
+eln._%s°c=Set point: %s°C
+
+
+
+# ./src/main/java/mods/eln/transparentnode/electricalmachine/ElectricalMachineDescriptor.java
+
+eln.cost=Cost
+
+eln._percent1v$=Nominal voltage: %1V$
+
+
+
+# ./src/main/java/mods/eln/transparentnode/electricalmachine/ElectricalMachineElement.java
+
+eln.power_provided=Power provided
+
+
+
+# ./src/main/java/mods/eln/transparentnode/heatfurnace/HeatFurnaceContainer.java
+
+eln.combustion_chamber_slot=Combustion chamber slot
+
+eln.fuel_slot=Fuel slot
+
+
+
+# ./src/main/java/mods/eln/transparentnode/heatfurnace/HeatFurnaceElement.java
+
+eln.set_temperature=Set temperature
+
+
+
+# ./src/main/java/mods/eln/transparentnode/heatfurnace/HeatFurnaceGuiDraw.java
+
+eln.control_gauge_at_%s=Control gauge at %s
+
+eln.decline_fuel=Decline fuel
+
+eln.take_fuel=Take fuel
+
+
+
+# ./src/main/java/mods/eln/transparentnode/powercapacitor/PowerCapacitorContainer.java
+
+eln.(increases_maximal_voltage)=(Increases maximal voltage)
+
+
+
+# ./src/main/java/mods/eln/transparentnode/solarpanel/SolarPanelContainer.java
+
+eln.solar_tracker_slot=Solar tracker slot
+
+
+
+# ./src/main/java/mods/eln/transparentnode/solarpanel/SolarPanelDescriptor.java
+
+eln.can_be_geared_towards_the_sun.=Can be geared towards the sun.
+
+eln._%sw=Max. power: %sW
+
+eln._%sv=Max. voltage: %sV
+
+eln.produces_power_from_solar_radiation.=Produces power from solar radiation.
+
+
+
+# ./src/main/java/mods/eln/transparentnode/solarpanel/SolarPanelElement.java
+
+eln.panel_angle=Panel angle
+
+eln.producing_energy=Producing energy
+
+eln.sun_angle=Sun angle
+
+
+
+# ./src/main/java/mods/eln/transparentnode/solarpanel/SolarPannelGuiDraw.java
+
+eln.it_is_night=It is night
+
+eln._%s°=Solar panel angle: %s°
+
+eln._%s°=Sun angle: %s°
+
+
+
+# ./src/main/java/mods/eln/transparentnode/teleporter/TeleporterElement.java
+
+eln.destination=Destination
+
+eln.distance=Distance
+
+eln.required_energy=Required energy
+
+
+
+# ./src/main/java/mods/eln/transparentnode/teleporter/TeleporterGui.java
+
+eln.destination_transporter=Destination transporter
+
+eln.=Power consumption:
+
+eln._%sw=Power consumption: %sW
+
+eln._%sj=Required energy: %sJ
+
+eln.start=Start
+
+eln.transporter_name=Transporter name
+
+
+
+# ./src/main/java/mods/eln/transparentnode/thermaldissipatoractive/ThermalDissipatorActiveDescriptor.java
+
+eln._%sw=Fan cooling power: %sW
+
+eln._%sw=Fan power consumption: %sW
+
+eln._%sv=Fan voltage: %sV
+
+
+
+# ./src/main/java/mods/eln/transparentnode/thermaldissipatoractive/ThermalDissipatorActiveElement.java
+
+
+
+# ./src/main/java/mods/eln/transparentnode/transformer/TransformerContainer.java
+
+eln.casing_slot=Casing slot
+
+
+
+# ./src/main/java/mods/eln/transparentnode/transformer/TransformerDescriptor.java
+
+eln.the_voltage_ratio_is_proportionalnto_the_cable_stacks_count_ratio.=The voltage ratio is proportional\nto the cable stacks count ratio.
+
+eln.transforms_an_input_voltage_tonan_output_voltage.=Transforms an input voltage to\nan output voltage.
+
+
+
+# ./src/main/java/mods/eln/transparentnode/transformer/TransformerElement.java
+
+eln.core_factor=Core factor
+
+eln.isolated=Isolated
+
+eln.ratio=Ratio
+
+
+
+# ./src/main/java/mods/eln/transparentnode/turbine/TurbineDescriptor.java
+
+eln.generates_electricity_using_heat.=Generates electricity using heat.
+
+eln._%s°c=Temperature difference: %s°C
+
+
+
+# ./src/main/java/mods/eln/transparentnode/turbine/TurbineElement.java
+
+eln.nominal=Nominal
+
+
+
+# ./src/main/java/mods/eln/transparentnode/turret/TurretDescriptor.java
+
+eln._cables_can_get_quite_hot!=CAUTION: Cables can get quite hot!
+
+eln._%sw..%skw=Laser charge power: %sW...%skW
+
+eln.scans_for_entities_and_shoots_if_thenentity_matches_the_configurable_filter_criteria.=Scans for entities and shoots if the\nentity matches the configurable filter criteria.
+
+eln._%sw=Standby power: %sW
+
+
+
+# ./src/main/java/mods/eln/transparentnode/turret/TurretElement.java
+
+eln.??=??
+
+eln.charge_level=Charge level
+
+eln.shoot_=Shoot
+
+eln.shoot_everything=Shoot everything
+
+eln.shoot_nothing=Shoot nothing
+
+eln.target=Target
+
+eln.animals=animals
+
+eln.monsters=monsters
+
+eln.players=players
+
+
+
+# ./src/main/java/mods/eln/transparentnode/turret/TurretGui.java
+
+eln.=Attack:
+
+eln.=Do not attack:
+
+eln.=Recharge power:
+
+
+
+# ./src/main/java/mods/eln/transparentnode/waterturbine/WaterTurbineDescriptor.java
+
+eln.generates_energy_using_water_stream.=Generates energy using water stream.
+
+eln.no_place_for_water_turbine!=No place for water turbine!
+
+
+
+# ./src/main/java/mods/eln/transparentnode/waterturbine/WaterTurbineElement.java
+
+
+
+# ./src/main/java/mods/eln/transparentnode/windturbine/WindTurbineDescriptor.java
+
+eln._%s=Front: %s
+
+eln.generates_energy_from_wind.=Generates energy from wind.
+
+eln._%s=Left/Right: %s
+
+eln._%s=Up/Down: %s
+
+eln.=Wind area:
+
+
+
+# ./src/main/java/mods/eln/wiki/Data.java
+
+eln.light=Light
+
+eln.machine=Machine
+
+eln.ore=Ore
+
+eln.portable=Portable
+
+eln.resource=Resource
+
+eln.signal=Signal
+
+eln.thermal=Thermal
+
+eln.upgrade=Upgrade
+
+eln.utilities=Utilities
+
+eln.wiring=Wiring
+
+
+
+# ./src/main/java/mods/eln/wiki/Default.java
+
+eln.previous=Previous
+
+
+
+# ./src/main/java/mods/eln/wiki/ItemDefault.java
+
+eln.=Can be used to craft:
+
+eln.cannot_be_crafted!=Cannot be crafted!
+
+eln.cost_%sj=Cost %sJ
+
+eln.=Created by:
+
+eln.is_not_a_crafting_material!=Is not a crafting material!
+
+eln.=Recipe:
+
+
+
+# Appearing in multiple source files
+
+eln.%s_is_not_in_range!=%s is not in range!
+
+eln.(increases_capacity)=(Increases capacity)
+
+eln.(increases_inductance)=(Increases inductance)
+
+eln._%s°c=Actual: %s°C
+
+eln.battery_level=Battery level
+
+eln.biggest=Biggest
+
+eln.booster_slot=Booster slot
+
+eln.=Can create:
+
+eln._%sf=Capacity: %sF
+
+eln.channel=Channel
+
+eln.charge=Charge
+
+eln.charge_power=Charge power
+
+eln._%sw=Charge power: %sW
+
+eln.closed=Closed
+
+eln.connected=Connected
+
+eln._%sw=Cooling power: %sW
+
+eln.copper_cable_slot=Copper cable slot
+
+eln.current=Current
+
+eln.dielectric_slot=Dielectric slot
+
+eln._%sw=Discharge power: %sW
+
+eln.electrical_cable_slot=Electrical cable slot
+
+eln.energy=Energy
+
+eln.entity_filter_slot=Entity filter slot
+
+eln.external_control=External control
+
+eln.ferromagnetic_core_slot=Ferromagnetic core slot
+
+eln.generated_power=Generated power
+
+eln.generates_heat_when_supplied_with_fuel.=Generates heat when supplied with fuel.
+
+eln.generating=Generating
+
+eln.has_a_signal_output.=Has a signal output.
+
+eln._%sh=Inductance: %sH
+
+eln.input=Input
+
+eln.input_voltage=Input voltage
+
+eln.internal_control=Internal control
+
+eln._%su2126=Internal resistance: %s\u2126
+
+eln.is_off=Is off
+
+eln.is_on=Is on
+
+eln.life=Life
+
+eln._%s°c=Max. temperature: %s°C
+
+eln.measured_valuencorrespondingnto_0percent_output=Measured value\ncorresponding\nto 0% output
+
+eln.measured_valuencorrespondingnto_100percent_output=Measured value\ncorresponding\nto 100% output
+
+eln.no=No
+
+eln.=Nominal:
+
+eln._%sw=Nominal power: %sW
+
+eln.=Nominal usage:
+
+eln._%sv=Nominal voltage: %sV
+
+eln.none=None
+
+eln.not_connected=Not connected
+
+eln.not_enough_space_for_this_block=Not enough space for this block
+
+eln.off=OFF
+
+eln.on=ON
+
+eln.off=Off
+
+eln.on=On
+
+eln.open=Open
+
+eln.output_voltage=Output voltage
+
+eln.portable_battery_slot=Portable battery slot
+
+eln.position=Position
+
+eln.power=Power
+
+eln._%sw=Power: %sW
+
+eln.power_consumption=Power consumption
+
+eln.powered_by_lamp_supply=Powered by Lamp Supply
+
+eln.powered_by_cable=Powered by cable
+
+eln.produced_power=Produced power
+
+eln._%s_blocks=Range: %s blocks
+
+eln.redstone_slot=Redstone slot
+
+eln.redstone_value=Redstone value
+
+eln.regulator_slot=Regulator slot
+
+eln.reset=Reset
+
+eln.resistance=Resistance
+
+eln._%su2126=Resistance: %s\u2126
+
+eln.smallest=Smallest
+
+eln.specify_the_channel=Specify the channel
+
+eln.specify_the_supply_channel=Specify the supply channel
+
+eln._%sj_(%s)=Stored energy: %sJ (%s)
+
+eln.temperature=Temperature
+
+eln._%s°c=Temperature: %s°C
+
+eln.temperature_gauge=Temperature gauge
+
+eln.thermal_isolator_slot=Thermal isolator slot
+
+eln.thermal_power=Thermal power
+
+eln.toggle=Toggle
+
+eln.toggle_switch=Toggle switch
+
+eln.toggles_the_output_each_timenan_emitter's_value_rises.nuseful_to_allow_multiple_buttonsnto_control_the_same_light.=Toggles the output each time\nan emitter's value rises.\nUseful to allow multiple buttons\nto control the same light.
+
+eln.used_to_cool_down_turbines.=Used to cool down turbines.
+
+eln.uses_the_biggestnvalue_on_the_channel.=Uses the biggest\nvalue on the channel.
+
+eln.uses_the_smallestnvalue_on_the_channel.=Uses the smallest\nvalue on the channel.
+
+eln.validate=Validate
+
+eln.voltage=Voltage
+
+eln._%sv=Voltage: %sV
+
+eln.voltage_drop=Voltage drop
+
+eln.voltages=Voltages
+
+eln.yes=Yes
+
+eln.you_can't_place_this_block_at_this_side=You can't place this block at this side
+
+eln._= O:
+
+eln.value_for_100_percent_outputn(high_setpoint)=Value for 100% output\n(High setpoint)
+
+eln.value_for_0_percent_outputn(low_setpoint)=Value for 0% output\n(Low setpoint)
+
+eln.voltage_for_100_percent_outputn(high_setpoint)=Voltage for 100% output\n(High setpoint)
+
+eln.voltage_for_0_percent_outputn(low_setpoint)=Voltage for 0% output\n(Low setpoint)
+
+eln.temperature_for_100_percent_outputn(high_setpoint)=Temperature for 100% output\n(High setpoint)
+
+eln.temperature_for_0_percent_outputn(low_setpoint)=Temperature for 0% output\n(Low setpoint)
+
+eln.rads_s_correspondingnto_0_percent_output=Rads/s corresponding\nto 0% output
+
+eln.rads_s_correspondingnto_100_percent_output=Rads/s corresponding\nto 100% output
+
+eln.percent_[-]_percent=Percent [-]%
+

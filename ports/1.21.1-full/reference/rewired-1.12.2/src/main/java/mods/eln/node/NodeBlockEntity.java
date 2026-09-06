@@ -1,0 +1,364 @@
+package mods.eln.node;
+
+
+import mods.eln.Eln;
+import mods.eln.cable.CableRenderDescriptor;
+import mods.eln.misc.*;
+import mods.eln.server.DelayedBlockRemove;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.Container;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SPacketUpdateTileEntity;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ITickable;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.EnumSkyBlock;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+
+import javax.annotation.Nullable;
+import java.io.*;
+import java.util.LinkedList;
+
+
+public abstract class NodeBlockEntity extends TileEntity implements ITileEntitySpawnClient, INodeEntity, ITickable {
+
+    public static final LinkedList<NodeBlockEntity> clientList = new LinkedList<NodeBlockEntity>();
+
+
+    public NodeBlock getBlock() {
+        return (NodeBlock) getBlockType();
+    }
+
+    boolean redstone = false;
+    int lastLight = 0xFF;
+    boolean firstUnserialize = true;
+    boolean firstUpdate = true;
+
+    @Override
+    public void update() {
+        if (firstUpdate) {
+            firstUpdate = false;
+            if (!world.isRemote) {
+                // Reset light map on first update to fix reload issues
+                world.setLightFor(EnumSkyBlock.BLOCK, pos, 0);
+                Node node = getNode();
+                if (node != null) {
+                    node.forceLightValueUpdate();
+                }
+            } else {
+                clientList.add(this);
+            }
+        }
+    }
+
+    @Override
+    public void serverPublishUnserialize(DataInputStream stream) {
+
+        int light = 0;
+        try {
+            if (firstUnserialize) {
+                firstUnserialize = false;
+            }
+            Byte b = stream.readByte();
+            light = b & 0xF;
+            boolean newRedstone = (b & 0x10) != 0;
+            if (redstone != newRedstone) {
+                redstone = newRedstone;
+                world.notifyNeighborsRespectDebug(getPos(), getBlockType(), true);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if (lastLight != light) {
+            lastLight = light;
+            world.checkLightFor(EnumSkyBlock.BLOCK, getPos());
+        }
+
+        // Always notify neighbors so adjacent cables redraw their connections
+        Utils.notifyNeighbor(this);
+    }
+
+    @Override
+    public void serverPacketUnserialize(DataInputStream stream) {
+
+    }
+
+
+    //abstract public Node newNode();
+    //abstract public Node newNode(Direction front,EntityLiving entityLiving,int metadata);
+
+    public abstract int isProvidingWeakPower(Direction side);
+    //{
+    //if(world.isRemote) return 0;
+    //return getNode().isProvidingWeakPower(side);
+    //}
+
+    Node node = null;
+
+    @Override
+    public Container newContainer(Direction side, EntityPlayer player) {
+        return null;
+    }
+
+    @Override
+    public GuiScreen newGuiDraw(Direction side, EntityPlayer player) {
+        return null;
+    }
+
+
+    public NodeBlockEntity() {
+    }
+
+
+    @SideOnly(Side.CLIENT)
+    public AxisAlignedBB getRenderBoundingBox() {
+        if (cameraDrawOptimisation()) {
+            // TODO(1.10): This may not be correct.
+            return new AxisAlignedBB(pos);
+        } else {
+            return INFINITE_EXTENT_AABB;
+        }
+    }
+
+    public boolean cameraDrawOptimisation() {
+        return true;
+    }
+
+    public int getLightValue() {
+        if (world.isRemote) {
+            if (lastLight == 0xFF) {
+                return 0;
+            }
+            return lastLight;
+        } else {
+            Node node = getNode();
+            if (node == null) return 0;
+            return getNode().getLightValue();
+        }
+    }
+
+    /**
+     * Reads a tile entity fromFacing NBT.
+     */
+    public void readFromNBT(NBTTagCompound nbt) {
+        super.readFromNBT(nbt);
+    }
+
+    /**
+     * Writes a tile entity to NBT.
+     */
+    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+        return super.writeToNBT(nbt);
+    }
+
+
+    //max draw distance
+    @Override
+    @SideOnly(Side.CLIENT)
+    public double getMaxRenderDistanceSquared() {
+        return 4096.0 * (4) * (4);
+    }
+
+
+    void onBlockPlacedBy(Direction front, EntityLivingBase entityLiving, IBlockState state) {
+
+    }
+
+
+    public void onBlockAdded() {
+        if (!world.isRemote && getNode() == null) {
+            world.setBlockToAir(pos);
+        }
+    }
+
+    public void onBreakBlock() {
+        if (!world.isRemote) {
+            if (getNode() == null) return;
+            getNode().onBreakBlock();
+        }
+    }
+
+    public void onChunkUnload() {
+        if (world.isRemote) {
+            destructor();
+        }
+    }
+
+    //client only
+    public void destructor() {
+        clientList.remove(this);
+    }
+
+    @Override
+    public void invalidate() {
+
+        if (world.isRemote) {
+            destructor();
+        }
+        super.invalidate();
+    }
+
+    public boolean onBlockActivated(EntityPlayer entityPlayer, Direction side, float vx, float vy, float vz) {
+        if (!world.isRemote) {
+            if (getNode() == null) return false;
+            return getNode().onBlockActivated(entityPlayer, side, vx, vy, vz);
+        }
+        // On client side, always return true to prevent block use (like placing blocks)
+        return true;
+    }
+
+    public void onNeighborBlockChange() {
+        if (!world.isRemote) {
+            if (getNode() == null) return;
+            getNode().onNeighborBlockChange();
+        }
+    }
+
+
+    public Node getNode() {
+        if (world.isRemote) {
+            Utils.fatal();
+            return null;
+        }
+        if (this.world == null) return null;
+        if (node == null) {
+            NodeBase nodeFromCoordinate = NodeManager.instance.getNodeFromCoordinate(new Coordinate(pos, world));
+            if (nodeFromCoordinate instanceof Node) {
+                node = (Node) nodeFromCoordinate;
+            } else {
+                Utils.println("ASSERT WRONG TYPE public Node getNode " + new Coordinate(pos, world));
+            }
+            // Don't add to DelayedBlockRemove if NodeManager just hasn't loaded yet
+            // Only add if NodeManager exists but doesn't have this node
+            if (node == null && NodeManager.instance != null && NodeManager.instance.getNodes().size() > 0) {
+                DelayedBlockRemove.add(new Coordinate(pos, this.world));
+            }
+        }
+        return node;
+    }
+
+
+    public static NodeBlockEntity getEntity(BlockPos pos) {
+        TileEntity entity;
+        if ((entity = Minecraft.getMinecraft().world.getTileEntity(pos)) != null) {
+            if (entity instanceof NodeBlockEntity) {
+                return (NodeBlockEntity) entity;
+            }
+        }
+        return null;
+    }
+
+    // TODO(1.10): Packets are probably still broken somehow!
+    @Nullable
+    @Override
+    public SPacketUpdateTileEntity getUpdatePacket() {
+        Node node = getNode();
+        if (node == null) {
+            Utils.println("ASSERT NULL NODE public Packet getDescriptionPacket() nodeblock entity at " + pos);
+            // Return a packet anyway to sync the TileEntity existence
+            return new SPacketUpdateTileEntity(getPos(), getBlockMetadata(), new NBTTagCompound());
+        }
+
+        NBTTagCompound tagCompound = new NBTTagCompound();
+        tagCompound.setByteArray("eln", node.getPublishPacket().toByteArray());
+        return new SPacketUpdateTileEntity(
+            getPos(),
+            getBlockMetadata(),
+            tagCompound
+        );
+    }
+
+    @Override
+    public NBTTagCompound getUpdateTag() {
+        NBTTagCompound tag = super.getUpdateTag();
+        Node node = getNode();
+        if (node != null) {
+            tag.setByteArray("eln", node.getPublishPacket().toByteArray());
+        }
+        return tag;
+    }
+
+    @Override
+    public void handleUpdateTag(NBTTagCompound tag) {
+        super.handleUpdateTag(tag);
+        if (tag.hasKey("eln")) {
+            byte[] bytes = tag.getByteArray("eln");
+            if (bytes.length > 0 && world.isRemote) {
+                Minecraft.getMinecraft().addScheduledTask(() -> {
+                    DataInputStream dataInputStream = new DataInputStream(new ByteArrayInputStream(bytes));
+                    Eln.packetHandler.packetRx(dataInputStream, null, Minecraft.getMinecraft().player);
+                });
+            } else if (bytes.length > 0) {
+                DataInputStream dataInputStream = new DataInputStream(new ByteArrayInputStream(bytes));
+                Eln.packetHandler.packetRx(dataInputStream, null, null);
+            }
+        }
+    }
+
+    @Override
+    public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
+        if (world.isRemote) {
+            NBTTagCompound tag = pkt.getNbtCompound();
+            if (tag.hasKey("eln")) {
+                byte[] bytes = tag.getByteArray("eln");
+                if (bytes.length > 0) {
+                    Minecraft.getMinecraft().addScheduledTask(() -> {
+                        DataInputStream dataInputStream = new DataInputStream(new ByteArrayInputStream(bytes));
+                        Eln.packetHandler.packetRx(dataInputStream, net, Minecraft.getMinecraft().player);
+                    });
+                }
+            }
+        }
+    }
+
+    public void preparePacketForServer(DataOutputStream stream) {
+        try {
+            stream.writeByte(Eln.packetPublishForNode);
+
+            stream.writeInt(pos.getX());
+            stream.writeInt(pos.getY());
+            stream.writeInt(pos.getZ());
+
+            stream.writeByte(world.provider.getDimension());
+
+            stream.writeUTF(getNodeUuid());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendPacketToServer(ByteArrayOutputStream bos) {
+        UtilsClient.sendPacketToServer(bos);
+    }
+
+
+    public CableRenderDescriptor getCableRender(Direction side, LRDU lrdu) {
+        return null;
+    }
+
+    public int getCableDry(Direction side, LRDU lrdu) {
+        return 0;
+    }
+
+    public boolean canConnectRedstone(Direction xn) {
+        if (world.isRemote)
+            return redstone;
+        else {
+            if (getNode() == null) return false;
+            return getNode().canConnectRedstone();
+        }
+    }
+
+    public void clientRefresh(float deltaT) {
+
+    }
+}
