@@ -1,25 +1,29 @@
-# Running the 1.12.2 client and server headlessly
+# Running the 1.21.1 client and server headlessly
 
-Both run tasks work without a desktop, which is what makes phases 2 and 3 verifiable in CI or
-over ssh. `source tools/port/env.sh` first (Gradle needs JDK 25 for RetroFuturaGradle 2.x).
+Both run tasks work without a desktop, which is what makes the port verifiable in CI or over
+ssh. `source tools/port/env.sh` first (JDK 21). ModDevGradle gives every run type its own
+directory under `run/` (`run/server`, `run/client`, `run/data`, `run/gameTestServer`).
 
 ## Dedicated server
 
-    mkdir -p run && echo eula=true > run/eula.txt
-    printf 'online-mode=false\nlevel-type=FLAT\nmax-tick-time=-1\n' > run/server.properties
-    ./gradlew runServer
+    mkdir -p run/server && echo eula=true > run/server/eula.txt
+    printf 'online-mode=false\nmax-tick-time=-1\n' > run/server/server.properties
+    ./gradlew runServer -PdumpRegistry -PstopAfterStart=40
 
-Boots to `Done (…)`. `-PdumpRegistry` additionally logs every block and item Electrical Age
-registers (`REGDUMP block eln:ore 16` / `REGDUMP item eln:copper_sword`) — that list is what the
-model assets have to cover.
+`-PstopAfterStart=<ticks>` (system property `eln.stopAfterStart`) halts the server that many
+ticks after `ServerStartedEvent`, so the task ends and its exit code means something.
+`-PdumpRegistry` logs every block and item Electrical Age registers (`REGDUMP block eln:copper_ore`)
+- that list is what the generated models have to cover.
+
+A flat world starts fastest; 1.21 wants the layers spelled out in `generator-settings`:
+
+    level-type=minecraft\:flat
+    generator-settings={"layers":[{"block":"minecraft:bedrock","height":1},{"block":"minecraft:stone","height":63}],"biome":"minecraft:plains"}
 
 ## Client
 
-LWJGL 2.9.4 enumerates display modes through `xrandr`, and Xvfb does not give it anything usable
-(`ArrayIndexOutOfBoundsException` in `XRandR.findPrimary`). An Xorg server on the dummy driver
-does, as long as the *current* mode has a plain `WxH` name — LWJGL's parser matches
-`^(\d+)x(\d+)$` and silently drops a mode called `1280x1024_60.00`, which leaves it with no
-screens at all. Mesa's llvmpipe then provides GL 4.5.
+LWJGL 3 / GLFW needs an X display and a GL 3.2 core context. An Xorg server on the dummy driver
+plus Mesa's llvmpipe (GL 4.5) is enough:
 
     apt-get install -y --no-install-recommends xserver-xorg-video-dummy xserver-xorg-core x11-xserver-utils
 
@@ -50,54 +54,32 @@ screens at all. Mesa's llvmpipe then provides GL 4.5.
 Then:
 
     Xorg :99 -config /tmp/dummy.conf -logfile /tmp/xorg.log -noreset &
-    DISPLAY=:99 xrandr --noprimary          # LWJGL's parser is happier without it
-    DISPLAY=:99 ./gradlew runClient
+    printf 'onboardAccessibility:false\nnarrator:0\n' > run/client/options.txt
+    DISPLAY=:99 ./gradlew runClient -PstopAtTitle
 
 `build.gradle.kts` forwards `DISPLAY` into the run task, because the Gradle daemon is usually
-started without it and `JavaExec` inherits the daemon's environment.
-
-The client reaches the main menu. There is no audio device, so `SoundManager` logs
-"Unable to initialize OpenAL" and carries on; everything else is real.
+started without it. The `options.txt` matters: a fresh profile stops on the accessibility
+onboarding screen, which is not the title screen, and the run never ends. `-PstopAtTitle`
+(`eln.stopAtTitle`) exits the game once the title screen is up *and* the loading overlay is gone,
+i.e. after models are baked. There is no audio device, so `SoundEngine` logs "Failed to open
+OpenAL device" and carries on; everything else is real.
 
 ## What to grep for
 
-    grep -c 'Exception loading model\|Exception loading blockstate' <log>   # models/blockstates
-    grep -o 'FileNotFoundException: eln:[a-z0-9_./-]*' <log> | sort -u      # which file is missing
-    grep 'does not exist, cannot add it to event' <log>                     # sounds.json paths
-    ls -t run/crash-reports/ | head -1                                      # hard crash
+    grep -c 'Missing textures in model' <log>          # atlas / model texture problems
+    grep 'Unable to load model\|Exception loading' <log>  # model JSON problems
+    grep 'REGDUMP' <log>                                 # what was registered
+    ls -t run/client/crash-reports/ | head -1            # hard crash
 
-All four are zero on `port/1.12.2`.
+All zero on `port/1.21.1` for the registered content.
 
 Two gotchas worth remembering, both silent:
 
-- In a **blockstate** the `model` value is relative to `models/block/`, so it is written
-  `eln:ore_copperore`. In a **model** file the `parent` is relative to `models/`, so the same
-  model is `eln:block/ore_copperore`.
-- Missing models are logged, not fatal. A missing *sound file* is only a warning too. A tooltip
-  that dereferences `Minecraft.getMinecraft().player` **is** fatal: 1.12.2 indexes the creative
-  search tree during startup, before any player exists.
-
-## In-world smoke test
-
-`/setblock` cannot place an Electrical Age block: the node behind the tile entity is created by the
-item's use path, and a tile entity without a node is removed on the next tick. `mods.eln.devtest.
-SmokeTest` drives the real path with a Forge `FakePlayer`, and runs only under `-Deln.smokeTest`.
-
-    rm -rf run/world
-    ./gradlew runServer -PsmokeTest=place      # build the circuit, tick it, read the meters
-    ./gradlew runServer -PsmokeTest=verify     # same world, after a real save + restart
-
-It builds `Electrical Source (50 V) — cable — cable — Creative Power Resistor (100 Ω) — Ground
-Cable` on a stone platform at (512, 64, 512) and asserts current is flowing. Expected output:
-
-    SMOKE source meter: U 50.0V  I 500mA  P 25.0W
-    SMOKE load   meter: U -50.0V  I 500mA  P 25.0W   100Ω
-    SMOKE PASS nodes present, energised=true current flowing=true
-
-Two things that look like failures but are not:
-
-- A two-terminal element with a floating far side reads `U 0V` — its meter shows the difference
-  across its own terminals. The circuit needs the Ground Cable or nothing flows.
-- The front of a two-terminal element comes from the placing player's look direction, and its
-  terminals sit on `front.left()`/`front.right()`. A `FakePlayer` looks at yaw 0, so the resistor
-  is placed at yaw 90 to turn its terminals along the run.
+- Since 1.19.3 the block/item atlas only stitches the directories listed in
+  `atlases/blocks.json` (`block/` and `item/` by default). The mod keeps its 1.12 layout
+  (`textures/items/`, `textures/blocks/`, `textures/voltages/`), so it ships
+  `assets/minecraft/atlases/blocks.json` adding those sources. The file must be in the
+  `minecraft` namespace: atlas definitions merge per atlas id, and `eln:blocks` would be a
+  different, unused atlas.
+- `Item`/`Block` constructors throw "Registry is already frozen" outside `RegisterEvent`.
+  Anything that builds one in the mod constructor is a bug; stage it in `ElnRegistry`.
