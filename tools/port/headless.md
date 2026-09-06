@@ -105,7 +105,7 @@ the shaft line twice a second apart (`smoke-mech`, `smoke-mech-spin`: the client
 must have moved on, which is the published speed integrated by the renderer), the tachometer's
 screen, the large machines, the gallery, a third-person view with items on the floor, the macerator
 in hand from the front and through the player's eyes, a cable in hand, the resistor GUI, the
-macerator's container GUI, the inventory and two Electrical Age creative tabs into
+macerator's container GUI, the inventory and all nine Electrical Age creative tabs into
 `run/client/screenshots/`:
 
     cp -r run/server/world run/client/saves/smoke
@@ -118,7 +118,8 @@ daemon and the Kotlin compile daemon together push it into swap.
 
 ## The same on GitHub Actions
 
-`.github/workflows/ci.yml` runs all of it on every push and pull request, in three jobs on
+`.github/workflows/ci.yml` runs all of it on every push and pull request, with build, benchmark,
+and two smoke jobs (standalone and with Create) on
 `ubuntu-latest` with Temurin 21 and `gradle/actions/setup-gradle` (the NeoForge, Parchment and
 dependency caches are ~1 GB cold, cached between runs):
 
@@ -133,6 +134,11 @@ dependency caches are ~1 GB cold, cached between runs):
   The X server is checked (`xset q`, `glxinfo -B`) before the game starts: a client without a
   display loops on NeoForge's early-window prompt instead of failing, and the job would run to
   its timeout.
+
+The smoke artifacts are `smoke-runs-standalone` and `smoke-runs-create`. The Create variant also
+runs adapter placement and saved-world restart checks, then screenshots both adapter tiers and
+their controls. Use `WITH_CREATE=1 tools/port/smoke.sh` to run that variant locally. Publication
+of the rolling `latest-1.21.1` JAR waits for build, benchmarks, and both smoke variants to pass.
 
 `tools/port/env.sh` leaves a `JAVA_HOME`/`GRADLE_USER_HOME` that is already set alone, which is
 what lets `smoke.sh` run unchanged under `setup-java`. Runner budget: the whole suite takes

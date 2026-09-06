@@ -76,6 +76,8 @@ Power and torque are bounded to prevent extreme configuration values destabilizi
 installing Create. `./gradlew runServer -PwithCreate -PcreateSmoke=place` builds two real Create
 networks driving ELN joints, flywheels, and loaded generators, then tests overload/reset behavior.
 Run `-PcreateSmoke=verify` against that saved world to check a restart.
+The input motors intentionally sit across a chunk boundary from the adapters, so each run also
+checks that shutdown and saving finish without reviving unloaded Create network members.
 
 CI runs the entire server/restart/client smoke suite both with and without Create. The Create run
 also captures both adapters and their configuration screens. The release job waits for both runs.

@@ -132,7 +132,10 @@ class CreateAdapterEntity(type: BlockEntityType<*>, pos: BlockPos, state: BlockS
     private fun detachOutput() {
         if (level?.isClientSide == false && !disconnecting) {
             savedRads = outputSpeed
-            disconnecting = true; reserve(0.0); shaft?.disconnectShaft(this); shaft = null
+            // Let Create's own removal/unload lifecycle retire its stress entry. Recalculating
+            // stress here queries other members with Level#getBlockEntity and can reload chunks
+            // which already unloaded (especially the input motor across a chunk boundary).
+            disconnecting = true; shaft?.disconnectShaft(this); shaft = null
         }
     }
     override fun write(tag: CompoundTag, registries: HolderLookup.Provider, clientPacket: Boolean) {
