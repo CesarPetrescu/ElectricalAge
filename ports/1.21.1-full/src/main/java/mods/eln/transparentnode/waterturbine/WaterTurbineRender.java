@@ -9,8 +9,8 @@ import mods.eln.node.transparent.TransparentNodeElementInventory;
 import mods.eln.node.transparent.TransparentNodeElementRender;
 import mods.eln.node.transparent.TransparentNodeEntity;
 import mods.eln.sound.SoundCommand;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.entity.player.Player;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -76,7 +76,7 @@ public class WaterTurbineRender extends TransparentNodeElementRender {
     private float powerFactor;
 
     @Override
-    public GuiScreen newGuiDraw(Direction side, EntityPlayer player) {
+    public Screen newGuiDraw(Direction side, Player player) {
 
         return new WaterTurbineGuiDraw(player, inventory, this);
     }

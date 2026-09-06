@@ -1,6 +1,6 @@
 package cofh.api.energy;
 
-import net.minecraft.util.EnumFacing;
+import net.minecraft.core.Direction;
 
 /**
  * Implement this interface on Tile Entities which should provide energy, generally storing it in one or more internal {@link IEnergyStorage} objects.
@@ -19,6 +19,6 @@ public interface IEnergyProvider extends IEnergyHandler {
 	 * @param simulate   If TRUE, the extraction will only be simulated.
 	 * @return Amount of energy that was (or would have been, if simulated) extracted.
 	 */
-	int extractEnergy(EnumFacing from, int maxExtract, boolean simulate);
+	int extractEnergy(Direction from, int maxExtract, boolean simulate);
 
 }

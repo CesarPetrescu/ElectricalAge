@@ -9,15 +9,15 @@ import mods.eln.node.INodeEntity;
 import mods.eln.node.NodeEntityClientSender;
 import mods.eln.node.NodeManager;
 import mods.eln.server.DelayedBlockRemove;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Container;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SPacketUpdateTileEntity;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.util.ITickable;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -27,7 +27,7 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 
-public abstract class SimpleNodeEntity extends TileEntity implements INodeEntity, ITickable {
+public abstract class SimpleNodeEntity extends BlockEntity implements INodeEntity, ITickable {
 
     private SimpleNode node;
 
@@ -83,7 +83,7 @@ public abstract class SimpleNodeEntity extends TileEntity implements INodeEntity
         super.invalidate();
     }
 
-    public boolean onBlockActivated(EntityPlayer entityPlayer, Direction side, float vx, float vy, float vz) {
+    public boolean onBlockActivated(Player entityPlayer, Direction side, float vx, float vy, float vz) {
         if (!world.isRemote) {
             if (getNode() == null) return false;
             getNode().onBlockActivated(entityPlayer, side, vx, vy, vz);
@@ -114,15 +114,15 @@ public abstract class SimpleNodeEntity extends TileEntity implements INodeEntity
     // TODO(1.10): Packets are probably still broken somehow!
     @Nullable
     @Override
-    public SPacketUpdateTileEntity getUpdatePacket() {
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
         SimpleNode node = getNode();
         if (node == null) {
             Utils.println("ASSERT NULL NODE public Packet getDescriptionPacket() nodeblock entity");
             return null;
         }
-        NBTTagCompound tagCompound = new NBTTagCompound();
+        CompoundTag tagCompound = new CompoundTag();
         tagCompound.setByteArray("eln", node.getPublishPacket().toByteArray());
-        return new SPacketUpdateTileEntity(
+        return new ClientboundBlockEntityDataPacket(
             getPos(),
             getBlockMetadata(),
             tagCompound
@@ -130,7 +130,7 @@ public abstract class SimpleNodeEntity extends TileEntity implements INodeEntity
     }
 
     @Override
-    public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
         assert(world.isRemote);
         byte[] bytes = pkt.getNbtCompound().getByteArray("eln");
         DataInputStream dataInputStream = new DataInputStream(new ByteArrayInputStream(bytes));
@@ -141,7 +141,7 @@ public abstract class SimpleNodeEntity extends TileEntity implements INodeEntity
     public void serverPublishUnserialize(DataInputStream stream) {
         try {
             if (front != (front = Direction.fromInt(stream.readByte()))) {
-                IBlockState state = this.world.getBlockState(this.pos);
+                BlockState state = this.world.getBlockState(this.pos);
                 world.notifyBlockUpdate(getPos(), state, state, 0);
             }
         } catch (IOException e) {
@@ -158,13 +158,13 @@ public abstract class SimpleNodeEntity extends TileEntity implements INodeEntity
 
     //*********************** GUI ***************************
     @Override
-    public Container newContainer(Direction side, EntityPlayer player) {
+    public AbstractContainerMenu newContainer(Direction side, Player player) {
         return null;
     }
 
     @Override
     @SideOnly(Side.CLIENT)
-    public GuiScreen newGuiDraw(Direction side, EntityPlayer player) {
+    public Screen newGuiDraw(Direction side, Player player) {
         return null;
     }
 }

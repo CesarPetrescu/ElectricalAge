@@ -4,8 +4,7 @@ import mods.eln.misc.Direction;
 import mods.eln.node.transparent.TransparentNodeElement;
 import mods.eln.node.transparent.TransparentNodeElementInventory;
 import mods.eln.node.transparent.TransparentNodeElementRender;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.world.item.ItemStack;
 
 public class ElectricalFurnaceInventory extends TransparentNodeElementInventory {
 
@@ -18,7 +17,7 @@ public class ElectricalFurnaceInventory extends TransparentNodeElementInventory 
     }
 
     @Override
-    public int[] getSlotsForFace(EnumFacing side) {
+    public int[] getSlotsForFace(net.minecraft.core.Direction side) {
         switch (Direction.fromFacing(side)) {
             case YP:
                 return new int[]{ElectricalFurnaceElement.inSlotId};
@@ -29,7 +28,7 @@ public class ElectricalFurnaceInventory extends TransparentNodeElementInventory 
     }
 
     @Override
-    public boolean canInsertItem(int slot, ItemStack stack, EnumFacing side) {
+    public boolean canInsertItem(int slot, ItemStack stack, net.minecraft.core.Direction side) {
         if (slot == ElectricalFurnaceElement.inSlotId) {
             return !net.minecraft.item.crafting.FurnaceRecipes.instance().getSmeltingResult(stack).isEmpty();
         }
@@ -48,7 +47,7 @@ public class ElectricalFurnaceInventory extends TransparentNodeElementInventory 
     }
 
     @Override
-    public boolean canExtractItem(int var1, ItemStack var2, EnumFacing side) {
+    public boolean canExtractItem(int var1, ItemStack var2, net.minecraft.core.Direction side) {
         switch (Direction.fromFacing(side)) {
             case YP:
                 return false;

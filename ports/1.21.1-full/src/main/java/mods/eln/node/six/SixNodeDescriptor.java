@@ -3,7 +3,7 @@ package mods.eln.node.six;
 import mods.eln.generic.GenericItemBlockUsingDamageDescriptor;
 import mods.eln.ghost.GhostGroup;
 import mods.eln.misc.*;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.world.entity.player.Player;
 
 import static mods.eln.i18n.I18N.tr;
 
@@ -54,11 +54,11 @@ public class SixNodeDescriptor extends GenericItemBlockUsingDamageDescriptor {
         return false;
     }
 
-    public boolean canBePlacedOnSide(EntityPlayer player, Coordinate c, Direction side) {
+    public boolean canBePlacedOnSide(Player player, Coordinate c, Direction side) {
         return canBePlacedOnSide(player, side);
     }
 
-    public boolean canBePlacedOnSide(EntityPlayer player, Direction side) {
+    public boolean canBePlacedOnSide(Player player, Direction side) {
         if (placeDirection != null) {
             for (Direction d : placeDirection) {
                 if (d == side)
@@ -118,7 +118,7 @@ public class SixNodeDescriptor extends GenericItemBlockUsingDamageDescriptor {
         return null;
     }
 
-    public LRDU getFrontFromPlace(Direction side, EntityPlayer player) {
+    public LRDU getFrontFromPlace(Direction side, Player player) {
         switch (side) {
             case YN:
             case YP:

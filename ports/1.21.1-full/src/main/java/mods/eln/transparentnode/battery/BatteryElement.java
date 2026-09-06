@@ -26,10 +26,10 @@ import mods.eln.sim.nbt.NbtThermalLoad;
 import mods.eln.sim.process.destruct.ThermalLoadWatchDog;
 import mods.eln.sim.process.destruct.WorldExplosion;
 import mods.eln.sim.process.heater.ElectricalLoadHeatThermalLoad;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.Container;
+import net.minecraft.nbt.CompoundTag;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -108,7 +108,7 @@ public class BatteryElement extends TransparentNodeElement {
     }
 
     @Override
-    public IInventory getInventory() {
+    public Container getInventory() {
         return inventory.getInventory();
     }
 
@@ -193,24 +193,24 @@ public class BatteryElement extends TransparentNodeElement {
     }
 
     @Override
-    public void inventoryChange(IInventory inventory) {
+    public void inventoryChange(Container inventory) {
         //	initPhysicalValue();
     }
 
     @Override
-    public boolean onBlockActivated(EntityPlayer entityPlayer, Direction side, float vx, float vy, float vz) {
+    public boolean onBlockActivated(Player entityPlayer, Direction side, float vx, float vy, float vz) {
         return inventory.take(entityPlayer.getHeldItemMainhand());
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+    public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
         //inventory.writeToNBT(nbt, str + "inv");
         return nbt;
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt) {
+    public void readFromNBT(CompoundTag nbt) {
         super.readFromNBT(nbt);
         fromNBT = true;
         //inventory.readFromNBT(nbt, str + "inv");
@@ -222,7 +222,7 @@ public class BatteryElement extends TransparentNodeElement {
     }
 
     @Override
-    public Container newContainer(Direction side, EntityPlayer player) {
+    public AbstractContainerMenu newContainer(Direction side, Player player) {
         return new BatteryContainer(this.node, player, getInventory());
     }
 
@@ -236,7 +236,7 @@ public class BatteryElement extends TransparentNodeElement {
     }
 
     @Override
-    public void readItemStackNBT(NBTTagCompound nbt) {
+    public void readItemStackNBT(CompoundTag nbt) {
         super.readItemStackNBT(nbt);
 
         if (nbt == null) nbt = descriptor.getDefaultNBT();
@@ -247,8 +247,8 @@ public class BatteryElement extends TransparentNodeElement {
     }
 
     @Override
-    public NBTTagCompound getItemStackNBT() {
-        NBTTagCompound nbt = new NBTTagCompound();
+    public CompoundTag getItemStackNBT() {
+        CompoundTag nbt = new CompoundTag();
         nbt.setDouble("charge", batteryProcess.getCharge());
         nbt.setDouble("life", batteryProcess.life);
         return nbt;

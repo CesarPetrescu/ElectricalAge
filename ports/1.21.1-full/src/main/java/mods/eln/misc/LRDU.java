@@ -1,7 +1,7 @@
 package mods.eln.misc;
 
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.phys.Vec3;
 import org.lwjgl.opengl.GL11;
 
 import java.io.DataInputStream;
@@ -189,7 +189,7 @@ public enum LRDU {
         }
     }
 
-    public Vec3d rotateOnXnLeft(Vec3d v) {
+    public Vec3 rotateOnXnLeft(Vec3 v) {
         double x = v.x;
         double y = v.y;
         double z = v.z;
@@ -197,11 +197,11 @@ public enum LRDU {
             case Left:
                 return v;
             case Up:
-                return new Vec3d(x, -z, y);
+                return new Vec3(x, -z, y);
             case Right:
-                return new Vec3d(x, -y, -z);
+                return new Vec3(x, -y, -z);
             case Down:
-                return new Vec3d(x, z, -y);
+                return new Vec3(x, z, -y);
             default:
                 return v;
         }
@@ -235,12 +235,12 @@ public enum LRDU {
         return Left;
     }
 
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt, String name) {
+    public CompoundTag writeToNBT(CompoundTag nbt, String name) {
         nbt.setByte(name, (byte) toInt());
         return nbt;
     }
 
-    static public LRDU readFromNBT(NBTTagCompound nbt, String name) {
+    static public LRDU readFromNBT(CompoundTag nbt, String name) {
         return LRDU.fromInt(nbt.getByte(name));
     }
 

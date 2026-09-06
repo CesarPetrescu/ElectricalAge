@@ -7,7 +7,7 @@ import mods.eln.misc.*
 import mods.eln.node.transparent.*
 import mods.eln.sim.process.destruct.WorldExplosion
 import mods.eln.sound.LoopedSound
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.nbt.CompoundTag
 import org.lwjgl.opengl.GL11
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -191,12 +191,12 @@ abstract class SimpleShaftElement(node: TransparentNode, desc_: TransparentNodeD
         node.lrduCubeMask.getTranslate(front.down()).serialize(stream)
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound? {
+    override fun writeToNBT(nbt: CompoundTag): CompoundTag? {
         super.writeToNBT(nbt)
         return shaft.writeToNBT(nbt, "shaft")
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
         return shaft.readFromNBT(nbt, "shaft")
     }

@@ -2,11 +2,11 @@ package mods.eln.item.electricalitem
 
 import mods.eln.Eln
 import mods.eln.generic.GenericItemUsingDamageDescriptor
-import net.minecraft.entity.Entity
-import net.minecraft.item.ItemStack
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth
+import net.minecraft.world.level.Level
 
 abstract class LampItem(name: String) : GenericItemUsingDamageDescriptor(name) {
 
@@ -16,7 +16,7 @@ abstract class LampItem(name: String) : GenericItemUsingDamageDescriptor(name) {
 
     internal abstract fun getLight(stack: ItemStack): Int
 
-    override fun onUpdate(stack: ItemStack, world: World, entity: Entity, par4: Int, par5: Boolean) {
+    override fun onUpdate(stack: ItemStack, world: Level, entity: Entity, par4: Int, par5: Boolean) {
         if (world.isRemote) return
         if (getLightState(stack) == 0) return
         val light = getLight(stack)
@@ -37,7 +37,7 @@ abstract class LampItem(name: String) : GenericItemUsingDamageDescriptor(name) {
                 y += v.y
                 z += v.z
 
-                val pos = BlockPos(MathHelper.floor(x), MathHelper.floor(y), MathHelper.floor(z))
+                val pos = BlockPos(Mth.floor(x), Mth.floor(y), Mth.floor(z))
                 val state = world.getBlockState(pos)
                 val block = state.block
                 if (!block.isAir(state, world, pos)) {
@@ -51,7 +51,7 @@ abstract class LampItem(name: String) : GenericItemUsingDamageDescriptor(name) {
 
             while (rCount > 0) {
                 var stride = 1
-                val pos = BlockPos.MutableBlockPos(MathHelper.floor(x), MathHelper.floor(y), MathHelper.floor(z))
+                val pos = BlockPos.MutableBlockPos(Mth.floor(x), Mth.floor(y), Mth.floor(z))
                 val state = world.getBlockState(pos)
                 val block = state.block
                 if (block.isAir(state, world, pos)) {

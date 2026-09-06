@@ -6,7 +6,7 @@ import li.cil.oc.api.network.Node;
 import li.cil.oc.api.network.Visibility;
 import mods.eln.Other;
 import mods.eln.misc.Utils;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundTag;
 
 public class EnergyConverterElnToOtherFireWallOc {
 
@@ -58,7 +58,7 @@ public class EnergyConverterElnToOtherFireWallOc {
     }
 
     // ----------------------------------------------------------------------- //
-    public void readFromNBT(final NBTTagCompound nbt) {
+    public void readFromNBT(final CompoundTag nbt) {
         // The host check may be superfluous for you. It's just there to allow
         // some special cases, where getNode() returns some node managed by
         // some other instance (for example when you have multiple internal
@@ -72,10 +72,10 @@ public class EnergyConverterElnToOtherFireWallOc {
         }
     }
 
-    public void writeToNBT(final NBTTagCompound nbt) {
+    public void writeToNBT(final CompoundTag nbt) {
         // See readFromNBT() regarding host check.
         if (node != null && node.host() == this) {
-            final NBTTagCompound nodeNbt = new NBTTagCompound();
+            final CompoundTag nodeNbt = new CompoundTag();
             node.save(nodeNbt);
             Utils.newNbtTagCompund(nodeNbt, "oc:node");
         }

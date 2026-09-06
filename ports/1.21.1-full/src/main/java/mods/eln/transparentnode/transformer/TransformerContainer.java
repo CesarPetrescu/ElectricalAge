@@ -7,9 +7,9 @@ import mods.eln.item.FerromagneticCoreDescriptor;
 import mods.eln.misc.BasicContainer;
 import mods.eln.node.six.SixNodeItemSlot;
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.Slot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
+import net.minecraft.world.inventory.Slot;
 
 import static mods.eln.i18n.I18N.tr;
 
@@ -19,7 +19,7 @@ public class TransformerContainer extends BasicContainer {
     public static final int ferromagneticSlotId = 2;
     public static final int CasingSlotId = 3;
 
-    public TransformerContainer(EntityPlayer player, IInventory inventory) {
+    public TransformerContainer(Player player, Container inventory) {
         super(player, inventory, new Slot[]{
             new SixNodeItemSlot(inventory, primaryCableSlotId, 58, 30, 4, new Class[]{ElectricalCableDescriptor.class},
                 SlotSkin.medium,

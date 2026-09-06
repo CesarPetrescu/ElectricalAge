@@ -1,13 +1,13 @@
 package mods.eln.generic;
 
-import net.minecraft.inventory.EntityEquipmentSlot;
-import net.minecraft.item.ItemArmor;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ArmorItem;
 
-public class genericArmorItem extends ItemArmor {
+public class genericArmorItem extends ArmorItem {
 
     String t1, t2;
 
-    public genericArmorItem(ArmorMaterial materialIn, int renderIndexIn, EntityEquipmentSlot equipmentSlotIn) {
+    public genericArmorItem(ArmorMaterial materialIn, int renderIndexIn, EquipmentSlot equipmentSlotIn) {
         super(materialIn, renderIndexIn, equipmentSlotIn);
     }
 

@@ -1,9 +1,9 @@
 package mods.eln.sound;
 
 import mods.eln.misc.Coordinate;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -12,7 +12,7 @@ import java.util.ArrayList;
 
 public class SoundCommand {
 
-    World world;
+    Level world;
     double x, y, z;
     String track;
     double trackLength;
@@ -79,7 +79,7 @@ public class SoundCommand {
         z = pos.getZ() + 0.5;
     }
 
-    public SoundCommand set(TileEntity c) {
+    public SoundCommand set(BlockEntity c) {
         world = c.getWorld();
         BlockPos pos = c.getPos();
         x = pos.getX() + 0.5;
@@ -143,7 +143,7 @@ public class SoundCommand {
         return this;
     }
 
-    public static SoundCommand fromStream(DataInputStream stream, World w) throws IOException {
+    public static SoundCommand fromStream(DataInputStream stream, Level w) throws IOException {
         SoundCommand p = new SoundCommand();
         p.world = w;
 

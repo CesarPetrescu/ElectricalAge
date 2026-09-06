@@ -3,10 +3,10 @@ package mods.eln.node
 import mods.eln.generic.GenericItemBlockUsingDamageDescriptor
 import mods.eln.generic.GenericItemUsingDamageDescriptor
 import mods.eln.item.electricalinterface.IItemEnergyBattery
-import net.minecraft.inventory.IInventory
-import net.minecraft.item.ItemStack
+import net.minecraft.world.Container
+import net.minecraft.world.item.ItemStack
 
-class AutoAcceptInventoryProxy(val inventory: IInventory) {
+class AutoAcceptInventoryProxy(val inventory: Container) {
     interface ExistingItemHandler {
         fun handleExistingInventoryItem(itemStack: ItemStack)
     }
@@ -18,9 +18,9 @@ class AutoAcceptInventoryProxy(val inventory: IInventory) {
     }
 
     private abstract class ItemAcceptor(val index: Int) {
-        abstract fun take(itemStack: ItemStack, inventory: IInventory): Boolean
+        abstract fun take(itemStack: ItemStack, inventory: Container): Boolean
 
-        protected fun slotIsEmpty(inventory: IInventory): Boolean {
+        protected fun slotIsEmpty(inventory: Container): Boolean {
             val stack = inventory.getStackInSlot(index)
             return stack.isEmpty
         }
@@ -28,7 +28,7 @@ class AutoAcceptInventoryProxy(val inventory: IInventory) {
 
     private open class ItemAcceptorIfEmpty(index: Int, val acceptedItems: Array<out Class<out Any>>)
         : ItemAcceptor(index) {
-        override fun take(itemStack: ItemStack, inventory: IInventory): Boolean {
+        override fun take(itemStack: ItemStack, inventory: Container): Boolean {
             if (itemStack.isEmpty) return false
 
             // Do nothing if we already have a stack.
@@ -61,7 +61,7 @@ class AutoAcceptInventoryProxy(val inventory: IInventory) {
 
     private open class ItemAcceptorIfIncrement(index: Int, val maxItems: Int, acceptedItems: Array<out Class<out Any>>)
         : ItemAcceptorIfEmpty(index, acceptedItems) {
-        override fun take(itemStack: ItemStack, inventory: IInventory): Boolean {
+        override fun take(itemStack: ItemStack, inventory: Container): Boolean {
             if (super.take(itemStack, inventory)) return true
             if (itemStack.isEmpty) return false
 
@@ -94,7 +94,7 @@ class AutoAcceptInventoryProxy(val inventory: IInventory) {
     private class ItemAcceptorAlways(index: Int, maxItems: Int, acceptedItems: Array<out Class<out Any>>,
                                      val existingItemHandler: ExistingItemHandler?)
         : ItemAcceptorIfIncrement(index, maxItems, acceptedItems) {
-        override fun take(itemStack: ItemStack, inventory: IInventory): Boolean {
+        override fun take(itemStack: ItemStack, inventory: Container): Boolean {
             if (super.take(itemStack, inventory)) return true
             if (itemStack.isEmpty) return false
 

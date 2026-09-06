@@ -9,20 +9,20 @@ import mods.eln.init.ModBlock;
 import mods.eln.misc.*;
 import mods.eln.node.six.SixNode;
 import mods.eln.sim.*;
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
 import java.io.ByteArrayOutputStream;
@@ -83,7 +83,7 @@ public abstract class NodeBase {
         return 0;
     }
 
-    public void networkUnserialize(DataInputStream stream, EntityPlayerMP player) {
+    public void networkUnserialize(DataInputStream stream, ServerPlayer player) {
 
     }
 
@@ -98,7 +98,7 @@ public abstract class NodeBase {
 
     public void neighborBlockRead() {
         int[] vector = new int[3];
-        World world = coordinate.world();
+        Level world = coordinate.world();
 
         neighborOpaque = 0;
         neighborWrapable = 0;
@@ -136,7 +136,7 @@ public abstract class NodeBase {
         return ((neighborOpaque >> direction.getInt()) & 1) != 0;
     }
 
-    public static boolean isBlockWrappable(Block block, World w, BlockPos pos) {
+    public static boolean isBlockWrappable(Block block, Level w, BlockPos pos) {
         Block[] blocks = {ModBlock.sixNodeBlock,
             Blocks.TORCH,
             Blocks.REDSTONE_TORCH,
@@ -168,7 +168,7 @@ public abstract class NodeBase {
         destructed = true;
         if (!Config.INSTANCE.getExplosionEnable()) explosionStrength = 0;
         disconnect();
-        World world = coordinate.world();
+        Level world = coordinate.world();
         BlockPos.MutableBlockPos pos = coordinate.pos;
         world.setBlockToAir(pos);
         NodeManager.instance.removeNode(this);
@@ -178,7 +178,7 @@ public abstract class NodeBase {
     }
 
     // NodeBaseTodo
-    public void onBlockPlacedBy(Coordinate coordinate, Direction front, EntityLivingBase entityLiving, ItemStack itemStack) {
+    public void onBlockPlacedBy(Coordinate coordinate, Direction front, LivingEntity entityLiving, ItemStack itemStack) {
         // this.entity = entity;
         this.coordinate = coordinate;
         neighborBlockRead();
@@ -191,7 +191,7 @@ public abstract class NodeBase {
     }
 
     abstract public void initializeFromThat(Direction front,
-                                            EntityLivingBase entityLiving, ItemStack itemStack);
+                                            LivingEntity entityLiving, ItemStack itemStack);
 
     public NodeBase getNeighbor(Direction direction) {
         BlockPos neighbour = direction.applied(coordinate.pos, 1);
@@ -207,7 +207,7 @@ public abstract class NodeBase {
         Utils.println("Node::onBreakBlock()");
     }
 
-    public boolean onBlockActivated(EntityPlayer entityPlayer, Direction side, float vx, float vy, float vz) {
+    public boolean onBlockActivated(Player entityPlayer, Direction side, float vx, float vy, float vz) {
         if (!entityPlayer.world.isRemote) {
             if (Items.multiMeterElement.checkSameItemStack(entityPlayer.getHeldItemMainhand())) {
                 String str = multiMeterString(side);
@@ -407,7 +407,7 @@ public abstract class NodeBase {
         return true;
     }
 
-    public void readFromNBT(NBTTagCompound nbt) {
+    public void readFromNBT(CompoundTag nbt) {
 
         coordinate.readFromNBT(nbt, "c");
 
@@ -417,7 +417,7 @@ public abstract class NodeBase {
         initialized = true;
     }
 
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+    public CompoundTag writeToNBT(CompoundTag nbt) {
 
         coordinate.writeToNBT(nbt, "c");
 
@@ -479,7 +479,7 @@ public abstract class NodeBase {
         }
     }
 
-    public void sendPacketToClient(ByteArrayOutputStream bos, EntityPlayerMP player) {
+    public void sendPacketToClient(ByteArrayOutputStream bos, ServerPlayer player) {
         Utils.sendPacketToClient(bos, player);
     }
 
@@ -537,7 +537,7 @@ public abstract class NodeBase {
         needPublish = false;
     }
 
-    public void publishToPlayer(EntityPlayerMP player) {
+    public void publishToPlayer(ServerPlayer player) {
         /*World world = coordinate.world();
         if (world != null) {
             IBlockState state = world.getBlockState(coordinate.pos);
@@ -552,20 +552,20 @@ public abstract class NodeBase {
     @Deprecated  // WTF
     public void dropItem(ItemStack itemStack) {
         if (itemStack == null) return;
-        World w = coordinate.world();
+        Level w = coordinate.world();
         BlockPos pos = coordinate.pos;
         if (w.getGameRules().getBoolean("doTileDrops")) {
             float var6 = 0.7F;
             double var7 = (double) (w.rand.nextFloat() * var6) + (double) (1.0F - var6) * 0.5D;
             double var9 = (double) (w.rand.nextFloat() * var6) + (double) (1.0F - var6) * 0.5D;
             double var11 = (double) (w.rand.nextFloat() * var6) + (double) (1.0F - var6) * 0.5D;
-            EntityItem var13 = new EntityItem(w, (double) pos.getX() + var7, (double) pos.getY() + var9, (double) pos.getZ() + var11, itemStack);
+            ItemEntity var13 = new ItemEntity(w, (double) pos.getX() + var7, (double) pos.getY() + var9, (double) pos.getZ() + var11, itemStack);
             var13.setPickupDelay(10);
             w.spawnEntity(var13);
         }
     }
 
-    public void dropInventory(IInventory inventory) {
+    public void dropInventory(Container inventory) {
         if (inventory == null) return;
         for (int idx = 0; idx < inventory.getSizeInventory(); idx++) {
             dropItem(inventory.getStackInSlot(idx));

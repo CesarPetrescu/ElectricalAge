@@ -1,8 +1,8 @@
 package mods.eln.node;
 
 import mods.eln.misc.Direction;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.world.EnumSkyBlock;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.LightLayer;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -23,7 +23,7 @@ public abstract class Node extends NodeBase {
     }
 
     public void forceLightValueUpdate() {
-        coordinate.world().setLightFor(EnumSkyBlock.BLOCK, coordinate.pos, lastLight);
+        coordinate.world().setLightFor(LightLayer.BLOCK, coordinate.pos, lastLight);
     }
 
     public int getLightValue() {
@@ -31,14 +31,14 @@ public abstract class Node extends NodeBase {
     }
 
 
-    public void readFromNBT(NBTTagCompound nbt) {
+    public void readFromNBT(CompoundTag nbt) {
         super.readFromNBT(nbt);
 
         lastLight = nbt.getByte("lastLight");
     }
 
 
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+    public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
         nbt.setByte("lastLight", (byte) lastLight);
         return nbt;

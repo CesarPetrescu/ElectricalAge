@@ -24,13 +24,13 @@ import mods.eln.sixnode.TreeResinCollector.TreeResinCollectorTileEntity
 import mods.eln.simplenode.computerprobe.ComputerProbeEntity
 import mods.eln.simplenode.energyconverter.EnergyConverterElnToOtherEntity
 import mods.eln.node.transparent.TransparentNodeItem
-import net.minecraft.block.Block
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.resources.ResourceLocation
 import net.minecraftforge.event.RegistryEvent
-import net.minecraftforge.fml.common.Mod
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.neoforged.fml.common.Mod
+import net.neoforged.bus.api.SubscribeEvent
 import net.minecraftforge.fml.common.registry.EntityRegistry
 import net.minecraftforge.fml.common.registry.GameRegistry
 import net.minecraftforge.oredict.OreDictionary
@@ -132,19 +132,19 @@ object ElnContent {
         val tab = Eln.Tab
         
         // Copper Tools
-        val swordCopper = net.minecraft.item.ItemSword(Item.ToolMaterial.IRON).apply {
+        val swordCopper = net.minecraft.world.item.SwordItem(Item.ToolMaterial.IRON).apply {
             setTranslationKey("copper_sword")
             setRegistryName(Eln.MODID, "copper_sword")
             creativeTab = tab
         }
         Eln.swordCopper = swordCopper
-        val hoeCopper = net.minecraft.item.ItemHoe(Item.ToolMaterial.IRON).apply {
+        val hoeCopper = net.minecraft.world.item.HoeItem(Item.ToolMaterial.IRON).apply {
             setTranslationKey("copper_hoe")
             setRegistryName(Eln.MODID, "copper_hoe")
             creativeTab = tab
         }
         Eln.hoeCopper = hoeCopper
-        val shovelCopper = net.minecraft.item.ItemSpade(Item.ToolMaterial.IRON).apply {
+        val shovelCopper = net.minecraft.world.item.ShovelItem(Item.ToolMaterial.IRON).apply {
             setTranslationKey("copper_shovel")
             setRegistryName(Eln.MODID, "copper_shovel")
             creativeTab = tab
@@ -172,12 +172,12 @@ object ElnContent {
             10,
             intArrayOf(2, 5, 4, 1),
             9,
-            net.minecraft.init.SoundEvents.ITEM_ARMOR_EQUIP_IRON,
+            net.minecraft.sounds.SoundEvents.ITEM_ARMOR_EQUIP_IRON,
             0f
         )!!
         
         val helmetCopper = mods.eln.generic.genericArmorItem(
-            copperArmorMaterial, 2, net.minecraft.inventory.EntityEquipmentSlot.HEAD
+            copperArmorMaterial, 2, net.minecraft.world.entity.EquipmentSlot.HEAD
         ).apply {
             setTranslationKey("copper_helmet")
             setRegistryName(Eln.MODID, "copper_helmet")
@@ -185,7 +185,7 @@ object ElnContent {
         }
         Eln.helmetCopper = helmetCopper
         val plateCopper = mods.eln.generic.genericArmorItem(
-            copperArmorMaterial, 2, net.minecraft.inventory.EntityEquipmentSlot.CHEST
+            copperArmorMaterial, 2, net.minecraft.world.entity.EquipmentSlot.CHEST
         ).apply {
             setTranslationKey("copper_chestplate")
             setRegistryName(Eln.MODID, "copper_chestplate")
@@ -193,7 +193,7 @@ object ElnContent {
         }
         Eln.plateCopper = plateCopper
         val legsCopper = mods.eln.generic.genericArmorItem(
-            copperArmorMaterial, 2, net.minecraft.inventory.EntityEquipmentSlot.LEGS
+            copperArmorMaterial, 2, net.minecraft.world.entity.EquipmentSlot.LEGS
         ).apply {
             setTranslationKey("copper_leggings")
             setRegistryName(Eln.MODID, "copper_leggings")
@@ -201,7 +201,7 @@ object ElnContent {
         }
         Eln.legsCopper = legsCopper
         val bootsCopper = mods.eln.generic.genericArmorItem(
-            copperArmorMaterial, 2, net.minecraft.inventory.EntityEquipmentSlot.FEET
+            copperArmorMaterial, 2, net.minecraft.world.entity.EquipmentSlot.FEET
         ).apply {
             setTranslationKey("copper_boots")
             setRegistryName(Eln.MODID, "copper_boots")
@@ -218,14 +218,14 @@ object ElnContent {
             10,
             intArrayOf(2, 6, 5, 2),
             9,
-            net.minecraft.init.SoundEvents.ITEM_ARMOR_EQUIP_LEATHER,
+            net.minecraft.sounds.SoundEvents.ITEM_ARMOR_EQUIP_LEATHER,
             10f
         )!!
         
         val energyPerDamage = 500.0
         
         val helmetECoal = mods.eln.item.electricalitem.ElectricalArmor(
-            eCoalMaterial, 2, net.minecraft.inventory.EntityEquipmentSlot.HEAD,
+            eCoalMaterial, 2, net.minecraft.world.entity.EquipmentSlot.HEAD,
             3 * energyPerDamage, 250.0, 2.0 / 20.0, 2.0 * energyPerDamage, energyPerDamage
         ).apply {
             setTranslationKey("ecoal_helmet")
@@ -234,7 +234,7 @@ object ElnContent {
         }
         Eln.helmetECoal = helmetECoal
         val plateECoal = mods.eln.item.electricalitem.ElectricalArmor(
-            eCoalMaterial, 2, net.minecraft.inventory.EntityEquipmentSlot.CHEST,
+            eCoalMaterial, 2, net.minecraft.world.entity.EquipmentSlot.CHEST,
             8 * energyPerDamage, 250.0, 6.0 / 20.0, 6.0 * energyPerDamage, energyPerDamage
         ).apply {
             setTranslationKey("ecoal_chestplate")
@@ -243,7 +243,7 @@ object ElnContent {
         }
         Eln.plateECoal = plateECoal
         val legsECoal = mods.eln.item.electricalitem.ElectricalArmor(
-            eCoalMaterial, 2, net.minecraft.inventory.EntityEquipmentSlot.LEGS,
+            eCoalMaterial, 2, net.minecraft.world.entity.EquipmentSlot.LEGS,
             7 * energyPerDamage, 250.0, 5.0 / 20.0, 5.0 * energyPerDamage, energyPerDamage
         ).apply {
             setTranslationKey("ecoal_leggings")
@@ -252,7 +252,7 @@ object ElnContent {
         }
         Eln.legsECoal = legsECoal
         val bootsECoal = mods.eln.item.electricalitem.ElectricalArmor(
-            eCoalMaterial, 2, net.minecraft.inventory.EntityEquipmentSlot.FEET,
+            eCoalMaterial, 2, net.minecraft.world.entity.EquipmentSlot.FEET,
             3 * energyPerDamage, 250.0, 2.0 / 20.0, 2.0 * energyPerDamage, energyPerDamage
         ).apply {
             setTranslationKey("ecoal_boots")
@@ -297,7 +297,7 @@ object ElnContent {
                 continue // These are registered separately below
             }
 
-            val itemBlock = net.minecraft.item.ItemBlock(block)
+            val itemBlock = net.minecraft.world.item.BlockItem(block)
             itemBlock.registryName = block.registryName
 
             // Explicitly set creative tab based on block type
@@ -447,7 +447,7 @@ object ElnContent {
      * Removes "TileEntity" prefix from the class name.
      */
     @JvmStatic
-    fun registerTile(tileClass: Class<out net.minecraft.tileentity.TileEntity>) {
+    fun registerTile(tileClass: Class<out net.minecraft.world.level.block.entity.BlockEntity>) {
         var name = tileClass.simpleName
         if (name.startsWith("TileEntity")) {
             name = name.substring("TileEntity".length)

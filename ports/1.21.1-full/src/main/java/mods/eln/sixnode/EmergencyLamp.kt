@@ -15,10 +15,10 @@ import mods.eln.sim.process.destruct.VoltageStateWatchDog
 import mods.eln.sim.process.destruct.WorldExplosion
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor
 import mods.eln.sixnode.lampsupply.LampSupplyElement
-import net.minecraft.client.gui.GuiButton
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.client.gui.components.Button
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
 import org.lwjgl.opengl.GL11
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -70,10 +70,10 @@ class EmergencyLampDescriptor(name: String, val cable: ElectricalCableDescriptor
         }
     }
 
-    override fun getFrontFromPlace(side: Direction?, player: EntityPlayer?)
+    override fun getFrontFromPlace(side: Direction?, player: Player?)
         = super.getFrontFromPlace(side, player).inverse()
 
-    override fun addInformation(itemStack: ItemStack?, entityPlayer: EntityPlayer?, list: MutableList<String>,
+    override fun addInformation(itemStack: ItemStack?, entityPlayer: Player?, list: MutableList<String>,
                                 par4: Boolean) {
         with(list) {
             add("As long as power is provided, the internal battery")
@@ -206,7 +206,7 @@ class EmergencyLampElement(sixNode: SixNode, side: Direction, descriptor: SixNod
         }
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
         on = nbt.getBoolean("on")
         charge = nbt.getDouble("charge")
@@ -214,7 +214,7 @@ class EmergencyLampElement(sixNode: SixNode, side: Direction, descriptor: SixNod
         channel = nbt.getString("channel")
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound? {
+    override fun writeToNBT(nbt: CompoundTag): CompoundTag? {
         super.writeToNBT(nbt)
         nbt.setBoolean("on", on)
         nbt.setDouble("charge", charge)
@@ -251,7 +251,7 @@ class EmergencyLampRender(entity: SixNodeEntity, side: Direction, descriptor: Si
         isConnectedToLampSupply = stream.readBoolean()
     }
 
-    override fun newGuiDraw(side: Direction?, player: EntityPlayer?) = EmergencyLampGui(this)
+    override fun newGuiDraw(side: Direction?, player: Player?) = EmergencyLampGui(this)
 
     override fun getCableRender(lrdu: LRDU?): CableRenderDescriptor? = if (poweredByCable) when {
         side == Direction.YP -> desc.cable.render
@@ -262,7 +262,7 @@ class EmergencyLampRender(entity: SixNodeEntity, side: Direction, descriptor: Si
 
 class EmergencyLampGui(private var render: EmergencyLampRender)
     : GuiScreenEln() {
-    private lateinit var buttonSupplyType: GuiButton
+    private lateinit var buttonSupplyType: Button
     private lateinit var channel: GuiTextFieldEln
     private lateinit var charge: GuiVerticalProgressBar
 

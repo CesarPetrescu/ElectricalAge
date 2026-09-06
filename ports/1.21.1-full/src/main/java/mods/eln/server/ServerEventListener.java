@@ -2,21 +2,21 @@ package mods.eln.server;
 
 import mods.eln.item.electricalitem.TreeCapitation;
 import mods.eln.misc.Coordinate;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import mods.eln.Eln;
 import mods.eln.misc.Utils;
 import mods.eln.node.NodeManager;
-import net.minecraft.entity.effect.EntityLightningBolt;
-import net.minecraft.nbt.CompressedStreamTools;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.world.World;
-import net.minecraftforge.common.MinecraftForge;
+import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.common.NeoForge;
 import net.minecraftforge.event.entity.EntityEvent.EntityConstructing;
-import net.minecraftforge.event.world.WorldEvent;
-import net.minecraftforge.event.world.WorldEvent.Load;
-import net.minecraftforge.event.world.WorldEvent.Save;
-import net.minecraftforge.event.world.WorldEvent.Unload;
+import net.neoforged.neoforge.event.level.LevelEvent;
+import net.neoforged.neoforge.event.level.LevelEvent.Load;
+import net.neoforged.neoforge.event.level.LevelEvent.Save;
+import net.neoforged.neoforge.event.level.LevelEvent.Unload;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import java.io.*;
@@ -26,11 +26,11 @@ import java.util.LinkedList;
 
 public class ServerEventListener {
 
-    private LinkedList<EntityLightningBolt> lightningListNext = new LinkedList<EntityLightningBolt>();
-    private LinkedList<EntityLightningBolt> lightningList = new LinkedList<EntityLightningBolt>();
+    private LinkedList<LightningBolt> lightningListNext = new LinkedList<LightningBolt>();
+    private LinkedList<LightningBolt> lightningList = new LinkedList<LightningBolt>();
 
     public ServerEventListener() {
-        MinecraftForge.EVENT_BUS.register(this);
+        NeoForge.EVENT_BUS.register(this);
     }
 
     @SubscribeEvent
@@ -38,15 +38,15 @@ public class ServerEventListener {
         if (event.phase != TickEvent.Phase.END) return;
 
         lightningList = lightningListNext;
-        lightningListNext = new LinkedList<EntityLightningBolt>();
+        lightningListNext = new LinkedList<LightningBolt>();
 
         TreeCapitation.INSTANCE.process(0.05);
     }
 
     @SubscribeEvent
     public void onNewEntity(EntityConstructing event) {
-        if (event.getEntity() instanceof EntityLightningBolt) {
-            lightningListNext.add((EntityLightningBolt) event.getEntity());
+        if (event.getEntity() instanceof LightningBolt) {
+            lightningListNext.add((LightningBolt) event.getEntity());
         }
     }
 
@@ -56,7 +56,7 @@ public class ServerEventListener {
 
     public double getLightningClosestTo(Coordinate c) {
         double best = 10000000;
-        for (EntityLightningBolt l : lightningList) {
+        for (LightningBolt l : lightningList) {
             if (c.world() != l.world) continue;
             double d = l.getDistance(c.pos.getX(), c.pos.getY(), c.pos.getZ());
             if (d < best) best = d;
@@ -69,7 +69,7 @@ public class ServerEventListener {
 
     @SubscribeEvent
     public void onWorldLoad(Load e) {
-        World w = e.getWorld();
+        Level w = e.getWorld();
         if (w.isRemote) return;
         loadedWorlds.add(w.provider.getDimension());
         FileNames fileNames = new FileNames(e);
@@ -91,13 +91,13 @@ public class ServerEventListener {
 
     private void readSave(Path worldSave) throws IOException {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(Files.readAllBytes(worldSave));
-        NBTTagCompound nbt = CompressedStreamTools.readCompressed(inputStream);
+        CompoundTag nbt = NbtIo.readCompressed(inputStream);
         readFromEaWorldNBT(nbt);
     }
 
     @SubscribeEvent
     public void onWorldUnload(Unload e) {
-        World w = e.getWorld();
+        Level w = e.getWorld();
         int dim = w.provider.getDimension();
         if (w.isRemote) return;
         loadedWorlds.remove(dim);
@@ -112,7 +112,7 @@ public class ServerEventListener {
 
     @SubscribeEvent
     public void onWorldSave(Save e) {
-        World w = e.getWorld();
+        Level w = e.getWorld();
         int dim = w.provider.getDimension();
         if (w.isRemote) return;
         if (!loadedWorlds.contains(dim)) {
@@ -120,14 +120,14 @@ public class ServerEventListener {
             return;
         }
         try {
-            NBTTagCompound nbt = new NBTTagCompound();
+            CompoundTag nbt = new CompoundTag();
             writeToEaWorldNBT(nbt, dim);
 
             FileNames fileNames = new FileNames(e);
 
             // Write a new save to a temporary file.
             final ByteArrayOutputStream bytes = new ByteArrayOutputStream(512 * 1024);
-            CompressedStreamTools.writeCompressed(nbt, bytes);
+            NbtIo.writeCompressed(nbt, bytes);
             Files.write(fileNames.tempSave, bytes.toByteArray());
 
             // Replace backup save with old save, and old save with new one.
@@ -148,7 +148,7 @@ public class ServerEventListener {
     }
 
 
-    static void readFromEaWorldNBT(NBTTagCompound nbt) {
+    static void readFromEaWorldNBT(CompoundTag nbt) {
         try {
             NodeManager.instance.loadFromNbt(nbt.getCompoundTag("nodes"));
         } catch (Exception e) {
@@ -161,7 +161,7 @@ public class ServerEventListener {
         }
     }
 
-    static void writeToEaWorldNBT(NBTTagCompound nbt, int dim) {
+    static void writeToEaWorldNBT(CompoundTag nbt, int dim) {
         try {
             NodeManager.instance.saveToNbt(Utils.newNbtTagCompund(nbt, "nodes"), dim);
         } catch (Exception e) {
@@ -180,14 +180,14 @@ public class ServerEventListener {
         final Path tempSave;
         final Path backupSave;
 
-        FileNames(WorldEvent e) {
+        FileNames(LevelEvent e) {
             String saveName = getEaWorldSaveName(e.getWorld());
             worldSave = FileSystems.getDefault().getPath(saveName);
             tempSave = FileSystems.getDefault().getPath(saveName + ".tmp");
             backupSave = FileSystems.getDefault().getPath(saveName + ".bak");
         }
 
-        private String getEaWorldSaveName(World w) {
+        private String getEaWorldSaveName(Level w) {
             return Utils.getMapFolder() + "data/electricalAgeWorld" + w.provider.getDimension() + ".dat";
         }
     }

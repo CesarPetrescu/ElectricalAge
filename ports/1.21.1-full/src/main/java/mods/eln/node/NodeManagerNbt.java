@@ -1,9 +1,9 @@
 package mods.eln.node;
 
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.world.storage.WorldSavedData;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.saveddata.SavedData;
 
-public class NodeManagerNbt extends WorldSavedData {
+public class NodeManagerNbt extends SavedData {
     public NodeManagerNbt(String par1Str) {
         super(par1Str);
     }
@@ -14,12 +14,12 @@ public class NodeManagerNbt extends WorldSavedData {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt) {
+    public void readFromNBT(CompoundTag nbt) {
         NodeManager.instance.loadFromNbt(nbt);
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+    public CompoundTag writeToNBT(CompoundTag nbt) {
         NodeManager.instance.saveToNbt(nbt, Integer.MIN_VALUE);
         return nbt;
     }

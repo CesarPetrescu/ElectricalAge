@@ -3,10 +3,10 @@ package mods.eln.transparentnode.heatfurnace;
 import mods.eln.gui.*;
 import mods.eln.misc.Utils;
 import mods.eln.node.transparent.TransparentNodeElementInventory;
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
 
 import static mods.eln.i18n.I18N.tr;
 
@@ -14,11 +14,11 @@ public class HeatFurnaceGuiDraw extends GuiContainerEln {
 
     private TransparentNodeElementInventory inventory;
     HeatFurnaceRender render;
-    GuiButton externalControl, takeFuel;
+    Button externalControl, takeFuel;
     GuiVerticalTrackBar vuMeterGain;
     GuiVerticalTrackBarHeat vuMeterHeat;
 
-    public HeatFurnaceGuiDraw(EntityPlayer player, IInventory inventory, HeatFurnaceRender render) {
+    public HeatFurnaceGuiDraw(Player player, Container inventory, HeatFurnaceRender render) {
         super(new HeatFurnaceContainer(null, player, inventory, render.descriptor));
         this.inventory = (TransparentNodeElementInventory) inventory;
         this.render = render;

@@ -2,7 +2,7 @@ package mods.eln.packets
 
 import mods.eln.node.NodeManager
 import mods.eln.node.six.SixNode
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext
 

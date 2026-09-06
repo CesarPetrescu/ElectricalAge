@@ -2,14 +2,14 @@ package mods.eln.node;
 
 import mods.eln.misc.Coordinate;
 import mods.eln.misc.Direction;
-import net.minecraft.block.Block;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.item.ItemBlock;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
-public class NodeBlockItem extends ItemBlock {
+public class NodeBlockItem extends BlockItem {
 
     public NodeBlockItem(Block b) {
         super(b);
@@ -30,8 +30,8 @@ public class NodeBlockItem extends ItemBlock {
         return (NodeBlock) Block.getBlockFromItem(this);
     }
 
-    public boolean placeBlockAt(ItemStack stack, EntityLivingBase player, Coordinate coord, float hitX, float hitY, float hitZ, int metadata) {
-        World w = coord.world();
+    public boolean placeBlockAt(ItemStack stack, LivingEntity player, Coordinate coord, float hitX, float hitY, float hitZ, int metadata) {
+        Level w = coord.world();
         BlockPos pos = coord.pos;
     	/*if(w.isRemote) return false;
         Direction direction = Direction.fromIntMinecraftSide(side).getInverse();

@@ -8,21 +8,20 @@ import mods.eln.misc.FakeSideInventory;
 import mods.eln.misc.LRDU;
 import mods.eln.node.Node;
 import mods.eln.node.NodeBlockEntity;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.ISidedInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.Container;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.items.CapabilityItemHandler;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.wrapper.InvWrapper;
-import net.minecraftforge.items.wrapper.SidedInvWrapper;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.wrapper.InvWrapper;
+import net.neoforged.neoforge.items.wrapper.SidedInvWrapper;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -34,7 +33,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 
-public class TransparentNodeEntity extends NodeBlockEntity implements ISidedInventory { // boolean[] syncronizedSideEnable = new boolean[6];
+public class TransparentNodeEntity extends NodeBlockEntity implements WorldlyContainer { // boolean[] syncronizedSideEnable = new boolean[6];
     TransparentNodeElementRender elementRender = null;
     private short elementRenderId;
 
@@ -69,13 +68,13 @@ public class TransparentNodeEntity extends NodeBlockEntity implements ISidedInve
 
     }
 
-    public Container newContainer(Direction side, EntityPlayer player) {
+    public AbstractContainerMenu newContainer(Direction side, Player player) {
         TransparentNode n = (TransparentNode) getNode();
         if (n == null) return null;
         return n.newContainer(side, player);
     }
 
-    public GuiScreen newGuiDraw(Direction side, EntityPlayer player) {
+    public Screen newGuiDraw(Direction side, Player player) {
         return elementRender.newGuiDraw(side, player);
     }
 
@@ -97,7 +96,7 @@ public class TransparentNodeEntity extends NodeBlockEntity implements ISidedInve
         return elementRender.cameraDrawOptimisation();
     }
 
-    public int getDamageValue(World world, BlockPos pos) {
+    public int getDamageValue(Level world, BlockPos pos) {
         if (world.isRemote) {
             return elementRenderId;
         }
@@ -110,7 +109,7 @@ public class TransparentNodeEntity extends NodeBlockEntity implements ISidedInve
         if (elementRender != null) elementRender.notifyNeighborSpawn();
     }
 
-    public void addCollisionBoxesToList(AxisAlignedBB axisAlignedBB, List<AxisAlignedBB> list, Coordinate blockCoord) {
+    public void addCollisionBoxesToList(AABB axisAlignedBB, List<AABB> list, Coordinate blockCoord) {
         TransparentNodeDescriptor desc = null;
         if (world.isRemote) {
             desc = elementRender == null ? null : elementRender.transparentNodedescriptor;
@@ -125,7 +124,7 @@ public class TransparentNodeEntity extends NodeBlockEntity implements ISidedInve
             pos = this.pos;
         }
         if (desc == null) {
-            AxisAlignedBB bb = new AxisAlignedBB(pos);
+            AABB bb = new AABB(pos);
             if (axisAlignedBB.intersects(bb)) list.add(bb);
         } else {
             desc.addCollisionBoxesToList(axisAlignedBB, list, pos);
@@ -163,7 +162,7 @@ public class TransparentNodeEntity extends NodeBlockEntity implements ISidedInve
     }
 
     @Override
-    public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
+    public boolean hasCapability(Capability<?> capability, @Nullable net.minecraft.core.Direction facing) {
         if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
             return getSidedInventory() != null;
         }
@@ -172,9 +171,9 @@ public class TransparentNodeEntity extends NodeBlockEntity implements ISidedInve
 
     @Nullable
     @Override
-    public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
+    public <T> T getCapability(Capability<T> capability, @Nullable net.minecraft.core.Direction facing) {
         if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-            ISidedInventory inventory = getSidedInventory();
+            WorldlyContainer inventory = getSidedInventory();
             if (inventory != null) {
                 if (facing != null) {
                     return CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(new SidedInvWrapper(inventory, facing));
@@ -187,20 +186,20 @@ public class TransparentNodeEntity extends NodeBlockEntity implements ISidedInve
     }
 
     @Nullable
-    ISidedInventory getSidedInventory() {
+    WorldlyContainer getSidedInventory() {
         if (world.isRemote) {
             if (elementRender == null) return null;
-            IInventory i = elementRender.getInventory();
-            if (i instanceof ISidedInventory) {
-                return (ISidedInventory) i;
+            Container i = elementRender.getInventory();
+            if (i instanceof WorldlyContainer) {
+                return (WorldlyContainer) i;
             }
         } else {
             Node node = getNode();
             if (node instanceof TransparentNode) {
                 TransparentNode tn = (TransparentNode) node;
-                IInventory i = tn.getInventory(null);
-                if (i instanceof ISidedInventory) {
-                    return (ISidedInventory) i;
+                Container i = tn.getInventory(null);
+                if (i instanceof WorldlyContainer) {
+                    return (WorldlyContainer) i;
                 }
             }
         }
@@ -209,83 +208,83 @@ public class TransparentNodeEntity extends NodeBlockEntity implements ISidedInve
 
     @Override
     public int getSizeInventory() {
-        ISidedInventory inv = getSidedInventory();
+        WorldlyContainer inv = getSidedInventory();
         return inv == null ? 0 : inv.getSizeInventory();
     }
 
     @NotNull
     @Override
     public ItemStack getStackInSlot(int var1) {
-        ISidedInventory inv = getSidedInventory();
+        WorldlyContainer inv = getSidedInventory();
         return inv == null ? ItemStack.EMPTY : inv.getStackInSlot(var1);
     }
 
     @NotNull
     @Override
     public ItemStack decrStackSize(int var1, int var2) {
-        ISidedInventory inv = getSidedInventory();
+        WorldlyContainer inv = getSidedInventory();
         return inv == null ? ItemStack.EMPTY : inv.decrStackSize(var1, var2);
     }
 
     @NotNull
     @Override
     public ItemStack removeStackFromSlot(int var1) {
-        ISidedInventory inv = getSidedInventory();
+        WorldlyContainer inv = getSidedInventory();
         return inv == null ? ItemStack.EMPTY : inv.removeStackFromSlot(var1);
     }
 
     @Override
     public void setInventorySlotContents(int var1, @NotNull ItemStack var2) {
-        ISidedInventory inv = getSidedInventory();
+        WorldlyContainer inv = getSidedInventory();
         if (inv != null) inv.setInventorySlotContents(var1, var2);
     }
 
     @NotNull
     @Override
     public String getName() {
-        ISidedInventory inv = getSidedInventory();
+        WorldlyContainer inv = getSidedInventory();
         return inv == null ? "None" : inv.getName();
     }
 
     @Override
     public boolean hasCustomName() {
-        ISidedInventory inv = getSidedInventory();
+        WorldlyContainer inv = getSidedInventory();
         return inv != null && inv.hasCustomName();
     }
 
     @Override
     public int getInventoryStackLimit() {
-        ISidedInventory inv = getSidedInventory();
+        WorldlyContainer inv = getSidedInventory();
         return inv == null ? 0 : inv.getInventoryStackLimit();
     }
 
     @Override
     public boolean isEmpty() {
-        ISidedInventory inv = getSidedInventory();
+        WorldlyContainer inv = getSidedInventory();
         return inv == null || inv.isEmpty();
     }
 
     @Override
-    public boolean isUsableByPlayer(@NotNull EntityPlayer player) {
-        ISidedInventory inv = getSidedInventory();
+    public boolean isUsableByPlayer(@NotNull Player player) {
+        WorldlyContainer inv = getSidedInventory();
         return inv != null && inv.isUsableByPlayer(player);
     }
 
     @Override
-    public void openInventory(EntityPlayer player) {
-        ISidedInventory inv = getSidedInventory();
+    public void openInventory(Player player) {
+        WorldlyContainer inv = getSidedInventory();
         if (inv != null) inv.openInventory(player);
     }
 
     @Override
-    public void closeInventory(EntityPlayer player) {
-        ISidedInventory inv = getSidedInventory();
+    public void closeInventory(Player player) {
+        WorldlyContainer inv = getSidedInventory();
         if (inv != null) inv.closeInventory(player);
     }
 
     @Override
     public boolean isItemValidForSlot(int var1, ItemStack stack) {
-        ISidedInventory inv = getSidedInventory();
+        WorldlyContainer inv = getSidedInventory();
         return inv != null && inv.isItemValidForSlot(var1, stack);
     }
 
@@ -308,20 +307,20 @@ public class TransparentNodeEntity extends NodeBlockEntity implements ISidedInve
     }
 
     @Override
-    public int[] getSlotsForFace(@NotNull EnumFacing facing) {
-        ISidedInventory inv = getSidedInventory();
+    public int[] getSlotsForFace(@NotNull net.minecraft.core.Direction facing) {
+        WorldlyContainer inv = getSidedInventory();
         return inv == null ? new int[0] : inv.getSlotsForFace(facing);
     }
 
     @Override
-    public boolean canInsertItem(int var1, @NotNull ItemStack stack, @NotNull EnumFacing facing) {
-        ISidedInventory inv = getSidedInventory();
+    public boolean canInsertItem(int var1, @NotNull ItemStack stack, @NotNull net.minecraft.core.Direction facing) {
+        WorldlyContainer inv = getSidedInventory();
         return inv != null && inv.canInsertItem(var1, stack, facing);
     }
 
     @Override
-    public boolean canExtractItem(int var1, @NotNull ItemStack stack, @NotNull EnumFacing facing) {
-        ISidedInventory inv = getSidedInventory();
+    public boolean canExtractItem(int var1, @NotNull ItemStack stack, @NotNull net.minecraft.core.Direction facing) {
+        WorldlyContainer inv = getSidedInventory();
         return inv != null && inv.canExtractItem(var1, stack, facing);
     }
 }

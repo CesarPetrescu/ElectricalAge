@@ -6,9 +6,9 @@ import mods.eln.misc.*;
 import mods.eln.node.transparent.TransparentNodeDescriptor;
 import mods.eln.node.transparent.TransparentNodeElementRender;
 import mods.eln.node.transparent.TransparentNodeEntity;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import org.lwjgl.opengl.GL11;
 
 import java.io.DataInputStream;
@@ -232,7 +232,7 @@ public class TeleporterRender extends TransparentNodeElementRender {
 
 
     @Override
-    public GuiScreen newGuiDraw(Direction side, EntityPlayer player) {
+    public Screen newGuiDraw(Direction side, Player player) {
 
         return new TeleporterGui(player, this);
     }

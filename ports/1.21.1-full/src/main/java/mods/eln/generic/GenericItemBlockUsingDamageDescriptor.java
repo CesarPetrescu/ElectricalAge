@@ -1,12 +1,12 @@
 package mods.eln.generic;
 
 import mods.eln.Eln;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumActionResult;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.InteractionResult;
 
 import java.util.List;
 
@@ -32,11 +32,11 @@ public class GenericItemBlockUsingDamageDescriptor {
         this.IconName = name.replaceAll(" ", "").toLowerCase();
     }
 
-    public NBTTagCompound getDefaultNBT() {
+    public CompoundTag getDefaultNBT() {
         return null;
     }
 
-    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List<String> list, boolean par4) {
+    public void addInformation(ItemStack itemStack, Player entityPlayer, List<String> list, boolean par4) {
     }
 
     // TODO(1.10): These are all implicit now.
@@ -81,11 +81,11 @@ public class GenericItemBlockUsingDamageDescriptor {
         return desc;
     }
 
-    public boolean onEntityItemUpdate(EntityItem entityItem) {
+    public boolean onEntityItemUpdate(ItemEntity entityItem) {
         return false;
     }
 
-    public EnumActionResult onItemUse(ItemStack stack, EntityPlayer player) {
-        return EnumActionResult.FAIL;
+    public InteractionResult onItemUse(ItemStack stack, Player player) {
+        return InteractionResult.FAIL;
     }
 }

@@ -1,8 +1,8 @@
 package mods.eln.item;
 
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.ItemStack;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 
 public interface IInteract {
-    abstract public void interact(EntityPlayerMP playerMP, ItemStack itemStack, byte param);
+    abstract public void interact(ServerPlayer playerMP, ItemStack itemStack, byte param);
 }

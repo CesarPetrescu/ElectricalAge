@@ -1,10 +1,10 @@
 package mods.eln.server;
 
 import mods.eln.misc.Utils;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.bus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent;
 
@@ -14,19 +14,19 @@ import java.util.Map.Entry;
 
 public class PlayerManager {
 
-    private Map<EntityPlayerMP, PlayerMetadata> metadataHash = new Hashtable<EntityPlayerMP, PlayerMetadata>();
+    private Map<ServerPlayer, PlayerMetadata> metadataHash = new Hashtable<ServerPlayer, PlayerMetadata>();
 
     public PlayerManager() {
-        MinecraftForge.EVENT_BUS.register(this);
+        NeoForge.EVENT_BUS.register(this);
     }
 
     public class PlayerMetadata {
         private int timeout;
         public boolean interactEnable = false;
         public boolean interactRise = false, interactRiseBuffer = false;
-        EntityPlayer player;
+        Player player;
 
-        public PlayerMetadata(EntityPlayer p) {
+        public PlayerMetadata(Player p) {
             timeoutReset();
             this.player = p;
         }
@@ -75,7 +75,7 @@ public class PlayerManager {
     @SubscribeEvent
     public void tick(ServerTickEvent event) {
         if (event.phase != Phase.START) return;
-        for (Entry<EntityPlayerMP, PlayerMetadata> entry : metadataHash.entrySet()) {
+        for (Entry<ServerPlayer, PlayerMetadata> entry : metadataHash.entrySet()) {
             PlayerMetadata p = entry.getValue();
 
             p.interactRise = p.interactRiseBuffer;
@@ -87,7 +87,7 @@ public class PlayerManager {
         }
     }
 
-    public PlayerMetadata get(EntityPlayerMP player) {
+    public PlayerMetadata get(ServerPlayer player) {
         PlayerMetadata metadata = metadataHash.get(player);
         if (metadata != null)
             return metadata;
@@ -95,7 +95,7 @@ public class PlayerManager {
         return metadataHash.get(player);
     }
 
-    public PlayerMetadata get(EntityPlayer player) {
-        return get((EntityPlayerMP) player);
+    public PlayerMetadata get(Player player) {
+        return get((ServerPlayer) player);
     }
 }

@@ -4,9 +4,9 @@ import mods.eln.misc.Coordinate;
 import mods.eln.node.NodeBase;
 import mods.eln.node.NodeManager;
 import mods.eln.simplenode.computerprobe.ComputerProbeNode;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 public class PeripheralHandler /*implements IPeripheralProvider*/ {
 //

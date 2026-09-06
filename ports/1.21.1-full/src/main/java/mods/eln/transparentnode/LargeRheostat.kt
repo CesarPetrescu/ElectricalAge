@@ -23,10 +23,10 @@ import mods.eln.sim.process.heater.ResistorHeatThermalLoad
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor
 import mods.eln.sixnode.resistor.ResistorContainer
 import mods.eln.transparentnode.thermaldissipatorpassive.ThermalDissipatorPassiveDescriptor
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.IInventory
-import net.minecraft.item.ItemStack
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.Container
+import net.minecraft.world.item.ItemStack
 import org.lwjgl.opengl.GL11
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -40,7 +40,7 @@ class LargeRheostatDescriptor(name: String, val dissipator: ThermalDissipatorPas
         voltageLevelColor = VoltageLevelColor.Neutral
     }
 
-    fun getRsValue(inventory: IInventory): Double {
+    fun getRsValue(inventory: Container): Double {
         val core = inventory.getStackInSlot(ResistorContainer.coreId)
         return series.getValue(core.count)
     }
@@ -145,7 +145,7 @@ class LargeRheostatElement(node: TransparentNode, desc_: TransparentNodeDescript
         controlProcess.process(0.0)
     }
 
-    override fun inventoryChange(inventory: IInventory?) {
+    override fun inventoryChange(inventory: Container?) {
         super.inventoryChange(inventory)
         setupPhysical()
     }
@@ -175,8 +175,8 @@ class LargeRheostatElement(node: TransparentNode, desc_: TransparentNodeDescript
 
     override fun hasGui() = true
     override fun getInventory() = inventory
-    override fun onBlockActivated(entityPlayer: EntityPlayer?, side: Direction?, vx: Float, vy: Float, vz: Float) = false
-    override fun newContainer(side: Direction?, player: EntityPlayer?) = ResistorContainer(player, inventory)
+    override fun onBlockActivated(entityPlayer: Player?, side: Direction?, vx: Float, vy: Float, vz: Float) = false
+    override fun newContainer(side: Direction?, player: Player?) = ResistorContainer(player, inventory)
 
     override fun getWaila(): Map<String, String> = mutableMapOf(
         Pair(I18N.tr("Resistance"), Utils.plotOhm("", resistor.r)),
@@ -190,7 +190,7 @@ class LargeRheostatRender(entity: TransparentNodeEntity, desc: TransparentNodeDe
     val desc = desc as LargeRheostatDescriptor
     val inventory = TransparentNodeElementInventory(1, 64, this)
 
-    override fun getInventory(): IInventory {
+    override fun getInventory(): Container {
         return inventory
     }
 
@@ -231,13 +231,13 @@ class LargeRheostatRender(entity: TransparentNodeEntity, desc: TransparentNodeDe
         }
     }
 
-    override fun newGuiDraw(side: Direction, player: EntityPlayer): GuiScreen {
+    override fun newGuiDraw(side: Direction, player: Player): Screen {
         return LargeRheostatGUI(player, inventory, this)
     }
 
 }
 
-class LargeRheostatGUI(player: EntityPlayer, inventory: IInventory, internal var render: LargeRheostatRender) :
+class LargeRheostatGUI(player: Player, inventory: Container, internal var render: LargeRheostatRender) :
     GuiContainerEln(ResistorContainer(player, inventory)) {
 
     override fun postDraw(f: Float, x: Int, y: Int) {

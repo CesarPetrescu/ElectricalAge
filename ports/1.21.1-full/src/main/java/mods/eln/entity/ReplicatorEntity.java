@@ -1,30 +1,30 @@
 package mods.eln.entity;
 
 import mods.eln.misc.Utils;
-import net.minecraft.block.Block;
-import net.minecraft.entity.Entity;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EnumCreatureAttribute;
-import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.entity.ai.*;
-import net.minecraft.entity.monster.EntityMob;
-import net.minecraft.entity.passive.EntityVillager;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Items;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.Map.Entry;
 import java.util.Random;
 
-public class ReplicatorEntity extends EntityMob {
+public class ReplicatorEntity extends Monster {
 
     boolean isSpawnedFromWeather = false;
     double hungerTime = 10 * 60;
@@ -35,7 +35,7 @@ public class ReplicatorEntity extends EntityMob {
 
     public static final ArrayList<ItemStack> dropList = new ArrayList<ItemStack>();
 
-    public ReplicatorEntity(World par1World) {
+    public ReplicatorEntity(Level par1World) {
         super(par1World);
 
         enablePersistence();
@@ -51,12 +51,12 @@ public class ReplicatorEntity extends EntityMob {
         this.tasks.addTask(p++, new EntityAIMoveTowardsRestriction(this, 1.0D));
         this.tasks.addTask(p++, new EntityAIMoveThroughVillage(this, 1.0D, false));
         this.tasks.addTask(p++, new ConfigurableAiWander(this, 1.0D, 20));
-        this.tasks.addTask(p, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
+        this.tasks.addTask(p, new EntityAIWatchClosest(this, Player.class, 8.0F));
         this.tasks.addTask(p++, new EntityAILookIdle(this));
         p = 1;
         this.targetTasks.addTask(p++, new EntityAIHurtByTarget(this, true));
-        this.targetTasks.addTask(p, new EntityAINearestAttackableTarget(this, EntityPlayer.class, true, true));
-        this.targetTasks.addTask(p, new EntityAINearestAttackableTarget(this, EntityVillager.class, true, false));
+        this.targetTasks.addTask(p, new EntityAINearestAttackableTarget(this, Player.class, true, true));
+        this.targetTasks.addTask(p, new EntityAINearestAttackableTarget(this, Villager.class, true, false));
         this.targetTasks.addTask(p++, new ReplicatorHungryAttack(this, ReplicatorEntity.class, 0, false, true, null));
         // this.targetTasks.addTask(p++, new EntityAINearestAttackableTarget(this, ReplicatorEntity.class, 0, false));
         // this.targetTasks.addTask(p++, replicatorIa);
@@ -100,10 +100,10 @@ public class ReplicatorEntity extends EntityMob {
 
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(8.0D);
-        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(8.0D);
-        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.23000000417232513D);
-        this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(3.0D);
+        this.getEntityAttribute(Attributes.FOLLOW_RANGE).setBaseValue(8.0D);
+        this.getEntityAttribute(Attributes.MAX_HEALTH).setBaseValue(8.0D);
+        this.getEntityAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.23000000417232513D);
+        this.getEntityAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(3.0D);
         // this.getAttributeMap().func_111150_b(field_110186_bp).setAttribute(this.rand.nextDouble() * ForgeDummyContainer.zombieSummonBaseChance);
     }
 
@@ -151,14 +151,14 @@ public class ReplicatorEntity extends EntityMob {
     double hunger = (Math.random() - 0.5) * 0.3;
 
     @Override
-    public void writeEntityToNBT(NBTTagCompound nbt) {
+    public void writeEntityToNBT(CompoundTag nbt) {
         super.writeEntityToNBT(nbt);
         nbt.setDouble("ElnHunger", hunger);
         nbt.setBoolean("isSpawnedFromWeather", isSpawnedFromWeather);
     }
 
     @Override
-    public void readEntityFromNBT(NBTTagCompound nbt) {
+    public void readEntityFromNBT(CompoundTag nbt) {
         super.readEntityFromNBT(nbt);
 
         hunger = nbt.getDouble("ElnHunger");

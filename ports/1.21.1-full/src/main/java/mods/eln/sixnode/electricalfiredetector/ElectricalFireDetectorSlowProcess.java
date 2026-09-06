@@ -6,10 +6,10 @@ import mods.eln.misc.RcInterpolator;
 import mods.eln.misc.Utils;
 import mods.eln.sim.IProcess;
 import mods.eln.sixnode.electricalwatch.ElectricalWatchContainer;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockFire;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.FireBlock;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.BlockPos;
 
 import java.util.List;
 
@@ -99,7 +99,7 @@ public class ElectricalFireDetectorSlowProcess implements IProcess {
                     for (int dz = -maxRangeHalf; dz <= maxRangeHalf; ++dz) {
                         Block block = detectionBBCenter.world().getBlockState(new BlockPos(detectionBBCenter.pos.getX() + dx, detectionBBCenter.pos.getY() + dy,
                             detectionBBCenter.pos.getZ() + dz)).getBlock();
-                        if (block.getClass() == BlockFire.class) {
+                        if (block.getClass() == FireBlock.class) {
                             fireDetected = true;
 
                             Coordinate coord = element.getCoordinate();

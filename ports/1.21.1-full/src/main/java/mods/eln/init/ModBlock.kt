@@ -6,11 +6,11 @@ import mods.eln.node.six.SixNodeBlock
 import mods.eln.node.six.SixNodeEntity
 import mods.eln.node.transparent.TransparentNodeBlock
 import mods.eln.node.transparent.TransparentNodeEntity
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.material.Material
-import net.minecraft.entity.Entity
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.entity.Entity
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level
 import java.lang.Math.abs
 
 /**
@@ -90,7 +90,7 @@ class RubberBlock(name: String, private val bounce: Float) : Block(Material.WOOD
         setCreativeTab(Eln.Tab)
     }
     
-    override fun onLanded(worldIn: World, entityIn: Entity) {
+    override fun onLanded(worldIn: Level, entityIn: Entity) {
         if (abs(entityIn.motionY) > 0.1) {
             entityIn.motionY = abs(entityIn.motionY * bounce)
         } else {
@@ -98,7 +98,7 @@ class RubberBlock(name: String, private val bounce: Float) : Block(Material.WOOD
         }
     }
 
-    override fun onFallenUpon(worldIn: World, pos: BlockPos, entityIn: Entity, fallDistance: Float) {
+    override fun onFallenUpon(worldIn: Level, pos: BlockPos, entityIn: Entity, fallDistance: Float) {
         super.onFallenUpon(worldIn, pos, entityIn, fallDistance / 8.0f)
     }
 }

@@ -9,11 +9,11 @@ import mods.eln.misc.Coordinate;
 import mods.eln.misc.Utils;
 import mods.eln.sim.process.destruct.WorldExplosion;
 import mods.eln.sound.SoundCommand;
-import net.minecraft.block.Block;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.phys.AABB;
 
 import java.util.List;
 import java.util.Random;
@@ -159,10 +159,10 @@ public class TurretSlowProcess extends StateMachine {
             }
 
             Coordinate coord = element.coordinate();
-            AxisAlignedBB bb = coord.getAxisAlignedBB((int) element.getDescriptor().getProperties().detectionDistance);
+            AABB bb = coord.getAxisAlignedBB((int) element.getDescriptor().getProperties().detectionDistance);
             @SuppressWarnings("unchecked")
-            List<EntityLivingBase> list = coord.world().getEntitiesWithinAABB(EntityLivingBase.class, bb);
-            for (EntityLivingBase entity : list) {
+            List<LivingEntity> list = coord.world().getEntitiesWithinAABB(LivingEntity.class, bb);
+            for (LivingEntity entity : list) {
                 double dx = (entity.posX - coord.pos.getX() - 0.5);
                 double dz = (entity.posZ - coord.pos.getY() - 0.5);
                 double entityAngle = -Math.toDegrees(Math.atan2(dz, dx));
@@ -222,11 +222,11 @@ public class TurretSlowProcess extends StateMachine {
     }
 
     private class AimingState implements State {
-        public AimingState(EntityLivingBase target) {
+        public AimingState(LivingEntity target) {
             this.target = target;
         }
 
-        private final EntityLivingBase target;
+        private final LivingEntity target;
 
         @Override
         public void enter() {
@@ -311,11 +311,11 @@ public class TurretSlowProcess extends StateMachine {
     }
 
     class ShootState implements State {
-        public ShootState(EntityLivingBase target) {
+        public ShootState(LivingEntity target) {
             this.target = target;
         }
 
-        private final EntityLivingBase target;
+        private final LivingEntity target;
 
         @Override
         public void enter() {

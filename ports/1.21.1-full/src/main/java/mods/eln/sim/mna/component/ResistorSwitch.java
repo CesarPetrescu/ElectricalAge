@@ -3,7 +3,7 @@ package mods.eln.sim.mna.component;
 import mods.eln.misc.INBTTReady;
 import mods.eln.sim.mna.misc.MnaConst;
 import mods.eln.sim.mna.state.State;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundTag;
 
 public class ResistorSwitch extends Resistor implements INBTTReady {
 
@@ -35,7 +35,7 @@ public class ResistorSwitch extends Resistor implements INBTTReady {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt, String str) {
+    public void readFromNBT(CompoundTag nbt, String str) {
         str += name;
         setR(nbt.getDouble(str + "R"));
         if (Double.isNaN(baseR) || baseR == 0) {
@@ -46,7 +46,7 @@ public class ResistorSwitch extends Resistor implements INBTTReady {
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt, String str) {
+    public CompoundTag writeToNBT(CompoundTag nbt, String str) {
         str += name;
         nbt.setDouble(str + "R", baseR);
         nbt.setBoolean(str + "State", getState());

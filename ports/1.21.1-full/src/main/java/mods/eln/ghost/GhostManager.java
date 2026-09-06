@@ -6,18 +6,18 @@ import mods.eln.misc.Coordinate;
 import mods.eln.misc.Utils;
 import mods.eln.node.NodeBase;
 import mods.eln.node.NodeManager;
-import net.minecraft.block.Block;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.storage.WorldSavedData;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.saveddata.SavedData;
 
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-public class GhostManager extends WorldSavedData {
+public class GhostManager extends SavedData {
     public GhostManager(String name) {
         super(name);
     }
@@ -115,7 +115,7 @@ public class GhostManager extends WorldSavedData {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt) {
+    public void readFromNBT(CompoundTag nbt) {
 		/*for(NBTTagCompound o : Utils.getTags(nbt)) {
 			NBTTagCompound tag = (NBTTagCompound) o;
 
@@ -126,7 +126,7 @@ public class GhostManager extends WorldSavedData {
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+    public CompoundTag writeToNBT(CompoundTag nbt) {
         /*	int nodeCounter = 0;
 
 		for(GhostElement ghost : ghostTable.values()) {
@@ -137,9 +137,9 @@ public class GhostManager extends WorldSavedData {
     	return nbt;
     }
 
-    public void loadFromNBT(NBTTagCompound nbt) {
-        for (NBTTagCompound o : Utils.getTags(nbt)) {
-            NBTTagCompound tag = (NBTTagCompound) o;
+    public void loadFromNBT(CompoundTag nbt) {
+        for (CompoundTag o : Utils.getTags(nbt)) {
+            CompoundTag tag = (CompoundTag) o;
 
             GhostElement ghost = new GhostElement();
             ghost.readFromNBT(tag, "");
@@ -147,12 +147,12 @@ public class GhostManager extends WorldSavedData {
         }
     }
 
-    public void saveToNBT(NBTTagCompound nbt, int dim) {
+    public void saveToNBT(CompoundTag nbt, int dim) {
         int nodeCounter = 0;
 
         for (GhostElement ghost : ghostTable.values()) {
             if (dim != Integer.MIN_VALUE && ghost.elementCoordinate.getDimension() != dim) continue;
-            NBTTagCompound nbtGhost = new NBTTagCompound();
+            CompoundTag nbtGhost = new CompoundTag();
             ghost.writeToNBT(nbtGhost, "");
             nbt.setTag("n" + nodeCounter++, nbtGhost);
         }
@@ -170,7 +170,7 @@ public class GhostManager extends WorldSavedData {
     }
 
     //TODO(1.10):
-    public boolean canCreateGhostAt(World world, BlockPos pos) {
+    public boolean canCreateGhostAt(Level world, BlockPos pos) {
         //Probably isn't needed anymore since now when asked for a chunk even if it isnt generated it auto generates it
         /*
         if (!world.getChunkProvider().chunkExists(pos.getX() >> 4, pos.getZ() >> 4)) {

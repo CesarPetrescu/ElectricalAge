@@ -9,10 +9,10 @@ import mods.eln.node.transparent.TransparentNodeElementRender;
 import mods.eln.node.transparent.TransparentNodeEntity;
 import mods.eln.sound.LoopedSound;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.ISound;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.client.resources.sounds.SoundInstance;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.core.BlockPos;
 import org.lwjgl.opengl.GL11;
 
 import java.io.DataInputStream;
@@ -66,7 +66,7 @@ public class AutoMinerRender extends TransparentNodeElementRender {
             ledsPState[idx] = Math.random() > 0.5;
         }
 
-        addLoopedSound(new LoopedSound("eln:autominer", coordinate(), ISound.AttenuationType.LINEAR) {
+        addLoopedSound(new LoopedSound("eln:autominer", coordinate(), SoundInstance.AttenuationType.LINEAR) {
             @Override
             public float getVolume() {
                 if (powerOk &&
@@ -207,7 +207,7 @@ public class AutoMinerRender extends TransparentNodeElementRender {
     }
 
     @Override
-    public GuiScreen newGuiDraw(Direction side, EntityPlayer player) {
+    public Screen newGuiDraw(Direction side, Player player) {
         return new AutoMinerGuiDraw(player, inventory, this);
     }
 

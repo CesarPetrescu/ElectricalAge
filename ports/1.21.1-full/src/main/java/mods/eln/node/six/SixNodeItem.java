@@ -6,19 +6,18 @@ import mods.eln.misc.Coordinate;
 import mods.eln.misc.Direction;
 import mods.eln.misc.LRDU;
 import mods.eln.misc.Utils;
-import net.minecraft.block.Block;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
 public class SixNodeItem extends GenericItemBlockUsingDamage<SixNodeDescriptor> {
@@ -34,7 +33,7 @@ public class SixNodeItem extends GenericItemBlockUsingDamage<SixNodeDescriptor> 
     }
 
     @Override
-    public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+    public InteractionResult onItemUse(Player player, Level world, BlockPos pos, InteractionHand hand, net.minecraft.core.Direction facing, float hitX, float hitY, float hitZ) {
         ItemStack stack = player.getHeldItem(hand);
         Block block = world.getBlockState(pos).getBlock();
         int side = facing.getIndex();
@@ -61,30 +60,30 @@ public class SixNodeItem extends GenericItemBlockUsingDamage<SixNodeDescriptor> 
         }
         
         if (stack.isEmpty()) {
-            return EnumActionResult.FAIL;
+            return InteractionResult.FAIL;
         }
         if (!player.canPlayerEdit(pos, facing, stack)) {
-            return EnumActionResult.FAIL;
+            return InteractionResult.FAIL;
         }
         if ((pos.getY() == 255) && (this.block.getMaterial(world.getBlockState(pos)).isSolid())) {
-            return EnumActionResult.FAIL;
+            return InteractionResult.FAIL;
         }
 
         // Place the block
         int i1 = getMetadata(stack.getItemDamage());
-        IBlockState state = this.block.getStateFromMeta(i1);
+        BlockState state = this.block.getStateFromMeta(i1);
         
         // Use the actual facing, not the hit vector
         if (placeBlockAt(stack, player, world, pos, facing, hitX, hitY, hitZ, state)) {
             SoundType soundtype = this.block.getSoundType(state, world, pos, player);
             world.playSound(player, new BlockPos(pos.getX() + 0.5F, pos.getY() + 0.5F, pos.getZ() + 0.5F),
-                soundtype.getPlaceSound(), SoundCategory.BLOCKS,
+                soundtype.getPlaceSound(), SoundSource.BLOCKS,
                 (soundtype.getVolume() + 1.0F) / 2.0F, soundtype.getPitch() * 0.8F);
             stack.shrink(1);
-            return EnumActionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
         
-        return EnumActionResult.FAIL;
+        return InteractionResult.FAIL;
     }
 
     /**
@@ -93,7 +92,7 @@ public class SixNodeItem extends GenericItemBlockUsingDamage<SixNodeDescriptor> 
 
     // func_150936_a <= canPlaceItemBlockOnSide
     @Override
-    public boolean canPlaceBlockOnSide(World par1World, BlockPos pos, EnumFacing side, EntityPlayer par6EntityPlayer, ItemStack par7ItemStack) {
+    public boolean canPlaceBlockOnSide(Level par1World, BlockPos pos, net.minecraft.core.Direction side, Player par6EntityPlayer, ItemStack par7ItemStack) {
         if (!isStackValidToPlace(par7ItemStack))
             return false;
 
@@ -114,7 +113,7 @@ public class SixNodeItem extends GenericItemBlockUsingDamage<SixNodeDescriptor> 
         return descriptor != null;
     }
 
-    public boolean placeBlockAt(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumFacing side, float hitX, float hitY, float hitZ, IBlockState state) {
+    public boolean placeBlockAt(ItemStack stack, Player player, Level world, BlockPos pos, net.minecraft.core.Direction side, float hitX, float hitY, float hitZ, BlockState state) {
         if (world.isRemote) return false;
         if (!isStackValidToPlace(stack)) return false;
 
@@ -146,12 +145,12 @@ public class SixNodeItem extends GenericItemBlockUsingDamage<SixNodeDescriptor> 
             boolean created = sixNode.createSubBlock(stack, direction, player);
             if (!created) return false;
 
-            IBlockState oldState = world.getBlockState(pos);
+            BlockState oldState = world.getBlockState(pos);
             boolean blockSet = world.setBlockState(pos, block.getStateFromMeta(block.getMetaFromState(state) & 0x03));
-            IBlockState newState = world.getBlockState(pos);
+            BlockState newState = world.getBlockState(pos);
 
             // Mark TileEntity dirty for save
-            TileEntity te = world.getTileEntity(pos);
+            BlockEntity te = world.getTileEntity(pos);
             if (te != null) {
                 te.markDirty();
                 // Force immediate client update
@@ -163,7 +162,7 @@ public class SixNodeItem extends GenericItemBlockUsingDamage<SixNodeDescriptor> 
             notifyNeighborsAndUpdate(world, pos, block, sixNode, oldState, newState);
 
             // Play stone placement sound (like original mod)
-            world.playSound(player, pos, SoundType.STONE.getPlaceSound(), SoundCategory.BLOCKS,
+            world.playSound(player, pos, SoundType.STONE.getPlaceSound(), SoundSource.BLOCKS,
                 (SoundType.STONE.getVolume() + 1.0F) / 2.0F, SoundType.STONE.getPitch() * 0.8F);
 
             block.onBlockPlacedBy(world, pos, direction, player, state);
@@ -199,7 +198,7 @@ public class SixNodeItem extends GenericItemBlockUsingDamage<SixNodeDescriptor> 
             sixNode.neighborBlockRead();
             sixNode.reconnect();
             
-            IBlockState oldState = world.getBlockState(pos);
+            BlockState oldState = world.getBlockState(pos);
             notifyNeighborsAndUpdate(world, pos, block, sixNode, oldState, oldState);
 
             block.onBlockPlacedBy(world, pos, direction, player, state);
@@ -211,7 +210,7 @@ public class SixNodeItem extends GenericItemBlockUsingDamage<SixNodeDescriptor> 
     /**
      * Helper method to notify neighbors and trigger updates for cable placement/breaking.
      */
-    private void notifyNeighborsAndUpdate(World world, BlockPos pos, SixNodeBlock block, SixNode sixNode, IBlockState oldState, IBlockState newState) {
+    private void notifyNeighborsAndUpdate(Level world, BlockPos pos, SixNodeBlock block, SixNode sixNode, BlockState oldState, BlockState newState) {
         // Use consolidated 3x3x3 notification for wrappable/corner connections
         Utils.notifyNodeNeighbors(world, pos);
 

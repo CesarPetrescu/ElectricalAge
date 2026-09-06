@@ -8,10 +8,10 @@ import mods.eln.node.transparent.TransparentNodeElementInventory;
 import mods.eln.node.transparent.TransparentNodeElementRender;
 import mods.eln.node.transparent.TransparentNodeEntity;
 import mods.eln.sound.LoopedSound;
-import net.minecraft.client.audio.ISound;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.client.resources.sounds.SoundInstance;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
 import org.lwjgl.opengl.GL11;
 
 import java.io.DataInputStream;
@@ -27,8 +27,8 @@ public class ElectricalMachineRender extends TransparentNodeElementRender {
     private CableRenderType connectionType;
     private final LRDUMask eConn = new LRDUMask();
 
-    private EntityItem inEntity;
-    private EntityItem outEntity;
+    private ItemEntity inEntity;
+    private ItemEntity outEntity;
     float powerFactor;
     float processState;
     private float processStatePerSecond;
@@ -42,7 +42,7 @@ public class ElectricalMachineRender extends TransparentNodeElementRender {
         drawHandle = this.descriptor.newDrawHandle();
 
         if (this.descriptor.runningSound != null) {
-            addLoopedSound(new LoopedSound(this.descriptor.runningSound, coordinate(), ISound.AttenuationType.LINEAR) {
+            addLoopedSound(new LoopedSound(this.descriptor.runningSound, coordinate(), SoundInstance.AttenuationType.LINEAR) {
                 @Override
                 public float getPitch() {
                     return powerFactor;
@@ -81,7 +81,7 @@ public class ElectricalMachineRender extends TransparentNodeElementRender {
     }
 
     @Override
-    public GuiScreen newGuiDraw(Direction side, EntityPlayer player) {
+    public Screen newGuiDraw(Direction side, Player player) {
         return new ElectricalMachineGuiDraw(player, inventory, this);
     }
 

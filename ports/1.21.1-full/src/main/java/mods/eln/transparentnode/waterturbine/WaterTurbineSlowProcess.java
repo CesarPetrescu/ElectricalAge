@@ -4,10 +4,10 @@ import mods.eln.misc.INBTTReady;
 import mods.eln.misc.RcRcInterpolator;
 import mods.eln.misc.Utils;
 import mods.eln.sim.IProcess;
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.nbt.CompoundTag;
 
 public class WaterTurbineSlowProcess implements IProcess, INBTTReady {
 
@@ -45,7 +45,7 @@ public class WaterTurbineSlowProcess implements IProcess, INBTTReady {
         //Block b = turbine.waterCoord.getBlock();
         double time = 0;
         if (turbine.waterCoord.doesBlockExist()) {
-            IBlockState state = turbine.waterCoord.getBlockState();
+            BlockState state = turbine.waterCoord.getBlockState();
             Block block = state.getBlock();
             int blockMeta = block.getMetaFromState(state);
             //Utils.println("WATER : " + b + "    " + turbine.waterCoord.getMeta());
@@ -60,12 +60,12 @@ public class WaterTurbineSlowProcess implements IProcess, INBTTReady {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt, String str) {
+    public void readFromNBT(CompoundTag nbt, String str) {
         filter.readFromNBT(nbt, str + "filter");
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt, String str) {
+    public CompoundTag writeToNBT(CompoundTag nbt, String str) {
 
         filter.writeToNBT(nbt, str + "filter");
         return nbt;

@@ -2,19 +2,19 @@ package mods.eln.generic;
 
 import mods.eln.misc.Utils;
 import mods.eln.misc.UtilsClient;
-import net.minecraft.block.Block;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.NonNullList;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.core.NonNullList;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
-public class GenericItemBlockUsingDamage<Descriptor extends GenericItemBlockUsingDamageDescriptor> extends ItemBlock {
+public class GenericItemBlockUsingDamage<Descriptor extends GenericItemBlockUsingDamageDescriptor> extends BlockItem {
 
     public Hashtable<Integer, Descriptor> subItemList = new Hashtable<Integer, Descriptor>();
     public ArrayList<Integer> orderList = new ArrayList<Integer>();
@@ -110,7 +110,7 @@ public class GenericItemBlockUsingDamage<Descriptor extends GenericItemBlockUsin
 
     @SideOnly(Side.CLIENT)
     @Override
-    public void getSubItems(CreativeTabs tabs, NonNullList<ItemStack> items) {
+    public void getSubItems(CreativeModeTab tabs, NonNullList<ItemStack> items) {
         if (this.isInCreativeTab(tabs)) {
             // Add all sub-items to the creative tab
             for (int id : orderList) {
@@ -124,7 +124,7 @@ public class GenericItemBlockUsingDamage<Descriptor extends GenericItemBlockUsin
         }
     }
 
-    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List list, boolean par4) {
+    public void addInformation(ItemStack itemStack, Player entityPlayer, List list, boolean par4) {
         Descriptor desc = getDescriptor(itemStack);
         if (desc == null) return;
         List listFromDescriptor = new ArrayList();

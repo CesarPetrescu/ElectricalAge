@@ -1,6 +1,6 @@
 package cofh.api.energy;
 
-import net.minecraft.util.EnumFacing;
+import net.minecraft.core.Direction;
 
 /**
  * Implement this interface on Tile Entities which should handle energy, generally storing it in one or more internal {@link IEnergyStorage} objects.
@@ -16,11 +16,11 @@ public interface IEnergyHandler extends IEnergyConnection {
 	/**
 	 * Returns the amount of energy currently stored.
 	 */
-	int getEnergyStored(EnumFacing from);
+	int getEnergyStored(Direction from);
 
 	/**
 	 * Returns the maximum amount of energy that can be stored.
 	 */
-	int getMaxEnergyStored(EnumFacing from);
+	int getMaxEnergyStored(Direction from);
 
 }

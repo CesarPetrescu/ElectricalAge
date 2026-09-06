@@ -23,7 +23,7 @@ import mods.eln.sixnode.wirelesssignal.aggregator.BiggerAggregator;
 import mods.eln.sixnode.wirelesssignal.aggregator.IWirelessSignalAggregator;
 import mods.eln.sixnode.wirelesssignal.aggregator.SmallerAggregator;
 import mods.eln.sixnode.wirelesssignal.tx.WirelessSignalTxElement;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraftforge.fml.common.Optional;
 
 import java.util.HashMap;
@@ -322,7 +322,7 @@ public class ComputerProbeNode extends SimpleNode /*implements IPeripheral */{
 
     // ********************** NBT *****************
 
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+    public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
         nbt.setInteger("wirelessTxCount", wirelessTxMap.size());
         int idx = 0;
@@ -333,7 +333,7 @@ public class ComputerProbeNode extends SimpleNode /*implements IPeripheral */{
         return nbt;
     }
 
-    public void readFromNBT(NBTTagCompound nbt) {
+    public void readFromNBT(CompoundTag nbt) {
         super.readFromNBT(nbt);
         int wirelessTxCount = nbt.getInteger("wirelessTxCount");
         for (int idx = 0; idx < wirelessTxCount; idx++) {

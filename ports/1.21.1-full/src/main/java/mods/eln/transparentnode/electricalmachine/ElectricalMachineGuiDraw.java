@@ -4,8 +4,8 @@ import mods.eln.gui.GuiContainerEln;
 import mods.eln.gui.GuiHelperContainer;
 import mods.eln.gui.GuiVerticalVoltageSupplyBar;
 import mods.eln.node.transparent.TransparentNodeElementInventory;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
 
 public class ElectricalMachineGuiDraw extends GuiContainerEln {
     private final TransparentNodeElementInventory inventory;
@@ -13,7 +13,7 @@ public class ElectricalMachineGuiDraw extends GuiContainerEln {
 
     private GuiVerticalVoltageSupplyBar voltageBar;
 
-    public ElectricalMachineGuiDraw(EntityPlayer player, IInventory inventory, ElectricalMachineRender render) {
+    public ElectricalMachineGuiDraw(Player player, Container inventory, ElectricalMachineRender render) {
         super(new ElectricalMachineContainer(null, player, inventory, render.descriptor));
         this.inventory = (TransparentNodeElementInventory) inventory;
         this.render = render;

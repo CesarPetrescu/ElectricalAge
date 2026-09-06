@@ -7,15 +7,15 @@ import mods.eln.misc.INBTTReady;
 import mods.eln.misc.RcInterpolator;
 import mods.eln.misc.Utils;
 import mods.eln.sim.IProcess;
-import net.minecraft.block.Block;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +32,7 @@ public class ElectricalEntitySensorSlowProcess implements IProcess, INBTTReady {
     private boolean oldState = false;
     boolean state = false;
 
-    HashMap<Object, Vec3d> lastEPos = new HashMap<Object, Vec3d>();
+    HashMap<Object, Vec3> lastEPos = new HashMap<Object, Vec3>();
 
     ElectricalEntitySensorSlowProcess(ElectricalEntitySensorElement element) {
         this.element = element;
@@ -49,7 +49,7 @@ public class ElectricalEntitySensorSlowProcess implements IProcess, INBTTReady {
             Coordinate coord = element.sixNode.coordinate;
             ItemStack filterStack = element.getInventory().getStackInSlot(ElectricalEntitySensorContainer.filterId);
 
-            Class filterClass = EntityLivingBase.class;
+            Class filterClass = LivingEntity.class;
 
             if (filterStack != null) {
                 GenericItemUsingDamageDescriptor gen = EntitySensorFilterDescriptor.getDescriptor(filterStack);
@@ -59,15 +59,15 @@ public class ElectricalEntitySensorSlowProcess implements IProcess, INBTTReady {
                 }
             }
 
-            World world = coord.world();
+            Level world = coord.world();
             double rayMax = element.descriptor.maxRange;
-            AxisAlignedBB bb = coord.getAxisAlignedBB((int) rayMax);
+            AABB bb = coord.getAxisAlignedBB((int) rayMax);
             List list = world.getEntitiesWithinAABB(filterClass, bb);
             double output = 0;
 
             for (Object o : list) {
                 Entity e = (Entity) o;
-                Vec3d lastPos;
+                Vec3 lastPos;
                 if ((lastPos = lastEPos.get(e)) != null) {
                     double weight = 0.4;
                     List<Block> blockList = Utils.traceRay(world, coord.pos.getX() + 0.5, coord.pos.getY() + 0.5, coord.pos.getZ() + 0.5, e.posX, e.posY + e.getEyeHeight(), e.posZ);
@@ -81,7 +81,7 @@ public class ElectricalEntitySensorSlowProcess implements IProcess, INBTTReady {
                     }
 
                     if (view) {
-                        if (e instanceof EntityPlayerMP) weight *= 2.0;
+                        if (e instanceof ServerPlayer) weight *= 2.0;
                         double distance = Utils.getLength(coord.pos.getX() + 0.5, coord.pos.getY() + 0.5, coord.pos.getZ() + 0.5, e.posX, e.posY + e.getEyeHeight(), e.posZ);
                         if (distance < rayMax) {
                             double sf = 1;
@@ -96,7 +96,7 @@ public class ElectricalEntitySensorSlowProcess implements IProcess, INBTTReady {
                     }
                 }
                 output = Math.min(1, output);
-                lastEPos.put(e, new Vec3d(e.posX, e.posY, e.posZ));
+                lastEPos.put(e, new Vec3(e.posX, e.posY, e.posZ));
             }
             //Utils.println(output);
             rc1.setTarget((float) output);
@@ -114,13 +114,13 @@ public class ElectricalEntitySensorSlowProcess implements IProcess, INBTTReady {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt, String str) {
+    public void readFromNBT(CompoundTag nbt, String str) {
         rc1.readFromNBT(nbt, str + "rc1");
         rc2.readFromNBT(nbt, str + "rc2");
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt, String str) {
+    public CompoundTag writeToNBT(CompoundTag nbt, String str) {
         rc1.writeToNBT(nbt, str + "rc1");
         rc2.writeToNBT(nbt, str + "rc2");
         return nbt;

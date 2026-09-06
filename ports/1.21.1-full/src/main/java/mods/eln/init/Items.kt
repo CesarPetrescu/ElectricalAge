@@ -10,9 +10,9 @@ import mods.eln.item.regulator.RegulatorAnalogDescriptor
 import mods.eln.item.regulator.RegulatorOnOffDescriptor
 import mods.eln.sixnode.lampsocket.LampSocketType
 import mods.eln.sixnode.wirelesssignal.WirelessSignalAnalyserItemDescriptor
-import net.minecraft.init.Blocks
-import net.minecraft.init.Items as McItems
-import net.minecraft.item.ItemStack
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.Items as McItems
+import net.minecraft.world.item.ItemStack
 import net.minecraftforge.oredict.OreDictionary
 
 /**

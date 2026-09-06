@@ -4,8 +4,8 @@ import mods.eln.gui.GuiButtonEln;
 import mods.eln.gui.GuiContainerEln;
 import mods.eln.gui.GuiHelperContainer;
 import mods.eln.gui.IGuiObject;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
 
 import static mods.eln.i18n.I18N.tr;
 
@@ -15,7 +15,7 @@ public class BatteryChargerGui extends GuiContainerEln {
 
     GuiButtonEln powerOn;
 
-    public BatteryChargerGui(BatteryChargerRender render, EntityPlayer player, IInventory inventory) {
+    public BatteryChargerGui(BatteryChargerRender render, Player player, Container inventory) {
         super(new BatteryChargerContainer(player, inventory));
         this.render = render;
     }

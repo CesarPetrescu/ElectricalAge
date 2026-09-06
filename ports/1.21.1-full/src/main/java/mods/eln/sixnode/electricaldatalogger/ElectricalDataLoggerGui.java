@@ -4,9 +4,9 @@ import mods.eln.gui.*;
 import mods.eln.gui.GuiTextFieldEln.GuiTextFieldElnObserver;
 import mods.eln.misc.Color;
 import mods.eln.misc.UtilsClient;
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
 import org.lwjgl.opengl.GL11;
 
 import java.text.NumberFormat;
@@ -24,7 +24,7 @@ public class ElectricalDataLoggerGui extends GuiContainerEln implements GuiTextF
 
     State state = State.display;
 
-    public ElectricalDataLoggerGui(EntityPlayer player, IInventory inventory, ElectricalDataLoggerRender render) {
+    public ElectricalDataLoggerGui(Player player, Container inventory, ElectricalDataLoggerRender render) {
         super(new ElectricalDataLoggerContainer(player, inventory));
         this.render = render;
     }

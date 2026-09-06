@@ -1,6 +1,6 @@
 package cofh.api.energy;
 
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * Implement this interface on Items classes that support external manipulation of their internal energy storages.

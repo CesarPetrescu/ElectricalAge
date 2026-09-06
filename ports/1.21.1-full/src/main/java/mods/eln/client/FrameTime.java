@@ -1,14 +1,14 @@
 package mods.eln.client;
 
-import net.minecraftforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.fml.common.gameevent.TickEvent.RenderTickEvent;
 import mods.eln.misc.Utils;
 import mods.eln.node.NodeBlockEntity;
 import net.minecraft.client.Minecraft;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 
 import java.util.Iterator;
 
@@ -17,7 +17,7 @@ public class FrameTime {
 
     public FrameTime() {
         instance = this;
-        MinecraftForge.EVENT_BUS.register(this);
+        NeoForge.EVENT_BUS.register(this);
     }
 
     public void init() {
@@ -60,7 +60,7 @@ public class FrameTime {
 
         //Utils.println(NodeBlockEntity.clientList.size());
         Iterator<NodeBlockEntity> i = NodeBlockEntity.clientList.iterator();
-        World w = Minecraft.getMinecraft().world;
+        Level w = Minecraft.getMinecraft().world;
 
         if (!Utils.isGameInPause()) {
             float deltaTcaped = getNotCaped2();

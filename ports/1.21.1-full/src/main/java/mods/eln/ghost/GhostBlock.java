@@ -1,12 +1,11 @@
 package mods.eln.ghost;
 
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.EnumBlockRenderType;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.core.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -14,27 +13,27 @@ import mods.eln.Eln;
 import mods.eln.misc.Coordinate;
 import mods.eln.misc.Direction;
 import mods.eln.node.transparent.TransparentNodeEntity;
-import net.minecraft.block.Block;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.block.material.Material;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Random;
 
-import net.minecraft.block.properties.PropertyInteger;
-import net.minecraft.block.state.BlockStateContainer;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.block.state.StateDefinition;
 
 public class GhostBlock extends Block {
 
-    public static final PropertyInteger META = PropertyInteger.create("meta", 0, 15);
+    public static final IntegerProperty META = IntegerProperty.create("meta", 0, 15);
 
     public static final int tCube = 0;
     public static final int tFloor = 1;
@@ -46,23 +45,23 @@ public class GhostBlock extends Block {
     }
 
     @Override
-    protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, META);
+    protected StateDefinition createBlockState() {
+        return new StateDefinition(this, META);
     }
 
     @Override
-    public IBlockState getStateFromMeta(int meta) {
+    public BlockState getStateFromMeta(int meta) {
         return getDefaultState().withProperty(META, meta);
     }
 
     @Override
-    public int getMetaFromState(IBlockState state) {
+    public int getMetaFromState(BlockState state) {
         return state.getValue(META);
     }
 
     @Nullable
     @Override
-    public Item getItemDropped(IBlockState state, Random rand, int fortune) {
+    public Item getItemDropped(BlockState state, Random rand, int fortune) {
         return null;
     }
 
@@ -151,47 +150,47 @@ public class GhostBlock extends Block {
 
 
     @Override
-    public int getLightOpacity(IBlockState state) {
+    public int getLightOpacity(BlockState state) {
         return 0;
     }
 
     @Override
-    public boolean isTranslucent(IBlockState state) {
+    public boolean isTranslucent(BlockState state) {
         return true;
     }
 
     @Override
-    public boolean isOpaqueCube(IBlockState state) {
+    public boolean isOpaqueCube(BlockState state) {
         return false;
     }
 
     @Override
-    public boolean isFullCube(IBlockState state) {
+    public boolean isFullCube(BlockState state) {
         return false;
     }
 
     @Override
-    public EnumBlockRenderType getRenderType(IBlockState state) {
-        return EnumBlockRenderType.INVISIBLE;
+    public RenderShape getRenderType(BlockState state) {
+        return RenderShape.INVISIBLE;
     }
 
     @Override
-    public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
+    public ItemStack getPickBlock(BlockState state, RayTraceResult target, Level world, BlockPos pos, Player player) {
         return ItemStack.EMPTY;
     }
 
     @Override
-    public boolean isTopSolid(IBlockState state) {
+    public boolean isTopSolid(BlockState state) {
         return false;
     }
 
     @Override
-    public boolean isSideSolid(IBlockState base_state, IBlockAccess world, BlockPos pos, EnumFacing side) {
+    public boolean isSideSolid(BlockState base_state, BlockGetter world, BlockPos pos, net.minecraft.core.Direction side) {
         return false;
     }
 
     @Override
-    public void breakBlock(World world, BlockPos pos, IBlockState state) {
+    public void breakBlock(Level world, BlockPos pos, BlockState state) {
         if (!world.isRemote) {
             GhostElement element = getElement(world, pos);
             if (element != null) {
@@ -202,7 +201,7 @@ public class GhostBlock extends Block {
     }
 
     @Override
-    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+    public boolean onBlockActivated(Level world, BlockPos pos, BlockState state, Player player, InteractionHand hand, net.minecraft.core.Direction facing, float hitX, float hitY, float hitZ) {
         if (!world.isRemote) {
             GhostElement element = getElement(world, pos);
             if (element != null)
@@ -211,12 +210,12 @@ public class GhostBlock extends Block {
         return true;
     }
 
-    private GhostElement getElement(World world, BlockPos pos) {
+    private GhostElement getElement(Level world, BlockPos pos) {
         return Eln.ghostManager.getGhost(new Coordinate(pos, world));
     }
 
     @Override
-    public float getBlockHardness(IBlockState blockState, World worldIn, BlockPos pos) {
+    public float getBlockHardness(BlockState blockState, Level worldIn, BlockPos pos) {
         return 0.5f;
     }
 

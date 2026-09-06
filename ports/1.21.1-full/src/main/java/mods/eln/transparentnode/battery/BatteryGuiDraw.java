@@ -3,8 +3,8 @@ package mods.eln.transparentnode.battery;
 import mods.eln.gui.*;
 import mods.eln.misc.Utils;
 import mods.eln.node.transparent.TransparentNodeElementInventory;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
 
 import static mods.eln.i18n.I18N.tr;
 
@@ -15,7 +15,7 @@ public class BatteryGuiDraw extends GuiContainerEln {
     GuiButtonEln buttonGrounded;
     GuiVerticalProgressBar energyBar;
 
-    public BatteryGuiDraw(EntityPlayer player, IInventory inventory, BatteryRender render) {
+    public BatteryGuiDraw(Player player, Container inventory, BatteryRender render) {
         super(new BatteryContainer(null, player, inventory));
         this.inventory = (TransparentNodeElementInventory) inventory;
         this.render = render;

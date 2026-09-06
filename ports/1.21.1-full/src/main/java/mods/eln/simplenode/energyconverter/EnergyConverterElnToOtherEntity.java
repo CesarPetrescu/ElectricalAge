@@ -9,10 +9,9 @@ import mods.eln.Other;
 import mods.eln.misc.Direction;
 import mods.eln.node.simple.SimpleNode;
 import mods.eln.node.simple.SimpleNodeEntity;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -38,13 +37,13 @@ public class EnergyConverterElnToOtherEntity extends SimpleNodeEntity implements
     }
 
     @Override
-    public boolean onBlockActivated(EntityPlayer entityPlayer, Direction side, float vx, float vy, float vz) {
+    public boolean onBlockActivated(Player entityPlayer, Direction side, float vx, float vy, float vz) {
         return super.onBlockActivated(entityPlayer, side, vx, vy, vz);
     }
 
     @Override
     @SideOnly(Side.CLIENT)
-    public GuiScreen newGuiDraw(Direction side, EntityPlayer player) {
+    public Screen newGuiDraw(Direction side, Player player) {
         return new EnergyConverterElnToOtherGui(player, this);
     }
 
@@ -145,7 +144,7 @@ public class EnergyConverterElnToOtherEntity extends SimpleNodeEntity implements
     // *************** RF **************
     @Override
     @Optional.Method(modid = Other.modIdTe)
-    public boolean canConnectEnergy(EnumFacing from) {
+    public boolean canConnectEnergy(net.minecraft.core.Direction from) {
         // Utils.println("*****canConnectEnergy*****");
         // return true;
         if (world.isRemote)
@@ -158,7 +157,7 @@ public class EnergyConverterElnToOtherEntity extends SimpleNodeEntity implements
 
     @Override
     @Optional.Method(modid = Other.modIdTe)
-    public int extractEnergy(EnumFacing from, int maxExtract, boolean simulate) {
+    public int extractEnergy(net.minecraft.core.Direction from, int maxExtract, boolean simulate) {
         // Utils.println("*****extractEnergy*****");
         if (world.isRemote)
             return 0;
@@ -174,14 +173,14 @@ public class EnergyConverterElnToOtherEntity extends SimpleNodeEntity implements
 
     @Override
     @Optional.Method(modid = Other.modIdTe)
-    public int getEnergyStored(EnumFacing from) {
+    public int getEnergyStored(net.minecraft.core.Direction from) {
         // Utils.println("*****getEnergyStored*****");
         return 0;
     }
 
     @Override
     @Optional.Method(modid = Other.modIdTe)
-    public int getMaxEnergyStored(EnumFacing from) {
+    public int getMaxEnergyStored(net.minecraft.core.Direction from) {
         // Utils.println("*****getMaxEnergyStored*****");
         return 0;
     }
@@ -224,13 +223,13 @@ public class EnergyConverterElnToOtherEntity extends SimpleNodeEntity implements
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt) {
+    public void readFromNBT(CompoundTag nbt) {
         super.readFromNBT(nbt);
         if (Other.ocLoaded)
             getOc().readFromNBT(nbt);
     }
 
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+    public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
         if (Other.ocLoaded)
             getOc().writeToNBT(nbt);

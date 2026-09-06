@@ -4,7 +4,7 @@ import io.netty.buffer.ByteBuf
 import mods.eln.misc.Coordinate
 import net.minecraftforge.fml.common.network.ByteBufUtils
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import java.util.*
 
 /**

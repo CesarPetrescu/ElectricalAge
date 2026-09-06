@@ -3,8 +3,8 @@ package mods.eln.sixnode.electricalwatch;
 import mods.eln.item.electricalitem.BatteryItem;
 import mods.eln.misc.INBTTReady;
 import mods.eln.sim.IProcess;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 
 public class ElectricalWatchSlowProcess implements IProcess, INBTTReady {
 
@@ -49,13 +49,13 @@ public class ElectricalWatchSlowProcess implements IProcess, INBTTReady {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt, String str) {
+    public void readFromNBT(CompoundTag nbt, String str) {
         upToDate = nbt.getBoolean(str + "upToDate");
         oldDate = nbt.getLong(str + "oldDate");
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt, String str) {
+    public CompoundTag writeToNBT(CompoundTag nbt, String str) {
         nbt.setBoolean(str + "upToDate", upToDate);
         nbt.setLong(str + "oldDate", oldDate);
         return nbt;

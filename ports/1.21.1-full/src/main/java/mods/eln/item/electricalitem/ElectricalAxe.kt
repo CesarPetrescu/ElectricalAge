@@ -4,15 +4,15 @@ import mods.eln.misc.Utils
 import mods.eln.sim.IProcess
 import mods.eln.wiki.Data
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.util.ActionResult
-import net.minecraft.util.EnumActionResult
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.InteractionResultHolder
+import net.minecraft.world.InteractionResult
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level
 import java.util.*
 import kotlin.collections.HashMap
 
@@ -26,7 +26,7 @@ class ElectricalAxe(name: String, strengthOn: Float, strengthOff: Float,
         Data.addPortable(newItemStack())
     }
 
-    override fun getDestroySpeed(stack: ItemStack, state: IBlockState?): Float {
+    override fun getDestroySpeed(stack: ItemStack, state: BlockState?): Float {
         return when {
             state != null && (state.material === Material.WOOD || state.material === Material.PLANTS || state.material === Material.VINE) -> getStrength(stack)
             else -> super.getDestroySpeed(stack, state)
@@ -34,26 +34,26 @@ class ElectricalAxe(name: String, strengthOn: Float, strengthOff: Float,
     }
 
 
-    override fun onItemRightClick(s: ItemStack, w: World, p: EntityPlayer?): ActionResult<ItemStack> {
+    override fun onItemRightClick(s: ItemStack, w: Level, p: Player?): InteractionResultHolder<ItemStack> {
         if (!w.isRemote) {
             setCapitation(p, s, !getCapitation(s))
         }
-        return ActionResult(EnumActionResult.PASS, s)
+        return InteractionResultHolder(InteractionResult.PASS, s)
     }
 
     private fun getCapitation(stack: ItemStack): Boolean {
         return getNbt(stack).getBoolean("capitation")
     }
 
-    private fun setCapitation(p: EntityPlayer?, stack: ItemStack, capitation: Boolean) {
+    private fun setCapitation(p: Player?, stack: ItemStack, capitation: Boolean) {
         getNbt(stack).setBoolean("capitation", capitation)
         if (p != null) {
             Utils.sendMessage(p, "Set treecapitation to $capitation")
         }
     }
 
-    override fun onBlockDestroyed(stack: ItemStack, w: World, state: IBlockState, pos: BlockPos, entity: EntityLivingBase?): Boolean {
-        return if (entity is EntityPlayer && getCapitation(stack)) {
+    override fun onBlockDestroyed(stack: ItemStack, w: Level, state: BlockState, pos: BlockPos, entity: LivingEntity?): Boolean {
+        return if (entity is Player && getCapitation(stack)) {
             TreeCapitation.addBlockSwapper(
                 world = w,
                 player = entity,
@@ -132,7 +132,7 @@ object TreeCapitation : IProcess {
      * documentation).
      * @return The created block swapper.
      */
-    fun addBlockSwapper(world: World, player: EntityPlayer, tool: ElectricalTool, origCoords: BlockPos, leaves: Boolean, stack: ItemStack) {
+    fun addBlockSwapper(world: Level, player: Player, tool: ElectricalTool, origCoords: BlockPos, leaves: Boolean, stack: ItemStack) {
         val swapper = BlockSwapper(world, player, tool, origCoords, BLOCK_RANGE, leaves, stack)
 
         // Block swapper registration should only occur on the server
@@ -173,11 +173,11 @@ object TreeCapitation : IProcess {
         /**
          * The world the block swapper is doing the swapping in.
          */
-        private val world: World,
+        private val world: Level,
         /**
          * The player the swapper is swapping for.
          */
-        private val player: EntityPlayer,
+        private val player: Player,
         /**
          * The Terra Truncator which created this swapper.
          */
@@ -353,7 +353,7 @@ object TreeCapitation : IProcess {
     /**
      * The bits below, however, are from ToolCommons.java. Mostly. Maybe about half, by now.
      */
-    fun removeBlockWithDrops(player: EntityPlayer, tool: ElectricalTool, stack: ItemStack, world: World, pos: BlockPos) {
+    fun removeBlockWithDrops(player: Player, tool: ElectricalTool, stack: ItemStack, world: Level, pos: BlockPos) {
         if (world.isRemote)
             return
 

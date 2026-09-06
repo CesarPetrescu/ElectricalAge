@@ -1,8 +1,8 @@
 package mods.eln.sixnode.electricaldatalogger;
 
 import mods.eln.generic.GenericItemUsingDamageDescriptor;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 
 public class DataLogsPrintDescriptor extends GenericItemUsingDamageDescriptor {
 
@@ -11,7 +11,7 @@ public class DataLogsPrintDescriptor extends GenericItemUsingDamageDescriptor {
     }
 
     public void initializeStack(ItemStack stack, DataLogs logs) {
-        NBTTagCompound nbt = new NBTTagCompound();
+        CompoundTag nbt = new CompoundTag();
         logs.writeToNBT(nbt, "");//.setByteArray("logs", logs.copyLog());
         stack.setTagCompound(nbt);
     }

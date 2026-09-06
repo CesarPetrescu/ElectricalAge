@@ -2,7 +2,7 @@ package mods.eln.sixnode.electricaldatalogger;
 
 import mods.eln.Eln;
 import mods.eln.sim.IProcess;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;

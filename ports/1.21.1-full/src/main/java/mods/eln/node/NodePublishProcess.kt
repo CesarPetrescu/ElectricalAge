@@ -1,12 +1,12 @@
 package mods.eln.node
 
 import mods.eln.sim.IProcess
-import net.minecraftforge.common.MinecraftForge
+import net.neoforged.neoforge.common.NeoForge
 import net.minecraftforge.fml.common.FMLCommonHandler
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.neoforged.bus.api.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase
 import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent
-import net.minecraft.entity.player.EntityPlayerMP
+import net.minecraft.server.level.ServerPlayer
 import net.minecraft.server.MinecraftServer
 
 /*

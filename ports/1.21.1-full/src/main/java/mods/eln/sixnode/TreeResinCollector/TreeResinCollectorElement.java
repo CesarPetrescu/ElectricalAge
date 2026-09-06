@@ -15,10 +15,10 @@ import mods.eln.node.six.SixNodeElement;
 import mods.eln.sim.ElectricalLoad;
 import mods.eln.sim.IProcess;
 import mods.eln.sim.ThermalLoad;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -69,7 +69,7 @@ public class TreeResinCollectorElement extends SixNodeElement {
 
     double getProductPerSecond() {
         Coordinate coord = sixNode.coordinate;
-        World world = coord.world();
+        Level world = coord.world();
         int[] posWood = new int[3];
         int[] posCollector = new int[3];
         Direction woodDirection = side;
@@ -80,7 +80,7 @@ public class TreeResinCollectorElement extends SixNodeElement {
         int leafCount = 0;
         int yStart, yEnd;
 
-        net.minecraft.world.chunk.Chunk chunk = world.getChunkProvider().getLoadedChunk(posWood[0] >> 4, posWood[2] >> 4);
+        net.minecraft.world.level.chunk.LevelChunk chunk = world.getChunkProvider().getLoadedChunk(posWood[0] >> 4, posWood[2] >> 4);
         if (chunk == null || chunk.isEmpty()) return 0;
 
         while (TreeResinCollectorDescriptor.isWood(chunk.getBlockState(new BlockPos(posWood[0], posWood[1] - 1, posWood[2])).getBlock())) {
@@ -126,7 +126,7 @@ public class TreeResinCollectorElement extends SixNodeElement {
     }
 
     @Override
-    public boolean onBlockActivated(EntityPlayer entityPlayer, Direction side,
+    public boolean onBlockActivated(Player entityPlayer, Direction side,
                                     float vx, float vy, float vz) {
         double productPerSeconde = getProductPerSecond();
         double product = getProduct(productPerSeconde);
@@ -150,13 +150,13 @@ public class TreeResinCollectorElement extends SixNodeElement {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt) {
+    public void readFromNBT(CompoundTag nbt) {
         super.readFromNBT(nbt);
         timeFromLastActivated = nbt.getDouble("timeFromLastActivated");
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+    public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
         nbt.setDouble("timeFromLastActivated", timeFromLastActivated);
         return nbt;

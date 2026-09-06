@@ -8,9 +8,9 @@ import mods.eln.node.NodeBase;
 import mods.eln.node.NodeBlockEntity;
 import mods.eln.node.six.SixNodeElementRender;
 import mods.eln.node.six.SixNodeEntity;
-import net.minecraft.block.Block;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.BlockPos;
 import org.lwjgl.opengl.GL11;
 
 public class CableRender {
@@ -28,7 +28,7 @@ public class CableRender {
         Block block;
         int x2, y2, z2;
         CableRenderType connectionTypeBuild = new CableRenderType();
-        TileEntity otherTileEntity;
+        BlockEntity otherTileEntity;
 
         for (LRDU lrdu : LRDU.values()) {
             //noConnection
@@ -168,7 +168,7 @@ public class CableRender {
         Block block;
         int x2, y2, z2;
         CableRenderType connectionTypeBuild = new CableRenderType();
-        TileEntity otherTileEntity;
+        BlockEntity otherTileEntity;
 
         for (LRDU lrdu : LRDU.values()) {
             //noConnection

@@ -2,13 +2,13 @@ package mods.eln.node.six;
 
 import mods.eln.Eln;
 import mods.eln.gui.SlotWithSkinAndComment;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
 
 public class SixNodeItemSlot extends SlotWithSkinAndComment {
 
     public SixNodeItemSlot(
-        IInventory inventory, int slot,
+        Container inventory, int slot,
         int x, int y,
         int stackLimit, Class[] descriptorClassList, SlotSkin skin, String[] comment
     ) {

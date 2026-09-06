@@ -10,14 +10,14 @@ import mods.eln.node.six.*
 import mods.eln.sim.IProcess
 import mods.eln.sim.nbt.NbtElectricalGateOutput
 import mods.eln.sim.nbt.NbtElectricalGateOutputProcess
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.IInventory
-import net.minecraft.inventory.ISidedInventory
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraftforge.fluids.capability.IFluidHandler
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.Container
+import net.minecraft.world.WorldlyContainer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.world.level.block.entity.BlockEntity
+import net.minecraft.core.Direction
+import net.neoforged.neoforge.fluids.capability.IFluidHandler
 import java.io.DataInputStream
 import java.io.DataOutputStream
 
@@ -38,7 +38,7 @@ class ScannerDescriptor(name: String, obj: Obj3D) : SixNodeDescriptor(name, Scan
         leds[mode.value.toInt()].draw()
     }
 
-    override fun addInformation(itemStack: ItemStack?, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack?, entityPlayer: Player?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         list.add(tr("Scans blocks to produce signals."))
         list.add(tr("- For tanks, outputs fill percentage."))
@@ -68,7 +68,7 @@ class ScannerElement(sixNode: SixNode, side: Direction, descriptor: SixNodeDescr
         val scannedCoord = Coordinate(coordinate).apply {
             move(appliedLRDU)
         }
-        val targetSide: EnumFacing = appliedLRDU.inverse.toForge()
+        val targetSide: Direction = appliedLRDU.inverse.toForge()
         val te = scannedCoord.tileEntity
         // TODO: Throttling.
         var out: Double? = null
@@ -87,7 +87,7 @@ class ScannerElement(sixNode: SixNode, side: Direction, descriptor: SixNodeDescr
         slowProcessList.add(updater)
     }
 
-    private fun scanBlock(scannedCoord: Coordinate, targetSide: EnumFacing): Double {
+    private fun scanBlock(scannedCoord: Coordinate, targetSide: Direction): Double {
         val state = scannedCoord.blockState
         return when {
             state.hasComparatorInputOverride() -> state.getComparatorInputOverride(scannedCoord.world(), scannedCoord.pos) / 15.0
@@ -100,7 +100,7 @@ class ScannerElement(sixNode: SixNode, side: Direction, descriptor: SixNodeDescr
         }
     }
 
-    private fun scanTileEntity(te: TileEntity, targetSide: EnumFacing): Double? {
+    private fun scanTileEntity(te: BlockEntity, targetSide: Direction): Double? {
         when (te) {
             is IFluidHandler -> {
                 val info = te.tankProperties
@@ -108,7 +108,7 @@ class ScannerElement(sixNode: SixNode, side: Direction, descriptor: SixNodeDescr
                     (it.contents?.amount ?: 0).toDouble() / it.capacity
                 } / info.size
             }
-            is ISidedInventory -> {
+            is WorldlyContainer -> {
                 var sum = 0
                 var limit = 0
                 val slots = te.getSlotsForFace(targetSide)
@@ -125,7 +125,7 @@ class ScannerElement(sixNode: SixNode, side: Direction, descriptor: SixNodeDescr
                 }
                 return sum.toDouble() / limit
             }
-            is IInventory -> {
+            is Container -> {
                 val sum = when (mode) {
                     ScanMode.SIMPLE -> (0 until te.sizeInventory).sumBy {
                         te.getStackInSlot(it)?.count ?: 0
@@ -141,7 +141,7 @@ class ScannerElement(sixNode: SixNode, side: Direction, descriptor: SixNodeDescr
         }
     }
 
-    override fun onBlockActivated(entityPlayer: EntityPlayer?, side: Direction?, vx: Float, vy: Float, vz: Float): Boolean {
+    override fun onBlockActivated(entityPlayer: Player?, side: Direction?, vx: Float, vy: Float, vz: Float): Boolean {
         if (onBlockActivatedRotate(entityPlayer)) return true
         if (entityPlayer.isHoldingMeter()) return false
         mode = when (mode) {
@@ -174,13 +174,13 @@ class ScannerElement(sixNode: SixNode, side: Direction, descriptor: SixNodeDescr
         stream.writeByte(mode.value.toInt())
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound? {
+    override fun writeToNBT(nbt: CompoundTag): CompoundTag? {
         super.writeToNBT(nbt)
         nbt.setByte("mode", mode.value)
         return nbt;
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
         mode = ScanMode.fromByte(nbt.getByte("mode"))!!
     }

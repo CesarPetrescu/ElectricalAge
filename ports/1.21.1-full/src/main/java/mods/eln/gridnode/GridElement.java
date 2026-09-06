@@ -8,10 +8,10 @@ import mods.eln.node.transparent.TransparentNodeElement;
 import mods.eln.sim.ElectricalLoad;
 import mods.eln.sim.ThermalLoad;
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.DataOutputStream;
@@ -43,7 +43,7 @@ abstract public class GridElement extends TransparentNodeElement {
 
     /* Connect one GridNode to another. */
     @Override
-    public boolean onBlockActivated(EntityPlayer entityPlayer, Direction side, float vx, float vy, float vz) {
+    public boolean onBlockActivated(Player entityPlayer, Direction side, float vx, float vy, float vz) {
         // Check if user is holding an appropriate tool.
         final ItemStack stack = entityPlayer.getHeldItemMainhand();
         final GenericItemBlockUsingDamageDescriptor itemDesc = GenericItemBlockUsingDamageDescriptor.getDescriptor(stack);
@@ -54,7 +54,7 @@ abstract public class GridElement extends TransparentNodeElement {
         return false;
     }
 
-    private boolean onTryGridConnect(EntityPlayer entityPlayer, ItemStack stack, ElectricalCableDescriptor cable, Direction side) {
+    private boolean onTryGridConnect(Player entityPlayer, ItemStack stack, ElectricalCableDescriptor cable, Direction side) {
         // First node, or second node?
         UUID uuid = entityPlayer.getPersistentID();
         Pair<Coordinate, Direction> p = pending.get(uuid);
@@ -140,11 +140,11 @@ abstract public class GridElement extends TransparentNodeElement {
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+    public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
 
         Integer i = 0;
-        NBTTagCompound gridLinks = Utils.newNbtTagCompund(nbt, "gridLinks");
+        CompoundTag gridLinks = Utils.newNbtTagCompund(nbt, "gridLinks");
         for (GridLink link : gridLinkList) {
             link.writeToNBT(Utils.newNbtTagCompund(gridLinks, i.toString()), "");
             i++;
@@ -153,13 +153,13 @@ abstract public class GridElement extends TransparentNodeElement {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt) {
+    public void readFromNBT(CompoundTag nbt) {
         super.readFromNBT(nbt);
 
         assert gridLinkList.isEmpty();
-        final NBTTagCompound gridLinks = nbt.getCompoundTag("gridLinks");
+        final CompoundTag gridLinks = nbt.getCompoundTag("gridLinks");
         for (Integer i = 0; ; i++) {
-            final NBTTagCompound linkTag = gridLinks.getCompoundTag(i.toString());
+            final CompoundTag linkTag = gridLinks.getCompoundTag(i.toString());
             if (linkTag.isEmpty())
                 break;
             gridLinksBooting.add(new GridLink(linkTag, ""));
@@ -265,9 +265,9 @@ abstract public class GridElement extends TransparentNodeElement {
                 // It's always the "a" side doing this.
                 Coordinate offset = link.b.subtract(link.a);
                 for (int i = 0; i < 2; i++) {
-                    final Vec3d start = getCablePoint(ourSide, i);
+                    final Vec3 start = getCablePoint(ourSide, i);
                     start.rotateYaw((float) Math.toRadians(idealRenderingAngle));
-                    Vec3d end = target.getCablePoint(theirSide, i);
+                    Vec3 end = target.getCablePoint(theirSide, i);
                     end.rotateYaw((float) Math.toRadians(target.idealRenderingAngle));
                     end = end.add(offset.pos.getX(), offset.pos.getY(), offset.pos.getZ());
                     writeVec(stream, start);
@@ -279,14 +279,14 @@ abstract public class GridElement extends TransparentNodeElement {
         }
     }
 
-    protected Vec3d getCablePoint(Direction side, int i) {
+    protected Vec3 getCablePoint(Direction side, int i) {
         if (i >= 2) throw new AssertionError("Invalid cable point index");
         Obj3D.Obj3DPart part = (i == 0 ? desc.plus : desc.gnd).get(0);
         BoundingBox bb = part.boundingBox();
         return bb.centre();
     }
 
-    private void writeVec(DataOutputStream stream, Vec3d sp) throws IOException {
+    private void writeVec(DataOutputStream stream, Vec3 sp) throws IOException {
         stream.writeFloat((float) sp.x);
         stream.writeFloat((float) sp.y);
         stream.writeFloat((float) sp.z);

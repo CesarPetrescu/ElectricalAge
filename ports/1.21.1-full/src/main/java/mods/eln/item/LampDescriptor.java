@@ -5,10 +5,10 @@ import mods.eln.misc.VoltageLevelColor;
 import mods.eln.sim.mna.component.Resistor;
 import mods.eln.sixnode.lampsocket.LampSocketType;
 import mods.eln.wiki.Data;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 
 import java.util.List;
 
@@ -91,8 +91,8 @@ public class LampDescriptor extends GenericItemUsingDamageDescriptorUpgrade {
     }
 
     @Override
-    public NBTTagCompound getDefaultNBT() {
-        return new NBTTagCompound();
+    public CompoundTag getDefaultNBT() {
+        return new CompoundTag();
     }
 
     @Override
@@ -105,7 +105,7 @@ public class LampDescriptor extends GenericItemUsingDamageDescriptorUpgrade {
     }
 
     @Override
-    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List list, boolean par4) {
+    public void addInformation(ItemStack itemStack, Player entityPlayer, List list, boolean par4) {
         super.addInformation(itemStack, entityPlayer, list, par4);
 
         list.add(tr("Technology: %s", type));

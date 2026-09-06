@@ -1,20 +1,20 @@
 package mods.eln.generic;
 
 import mods.eln.misc.UtilsClient;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.NonNullList;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.core.NonNullList;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -57,11 +57,11 @@ public class GenericItemUsingDamage<Descriptor extends GenericItemUsingDamageDes
     }
 
     @Override
-    public ActionResult<ItemStack> onItemRightClick(World w, EntityPlayer p, EnumHand hand) {
+    public InteractionResultHolder<ItemStack> onItemRightClick(Level w, Player p, InteractionHand hand) {
         ItemStack s = p.getHeldItem(hand);
         Descriptor desc = getDescriptor(s);
         if (desc == null)
-            return new ActionResult(EnumActionResult.PASS, s);
+            return new InteractionResultHolder(InteractionResult.PASS, s);
         return desc.onItemRightClick(s, w, p);
     }
 
@@ -77,7 +77,7 @@ public class GenericItemUsingDamage<Descriptor extends GenericItemUsingDamageDes
 
     @SideOnly(Side.CLIENT)
     @Override
-    public void getSubItems(CreativeTabs tabs, NonNullList<ItemStack> items) {
+    public void getSubItems(CreativeModeTab tabs, NonNullList<ItemStack> items) {
         if (!isInCreativeTab(tabs)) return;
 
         for (int id : orderList) {
@@ -88,7 +88,7 @@ public class GenericItemUsingDamage<Descriptor extends GenericItemUsingDamageDes
         }
     }
 
-    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List list, boolean par4) {
+    public void addInformation(ItemStack itemStack, Player entityPlayer, List list, boolean par4) {
 		/*Descriptor desc = getDescriptor(itemStack);
 		if (desc == null)
 			return;
@@ -106,29 +106,29 @@ public class GenericItemUsingDamage<Descriptor extends GenericItemUsingDamageDes
      * True if something happen and false if it don't. This is for ITEMS, not BLOCKS
      */
     @Override
-    public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+    public InteractionResult onItemUse(Player player, Level world, BlockPos pos, InteractionHand hand, Direction facing, float hitX, float hitY, float hitZ) {
         ItemStack stack = player.getHeldItem(hand);
         GenericItemUsingDamageDescriptor d = getDescriptor(stack);
         if (d == null)
-            return EnumActionResult.PASS;
+            return InteractionResult.PASS;
         return d.onItemUse(stack, player, world, pos, hand, facing, hitX, hitY, hitZ);
     }
 
-    public boolean onEntitySwing(EntityLivingBase entityLiving, ItemStack stack) {
+    public boolean onEntitySwing(LivingEntity entityLiving, ItemStack stack) {
         GenericItemUsingDamageDescriptor d = getDescriptor(stack);
         if (d == null)
             return super.onEntitySwing(entityLiving, stack);
         return d.onEntitySwing(entityLiving, stack);
     }
 
-    public boolean onBlockStartBreak(ItemStack itemstack, int X, int Y, int Z, EntityPlayer player) {
+    public boolean onBlockStartBreak(ItemStack itemstack, int X, int Y, int Z, Player player) {
         GenericItemUsingDamageDescriptor d = getDescriptor(itemstack);
         if (d == null)
             return super.onBlockStartBreak(itemstack, new BlockPos(X, Y, Z), player);
         return d.onBlockStartBreak(itemstack, X, Y, Z, player);
     }
 
-    public void onUpdate(ItemStack stack, World world, Entity entity, int par4, boolean par5) {
+    public void onUpdate(ItemStack stack, Level world, Entity entity, int par4, boolean par5) {
         if (world.isRemote) {
             return;
         }
@@ -141,7 +141,7 @@ public class GenericItemUsingDamage<Descriptor extends GenericItemUsingDamageDes
     }
 
     @Override
-    public float getDestroySpeed(ItemStack stack, IBlockState state) {
+    public float getDestroySpeed(ItemStack stack, BlockState state) {
         GenericItemUsingDamageDescriptor d = getDescriptor(stack);
         if (d == null)
             return 0.2f;
@@ -149,12 +149,12 @@ public class GenericItemUsingDamage<Descriptor extends GenericItemUsingDamageDes
     }
 
     @Override
-    public boolean canHarvestBlock(IBlockState state) {
+    public boolean canHarvestBlock(BlockState state) {
         return true;
     }
 
     @Override
-    public boolean onBlockDestroyed(ItemStack stack, World w, IBlockState state, BlockPos pos, EntityLivingBase entity) {
+    public boolean onBlockDestroyed(ItemStack stack, Level w, BlockState state, BlockPos pos, LivingEntity entity) {
         if (w.isRemote) {
             return false;
         }
@@ -167,7 +167,7 @@ public class GenericItemUsingDamage<Descriptor extends GenericItemUsingDamageDes
     }
 
     @Override
-    public boolean onDroppedByPlayer(ItemStack item, EntityPlayer player) {
+    public boolean onDroppedByPlayer(ItemStack item, Player player) {
         GenericItemUsingDamageDescriptor d = getDescriptor(item);
         if (d == null)
             return super.onDroppedByPlayer(item, player);

@@ -7,10 +7,10 @@ import mods.eln.misc.BasicContainer;
 import mods.eln.node.INodeContainer;
 import mods.eln.node.Node;
 import mods.eln.node.NodeBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.Slot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.Container;
+import net.minecraft.world.inventory.Slot;
 
 import static mods.eln.i18n.I18N.tr;
 
@@ -19,7 +19,7 @@ public class EggIncubatorContainer extends BasicContainer implements INodeContai
     public static final int EggSlotId = 0;
     private Node node;
 
-    public EggIncubatorContainer(EntityPlayer player, IInventory inventory, Node node) {
+    public EggIncubatorContainer(Player player, Container inventory, Node node) {
         super(player, inventory, new Slot[]{
             new SlotFilter(inventory, EggSlotId, 176 / 2 - 8, 7, 64,
                 new ItemStackFilter[]{new ItemStackFilter(Items.EGG)},

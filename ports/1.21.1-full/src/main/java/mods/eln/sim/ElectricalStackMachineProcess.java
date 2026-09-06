@@ -4,14 +4,14 @@ import mods.eln.misc.Recipe;
 import mods.eln.misc.RecipesList;
 import mods.eln.misc.Utils;
 import mods.eln.sim.mna.component.Resistor;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
 
 public class ElectricalStackMachineProcess implements IProcess {
 
     ElectricalStackMachineProcessObserver observer;
 
-    public IInventory inventory;
+    public Container inventory;
     int inputSlotId, OutputSlotId, outputSlotNbr;
     Resistor electricalResistor;
     double resistorValue;
@@ -33,7 +33,7 @@ public class ElectricalStackMachineProcess implements IProcess {
         this.observer = observer;
     }
 
-    public ElectricalStackMachineProcess(IInventory inventory, int inputSlotId, int OutputSlotId, int outputSlotNbr,
+    public ElectricalStackMachineProcess(Container inventory, int inputSlotId, int OutputSlotId, int outputSlotNbr,
                                          Resistor electricalResistor, double resistorValue, RecipesList recipesList) {
         this.inventory = inventory;
         this.inputSlotId = inputSlotId;

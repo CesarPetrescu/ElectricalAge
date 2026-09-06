@@ -5,8 +5,8 @@ import mods.eln.gui.GuiHelperContainer;
 import mods.eln.gui.IGuiObject;
 import mods.eln.misc.Utils;
 import mods.eln.node.transparent.TransparentNodeElementInventory;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
 
 import static mods.eln.i18n.I18N.tr;
 
@@ -18,7 +18,7 @@ public class PowerCapacitorGui extends GuiContainerEln {
     PowerCapacitorRender render;
 
 
-    public PowerCapacitorGui(EntityPlayer player, IInventory inventory, PowerCapacitorRender render) {
+    public PowerCapacitorGui(Player player, Container inventory, PowerCapacitorRender render) {
         super(new PowerCapacitorContainer(player, inventory));
         this.inventory = (TransparentNodeElementInventory) inventory;
         this.render = render;

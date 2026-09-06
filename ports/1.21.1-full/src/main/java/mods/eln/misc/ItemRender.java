@@ -1,9 +1,9 @@
 package mods.eln.misc;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.RenderItem;
-import net.minecraft.item.ItemStack;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.world.item.ItemStack;
 import org.lwjgl.opengl.GL11;
 
 //public class ItemRender implements IItemRenderer {

@@ -6,11 +6,11 @@ import mods.eln.gui.IGuiObject;
 import mods.eln.misc.Recipe;
 import mods.eln.misc.RecipesList;
 import mods.eln.misc.Utils;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.item.ItemStack;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.IRecipe;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,9 +25,9 @@ public class ItemDefault extends Default {
     }
 
     private ItemStack stack;
-    private GuiScreen previewScreen;
+    private Screen previewScreen;
 
-    public ItemDefault(ItemStack stack, GuiScreen previewScreen) {
+    public ItemDefault(ItemStack stack, Screen previewScreen) {
         super(previewScreen);
         this.stack = stack;
 

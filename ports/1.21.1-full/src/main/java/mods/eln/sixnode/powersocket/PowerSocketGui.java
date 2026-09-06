@@ -4,8 +4,8 @@ import mods.eln.gui.GuiContainerEln;
 import mods.eln.gui.GuiHelperContainer;
 import mods.eln.gui.GuiTextFieldEln;
 import mods.eln.gui.IGuiObject;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
 
 import static mods.eln.i18n.I18N.tr;
 
@@ -16,7 +16,7 @@ public class PowerSocketGui extends GuiContainerEln {
     GuiTextFieldEln[] devices = new GuiTextFieldEln[3];
     private PowerSocketRender render;
 
-    public PowerSocketGui(PowerSocketRender render, EntityPlayer player, IInventory inventory) {
+    public PowerSocketGui(PowerSocketRender render, Player player, Container inventory) {
         super(new PowerSocketContainer(player, inventory));
         this.render = render;
     }

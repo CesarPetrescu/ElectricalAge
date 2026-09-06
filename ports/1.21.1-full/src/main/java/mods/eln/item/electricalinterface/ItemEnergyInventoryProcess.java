@@ -4,8 +4,8 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import mods.eln.Eln;
 import mods.eln.misc.Utils;
 import mods.eln.sim.IProcess;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.ItemStack;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 
 import java.util.ArrayList;
@@ -94,7 +94,7 @@ public class ItemEnergyInventoryProcess implements IProcess {
         ArrayList<Element> list = new ArrayList<Element>();
 
         for (Object obj : server.getEntityWorld().playerEntities) {
-            EntityPlayerMP player = (EntityPlayerMP) obj;
+            ServerPlayer player = (ServerPlayer) obj;
             list.clear();
 
             for (ItemStack stack : player.inventory.armorInventory) {

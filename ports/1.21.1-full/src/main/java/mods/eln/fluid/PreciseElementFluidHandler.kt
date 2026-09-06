@@ -1,17 +1,17 @@
 package mods.eln.fluid
 
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.core.Direction
 
 class PreciseElementFluidHandler(tankSize: Int) : ElementFluidHandler(tankSize) {
     private var fixup = 0.0
 
-    override fun readFromNBT(nbt: NBTTagCompound, str: String?) {
+    override fun readFromNBT(nbt: CompoundTag, str: String?) {
         super.readFromNBT(nbt, str)
         fixup = nbt.getDouble(str + "fixup")
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound, str: String?): NBTTagCompound? {
+    override fun writeToNBT(nbt: CompoundTag, str: String?): CompoundTag? {
         super.writeToNBT(nbt, str)
         nbt.setDouble(str + "fixup", fixup)
         return nbt;

@@ -5,8 +5,8 @@ import mods.eln.gui.GuiHelperContainer;
 import mods.eln.gui.GuiVerticalVoltageSupplyBar;
 import mods.eln.gui.IGuiObject;
 import mods.eln.node.transparent.TransparentNodeElementInventory;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
 
 public class EggIncubatorGuiDraw extends GuiContainerEln {
 
@@ -15,7 +15,7 @@ public class EggIncubatorGuiDraw extends GuiContainerEln {
 
     GuiVerticalVoltageSupplyBar voltage;
 
-    public EggIncubatorGuiDraw(EntityPlayer player, IInventory inventory, EggIncubatorRender render) {
+    public EggIncubatorGuiDraw(Player player, Container inventory, EggIncubatorRender render) {
         super(new EggIncubatorContainer(player, inventory, null));
         this.inventory = (TransparentNodeElementInventory) inventory;
         this.render = render;

@@ -1,7 +1,7 @@
 package mods.eln.misc;
 
 import mods.eln.sim.IProcess;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundTag;
 
 public class WindProcess implements IProcess, INBTTReady {
 
@@ -54,7 +54,7 @@ public class WindProcess implements IProcess, INBTTReady {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt, String str) {
+    public void readFromNBT(CompoundTag nbt, String str) {
         windHit = nbt.getDouble(str + "windHit");
         windTarget = nbt.getDouble(str + "windTarget");
         windVariation = nbt.getDouble(str + "windVariation");
@@ -62,7 +62,7 @@ public class WindProcess implements IProcess, INBTTReady {
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt, String str) {
+    public CompoundTag writeToNBT(CompoundTag nbt, String str) {
         nbt.setDouble(str + "windHit", windHit);
         nbt.setDouble(str + "windTarget", windTarget);
         nbt.setDouble(str + "windVariation", windVariation);

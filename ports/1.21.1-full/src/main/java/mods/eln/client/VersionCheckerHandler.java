@@ -6,12 +6,12 @@ import mods.eln.Eln;
 import mods.eln.misc.Color;
 import mods.eln.misc.Version;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.WorldClient;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.util.text.TextComponentString;
-import net.minecraftforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import org.apache.commons.io.IOUtils;
@@ -103,7 +103,7 @@ public class VersionCheckerHandler {
             return;
 
         final Minecraft m = FMLClientHandler.instance().getClient();
-        final WorldClient world = m.world;
+        final ClientLevel world = m.world;
 
         if (world == null)
             return;
@@ -111,7 +111,7 @@ public class VersionCheckerHandler {
         if (!ready)
             return;
 
-        MinecraftForge.EVENT_BUS.unregister(this);
+        NeoForge.EVENT_BUS.unregister(this);
         ready = false;
     }
 }

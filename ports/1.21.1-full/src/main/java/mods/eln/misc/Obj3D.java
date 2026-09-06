@@ -1,7 +1,7 @@
 package mods.eln.misc;
 
 import net.minecraftforge.fml.common.FMLLog;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 

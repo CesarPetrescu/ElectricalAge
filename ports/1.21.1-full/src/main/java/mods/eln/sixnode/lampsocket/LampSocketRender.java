@@ -10,15 +10,15 @@ import mods.eln.node.six.SixNodeElementRender;
 import mods.eln.node.six.SixNodeEntity;
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor;
 import mods.eln.sound.SoundCommand;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.projectile.EntityArrow;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.EnumSkyBlock;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Arrow;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.LightLayer;
 import org.lwjgl.opengl.GL11;
 
 import java.io.ByteArrayOutputStream;
@@ -61,12 +61,12 @@ public class LampSocketRender extends SixNodeElementRender {
     }
 
     @Override
-    public GuiScreen newGuiDraw(Direction side, EntityPlayer player) {
+    public Screen newGuiDraw(Direction side, Player player) {
         return new LampSocketGuiDraw(player, inventory, this);
     }
 
     @Override
-    public IInventory getInventory() {
+    public Container getInventory() {
         return inventory;
     }
 
@@ -98,15 +98,15 @@ public class LampSocketRender extends SixNodeElementRender {
 
         for (Entity e : entityList) {
             float eFactor = 0;
-            if (e instanceof EntityArrow) eFactor = 1f;
-            if (e instanceof EntityLivingBase) eFactor = 4f;
+            if (e instanceof Arrow) eFactor = 1f;
+            if (e instanceof LivingEntity) eFactor = 4f;
             if (eFactor == 0) continue;
 
             pertuVz += e.motionX * eFactor * dt;
             pertuVy += e.motionZ * eFactor * dt;
         }
 
-        if (tileEntity.getWorld().getLightFor(EnumSkyBlock.SKY, pos) > 3) {
+        if (tileEntity.getWorld().getLightFor(LightLayer.SKY, pos) > 3) {
             float weather = (float) UtilsClient.getWeather(tileEntity.getWorld()) * 0.9f + 0.1f;
 
             weatherAlphaY += (0.4 - Math.random()) * dt * Math.PI / 0.2 * weather;

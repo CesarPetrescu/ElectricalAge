@@ -21,12 +21,12 @@ import mods.eln.sim.nbt.NbtElectricalLoad;
 import mods.eln.sim.nbt.NbtThermalLoad;
 import mods.eln.sim.process.destruct.VoltageStateWatchDog;
 import mods.eln.sim.process.destruct.WorldExplosion;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -88,7 +88,7 @@ public class ElectricalFurnaceElement extends TransparentNodeElement {
     }
 
     @Override
-    public IInventory getInventory() {
+    public Container getInventory() {
         return inventory;
     }
 
@@ -98,7 +98,7 @@ public class ElectricalFurnaceElement extends TransparentNodeElement {
     }
 
     @Override
-    public Container newContainer(Direction side, EntityPlayer player) {
+    public AbstractContainerMenu newContainer(Direction side, Player player) {
         return new ElectricalFurnaceContainer(this.node, player, inventory);
     }
 
@@ -154,7 +154,7 @@ public class ElectricalFurnaceElement extends TransparentNodeElement {
     }
 
     @Override
-    public void inventoryChange(IInventory inventory) {
+    public void inventoryChange(Container inventory) {
         super.inventoryChange(inventory);
         setPhysicalValue();
         needPublish();
@@ -192,7 +192,7 @@ public class ElectricalFurnaceElement extends TransparentNodeElement {
     }
 
     @Override
-    public boolean onBlockActivated(EntityPlayer entityPlayer, Direction side, float vx, float vy, float vz) {
+    public boolean onBlockActivated(Player entityPlayer, Direction side, float vx, float vy, float vz) {
         return false;
     }
 
@@ -225,7 +225,7 @@ public class ElectricalFurnaceElement extends TransparentNodeElement {
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+    public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
         nbt.setBoolean("powerOn", powerOn);
         nbt.setBoolean("autoShutDown", autoShutDown);
@@ -233,7 +233,7 @@ public class ElectricalFurnaceElement extends TransparentNodeElement {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt) {
+    public void readFromNBT(CompoundTag nbt) {
         super.readFromNBT(nbt);
         powerOn = nbt.getBoolean("powerOn");
         autoShutDown = nbt.getBoolean("autoShutDown");

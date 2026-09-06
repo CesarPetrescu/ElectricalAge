@@ -8,15 +8,15 @@ import mcp.mobius.waila.api.SpecialChars
 import mods.eln.misc.Coordinate
 import mods.eln.misc.Direction
 import mods.eln.packets.GhostNodeWailaResponsePacket
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.world.level.block.entity.BlockEntity
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.util.text.TextFormatting
-import net.minecraft.world.World
+import net.minecraft.ChatFormatting
+import net.minecraft.world.level.Level
 import net.minecraftforge.fml.common.Optional
 import javax.xml.soap.Text
 
@@ -37,8 +37,8 @@ class GhostNodeWailaProvider(private val transparentNodeProvider: TransparentNod
         override fun getTileEntity() = accessor.tileEntity
         override fun getWorld() = coord.world()
         override fun getBlock() = accessor.block
-        override fun getNBTInteger(tag: NBTTagCompound?, keyname: String?) = accessor.getNBTInteger(tag, keyname)
-        override fun getBlockState(): IBlockState {
+        override fun getNBTInteger(tag: CompoundTag?, keyname: String?) = accessor.getNBTInteger(tag, keyname)
+        override fun getBlockState(): BlockState {
             return coord.world().getBlockState(coord.pos)
         }
         override fun getMOP(): RayTraceResult {
@@ -46,8 +46,8 @@ class GhostNodeWailaProvider(private val transparentNodeProvider: TransparentNod
         }
     }
 
-    override fun getNBTData(player: EntityPlayerMP?, te: TileEntity?, tag: NBTTagCompound?, world: World?, pos: BlockPos?): NBTTagCompound {
-        return tag ?: NBTTagCompound()
+    override fun getNBTData(player: ServerPlayer?, te: BlockEntity?, tag: CompoundTag?, world: Level?, pos: BlockPos?): CompoundTag {
+        return tag ?: CompoundTag()
     }
 
     private fun getGhostData(accessor: IWailaDataAccessor): GhostNodeWailaData? {

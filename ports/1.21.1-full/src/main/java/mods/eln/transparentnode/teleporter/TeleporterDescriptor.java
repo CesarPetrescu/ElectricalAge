@@ -6,10 +6,10 @@ import mods.eln.misc.Obj3D.Obj3DPart;
 import mods.eln.node.transparent.TransparentNodeDescriptor;
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor;
 import mods.eln.wiki.Data;
-import net.minecraft.item.Item;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 public class TeleporterDescriptor extends TransparentNodeDescriptor {
 
@@ -78,12 +78,12 @@ public class TeleporterDescriptor extends TransparentNodeDescriptor {
     private Coordinate areaCoordinate;
     Coordinate lightCoordinate;
 
-    AxisAlignedBB getBB(Coordinate c, Direction front) {
+    AABB getBB(Coordinate c, Direction front) {
         Coordinate temp = new Coordinate(areaCoordinate);
         temp.setDimension(c.getDimension());
         temp.applyTransformation(front, c);
 
-        return new AxisAlignedBB(temp.pos);
+        return new AABB(temp.pos);
     }
 
     Coordinate getTeleportCoordinate(Direction front, Coordinate c) {
@@ -113,7 +113,7 @@ public class TeleporterDescriptor extends TransparentNodeDescriptor {
 
     private Coordinate[] powerCoordinate;
 
-    Coordinate[] getPowerCoordinate(World w) {
+    Coordinate[] getPowerCoordinate(Level w) {
         Coordinate[] temp = new Coordinate[powerCoordinate.length];
         for (int idx = 0; idx < temp.length; idx++) {
             temp[idx] = new Coordinate(powerCoordinate[idx]);

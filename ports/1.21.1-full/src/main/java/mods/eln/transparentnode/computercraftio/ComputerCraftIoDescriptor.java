@@ -3,8 +3,8 @@ package mods.eln.transparentnode.computercraftio;
 import mods.eln.misc.Obj3D;
 import mods.eln.node.transparent.TransparentNodeDescriptor;
 import mods.eln.wiki.Data;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 
 public class ComputerCraftIoDescriptor extends TransparentNodeDescriptor {
 

@@ -10,13 +10,13 @@ import mods.eln.sim.ThermalConnection;
 import mods.eln.sim.mna.component.Component;
 import mods.eln.sim.mna.state.State;
 import mods.eln.sim.nbt.NbtThermalLoad;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -24,7 +24,7 @@ import java.util.ArrayList;
 
 public abstract class SimpleNode extends NodeBase {
 
-    public EntityPlayerMP removedByPlayer;
+    public ServerPlayer removedByPlayer;
     String descriptorKey = "";
 
     protected void setDescriptorKey(String key) {
@@ -44,7 +44,7 @@ public abstract class SimpleNode extends NodeBase {
     public void setFront(Direction front) {
         this.front = front;
         BlockPos pos = coordinate.pos;
-        World w = coordinate.world();
+        Level w = coordinate.world();
         if (applyFrontToMetadata()) {
             w.setBlockState(pos, w.getBlockState(pos).getBlock().getStateFromMeta(front.getInt()));
         }
@@ -55,7 +55,7 @@ public abstract class SimpleNode extends NodeBase {
     }
 
     @Override
-    public void initializeFromThat(Direction front, EntityLivingBase entityLiving, ItemStack itemStack) {
+    public void initializeFromThat(Direction front, LivingEntity entityLiving, ItemStack itemStack) {
         setFront(front);
         initialize();
     }
@@ -126,7 +126,7 @@ public abstract class SimpleNode extends NodeBase {
         Eln.simulator.removeAllThermalSlowProcess(thermalSlowProcessList);
     }
 
-    public void readFromNBT(NBTTagCompound nbt) {
+    public void readFromNBT(CompoundTag nbt) {
         super.readFromNBT(nbt);
 
         front = Direction.readFromNBT(nbt, "SNfront");
@@ -159,7 +159,7 @@ public abstract class SimpleNode extends NodeBase {
         }
     }
 
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+    public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
 
         front.writeToNBT(nbt, "SNfront");

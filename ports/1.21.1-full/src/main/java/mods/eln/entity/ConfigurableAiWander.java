@@ -1,13 +1,13 @@
 package mods.eln.entity;
 
-import net.minecraft.entity.EntityCreature;
-import net.minecraft.entity.ai.EntityAIBase;
+import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.entity.ai.RandomPositionGenerator;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.phys.Vec3;
 
-public class ConfigurableAiWander extends EntityAIBase {
+public class ConfigurableAiWander extends Goal {
 
-    private EntityCreature entity;
+    private PathfinderMob entity;
     private double xPosition;
     private double yPosition;
     private double zPosition;
@@ -15,7 +15,7 @@ public class ConfigurableAiWander extends EntityAIBase {
 
     private int randLimit;
 
-    public ConfigurableAiWander(EntityCreature par1EntityCreature, double speed, int randLimit) {
+    public ConfigurableAiWander(PathfinderMob par1EntityCreature, double speed, int randLimit) {
         this.entity = par1EntityCreature;
         this.speed = speed;
         this.setMutexBits(1);
@@ -31,7 +31,7 @@ public class ConfigurableAiWander extends EntityAIBase {
         } else */if (this.entity.getRNG().nextInt(randLimit) != 0) {
             return false;
         } else {
-            Vec3d vec3 = RandomPositionGenerator.findRandomTarget(this.entity, 10, 7);
+            Vec3 vec3 = RandomPositionGenerator.findRandomTarget(this.entity, 10, 7);
 
             if (vec3 == null) {
                 return false;

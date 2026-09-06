@@ -5,8 +5,8 @@ import mods.eln.gui.GuiContainerEln;
 import mods.eln.gui.GuiHelperContainer;
 import mods.eln.gui.IGuiObject;
 import mods.eln.transparentnode.autominer.AutoMinerSlowProcess.jobType;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
 
 import static mods.eln.i18n.I18N.tr;
 
@@ -15,7 +15,7 @@ public class AutoMinerGuiDraw extends GuiContainerEln {
     private final AutoMinerRender render;
     private GuiButtonEln silkTouch;
 
-    public AutoMinerGuiDraw(EntityPlayer player, IInventory inventory, AutoMinerRender render) {
+    public AutoMinerGuiDraw(Player player, Container inventory, AutoMinerRender render) {
         super(new AutoMinerContainer(player, inventory));
         this.render = render;
     }

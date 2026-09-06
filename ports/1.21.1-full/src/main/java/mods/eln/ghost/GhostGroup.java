@@ -5,9 +5,9 @@ import mods.eln.init.ModBlock;
 import mods.eln.misc.Coordinate;
 import mods.eln.misc.Direction;
 import mods.eln.misc.LRDU;
-import net.minecraft.block.Block;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 
@@ -78,7 +78,7 @@ public class GhostGroup {
 
     }
 
-    public boolean canBePloted(World world, int x, int y, int z) {
+    public boolean canBePloted(Level world, int x, int y, int z) {
         for (GhostGroupElement element : elementList) {
             if (!Eln.ghostManager.canCreateGhostAt(world, new BlockPos( x + element.x, y + element.y, z + element.z)))
                 return false;

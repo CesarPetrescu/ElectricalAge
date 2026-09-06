@@ -20,12 +20,12 @@ import mods.eln.sim.ThermalLoad;
 import mods.eln.sim.mna.component.Resistor;
 import mods.eln.sim.nbt.NbtElectricalLoad;
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -72,7 +72,7 @@ public class LampSocketElement extends SixNodeElement {
     }
 
     @Override
-    public IInventory getInventory() {
+    public Container getInventory() {
         if (acceptingInventory != null)
             return acceptingInventory.getInventory();
         else
@@ -80,7 +80,7 @@ public class LampSocketElement extends SixNodeElement {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt) {
+    public void readFromNBT(CompoundTag nbt) {
         super.readFromNBT(nbt);
         byte value = nbt.getByte("front");
         front = LRDU.fromInt((value >> 0) & 0x3);
@@ -100,7 +100,7 @@ public class LampSocketElement extends SixNodeElement {
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+    public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
         nbt.setByte("front", (byte) ((front.toInt() << 0) + (grounded ? 4 : 0)));
         nbt.setBoolean("poweredByLampSupply", poweredByLampSupply);
@@ -171,7 +171,7 @@ public class LampSocketElement extends SixNodeElement {
     }
 
     @Override
-    public Container newContainer(Direction side, EntityPlayer player) {
+    public AbstractContainerMenu newContainer(Direction side, Player player) {
         return new LampSocketContainer(player, acceptingInventory.getInventory(), socketDescriptor);
     }
 
@@ -294,7 +294,7 @@ public class LampSocketElement extends SixNodeElement {
     }
 
     @Override
-    public boolean onBlockActivated(EntityPlayer entityPlayer, Direction side, float vx, float vy, float vz) {
+    public boolean onBlockActivated(Player entityPlayer, Direction side, float vx, float vy, float vz) {
         if (Utils.isPlayerUsingWrench(entityPlayer)) {
             front = front.getNextClockwise();
             if (socketDescriptor.rotateOnlyBy180Deg)
@@ -332,7 +332,7 @@ public class LampSocketElement extends SixNodeElement {
     }
 
     @Override
-    public void destroy(EntityPlayerMP entityPlayer) {
+    public void destroy(ServerPlayer entityPlayer) {
         super.destroy(entityPlayer);
         lampProcess.destructor();
     }

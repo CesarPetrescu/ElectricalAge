@@ -4,18 +4,18 @@ import mods.eln.client.ClientProxy;
 import mods.eln.client.SoundLoader;
 import mods.eln.misc.Utils;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.core.BlockPos;
 
 public class SoundClient {
     // TODO(1.10): Fix sounds.
     public static void play(SoundCommand p) {
         ClientProxy.soundClientEventListener.currentUuid = p.uuid; //trolilole
 
-        EntityPlayer player = Minecraft.getMinecraft().player;
+        Player player = Minecraft.getMinecraft().player;
         if (p.world.provider.getDimension() != player.dimension) return;
         double distance = Math.sqrt(Math.pow(p.x - player.posX, 2) + Math.pow(p.y - player.posY, 2) + Math.pow(p.z - player.posZ, 2));
         if (distance >= p.rangeMax) return;
@@ -38,7 +38,7 @@ public class SoundClient {
                 player,
                 soundPos,
                 new SoundEvent(new ResourceLocation(p.track)),
-                SoundCategory.BLOCKS,  // TODO(1.10): Move this to the sound command.
+                SoundSource.BLOCKS,  // TODO(1.10): Move this to the sound command.
                 p.volume,
                 p.pitch);
         } else {
@@ -52,7 +52,7 @@ public class SoundClient {
                         player,
                         soundPos,
                         new SoundEvent(new ResourceLocation(p.track + "_" + idx + "x")),
-                        SoundCategory.BLOCKS,
+                        SoundSource.BLOCKS,
                         bandVolume,
                         p.pitch);
                 }

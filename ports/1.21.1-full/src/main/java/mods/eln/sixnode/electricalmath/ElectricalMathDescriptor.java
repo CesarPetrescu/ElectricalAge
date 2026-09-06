@@ -10,9 +10,9 @@ import mods.eln.node.six.SixNodeDescriptor;
 import mods.eln.wiki.Data;
 import mods.eln.wiki.GuiVerticalExtender;
 import mods.eln.wiki.ItemDefault.IPlugIn;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import org.lwjgl.opengl.GL11;
 
 import java.util.Collections;
@@ -103,7 +103,7 @@ public class ElectricalMathDescriptor extends SixNodeDescriptor implements IPlug
 //    }
 
     @Override
-    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List list, boolean par4) {
+    public void addInformation(ItemStack itemStack, Player entityPlayer, List list, boolean par4) {
         super.addInformation(itemStack, entityPlayer, list, par4);
         Collections.addAll(list, tr("Calculates an output signal from\n3 inputs (A, B, C) using an equation.").split("\n"));
     }

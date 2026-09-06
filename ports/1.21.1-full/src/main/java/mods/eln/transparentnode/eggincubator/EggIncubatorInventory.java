@@ -3,8 +3,8 @@ package mods.eln.transparentnode.eggincubator;
 import mods.eln.node.transparent.TransparentNodeElement;
 import mods.eln.node.transparent.TransparentNodeElementInventory;
 import mods.eln.node.transparent.TransparentNodeElementRender;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.Direction;
 
 public class EggIncubatorInventory extends TransparentNodeElementInventory {
 
@@ -17,17 +17,17 @@ public class EggIncubatorInventory extends TransparentNodeElementInventory {
     }
 
     @Override
-    public int[] getSlotsForFace(EnumFacing side) {
+    public int[] getSlotsForFace(Direction side) {
         return new int[]{EggIncubatorContainer.EggSlotId};
     }
 
     @Override
-    public boolean canInsertItem(int var1, ItemStack var2, EnumFacing var3) {
+    public boolean canInsertItem(int var1, ItemStack var2, Direction var3) {
         return true;
     }
 
     @Override
-    public boolean canExtractItem(int var1, ItemStack var2, EnumFacing var3) {
+    public boolean canExtractItem(int var1, ItemStack var2, Direction var3) {
         return false;
     }
 }

@@ -6,9 +6,9 @@ import mods.eln.misc.INBTTReady;
 import mods.eln.misc.Utils;
 import mods.eln.server.SaveConfig;
 import mods.eln.sim.IProcess;
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 
 public class HeatFurnaceInventoryProcess implements IProcess, INBTTReady {
 
@@ -79,12 +79,12 @@ public class HeatFurnaceInventoryProcess implements IProcess, INBTTReady {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt, String str) {
+    public void readFromNBT(CompoundTag nbt, String str) {
         combustibleBuffer = nbt.getDouble(str + "HFIP" + "combustribleBuffer");
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt, String str) {
+    public CompoundTag writeToNBT(CompoundTag nbt, String str) {
         nbt.setDouble(str + "HFIP" + "combustribleBuffer", combustibleBuffer);
         return nbt;
     }

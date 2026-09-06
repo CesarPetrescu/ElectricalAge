@@ -1,8 +1,8 @@
 package mods.eln.wiki;
 
 import mods.eln.gui.GuiLabel;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.item.ItemStack;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +10,7 @@ import java.util.Map.Entry;
 
 public class Root extends Default {
 
-    public Root(GuiScreen preview) {
+    public Root(Screen preview) {
         super(preview);
 
     }

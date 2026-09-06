@@ -10,10 +10,10 @@ import mods.eln.misc.*;
 import mods.eln.sound.LoopedSound;
 import mods.eln.sound.LoopedSoundManager;
 import mods.eln.sound.SoundCommand;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
 import org.lwjgl.opengl.GL11;
 
 import java.io.ByteArrayOutputStream;
@@ -32,13 +32,13 @@ public abstract class TransparentNodeElementRender {
         this.transparentNodedescriptor = descriptor;
     }
 
-    protected EntityItem unserializeItemStackToEntityItem(DataInputStream stream, EntityItem old) throws IOException {
+    protected ItemEntity unserializeItemStackToEntityItem(DataInputStream stream, ItemEntity old) throws IOException {
         return Utils.unserializeItemStackToEntityItem(stream, old, tileEntity);
 
     }
 
     // TODO(1.10): ITEM RENDERING
-    public void drawEntityItem(EntityItem entityItem, double x, double y, double z, float roty, float scale) {/*
+    public void drawEntityItem(ItemEntity entityItem, double x, double y, double z, float roty, float scale) {/*
         if(entityItem == null) return;
 		
 
@@ -80,11 +80,11 @@ public abstract class TransparentNodeElementRender {
         }
     }
 
-    public GuiScreen newGuiDraw(Direction side, EntityPlayer player) {
+    public Screen newGuiDraw(Direction side, Player player) {
         return null;
     }
 
-    public IInventory getInventory() {
+    public Container getInventory() {
         return null;
     }
 

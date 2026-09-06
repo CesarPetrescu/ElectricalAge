@@ -14,12 +14,12 @@ import mods.eln.sim.nbt.NbtElectricalLoad;
 import mods.eln.sim.nbt.NbtThermalLoad;
 import mods.eln.sound.IPlayer;
 import mods.eln.sound.SoundCommand;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 
 import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
@@ -54,7 +54,7 @@ public abstract class SixNodeElement implements GhostObserver, IPlayer, INodeEle
     }
 
     @Override
-    public void inventoryChange(IInventory inventory) {
+    public void inventoryChange(Container inventory) {
         inventoryChanged();
     }
 
@@ -71,7 +71,7 @@ public abstract class SixNodeElement implements GhostObserver, IPlayer, INodeEle
         return sixNode.coordinate;
     }
 
-    protected boolean onBlockActivatedRotate(EntityPlayer entityPlayer) {
+    protected boolean onBlockActivatedRotate(Player entityPlayer) {
         if (Utils.isPlayerUsingWrench(entityPlayer)) {
             front = front.getNextClockwise();
             sixNode.reconnect();
@@ -89,7 +89,7 @@ public abstract class SixNodeElement implements GhostObserver, IPlayer, INodeEle
         Utils.sendPacketToAllClient(bos, range, sixNode.coordinate);
     }
 
-    public void sendPacketToClient(ByteArrayOutputStream bos, EntityPlayerMP player) {
+    public void sendPacketToClient(ByteArrayOutputStream bos, ServerPlayer player) {
         sixNode.sendPacketToClient(bos, player);
     }
 
@@ -125,7 +125,7 @@ public abstract class SixNodeElement implements GhostObserver, IPlayer, INodeEle
 
     }
 
-    public void networkUnserialize(DataInputStream stream, EntityPlayerMP player) {
+    public void networkUnserialize(DataInputStream stream, ServerPlayer player) {
         networkUnserialize(stream);
     }
 
@@ -137,11 +137,11 @@ public abstract class SixNodeElement implements GhostObserver, IPlayer, INodeEle
         return false;
     }
 
-    public IInventory getInventory() {
+    public Container getInventory() {
         return null;
     }
 
-    public Container newContainer(Direction side, EntityPlayer player) {
+    public AbstractContainerMenu newContainer(Direction side, Player player) {
         return null;
     }
 
@@ -208,7 +208,7 @@ public abstract class SixNodeElement implements GhostObserver, IPlayer, INodeEle
         }
     }
 
-    public void destroy(EntityPlayerMP entityPlayer) {
+    public void destroy(ServerPlayer entityPlayer) {
         if (useUuid()) {
             stop(uuid);
         }
@@ -233,7 +233,7 @@ public abstract class SixNodeElement implements GhostObserver, IPlayer, INodeEle
      * @param vz ?
      * @return True if we've done something, otherwise false.
      */
-    public boolean onBlockActivated(EntityPlayer entityPlayer, Direction side,
+    public boolean onBlockActivated(Player entityPlayer, Direction side,
                                              float vx, float vy, float vz) {
         return onBlockActivatedRotate(entityPlayer);
     }
@@ -249,13 +249,13 @@ public abstract class SixNodeElement implements GhostObserver, IPlayer, INodeEle
         return new ItemStack(ModBlock.sixNodeBlock, 1, itemStackDamageId); //sixNode.sideElementIdList[side.getInt()]
     }
 
-    public void readFromNBT(NBTTagCompound nbt) {
+    public void readFromNBT(CompoundTag nbt) {
 
         int idx;
 
         front = front.readFromNBT(nbt, "sixFront");
 
-        IInventory inv = getInventory();
+        Container inv = getInventory();
         if (inv != null) {
             Utils.readFromNBT(nbt, "inv", inv);
         }
@@ -292,13 +292,13 @@ public abstract class SixNodeElement implements GhostObserver, IPlayer, INodeEle
 
     }
 
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+    public CompoundTag writeToNBT(CompoundTag nbt) {
 
         int idx;
 
         front.writeToNBT(nbt, "sixFront");
 
-        IInventory inv = getInventory();
+        Container inv = getInventory();
         if (inv != null) {
             Utils.writeToNBT(nbt, "inv", inv);
         }
@@ -380,7 +380,7 @@ public abstract class SixNodeElement implements GhostObserver, IPlayer, INodeEle
         }
     }
 
-    public boolean ghostBlockActivated(int UUID, EntityPlayer entityPlayer, Direction side, float vx, float vy, float vz) {
+    public boolean ghostBlockActivated(int UUID, Player entityPlayer, Direction side, float vx, float vy, float vz) {
         if (UUID == sixNodeElementDescriptor.getGhostGroupUuid()) {
             sixNode.onBlockActivated(entityPlayer, this.side, vx, vy, vz);
         }

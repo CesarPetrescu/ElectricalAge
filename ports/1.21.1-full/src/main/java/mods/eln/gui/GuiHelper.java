@@ -2,14 +2,14 @@ package mods.eln.gui;
 
 import mods.eln.misc.UtilsClient;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.inventory.GuiContainer;
-import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import com.mojang.blaze3d.vertex.BufferBuilder;
 import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.util.ResourceLocation;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import net.minecraft.resources.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
@@ -18,23 +18,23 @@ import java.util.Iterator;
 import java.util.List;
 
 public class GuiHelper {
-    public GuiScreen screen;
+    public Screen screen;
     public int xSize, ySize;
     ResourceLocation background;
     static final ResourceLocation helperTexture = new ResourceLocation("eln", "sprites/gui/helpertexture.png");
 
     static final ResourceLocation slotSkin = new ResourceLocation("textures/gui/container/furnace.png");
 
-    public static final Tessellator tessellator = new Tessellator(16);
+    public static final Tesselator tessellator = new Tesselator(16);
 
-    public GuiHelper(GuiScreen screen, int xSize, int ySize, String backgroundName) {
+    public GuiHelper(Screen screen, int xSize, int ySize, String backgroundName) {
         this.screen = screen;
         this.xSize = xSize;
         this.ySize = ySize;
         background = new ResourceLocation("eln", "sprites/gui/" + backgroundName);
     }
 
-    public GuiHelper(GuiScreen screen, int xSize, int ySize) {
+    public GuiHelper(Screen screen, int xSize, int ySize) {
         this.screen = screen;
         this.xSize = xSize;
         this.ySize = ySize;
@@ -205,9 +205,9 @@ public class GuiHelper {
         }
     }
 
-    public void drawHoveringText(List par1List, int x, int y, FontRenderer font) {
+    public void drawHoveringText(List par1List, int x, int y, Font font) {
         if (!par1List.isEmpty()) {
-            if (screen instanceof GuiContainer) {
+            if (screen instanceof AbstractContainerScreen) {
                 x -= (screen.width - xSize) / 2;
                 y -= (screen.height - ySize) / 2;
             }
@@ -228,7 +228,7 @@ public class GuiHelper {
                 }
             }
 
-            if (screen instanceof GuiContainer) {
+            if (screen instanceof AbstractContainerScreen) {
                 if (x + (screen.width - xSize) / 2 + textWidth + 30 > screen.width) {
                     x -= textWidth + 24;
                 }
@@ -302,7 +302,7 @@ public class GuiHelper {
         GL11.glShadeModel(GL11.GL_SMOOTH);
 
         BufferBuilder buffer = tessellator.getBuffer();
-        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
+        buffer.begin(GL11.GL_QUADS, DefaultVertexFormat.POSITION_COLOR);
         buffer.pos(par3, par2, 0).color(f1, f2, f3, f).endVertex();
         buffer.pos(par1, par2, 0).color(f1, f2, f3, f).endVertex();
         buffer.pos(par1, par4, 0).color(f5, f6, f7, f4).endVertex();
@@ -315,7 +315,7 @@ public class GuiHelper {
         GL11.glEnable(GL11.GL_TEXTURE_2D);
     }
 
-    public int getHoveringTextWidth(List<String> comment, FontRenderer fontRenderer) {
+    public int getHoveringTextWidth(List<String> comment, Font fontRenderer) {
         int strWidth = 0;
         for (String str : comment) {
             int size = fontRenderer.getStringWidth(str);
@@ -324,7 +324,7 @@ public class GuiHelper {
         return strWidth + 5;
     }
 
-    public int getHoveringTextHeight(List<String> comment, FontRenderer fontRenderer) {
+    public int getHoveringTextHeight(List<String> comment, Font fontRenderer) {
         return comment.size() * 9 - 4;
     }
 

@@ -2,17 +2,17 @@ package mods.eln.node.six;
 
 import mods.eln.misc.INBTTReady;
 import mods.eln.misc.Utils;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.text.TextComponentString;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 
-public class SixNodeElementInventory implements IInventory, INBTTReady {
+public class SixNodeElementInventory implements Container, INBTTReady {
     SixNodeElementRender sixnodeRender = null;
     SixNodeElement sixNodeElement = null;
 
@@ -108,17 +108,17 @@ public class SixNodeElementInventory implements IInventory, INBTTReady {
     }
 
     @Override
-    public boolean isUsableByPlayer(@NotNull EntityPlayer player) {
+    public boolean isUsableByPlayer(@NotNull Player player) {
         return true;
     }
 
     @Override
-    public void openInventory(@NotNull EntityPlayer player) {
+    public void openInventory(@NotNull Player player) {
 
     }
 
     @Override
-    public void closeInventory(@NotNull EntityPlayer player) {
+    public void closeInventory(@NotNull Player player) {
 
     }
 
@@ -131,13 +131,13 @@ public class SixNodeElementInventory implements IInventory, INBTTReady {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt, String str) {
+    public void readFromNBT(CompoundTag nbt, String str) {
 
         Utils.readFromNBT(nbt, str, this);
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt, String str) {
+    public CompoundTag writeToNBT(CompoundTag nbt, String str) {
 
         return Utils.writeToNBT(nbt, str, this);
     }
@@ -176,7 +176,7 @@ public class SixNodeElementInventory implements IInventory, INBTTReady {
 
     @NotNull
     @Override
-    public ITextComponent getDisplayName() {
+    public Component getDisplayName() {
         return new TextComponentString("SixNodeInventory");
     }
 

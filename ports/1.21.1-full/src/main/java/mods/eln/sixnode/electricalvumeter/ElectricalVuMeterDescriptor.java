@@ -5,10 +5,10 @@ import mods.eln.misc.*;
 import mods.eln.misc.Obj3D.Obj3DPart;
 import mods.eln.node.six.SixNodeDescriptor;
 import mods.eln.wiki.Data;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.Color;
@@ -60,7 +60,7 @@ public class ElectricalVuMeterDescriptor extends SixNodeDescriptor {
         Data.addSignal(newItemStack());
     }
 
-    void draw(float factor, float distance, TileEntity entity) {
+    void draw(float factor, float distance, BlockEntity entity) {
         if (factor < 0.0) factor = 0.0f;
         if (factor > 1.0) factor = 1.0f;
         switch (objType) {
@@ -90,7 +90,7 @@ public class ElectricalVuMeterDescriptor extends SixNodeDescriptor {
     }
 
     @Override
-    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List list, boolean par4) {
+    public void addInformation(ItemStack itemStack, Player entityPlayer, List list, boolean par4) {
         super.addInformation(itemStack, entityPlayer, list, par4);
         list.add(tr("Displays the value of a signal."));
     }
@@ -121,7 +121,7 @@ public class ElectricalVuMeterDescriptor extends SixNodeDescriptor {
 //    }
 
     @Override
-    public LRDU getFrontFromPlace(Direction side, EntityPlayer player) {
+    public LRDU getFrontFromPlace(Direction side, Player player) {
         return super.getFrontFromPlace(side, player).inverse();
     }
 }

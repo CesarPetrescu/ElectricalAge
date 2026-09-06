@@ -1,10 +1,9 @@
 package mods.eln.misc;
 
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
 import org.lwjgl.opengl.GL11;
 
 /**
@@ -140,7 +139,7 @@ public enum Direction {
      * @param tileEntity tile entity to check
      * @return Adjacent tile entity or null if none exists
      */
-    public TileEntity applyToTileEntity(TileEntity tileEntity) {
+    public BlockEntity applyToTileEntity(BlockEntity tileEntity) {
         if (tileEntity == null) return null;
         int coords[] = {tileEntity.getPos().getX(), tileEntity.getPos().getY(), tileEntity.getPos().getZ()};
 
@@ -154,9 +153,9 @@ public enum Direction {
         }
     }
 
-    public TileEntity applyToTileEntityAndSameClassThan(TileEntity tileEntity, Class c) {
+    public BlockEntity applyToTileEntityAndSameClassThan(BlockEntity tileEntity, Class c) {
         if (tileEntity == null) return null;
-        TileEntity findedEntity = applyToTileEntity(tileEntity);
+        BlockEntity findedEntity = applyToTileEntity(tileEntity);
         if (findedEntity == null) return null;
         if (!Utils.isTheClass(findedEntity, c)) return null;
         return findedEntity;
@@ -436,7 +435,7 @@ public enum Direction {
         }
     }
 
-    public TileEntity getTileEntity(Coordinate coordinate) {
+    public BlockEntity getTileEntity(Coordinate coordinate) {
         BlockPos pos = coordinate.pos;
         int x = pos.getX(), y = pos.getY(), z = pos.getZ();
         switch (this) {
@@ -465,30 +464,30 @@ public enum Direction {
         return coordinate.world().getTileEntity(new BlockPos(x, y, z));
     }
 
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt, String name) {
+    public CompoundTag writeToNBT(CompoundTag nbt, String name) {
         nbt.setByte(name, (byte) getInt());
         return nbt;
     }
 
-    static public Direction readFromNBT(NBTTagCompound nbt, String name) {
+    static public Direction readFromNBT(CompoundTag nbt, String name) {
         return Direction.fromInt(nbt.getByte(name));
     }
 
-    public Vec3d rotateFromXN(Vec3d vec) {
+    public Vec3 rotateFromXN(Vec3 vec) {
         double x = vec.x, y = vec.y, z = vec.z;
         switch (this) {
             case XN:
                 break;
             case XP:
-                return new Vec3d(-x, y, -z);
+                return new Vec3(-x, y, -z);
             case YN:
-                return new Vec3d(y, x, -z);
+                return new Vec3(y, x, -z);
             case YP:
-                return new Vec3d(y, -x, z);
+                return new Vec3(y, -x, z);
             case ZN:
-                return new Vec3d(-z, y, x);
+                return new Vec3(-z, y, x);
             case ZP:
-                return new Vec3d(z, y, -x);
+                return new Vec3(z, y, -x);
         }
         return vec;
     }
@@ -617,7 +616,7 @@ public enum Direction {
         }
     }
 
-    public static Direction fromFacing(EnumFacing direction) {
+    public static Direction fromFacing(net.minecraft.core.Direction direction) {
         switch (direction) {
             case DOWN:
                 return YN;
@@ -636,20 +635,20 @@ public enum Direction {
         }
     }
 
-    public EnumFacing toForge() {
+    public net.minecraft.core.Direction toForge() {
         switch (this) {
             case YN:
-                return EnumFacing.DOWN;
+                return net.minecraft.core.Direction.DOWN;
             case XP:
-                return EnumFacing.EAST;
+                return net.minecraft.core.Direction.EAST;
             case ZN:
-                return EnumFacing.NORTH;
+                return net.minecraft.core.Direction.NORTH;
             case ZP:
-                return EnumFacing.SOUTH;
+                return net.minecraft.core.Direction.SOUTH;
             case YP:
-                return EnumFacing.UP;
+                return net.minecraft.core.Direction.UP;
             case XN:
-                return EnumFacing.WEST;
+                return net.minecraft.core.Direction.WEST;
         }
         throw new RuntimeException("Kaboom!");
     }

@@ -4,7 +4,7 @@ import mods.eln.misc.*;
 import mods.eln.misc.Obj3D.Obj3DPart;
 import mods.eln.sim.ThermalLoadInitializer;
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor;
-import net.minecraft.entity.item.EntityItem;
+import net.minecraft.world.entity.item.ItemEntity;
 
 public class PlateMachineDescriptor extends ElectricalMachineDescriptor {
     private Obj3DPart main;
@@ -34,7 +34,7 @@ public class PlateMachineDescriptor extends ElectricalMachineDescriptor {
     }
 
     @Override
-    void draw(ElectricalMachineRender render, Object handleO, EntityItem inEntity, EntityItem outEntity, float powerFactor, float processState) {
+    void draw(ElectricalMachineRender render, Object handleO, ItemEntity inEntity, ItemEntity outEntity, float powerFactor, float processState) {
         PlateMachineDescriptorHandle handle = (PlateMachineDescriptorHandle) handleO;
 
         main.draw();
@@ -47,7 +47,7 @@ public class PlateMachineDescriptor extends ElectricalMachineDescriptor {
     }
 
     @Override
-    void refresh(float deltaT, ElectricalMachineRender render, Object handleO, EntityItem inEntity, EntityItem outEntity, float powerFactor, float processState) {
+    void refresh(float deltaT, ElectricalMachineRender render, Object handleO, ItemEntity inEntity, ItemEntity outEntity, float powerFactor, float processState) {
         PlateMachineDescriptorHandle handle = (PlateMachineDescriptorHandle) handleO;
         handle.interpolator.setTarget(powerFactor);
         handle.interpolator.step(deltaT);

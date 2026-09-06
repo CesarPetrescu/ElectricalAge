@@ -13,16 +13,16 @@ import mods.eln.sim.mna.state.State;
 import mods.eln.sim.nbt.NbtThermalLoad;
 import mods.eln.sound.IPlayer;
 import mods.eln.sound.SoundCommand;
-import net.minecraft.block.Block;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.world.World;
-import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -93,7 +93,7 @@ public abstract class TransparentNodeElement implements GhostObserver, IPlayer, 
         needPublish();
     }
 
-    public byte networkUnserialize(DataInputStream stream, EntityPlayerMP player) {
+    public byte networkUnserialize(DataInputStream stream, ServerPlayer player) {
         return networkUnserialize(stream);
     }
 
@@ -123,7 +123,7 @@ public abstract class TransparentNodeElement implements GhostObserver, IPlayer, 
         return false;
     }
 
-    public IInventory getInventory() {
+    public Container getInventory() {
         return null;
     }
 
@@ -170,7 +170,7 @@ public abstract class TransparentNodeElement implements GhostObserver, IPlayer, 
         node.sendPacketToAllClient(bos);
     }
 
-    public Container newContainer(Direction side, EntityPlayer player) {
+    public AbstractContainerMenu newContainer(Direction side, Player player) {
         return null;
     }
 
@@ -263,7 +263,7 @@ public abstract class TransparentNodeElement implements GhostObserver, IPlayer, 
         return itemStack;
     }
 
-    public NBTTagCompound getItemStackNBT() {
+    public CompoundTag getItemStackNBT() {
         return null;
     }
 
@@ -290,7 +290,7 @@ public abstract class TransparentNodeElement implements GhostObserver, IPlayer, 
     }
 
 
-    public void initializeFromThat(Direction front, EntityLivingBase entityLiving, NBTTagCompound itemStackNbt) {
+    public void initializeFromThat(Direction front, LivingEntity entityLiving, CompoundTag itemStackNbt) {
         this.front = front;
         readItemStackNBT(itemStackNbt);
         initialize();
@@ -298,22 +298,22 @@ public abstract class TransparentNodeElement implements GhostObserver, IPlayer, 
 
     public abstract void initialize();
 
-    public void readItemStackNBT(NBTTagCompound nbt) {
+    public void readItemStackNBT(CompoundTag nbt) {
 
     }
 
 
     //  public abstract void destroyFrom(SixNode sixNode);
 
-    public abstract boolean onBlockActivated(EntityPlayer entityPlayer, Direction side,
+    public abstract boolean onBlockActivated(Player entityPlayer, Direction side,
                                              float vx, float vy, float vz);
 
 
-    public void readFromNBT(NBTTagCompound nbt) {
+    public void readFromNBT(CompoundTag nbt) {
 
         int idx;
 
-        IInventory inv = getInventory();
+        Container inv = getInventory();
         if (inv != null) {
             Utils.readFromNBT(nbt, "inv", inv);
         }
@@ -352,10 +352,10 @@ public abstract class TransparentNodeElement implements GhostObserver, IPlayer, 
     }
 
 
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+    public CompoundTag writeToNBT(CompoundTag nbt) {
         int idx = 0;
 
-        IInventory inv = getInventory();
+        Container inv = getInventory();
         if (inv != null) {
             Utils.writeToNBT(nbt, "inv", inv);
         }
@@ -406,7 +406,7 @@ public abstract class TransparentNodeElement implements GhostObserver, IPlayer, 
     }
 
     @Override
-    public void inventoryChange(IInventory inventory) {
+    public void inventoryChange(Container inventory) {
     }
 
     public float getLightOpacity() {
@@ -425,7 +425,7 @@ public abstract class TransparentNodeElement implements GhostObserver, IPlayer, 
         }
     }
 
-    public boolean ghostBlockActivated(int UUID, EntityPlayer entityPlayer, Direction side, float vx, float vy, float vz) {
+    public boolean ghostBlockActivated(int UUID, Player entityPlayer, Direction side, float vx, float vy, float vz) {
         if (UUID == transparentNodeDescriptor.getGhostGroupUuid()) {
             return node.onBlockActivated(entityPlayer, side, vx, vy, vz);
         }
@@ -433,7 +433,7 @@ public abstract class TransparentNodeElement implements GhostObserver, IPlayer, 
     }
 
 
-    public World world() {
+    public Level world() {
 
         return node.coordinate.world();
     }

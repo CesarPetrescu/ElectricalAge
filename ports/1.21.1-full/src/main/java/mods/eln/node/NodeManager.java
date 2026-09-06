@@ -4,13 +4,13 @@ import mods.eln.misc.Coordinate;
 import mods.eln.misc.Utils;
 import mods.eln.node.transparent.TransparentNode;
 import mods.eln.node.transparent.TransparentNodeElement;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.world.storage.WorldSavedData;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.saveddata.SavedData;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class NodeManager extends WorldSavedData {
+public class NodeManager extends SavedData {
     public static NodeManager instance = null;
 
     private HashMap<Coordinate, NodeBase> nodesMap;
@@ -89,11 +89,11 @@ public class NodeManager extends WorldSavedData {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt) {
+    public void readFromNBT(CompoundTag nbt) {
         int i = 0;
         i++;
         for(Object o : Utils.getTags(nbt)) {
-            NBTTagCompound tag = (NBTTagCompound) o;
+            CompoundTag tag = (CompoundTag) o;
             Class nodeClass = UUIDToClass.get(tag.getString("tag"));
             try {
                 NodeBase node = (NodeBase) nodeClass.getConstructor().newInstance();
@@ -109,7 +109,7 @@ public class NodeManager extends WorldSavedData {
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+    public CompoundTag writeToNBT(CompoundTag compound) {
         return compound;
     }
 
@@ -157,12 +157,12 @@ public class NodeManager extends WorldSavedData {
     }
 
 
-    public void loadFromNbt(NBTTagCompound nbt) {
+    public void loadFromNbt(CompoundTag nbt) {
         if (nbt == null) return;
         
         List<NodeBase> addedNode = new ArrayList<NodeBase>();
         for (Object o : Utils.getTags(nbt)) {
-            NBTTagCompound tag = (NBTTagCompound) o;
+            CompoundTag tag = (CompoundTag) o;
             String uuid = tag.getString("tag");
             Class nodeClass = UUIDToClass.get(uuid);
             if (nodeClass == null) {
@@ -185,7 +185,7 @@ public class NodeManager extends WorldSavedData {
         }
     }
 
-    public void saveToNbt(NBTTagCompound nbt, int dim) {
+    public void saveToNbt(CompoundTag nbt, int dim) {
         int nodeCounter = 0;
         List<NodeBase> nodesCopy = new ArrayList<NodeBase>();
         nodesCopy.addAll(nodes);
@@ -193,7 +193,7 @@ public class NodeManager extends WorldSavedData {
             try {
                 if (node.mustBeSaved() == false) continue;
                 if (dim != Integer.MIN_VALUE && node.coordinate.getDimension() != dim) continue;
-                NBTTagCompound nbtNode = new NBTTagCompound();
+                CompoundTag nbtNode = new CompoundTag();
                 nbtNode.setString("tag", node.getNodeUuid());
                 node.writeToNBT(nbtNode);
                 nbt.setTag("n" + nodeCounter++, nbtNode);

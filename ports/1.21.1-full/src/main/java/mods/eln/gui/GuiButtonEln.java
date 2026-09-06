@@ -1,13 +1,13 @@
 package mods.eln.gui;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.audio.SoundHandler;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.sounds.SoundManager;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
 
-public class GuiButtonEln extends GuiButton implements IGuiObject {
+public class GuiButtonEln extends Button implements IGuiObject {
 
     IGuiObjectObserver observer;
 
@@ -47,7 +47,7 @@ public class GuiButtonEln extends GuiButton implements IGuiObject {
     @Override
     public void imouseClicked(int x, int y, int code) {
         if (mousePressed(Minecraft.getMinecraft(), x, y)) {
-            SoundHandler soundHandler = Minecraft.getMinecraft().getSoundHandler();
+            SoundManager soundHandler = Minecraft.getMinecraft().getSoundHandler();
             playPressSound(soundHandler);
             onMouseClicked();
             if (observer != null) {

@@ -12,12 +12,12 @@ import mods.eln.misc.Utils;
 import mods.eln.server.SaveConfig;
 import mods.eln.sim.IProcess;
 import mods.eln.sixnode.lampsupply.LampSupplyElement;
-import net.minecraft.block.Block;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -132,8 +132,8 @@ public class LampSocketProcess implements IProcess, INBTTReady {
                 double randTarget = 1.0 / lampDescriptor.vegetableGrowRate * time * (1.0 * light / lampDescriptor.nominalLight / 15.0);
                 if (randTarget > Math.random()) {
                     boolean exit = false;
-                    Vec3d vv = new Vec3d(1, 0, 0);
-                    Vec3d vp = new Vec3d(myCoord().pos.getX() + 0.5, myCoord().pos.getY() + 0.5, myCoord().pos.getZ() + 0.5);
+                    Vec3 vv = new Vec3(1, 0, 0);
+                    Vec3 vp = new Vec3(myCoord().pos.getX() + 0.5, myCoord().pos.getY() + 0.5, myCoord().pos.getZ() + 0.5);
 
                     // TODO(1.10): I may have swapped these two.
                     vv = vv.rotatePitch((float) (alphaZ * Math.PI / 180.0));
@@ -327,14 +327,14 @@ public class LampSocketProcess implements IProcess, INBTTReady {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt, String str) {
+    public void readFromNBT(CompoundTag nbt, String str) {
         stableProb = nbt.getDouble(str + "LSP" + "stableProb");
         alphaZ = nbt.getFloat(str + "alphaZ");
         light = nbt.getInteger(str + "light");
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt, String str) {
+    public CompoundTag writeToNBT(CompoundTag nbt, String str) {
         nbt.setDouble(str + "LSP" + "stableProb", stableProb);
         nbt.setFloat(str + "alphaZ", (float) alphaZ);
         nbt.setInteger(str + "light", light);

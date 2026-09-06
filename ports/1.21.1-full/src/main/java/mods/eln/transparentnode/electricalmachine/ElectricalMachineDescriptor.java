@@ -15,10 +15,10 @@ import mods.eln.wiki.Data;
 import mods.eln.wiki.GuiItemStack;
 import mods.eln.wiki.GuiVerticalExtender;
 import mods.eln.wiki.ItemDefault.IPlugIn;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 
@@ -83,7 +83,7 @@ public class ElectricalMachineDescriptor extends TransparentNodeDescriptor imple
     }
 
     @Override
-    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List list, boolean par4) {
+    public void addInformation(ItemStack itemStack, Player entityPlayer, List list, boolean par4) {
         super.addInformation(itemStack, entityPlayer, list, par4);
         list.add(tr("Nominal voltage: %sV", Utils.plotValue(nominalU)));
         list.add(tr("Nominal power: %sW", Utils.plotValue(nominalP)));
@@ -109,12 +109,12 @@ public class ElectricalMachineDescriptor extends TransparentNodeDescriptor imple
         return null;
     }
 
-    void draw(ElectricalMachineRender render, Object handleO, EntityItem inEntity, EntityItem outEntity,
+    void draw(ElectricalMachineRender render, Object handleO, ItemEntity inEntity, ItemEntity outEntity,
               float powerFactor, float processState) {
     }
 
-    void refresh(float deltaT, ElectricalMachineRender render, Object handleO, EntityItem inEntity,
-                 EntityItem outEntity, float powerFactor, float processState) {
+    void refresh(float deltaT, ElectricalMachineRender render, Object handleO, ItemEntity inEntity,
+                 ItemEntity outEntity, float powerFactor, float processState) {
     }
 
     public boolean powerLrdu(Direction side, Direction front) {

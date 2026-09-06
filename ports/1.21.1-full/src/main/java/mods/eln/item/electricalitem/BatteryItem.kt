@@ -5,10 +5,10 @@ import mods.eln.item.electricalinterface.IItemEnergyBattery
 import mods.eln.misc.Utils
 import mods.eln.misc.UtilsClient
 import mods.eln.wiki.Data
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
 
 import mods.eln.i18n.I18N.tr
 
@@ -19,13 +19,13 @@ class BatteryItem(name: String, private var energyStorage: Double, internal var 
         Data.addPortable(newItemStack())
     }
 
-    override fun getDefaultNBT(): NBTTagCompound? {
-        val nbt = NBTTagCompound()
+    override fun getDefaultNBT(): CompoundTag? {
+        val nbt = CompoundTag()
         nbt.setDouble("energy", 0.0)
         return nbt
     }
 
-    override fun addInformation(itemStack: ItemStack?, entityPlayer: EntityPlayer, list: MutableList<Any?>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack?, entityPlayer: Player, list: MutableList<Any?>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         list.add(tr("Charge power: %sW", Utils.plotValue(chargePower)))
         list.add(tr("Discharge power: %sW", Utils.plotValue(dischargePower)))

@@ -3,7 +3,7 @@ package mods.eln.sim.nbt;
 import mods.eln.misc.INBTTReady;
 import mods.eln.sim.FurnaceProcess;
 import mods.eln.sim.ThermalLoad;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundTag;
 
 public class NbtFurnaceProcess extends FurnaceProcess implements INBTTReady {
 
@@ -15,13 +15,13 @@ public class NbtFurnaceProcess extends FurnaceProcess implements INBTTReady {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbttagcompound, String str) {
+    public void readFromNBT(CompoundTag nbttagcompound, String str) {
         combustibleEnergy = nbttagcompound.getFloat(str + name + "Q");
         setGain(nbttagcompound.getDouble(str + name + "gain"));
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbttagcompound, String str) {
+    public CompoundTag writeToNBT(CompoundTag nbttagcompound, String str) {
         nbttagcompound.setFloat(str + name + "Q", (float) combustibleEnergy);
         nbttagcompound.setDouble(str + name + "gain", getGain());
         return nbttagcompound;

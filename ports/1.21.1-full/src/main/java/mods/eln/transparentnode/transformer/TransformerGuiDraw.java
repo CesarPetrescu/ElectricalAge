@@ -5,15 +5,15 @@ import mods.eln.gui.GuiContainerEln;
 import mods.eln.gui.GuiHelperContainer;
 import mods.eln.gui.IGuiObject;
 import mods.eln.node.transparent.TransparentNodeElementInventory;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
 
 public class TransformerGuiDraw extends GuiContainerEln {
     private final TransparentNodeElementInventory inventory;
     private final TransformerRender render;
     private GuiButtonEln isIsolator;
 
-    public TransformerGuiDraw(EntityPlayer player, IInventory inventory, TransformerRender render) {
+    public TransformerGuiDraw(Player player, Container inventory, TransformerRender render) {
         super(new TransformerContainer(player, inventory));
         this.inventory = (TransparentNodeElementInventory) inventory;
         this.render = render;

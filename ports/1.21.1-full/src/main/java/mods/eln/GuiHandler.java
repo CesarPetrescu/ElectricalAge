@@ -1,15 +1,15 @@
 package mods.eln;
 
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
 import net.minecraftforge.fml.common.network.IGuiHandler;
 import mods.eln.misc.Direction;
 import mods.eln.misc.Utils;
 import mods.eln.misc.UtilsClient;
 import mods.eln.node.INodeEntity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.Level;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -17,15 +17,15 @@ import java.io.IOException;
 
 public class GuiHandler implements IGuiHandler {
 
-   private INodeEntity getNodeEntity(World world, int x, int y, int z) {
-        TileEntity e = world.getTileEntity(new BlockPos(x,y,z));
+   private INodeEntity getNodeEntity(Level world, int x, int y, int z) {
+        BlockEntity e = world.getTileEntity(new BlockPos(x,y,z));
         if (!(e instanceof INodeEntity)) return null;
         return (INodeEntity) e;
     }
 
     // returns an instance of the Container you made earlier
     @Override
-    public Object getServerGuiElement(int id, EntityPlayer player, World world,
+    public Object getServerGuiElement(int id, Player player, Level world,
                                       int x, int y, int z) {
         INodeEntity nodeEntity = getNodeEntity(world, x, y, z);
         if (nodeEntity == null) return null;
@@ -41,7 +41,7 @@ public class GuiHandler implements IGuiHandler {
                 stream.writeInt(x);
                 stream.writeInt(y);
                 stream.writeInt(z);
-                Utils.sendPacketToClient(bos, (EntityPlayerMP) player);
+                Utils.sendPacketToClient(bos, (ServerPlayer) player);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -55,7 +55,7 @@ public class GuiHandler implements IGuiHandler {
 
     // returns an instance of the Gui you made earlier
     @Override
-    public Object getClientGuiElement(int id, EntityPlayer player, World world,
+    public Object getClientGuiElement(int id, Player player, Level world,
                                       int x, int y, int z) {
         if (id == genericOpen) {
             return UtilsClient.guiLastOpen;

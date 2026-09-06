@@ -7,9 +7,9 @@ import mods.eln.node.simple.SimpleNode;
 import mods.eln.node.simple.SimpleNodeBlock;
 import mods.eln.node.simple.SimpleNodeEntity;
 import net.minecraft.block.material.Material;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 
 public class EnergyConverterElnToOtherBlock extends SimpleNodeBlock {
 
@@ -26,7 +26,7 @@ public class EnergyConverterElnToOtherBlock extends SimpleNodeBlock {
     }
 
     @Override
-    public TileEntity createNewTileEntity(World var1, int var2) {
+    public BlockEntity createNewTileEntity(Level var1, int var2) {
         return new EnergyConverterElnToOtherEntity();
     }
 

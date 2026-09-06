@@ -1,9 +1,9 @@
 package mods.eln.gui;
 
 import mods.eln.misc.Utils;
-import net.minecraft.block.Block;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
 
 import java.util.List;

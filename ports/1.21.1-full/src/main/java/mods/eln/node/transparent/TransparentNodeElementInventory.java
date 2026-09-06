@@ -2,18 +2,18 @@ package mods.eln.node.transparent;
 
 import mods.eln.misc.INBTTReady;
 import mods.eln.misc.Utils;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.ISidedInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.text.TextComponentString;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 
-public class TransparentNodeElementInventory implements ISidedInventory, INBTTReady {
+public class TransparentNodeElementInventory implements WorldlyContainer, INBTTReady {
     protected TransparentNodeElementRender transparentNodeRender = null;
     protected TransparentNodeElement transparentNodeElement = null;
 
@@ -109,17 +109,17 @@ public class TransparentNodeElementInventory implements ISidedInventory, INBTTRe
     }
 
     @Override
-    public boolean isUsableByPlayer(EntityPlayer player) {
+    public boolean isUsableByPlayer(Player player) {
         return true;
     }
 
     @Override
-    public void openInventory(EntityPlayer player) {
+    public void openInventory(Player player) {
 
     }
 
     @Override
-    public void closeInventory(EntityPlayer player) {
+    public void closeInventory(Player player) {
 
     }
 
@@ -131,13 +131,13 @@ public class TransparentNodeElementInventory implements ISidedInventory, INBTTRe
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt, String str) {
+    public void readFromNBT(CompoundTag nbt, String str) {
 
         Utils.readFromNBT(nbt, str, this);
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt, String str) {
+    public CompoundTag writeToNBT(CompoundTag nbt, String str) {
 
         return Utils.writeToNBT(nbt, str, this);
     }
@@ -145,9 +145,9 @@ public class TransparentNodeElementInventory implements ISidedInventory, INBTTRe
     @Override
     public boolean isItemValidForSlot(int i, ItemStack itemstack) {
         for (int idx = 0; idx < 6; idx++) {
-            int[] lol = getSlotsForFace(EnumFacing.VALUES[idx]);
+            int[] lol = getSlotsForFace(Direction.VALUES[idx]);
             for (int hohoho : lol) {
-                if (hohoho == i && canInsertItem(i, itemstack, EnumFacing.VALUES[idx])) {
+                if (hohoho == i && canInsertItem(i, itemstack, Direction.VALUES[idx])) {
                     return true;
                 }
             }
@@ -182,22 +182,22 @@ public class TransparentNodeElementInventory implements ISidedInventory, INBTTRe
     }
 
     @Override
-    public ITextComponent getDisplayName() {
+    public Component getDisplayName() {
         return new TextComponentString("TransparentNodeInventory");
     }
 
     @Override
-    public int[] getSlotsForFace(EnumFacing var1) {
+    public int[] getSlotsForFace(Direction var1) {
         return new int[]{};
     }
 
     @Override
-    public boolean canInsertItem(int var1, ItemStack var2, EnumFacing var3) {
+    public boolean canInsertItem(int var1, ItemStack var2, Direction var3) {
         return false;
     }
 
     @Override
-    public boolean canExtractItem(int var1, ItemStack var2, EnumFacing var3) {
+    public boolean canExtractItem(int var1, ItemStack var2, Direction var3) {
         return false;
     }
 

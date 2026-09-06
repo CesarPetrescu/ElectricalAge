@@ -31,13 +31,13 @@ import mods.eln.sixnode.wirelesssignal.IWirelessSignalSpot
 import mods.eln.sixnode.wirelesssignal.tx.WirelessSignalTxElement
 import mods.eln.transparentnode.teleporter.TeleporterElement
 import net.minecraft.command.ServerCommandManager
-import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.init.Blocks
-import net.minecraft.item.Item
-import net.minecraft.item.ItemArmor
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.CreativeModeTab
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ArmorItem
+import net.minecraft.world.item.ItemStack
 import net.minecraftforge.fml.common.FMLCommonHandler
-import net.minecraftforge.fml.common.Mod
+import net.neoforged.fml.common.Mod
 import net.minecraftforge.fml.common.SidedProxy
 import net.minecraftforge.fml.common.event.*
 import net.minecraftforge.fml.common.network.FMLEventChannel
@@ -425,22 +425,22 @@ class Eln {
         var axeCopper: Item? = null
 
         @JvmField
-        var helmetCopper: ItemArmor? = null
+        var helmetCopper: ArmorItem? = null
         @JvmField
-        var plateCopper: ItemArmor? = null
+        var plateCopper: ArmorItem? = null
         @JvmField
-        var legsCopper: ItemArmor? = null
+        var legsCopper: ArmorItem? = null
         @JvmField
-        var bootsCopper: ItemArmor? = null
+        var bootsCopper: ArmorItem? = null
 
         @JvmField
-        var helmetECoal: ItemArmor? = null
+        var helmetECoal: ArmorItem? = null
         @JvmField
-        var plateECoal: ItemArmor? = null
+        var plateECoal: ArmorItem? = null
         @JvmField
-        var legsECoal: ItemArmor? = null
+        var legsECoal: ArmorItem? = null
         @JvmField
-        var bootsECoal: ItemArmor? = null
+        var bootsECoal: ArmorItem? = null
 
         // Packet type constants
         const val packetPlayerKey: Byte = 14
@@ -508,17 +508,17 @@ class Eln {
 
             // Add vanilla ores
             val vanillaOres = mapOf(
-                net.minecraft.init.Blocks.COAL_ORE to 0.05f,
-                net.minecraft.init.Blocks.IRON_ORE to 0.15f,
-                net.minecraft.init.Blocks.GOLD_ORE to 0.40f,
-                net.minecraft.init.Blocks.LAPIS_ORE to 0.40f,
-                net.minecraft.init.Blocks.REDSTONE_ORE to 0.40f,
-                net.minecraft.init.Blocks.DIAMOND_ORE to 1.0f,
-                net.minecraft.init.Blocks.EMERALD_ORE to 0.40f
+                net.minecraft.world.level.block.Blocks.COAL_ORE to 0.05f,
+                net.minecraft.world.level.block.Blocks.IRON_ORE to 0.15f,
+                net.minecraft.world.level.block.Blocks.GOLD_ORE to 0.40f,
+                net.minecraft.world.level.block.Blocks.LAPIS_ORE to 0.40f,
+                net.minecraft.world.level.block.Blocks.REDSTONE_ORE to 0.40f,
+                net.minecraft.world.level.block.Blocks.DIAMOND_ORE to 1.0f,
+                net.minecraft.world.level.block.Blocks.EMERALD_ORE to 0.40f
             )
 
             for ((block, factor) in vanillaOres) {
-                oreScannerConfig.add(mods.eln.item.electricalitem.PortableOreScannerItem.RenderStorage.OreScannerConfigElement(net.minecraft.block.Block.getIdFromBlock(block), factor))
+                oreScannerConfig.add(mods.eln.item.electricalitem.PortableOreScannerItem.RenderStorage.OreScannerConfigElement(net.minecraft.world.level.block.Block.getIdFromBlock(block), factor))
             }
 
             // Add Eln ores
@@ -530,7 +530,7 @@ class Eln {
             )
 
             for ((block, factor) in elnOres) {
-                oreScannerConfig.add(mods.eln.item.electricalitem.PortableOreScannerItem.RenderStorage.OreScannerConfigElement(net.minecraft.block.Block.getIdFromBlock(block), factor))
+                oreScannerConfig.add(mods.eln.item.electricalitem.PortableOreScannerItem.RenderStorage.OreScannerConfigElement(net.minecraft.world.level.block.Block.getIdFromBlock(block), factor))
             }
 
             // NOW update the mapping table
@@ -541,7 +541,7 @@ class Eln {
         // Creative Tab
         // =====================================================================
         @JvmField
-        val Tab = object : CreativeTabs("eln") {
+        val Tab = object : CreativeModeTab("eln") {
             @SideOnly(Side.CLIENT)
             override fun createIcon(): ItemStack {
                 return ItemStack(Blocks.REDSTONE_BLOCK)

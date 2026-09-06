@@ -4,9 +4,9 @@ import mods.eln.misc.*;
 import mods.eln.misc.Obj3D.Obj3DPart;
 import mods.eln.node.six.SixNodeDescriptor;
 import mods.eln.wiki.Data;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import org.lwjgl.opengl.GL11;
 
 import java.util.Collections;
@@ -59,7 +59,7 @@ public class ElectricalWindSensorDescriptor extends SixNodeDescriptor {
     }
 
     @Override
-    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List list, boolean par4) {
+    public void addInformation(ItemStack itemStack, Player entityPlayer, List list, boolean par4) {
         super.addInformation(itemStack, entityPlayer, list, par4);
         Collections.addAll(list, tr("Provides an electrical signal\ndependant on wind speed.").split("\n"));
         list.add(tr("Maximum wind speed is %sm/s", Utils.plotValue(windMax)));
@@ -96,7 +96,7 @@ public class ElectricalWindSensorDescriptor extends SixNodeDescriptor {
 //    }
 
     @Override
-    public boolean canBePlacedOnSide(EntityPlayer player, Direction side) {
+    public boolean canBePlacedOnSide(Player player, Direction side) {
         if (side.isY()) {
             Utils.sendMessage(player, tr("You can't place this block on the floor or the ceiling"));
             return false;
@@ -105,7 +105,7 @@ public class ElectricalWindSensorDescriptor extends SixNodeDescriptor {
     }
 
     @Override
-    public LRDU getFrontFromPlace(Direction side, EntityPlayer player) {
+    public LRDU getFrontFromPlace(Direction side, Player player) {
         return super.getFrontFromPlace(side, player).right();
     }
 }

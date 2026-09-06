@@ -5,7 +5,7 @@ import mods.eln.sim.mna.SubSystem;
 import mods.eln.sim.mna.misc.ISubSystemProcessI;
 import mods.eln.sim.mna.state.CurrentState;
 import mods.eln.sim.mna.state.State;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundTag;
 
 public class Inductor extends Bipole implements ISubSystemProcessI, INBTTReady {
 
@@ -79,13 +79,13 @@ public class Inductor extends Bipole implements ISubSystemProcessI, INBTTReady {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt, String str) {
+    public void readFromNBT(CompoundTag nbt, String str) {
         str += name;
         currentState.state = (nbt.getDouble(str + "Istate"));
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt, String str) {
+    public CompoundTag writeToNBT(CompoundTag nbt, String str) {
         str += name;
         nbt.setDouble(str + "Istate", currentState.state);
         return nbt;

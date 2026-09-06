@@ -5,7 +5,7 @@ import mods.eln.gui.IGuiObject;
 import mods.eln.gui.IGuiObject.IGuiObjectObserver;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;

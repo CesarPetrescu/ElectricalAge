@@ -1,8 +1,8 @@
 package mods.eln.client;
 
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
@@ -10,7 +10,7 @@ import mods.eln.Eln;
 import mods.eln.misc.UtilsClient;
 import mods.eln.wiki.Root;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.client.KeyMapping;
 import org.lwjgl.input.Keyboard;
 
 import java.io.ByteArrayOutputStream;
@@ -25,7 +25,7 @@ public class ClientKeyHandler {
     static final String wrench = "Wrench";
     private static final int[] keyValues = {Keyboard.KEY_X, Keyboard.KEY_C};
     private static final String[] desc = {openWiki, wrench};
-    public static final KeyBinding[] keys = new KeyBinding[desc.length];
+    public static final KeyMapping[] keys = new KeyMapping[desc.length];
 
     boolean[] states = new boolean[desc.length];
 
@@ -37,7 +37,7 @@ public class ClientKeyHandler {
         for (int i = 0; i < desc.length; ++i) {
             if (i != 3)
                 states[i] = false;
-            keys[i] = new KeyBinding(desc[i], keyValues[i], "ElectricalAge");
+            keys[i] = new KeyMapping(desc[i], keyValues[i], "ElectricalAge");
             ClientRegistry.registerKeyBinding(keys[i]);
         }
     }

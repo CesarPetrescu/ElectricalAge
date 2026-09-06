@@ -23,12 +23,12 @@ import mods.eln.sim.process.destruct.ThermalLoadWatchDog
 import mods.eln.sim.process.destruct.WorldExplosion
 import mods.eln.sound.LoopedSound
 import mods.eln.wiki.Data
-import net.minecraft.client.gui.GuiButton
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.IInventory
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.client.gui.components.Button
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.Container
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
 import org.lwjgl.opengl.GL11
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -84,7 +84,7 @@ class FuelHeatFurnaceDescriptor(name: String, model: Obj3D, val thermal: Thermal
 //    override fun renderItem(type: IItemRenderer.ItemRenderType?, item: ItemStack?, vararg data: Any?) =
 //        if (type == IItemRenderer.ItemRenderType.INVENTORY) super.renderItem(type, item, *data) else draw()
 
-    override fun addInformation(itemStack: ItemStack?, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack?, entityPlayer: Player?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         list.add(I18N.tr("Generates heat when supplied with fuel."))
         list.add(Utils.plotCelsius(I18N.tr("  Max. temperature: "), thermal.warmLimit))
@@ -189,7 +189,7 @@ class FuelHeatFurnaceElement(transparentNode: TransparentNode, descriptor: Trans
         connect()
     }
 
-    override fun onBlockActivated(entityPlayer: EntityPlayer?, side: Direction?, vx: Float, vy: Float, vz: Float) = false
+    override fun onBlockActivated(entityPlayer: Player?, side: Direction?, vx: Float, vy: Float, vz: Float) = false
 
     override fun networkSerialize(stream: DataOutputStream) {
         super.networkSerialize(stream)
@@ -221,7 +221,7 @@ class FuelHeatFurnaceElement(transparentNode: TransparentNode, descriptor: Trans
         return TransparentNodeElement.unserializeNulldId
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound? {
+    override fun writeToNBT(nbt: CompoundTag): CompoundTag? {
         super.writeToNBT(nbt)
         tank.writeToNBT(nbt, "tank")
         nbt.setBoolean("externalControlled", externalControlled)
@@ -233,7 +233,7 @@ class FuelHeatFurnaceElement(transparentNode: TransparentNode, descriptor: Trans
         return nbt
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
         tank.readFromNBT(nbt, "tank")
         externalControlled = nbt.getBoolean("externalControlled")
@@ -255,7 +255,7 @@ class FuelHeatFurnaceElement(transparentNode: TransparentNode, descriptor: Trans
 
     override fun getInventory() = inventory_
 
-    override fun inventoryChange(inventory: IInventory?) {
+    override fun inventoryChange(inventory: Container?) {
         val fuelBurnerStack = inventory_.getStackInSlot(FuelHeatFurnaceContainer.FuelBurnerSlot)
         mainSwitch = mainSwitch && fuelBurnerStack != null && !fuelBurnerStack.isEmpty
 
@@ -268,7 +268,7 @@ class FuelHeatFurnaceElement(transparentNode: TransparentNode, descriptor: Trans
         }
     }
 
-    override fun newContainer(side: Direction?, player: EntityPlayer) = FuelHeatFurnaceContainer(node, player, inventory_)
+    override fun newContainer(side: Direction?, player: Player) = FuelHeatFurnaceContainer(node, player, inventory_)
 }
 
 class FuelHeatFurnaceRender(tileEntity: TransparentNodeEntity, descriptor: TransparentNodeDescriptor) :
@@ -299,7 +299,7 @@ class FuelHeatFurnaceRender(tileEntity: TransparentNodeEntity, descriptor: Trans
         (transparentNodedescriptor as FuelHeatFurnaceDescriptor).draw(type, mainSwitch, heatPower != 0f)
     }
 
-    override fun newGuiDraw(side: Direction?, player: EntityPlayer) = FuelHeatFurnaceGui(player, inventory, this)
+    override fun newGuiDraw(side: Direction?, player: Player) = FuelHeatFurnaceGui(player, inventory, this)
 
     override fun networkUnserialize(stream: DataInputStream) {
         super.networkUnserialize(stream)
@@ -320,7 +320,7 @@ class FuelHeatFurnaceRender(tileEntity: TransparentNodeEntity, descriptor: Trans
     override fun getInventory() = inventory
 }
 
-class FuelHeatFurnaceContainer(val base: NodeBase?, player: EntityPlayer, inventory: IInventory) :
+class FuelHeatFurnaceContainer(val base: NodeBase?, player: Player, inventory: Container) :
     BasicContainer(player, inventory,
         arrayOf(GenericItemUsingDamageSlot(inventory, FuelBurnerSlot, 26, 58, 1, FuelBurnerDescriptor::class.java,
             SlotSkin.medium, arrayOf(I18N.tr("Fuel burner slot"))),
@@ -336,10 +336,10 @@ class FuelHeatFurnaceContainer(val base: NodeBase?, player: EntityPlayer, invent
     override fun getRefreshRateDivider() = 1
 }
 
-class FuelHeatFurnaceGui(player: EntityPlayer, val inventory: IInventory, val render: FuelHeatFurnaceRender) :
+class FuelHeatFurnaceGui(player: Player, val inventory: Container, val render: FuelHeatFurnaceRender) :
     GuiContainerEln(FuelHeatFurnaceContainer(null, player, inventory)) {
-    lateinit var externalControlled: GuiButton
-    lateinit var mainSwitch: GuiButton
+    lateinit var externalControlled: Button
+    lateinit var mainSwitch: Button
 
     lateinit var manualControl: GuiVerticalTrackBar
     lateinit var setTemperature: GuiVerticalTrackBarHeat

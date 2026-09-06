@@ -1,7 +1,7 @@
 package mods.eln.cable;
 
 import mods.eln.misc.UtilsClient;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 
 public class CableRenderDescriptor {
 

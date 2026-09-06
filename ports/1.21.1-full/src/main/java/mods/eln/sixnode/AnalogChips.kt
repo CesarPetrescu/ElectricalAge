@@ -20,11 +20,11 @@ import mods.eln.sixnode.SummingUnitElement.Companion.GainChangedEvents
 import mods.eln.solver.Equation
 import mods.eln.solver.IValue
 import mods.eln.wiki.Data
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -77,7 +77,7 @@ open class AnalogChipDescriptor(name: String, obj: Obj3D?, functionName: String,
 //        }
 //    }
 
-    override fun getFrontFromPlace(side: Direction?, player: EntityPlayer?): LRDU? =
+    override fun getFrontFromPlace(side: Direction?, player: Player?): LRDU? =
         super.getFrontFromPlace(side, player).left()
 
     override fun setParent(item: Item?, damage: Int) {
@@ -85,7 +85,7 @@ open class AnalogChipDescriptor(name: String, obj: Obj3D?, functionName: String,
         Data.addSignal(newItemStack())
     }
 
-    override fun addInformation(itemStack: ItemStack?, entityPlayer: EntityPlayer?, list: MutableList<String>?, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack?, entityPlayer: Player?, list: MutableList<String>?, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         if (list != null) function.infos.split("\n").forEach { list.add(it) }
     }
@@ -157,12 +157,12 @@ open class AnalogChipElement(node: SixNode, side: Direction, sixNodeDescriptor: 
         inputPins.map { if (it != null && it.connectedComponents.count() > 0) it.u else null }.toTypedArray(),
         outputPin.u)
 
-    override fun readFromNBT(nbt: NBTTagCompound?) {
+    override fun readFromNBT(nbt: CompoundTag?) {
         super.readFromNBT(nbt)
         function.readFromNBT(nbt, "function")
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound?): NBTTagCompound? {
+    override fun writeToNBT(nbt: CompoundTag?): CompoundTag? {
         super.writeToNBT(nbt)
         return function.writeToNBT(nbt, "function")
     }
@@ -213,8 +213,8 @@ abstract class AnalogFunction : INBTTReady {
         Pair("Output", Utils.plotVolt("", output))
     )
 
-    override fun readFromNBT(nbt: NBTTagCompound?, str: String?) {}
-    override fun writeToNBT(nbt: NBTTagCompound?, str: String?): NBTTagCompound? {
+    override fun readFromNBT(nbt: CompoundTag?, str: String?) {}
+    override fun writeToNBT(nbt: CompoundTag?, str: String?): CompoundTag? {
         return nbt
     }
 }
@@ -247,14 +247,14 @@ class PIDRegulator : AnalogFunction() {
         return Cable.SVU * pid.value
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound?, str: String?) {
+    override fun readFromNBT(nbt: CompoundTag?, str: String?) {
         Kp = nbt?.getDouble("Kp") ?: 1.0
         Ki = nbt?.getDouble("Ki") ?: 0.0
         Kd = nbt?.getDouble("Kd") ?: 0.0
         pid.readFromNBT(nbt, "pid")
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound?, str: String?): NBTTagCompound? {
+    override fun writeToNBT(nbt: CompoundTag?, str: String?): CompoundTag? {
         nbt?.setDouble("Kp", Kp)
         nbt?.setDouble("Ki", Ki)
         nbt?.setDouble("Kd", Kd)
@@ -316,7 +316,7 @@ class PIDRegulatorRender(entity: SixNodeEntity, side: Direction, descriptor: Six
     internal var Ki = 0f
     internal var Kd = 0f
 
-    override fun newGuiDraw(side: Direction?, player: EntityPlayer?): GuiScreen? = PIDRegulatorGui(this)
+    override fun newGuiDraw(side: Direction?, player: Player?): Screen? = PIDRegulatorGui(this)
 
     override fun publishUnserialize(stream: DataInputStream?) {
         super.publishUnserialize(stream)
@@ -406,11 +406,11 @@ open class VoltageControlledSawtoothOscillator : AnalogFunction() {
         return out
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound?, str: String?) {
+    override fun readFromNBT(nbt: CompoundTag?, str: String?) {
         out = nbt?.getDouble("out") ?: 0.0
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound?, str: String?): NBTTagCompound? {
+    override fun writeToNBT(nbt: CompoundTag?, str: String?): CompoundTag? {
         nbt?.setDouble("out", out)
         return nbt
     }
@@ -430,11 +430,11 @@ class Amplifier : AnalogFunction() {
 
     override fun process(inputs: Array<Double?>, deltaTime: Double) = gain * (inputs[0] ?: 0.0)
 
-    override fun readFromNBT(nbt: NBTTagCompound?, str: String?) {
+    override fun readFromNBT(nbt: CompoundTag?, str: String?) {
         gain = nbt?.getDouble("gain") ?: 1.0
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound?, str: String?): NBTTagCompound? {
+    override fun writeToNBT(nbt: CompoundTag?, str: String?): CompoundTag? {
         nbt?.setDouble("gain", gain)
         return nbt
     }
@@ -485,7 +485,7 @@ class AmplifierRender(entity: SixNodeEntity, side: Direction, descriptor: SixNod
     AnalogChipRender(entity, side, descriptor) {
     internal var gain = 1f
 
-    override fun newGuiDraw(side: Direction?, player: EntityPlayer?): GuiScreen? = AmplifierGui(this)
+    override fun newGuiDraw(side: Direction?, player: Player?): Screen? = AmplifierGui(this)
 
     override fun publishUnserialize(stream: DataInputStream?) {
         super.publishUnserialize(stream)
@@ -550,13 +550,13 @@ class SummingUnit : AnalogFunction() {
     override fun process(inputs: Array<Double?>, deltaTime: Double) =
         gains[0] * (inputs[0] ?: 0.0) + gains[1] * (inputs[1] ?: 0.0) + gains[2] * (inputs[2] ?: 0.0)
 
-    override fun readFromNBT(nbt: NBTTagCompound?, str: String?) {
+    override fun readFromNBT(nbt: CompoundTag?, str: String?) {
         for (i in gains.indices) {
             gains[i] = nbt?.getDouble("gain$i") ?: 1.0
         }
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound?, str: String?): NBTTagCompound? {
+    override fun writeToNBT(nbt: CompoundTag?, str: String?): CompoundTag? {
         for (i in gains.indices) {
             nbt?.setDouble("gain$i", gains[i])
         }
@@ -613,7 +613,7 @@ class SummingUnitRender(entity: SixNodeEntity, side: Direction, descriptor: SixN
     AnalogChipRender(entity, side, descriptor) {
     internal var gains = floatArrayOf(1f, 1f, 1f)
 
-    override fun newGuiDraw(side: Direction?, player: EntityPlayer?): GuiScreen? = SummingUnitGui(this)
+    override fun newGuiDraw(side: Direction?, player: Player?): Screen? = SummingUnitGui(this)
 
     override fun publishUnserialize(stream: DataInputStream?) {
         super.publishUnserialize(stream)
@@ -675,12 +675,12 @@ class SampleAndHold : AnalogFunction() {
         return value
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound?, str: String?) {
+    override fun readFromNBT(nbt: CompoundTag?, str: String?) {
         clock = nbt?.getBoolean("clock") ?: false
         value = nbt?.getDouble("value") ?: 0.0
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound?, str: String?): NBTTagCompound? {
+    override fun writeToNBT(nbt: CompoundTag?, str: String?): CompoundTag? {
         nbt?.setBoolean("clock", clock)
         nbt?.setDouble("value", value)
         return nbt
@@ -700,14 +700,14 @@ class Filter: AnalogFunction() {
         return output
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound?, str: String?) {
+    override fun readFromNBT(nbt: CompoundTag?, str: String?) {
         nbt?.apply {
             feedback = getDouble("feedback")
             output = getDouble("output")
         }
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound?, str: String?): NBTTagCompound? {
+    override fun writeToNBT(nbt: CompoundTag?, str: String?): CompoundTag? {
         nbt?.apply {
             setDouble("feedback", feedback)
             setDouble("output", output)
@@ -760,7 +760,7 @@ class FilterRender(entity: SixNodeEntity, side: Direction, descriptor: SixNodeDe
     AnalogChipRender(entity, side, descriptor) {
     internal var cutOffFrequency = Synchronizable(Config.electricalFrequency.toFloat() / 4f)
 
-    override fun newGuiDraw(side: Direction?, player: EntityPlayer?): GuiScreen? = FilterGui(this)
+    override fun newGuiDraw(side: Direction?, player: Player?): Screen? = FilterGui(this)
 
     override fun publishUnserialize(stream: DataInputStream) {
         super.publishUnserialize(stream)

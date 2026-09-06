@@ -11,10 +11,10 @@ import mods.eln.sim.ElectricalLoad;
 import mods.eln.sim.ThermalLoadInitializer;
 import mods.eln.sim.mna.component.Resistor;
 import mods.eln.wiki.Data;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.lwjgl.opengl.GL11;
 
 import java.util.Collections;
@@ -143,7 +143,7 @@ public class ElectricalSwitchDescriptor extends SixNodeDescriptor {
 //        }
 //    }
 
-    public void draw(float on, float distance, TileEntity e) {
+    public void draw(float on, float distance, BlockEntity e) {
         switch (objType) {
             case Button:
                 if (main != null) main.draw();
@@ -198,13 +198,13 @@ public class ElectricalSwitchDescriptor extends SixNodeDescriptor {
     }
 
     @Override
-    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List list, boolean par4) {
+    public void addInformation(ItemStack itemStack, Player entityPlayer, List list, boolean par4) {
         super.addInformation(itemStack, entityPlayer, list, par4);
         Collections.addAll(list, tr("Can break an electrical circuit\ninterrupting the current.").split("\n"));
     }
 
     @Override
-    public LRDU getFrontFromPlace(Direction side, EntityPlayer player) {
+    public LRDU getFrontFromPlace(Direction side, Player player) {
         if (signalSwitch) {
             return super.getFrontFromPlace(side, player);
         } else {

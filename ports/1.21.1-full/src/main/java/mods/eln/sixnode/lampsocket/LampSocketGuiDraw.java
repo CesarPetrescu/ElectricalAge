@@ -2,10 +2,10 @@ package mods.eln.sixnode.lampsocket;
 
 import mods.eln.gui.*;
 import mods.eln.node.six.SixNodeElementInventory;
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
 
 import static mods.eln.i18n.I18N.tr;
 
@@ -24,11 +24,11 @@ public class LampSocketGuiDraw extends GuiContainerEln {
 
     private SixNodeElementInventory inventory;
     LampSocketRender lampRender;
-    GuiButton buttonGrounded, buttonSupplyType;
+    Button buttonGrounded, buttonSupplyType;
     GuiTextFieldEln channel;
     GuiVerticalTrackBar alphaZ;
 
-    public LampSocketGuiDraw(EntityPlayer player, IInventory inventory, LampSocketRender lampRender) {
+    public LampSocketGuiDraw(Player player, Container inventory, LampSocketRender lampRender) {
         super(new LampSocketContainer(player, inventory, lampRender.lampSocketDescriptor));
         this.inventory = (SixNodeElementInventory) inventory;
         this.lampRender = lampRender;

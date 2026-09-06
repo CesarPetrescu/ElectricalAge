@@ -1,20 +1,20 @@
 package mods.eln.generic;
 
 import mods.eln.misc.VoltageLevelColor;
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -41,16 +41,16 @@ public class GenericItemUsingDamageDescriptor {
         this.IconName = "eln:" + name.replaceAll(" ", "").toLowerCase();
     }
 
-    public NBTTagCompound getDefaultNBT() {
+    public CompoundTag getDefaultNBT() {
         return null;
     }
 
-    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List list, boolean par4) {
+    public void addInformation(ItemStack itemStack, Player entityPlayer, List list, boolean par4) {
 
     }
 
-    public ActionResult<ItemStack> onItemRightClick(ItemStack s, World w, EntityPlayer p) {
-        return new ActionResult(EnumActionResult.PASS, s);
+    public InteractionResultHolder<ItemStack> onItemRightClick(ItemStack s, Level w, Player p) {
+        return new InteractionResultHolder(InteractionResult.PASS, s);
     }
 
     public void getSubItems(List list) {
@@ -112,8 +112,8 @@ public class GenericItemUsingDamageDescriptor {
      * Callback for item usage. If the item does something special on right clicking, he will have one of those. Return
      * True if something happen and false if it don't. This is for ITEMS, not BLOCKS
      */
-    public EnumActionResult onItemUse(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float vx, float vy, float vz) {
-        return EnumActionResult.PASS;
+    public InteractionResult onItemUse(ItemStack stack, Player player, Level world, BlockPos pos, InteractionHand hand, Direction facing, float vx, float vy, float vz) {
+        return InteractionResult.PASS;
     }
 
     // TODO(1.10): Fix item render.
@@ -136,34 +136,34 @@ public class GenericItemUsingDamageDescriptor {
 //        UtilsClient.drawIcon(type, new ResourceLocation("eln", "textures/items/" + icon + ".png"));
 //    }
 
-    public void onUpdate(ItemStack stack, World world, Entity entity, int par4, boolean par5) {
+    public void onUpdate(ItemStack stack, Level world, Entity entity, int par4, boolean par5) {
     }
 
-    protected NBTTagCompound getNbt(ItemStack stack) {
-        NBTTagCompound nbt = stack.getTagCompound();
+    protected CompoundTag getNbt(ItemStack stack) {
+        CompoundTag nbt = stack.getTagCompound();
         if (nbt == null) {
             stack.setTagCompound(nbt = getDefaultNBT());
         }
         return nbt;
     }
 
-    public float getDestroySpeed(ItemStack stack, IBlockState state) {
+    public float getDestroySpeed(ItemStack stack, BlockState state) {
         return 0.2f;
     }
 
-    public boolean onBlockDestroyed(ItemStack stack, World w, IBlockState state, BlockPos pos, EntityLivingBase entity) {
+    public boolean onBlockDestroyed(ItemStack stack, Level w, BlockState state, BlockPos pos, LivingEntity entity) {
         return false;
     }
 
-    public boolean onDroppedByPlayer(ItemStack item, EntityPlayer player) {
+    public boolean onDroppedByPlayer(ItemStack item, Player player) {
         return true;
     }
 
-    public boolean onEntitySwing(EntityLivingBase entityLiving, ItemStack stack) {
+    public boolean onEntitySwing(LivingEntity entityLiving, ItemStack stack) {
         return false;
     }
 
-    public boolean onBlockStartBreak(ItemStack itemstack, int x, int y, int z, EntityPlayer player) {
+    public boolean onBlockStartBreak(ItemStack itemstack, int x, int y, int z, Player player) {
         return false;
     }
 }

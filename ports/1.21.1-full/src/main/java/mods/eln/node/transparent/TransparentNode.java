@@ -7,14 +7,14 @@ import mods.eln.misc.Utils;
 import mods.eln.node.Node;
 import mods.eln.sim.ElectricalLoad;
 import mods.eln.sim.ThermalLoad;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -25,7 +25,7 @@ public class TransparentNode extends Node {
 
     public TransparentNodeElement element;
     public int elementId;
-    public EntityPlayerMP removedByPlayer;
+    public ServerPlayer removedByPlayer;
 
     @Override
     public boolean nodeAutoSave() {
@@ -39,7 +39,7 @@ public class TransparentNode extends Node {
         element.onNeighborBlockChange();
     }
 
-    public void readFromNBT(NBTTagCompound nbt) {
+    public void readFromNBT(CompoundTag nbt) {
         super.readFromNBT(nbt.getCompoundTag("node"));
 
         elementId = nbt.getShort("eid");
@@ -53,7 +53,7 @@ public class TransparentNode extends Node {
 
     }
 
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+    public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(Utils.newNbtTagCompund(nbt, "node"));
 
         nbt.setShort("eid", (short) elementId);
@@ -120,7 +120,7 @@ public class TransparentNode extends Node {
     ;
 
     @Override
-    public void initializeFromThat(Direction side, EntityLivingBase entityLiving, ItemStack itemStack) {
+    public void initializeFromThat(Direction side, LivingEntity entityLiving, ItemStack itemStack) {
         try {
             TransparentNodeDescriptor descriptor = Eln.transparentNodeItem.getDescriptor(itemStack);
 
@@ -139,7 +139,7 @@ public class TransparentNode extends Node {
         element.initialize();
     }
 
-    public boolean onBlockActivated(EntityPlayer entityPlayer, Direction side, float vx, float vy, float vz) {
+    public boolean onBlockActivated(Player entityPlayer, Direction side, float vx, float vy, float vz) {
         if (element.onBlockActivated(entityPlayer, side, vx, vy, vz)) return true;
         return super.onBlockActivated(entityPlayer, side, vx, vy, vz);
     }
@@ -150,12 +150,12 @@ public class TransparentNode extends Node {
         return element.hasGui();
     }
 
-    public IInventory getInventory(Direction side) {
+    public Container getInventory(Direction side) {
         if (element == null) return null;
         return element.getInventory();
     }
 
-    public Container newContainer(Direction side, EntityPlayer player) {
+    public AbstractContainerMenu newContainer(Direction side, Player player) {
         if (element == null) return null;
         return element.newContainer(side, player);
     }
@@ -166,7 +166,7 @@ public class TransparentNode extends Node {
     }
 
     @Override
-    public void networkUnserialize(DataInputStream stream, EntityPlayerMP player) {
+    public void networkUnserialize(DataInputStream stream, ServerPlayer player) {
         super.networkUnserialize(stream, player);
 
         Direction side;
@@ -201,7 +201,7 @@ public class TransparentNode extends Node {
         element.checkCanStay(onCreate);
     }
 
-    public void dropElement(EntityPlayerMP entityPlayer) {
+    public void dropElement(ServerPlayer entityPlayer) {
         if (element != null)
             if (Utils.mustDropItem(entityPlayer))
                 dropItem(element.getDropItemStack());

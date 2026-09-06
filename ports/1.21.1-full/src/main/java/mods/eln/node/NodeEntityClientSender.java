@@ -2,8 +2,8 @@ package mods.eln.node;
 
 import mods.eln.Eln;
 import mods.eln.misc.UtilsClient;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.BlockPos;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -11,10 +11,10 @@ import java.io.IOException;
 
 public class NodeEntityClientSender {
 
-    private TileEntity e;
+    private BlockEntity e;
     private String nodeUuid;
 
-    public NodeEntityClientSender(TileEntity e, String nodeUuid) {
+    public NodeEntityClientSender(BlockEntity e, String nodeUuid) {
         this.e = e;
         this.nodeUuid = nodeUuid;
     }

@@ -3,8 +3,7 @@ package mods.eln.transparentnode.electricalmachine;
 import mods.eln.misc.Direction;
 import mods.eln.node.transparent.TransparentNodeElementInventory;
 import mods.eln.node.transparent.TransparentNodeElementRender;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.world.item.ItemStack;
 
 public class ElectricalMachineInventory extends TransparentNodeElementInventory {
     private ElectricalMachineElement machineElement;
@@ -25,7 +24,7 @@ public class ElectricalMachineInventory extends TransparentNodeElementInventory 
     }
 
     @Override
-    public int[] getSlotsForFace(EnumFacing side) {
+    public int[] getSlotsForFace(net.minecraft.core.Direction side) {
         if (transparentNodeElement == null) return new int[0];
 
         switch (Direction.fromFacing(side)) {
@@ -41,7 +40,7 @@ public class ElectricalMachineInventory extends TransparentNodeElementInventory 
     }
 
     @Override
-    public boolean canInsertItem(int var1, ItemStack var2, EnumFacing side) {
+    public boolean canInsertItem(int var1, ItemStack var2, net.minecraft.core.Direction side) {
         switch (Direction.fromFacing(side)) {
             case YP:
                 return true;
@@ -51,7 +50,7 @@ public class ElectricalMachineInventory extends TransparentNodeElementInventory 
     }
 
     @Override
-    public boolean canExtractItem(int var1, ItemStack var2, EnumFacing side) {
+    public boolean canExtractItem(int var1, ItemStack var2, net.minecraft.core.Direction side) {
         switch (Direction.fromFacing(side)) {
             case YP:
                 return false;

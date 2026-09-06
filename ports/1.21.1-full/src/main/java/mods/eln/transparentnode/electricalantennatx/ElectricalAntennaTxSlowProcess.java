@@ -6,12 +6,12 @@ import mods.eln.node.NodeManager;
 import mods.eln.node.transparent.TransparentNode;
 import mods.eln.sim.IProcess;
 import mods.eln.transparentnode.electricalantennarx.ElectricalAntennaRxElement;
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 import java.util.List;
 
@@ -28,7 +28,7 @@ public class ElectricalAntennaTxSlowProcess implements IProcess {
 
     @Override
     public void process(double time) {
-        World world = element.node.coordinate.world();
+        Level world = element.node.coordinate.world();
 
         if (timeCounter <= 0.0) {
             timeCounter = periode;
@@ -42,9 +42,9 @@ public class ElectricalAntennaTxSlowProcess implements IProcess {
             do {
                 coord.move(element.front);
                 distance++;
-                net.minecraft.world.chunk.Chunk chunk = coord.world().getChunkProvider().getLoadedChunk(coord.pos.getX() >> 4, coord.pos.getZ() >> 4);
+                net.minecraft.world.level.chunk.LevelChunk chunk = coord.world().getChunkProvider().getLoadedChunk(coord.pos.getX() >> 4, coord.pos.getZ() >> 4);
                 if (chunk == null || chunk.isEmpty()) break;
-                IBlockState state = chunk.getBlockState(coord.pos);
+                BlockState state = chunk.getBlockState(coord.pos);
                 Block block = state.getBlock();
                 if (!(block == Blocks.AIR || block == Blocks.FIRE)) {
                     if (block == ModBlock.transparentNodeBlock

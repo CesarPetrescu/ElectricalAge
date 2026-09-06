@@ -4,10 +4,10 @@ import mods.eln.misc.*;
 import mods.eln.misc.Obj3D.Obj3DPart;
 import mods.eln.node.six.SixNodeDescriptor;
 import mods.eln.wiki.Data;
-import net.minecraft.block.Block;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
 import org.lwjgl.opengl.GL11;
 
@@ -81,7 +81,7 @@ public class TreeResinCollectorDescriptor extends SixNodeDescriptor {
 //    }
 
     @Override
-    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List list, boolean par4) {
+    public void addInformation(ItemStack itemStack, Player entityPlayer, List list, boolean par4) {
         super.addInformation(itemStack, entityPlayer, list, par4);
         Collections.addAll(list, tr("Produces Tree Resin over\ntime when put on a tree.").split("\n"));
     }
@@ -105,7 +105,7 @@ public class TreeResinCollectorDescriptor extends SixNodeDescriptor {
     }
 
     @Override
-    public boolean canBePlacedOnSide(EntityPlayer player, Coordinate c, Direction side) {
+    public boolean canBePlacedOnSide(Player player, Coordinate c, Direction side) {
         Block b = c.getBlock();
         if (!isWood(b) || side.isY()) {
             Utils.sendMessage(player, tr("This block can only be placed on the side of a tree!"));

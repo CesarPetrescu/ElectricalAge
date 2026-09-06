@@ -27,12 +27,12 @@ import mods.eln.sixnode.wirelesssignal.aggregator.BiggerAggregator;
 import mods.eln.sixnode.wirelesssignal.aggregator.IWirelessSignalAggregator;
 import mods.eln.sixnode.wirelesssignal.aggregator.SmallerAggregator;
 import mods.eln.sixnode.wirelesssignal.aggregator.ToogleAggregator;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -88,7 +88,7 @@ public class LampSupplyElement extends SixNodeElement {
     IWirelessSignalAggregator[][] aggregators;
 
     @Override
-    public IInventory getInventory() {
+    public Container getInventory() {
         if (inventory != null)
             return inventory.getInventory();
         else
@@ -96,7 +96,7 @@ public class LampSupplyElement extends SixNodeElement {
     }
 
     @Override
-    public Container newContainer(Direction side, EntityPlayer player) {
+    public AbstractContainerMenu newContainer(Direction side, Player player) {
         return new LampSupplyContainer(player, inventory.getInventory());
     }
 
@@ -254,14 +254,14 @@ public class LampSupplyElement extends SixNodeElement {
     }
 
     @Override
-    public boolean onBlockActivated(EntityPlayer entityPlayer, Direction side, float vx, float vy, float vz) {
+    public boolean onBlockActivated(Player entityPlayer, Direction side, float vx, float vy, float vz) {
         if (onBlockActivatedRotate(entityPlayer)) return true;
 
         return inventory.take(entityPlayer.getHeldItemMainhand(), this, false, true);
     }
 
     @Override
-    public void destroy(EntityPlayerMP entityPlayer) {
+    public void destroy(ServerPlayer entityPlayer) {
         super.destroy(entityPlayer);
         unregister();
     }
@@ -279,7 +279,7 @@ public class LampSupplyElement extends SixNodeElement {
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+    public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
         int idx = 0;
         for (Entry e : entries) {
@@ -296,7 +296,7 @@ public class LampSupplyElement extends SixNodeElement {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt) {
+    public void readFromNBT(CompoundTag nbt) {
         int idx = 0;
         for (Entry e : entries) {
             channelRemove(this, idx++, e.powerChannel);
@@ -407,7 +407,7 @@ public class LampSupplyElement extends SixNodeElement {
         return getRange(descriptor, inventory.getInventory());
     }
 
-    private int getRange(LampSupplyDescriptor desc, IInventory inventory2) {
+    private int getRange(LampSupplyDescriptor desc, Container inventory2) {
         ItemStack stack = inventory2.getStackInSlot(LampSupplyContainer.cableSlotId);
         return desc.range + (stack.isEmpty() ? 0 : stack.getCount());
     }

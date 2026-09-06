@@ -5,12 +5,12 @@ import mods.eln.i18n.I18N.tr
 import mods.eln.misc.Utils
 import mods.eln.wiki.Data
 import net.minecraft.client.Minecraft
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagInt
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.nbt.IntTag
+import net.minecraft.resources.ResourceLocation
 
 class BrushDescriptor(name: String): GenericItemUsingDamageDescriptor(name) {
 
@@ -40,18 +40,18 @@ class BrushDescriptor(name: String): GenericItemUsingDamageDescriptor(name) {
     }
 
     fun setLife(stack: ItemStack, life: Int) {
-        val nbt = stack.tagCompound ?: NBTTagCompound()
+        val nbt = stack.tagCompound ?: CompoundTag()
         nbt.setInteger("life", life)
         stack.tagCompound = nbt
     }
 
-    override fun getDefaultNBT(): NBTTagCompound? {
-        val nbt = NBTTagCompound()
+    override fun getDefaultNBT(): CompoundTag? {
+        val nbt = CompoundTag()
         nbt.setInteger("life", 32)
         return nbt
     }
 
-    override fun addInformation(itemStack: ItemStack?, entityPlayer: EntityPlayer?, list: MutableList<Any?>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack?, entityPlayer: Player?, list: MutableList<Any?>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
 
         if (itemStack != null) {
@@ -60,7 +60,7 @@ class BrushDescriptor(name: String): GenericItemUsingDamageDescriptor(name) {
         }
     }
 
-    fun use(stack: ItemStack, entityPlayer: EntityPlayer): Boolean {
+    fun use(stack: ItemStack, entityPlayer: Player): Boolean {
         val creative = entityPlayer.capabilities.isCreativeMode
         if (creative) return true
         

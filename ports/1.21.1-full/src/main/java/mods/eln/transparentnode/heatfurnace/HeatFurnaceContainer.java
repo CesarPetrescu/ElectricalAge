@@ -11,10 +11,10 @@ import mods.eln.misc.BasicContainer;
 import mods.eln.misc.Utils;
 import mods.eln.node.INodeContainer;
 import mods.eln.node.NodeBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.Slot;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 
 import static mods.eln.i18n.I18N.tr;
 
@@ -27,7 +27,7 @@ public class HeatFurnaceContainer extends BasicContainer implements INodeContain
 
     NodeBase node;
 
-    public HeatFurnaceContainer(NodeBase node, EntityPlayer player, IInventory inventory, HeatFurnaceDescriptor descriptor) {
+    public HeatFurnaceContainer(NodeBase node, Player player, Container inventory, HeatFurnaceDescriptor descriptor) {
         super(player, inventory, new Slot[]{
             new SlotFilter(inventory, combustibleId, 70, 58, 64, filters(), SlotSkin.medium,
                 new String[]{tr("Fuel slot")}),

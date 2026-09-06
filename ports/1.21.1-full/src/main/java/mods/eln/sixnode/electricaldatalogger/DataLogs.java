@@ -4,8 +4,8 @@ import mods.eln.misc.INBTTReady;
 import mods.eln.misc.Utils;
 import mods.eln.sim.PhysicalConstant;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.client.gui.Font;
+import net.minecraft.nbt.CompoundTag;
 import org.lwjgl.opengl.GL11;
 
 public class DataLogs implements INBTTReady {
@@ -52,7 +52,7 @@ public class DataLogs implements INBTTReady {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt, String str) {
+    public void readFromNBT(CompoundTag nbt, String str) {
         byte[] cpy = nbt.getByteArray(str + "log");
         Utils.println("Datalog readnbt " + cpy.length);
         for (int idx = 0; idx < cpy.length; idx++) {
@@ -67,7 +67,7 @@ public class DataLogs implements INBTTReady {
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt, String str) {
+    public CompoundTag writeToNBT(CompoundTag nbt, String str) {
         nbt.setByteArray(str + "log", copyLog());
         nbt.setFloat(str + "samplingPeriod", samplingPeriod);
         nbt.setFloat(str + "maxValue", maxValue);
@@ -168,7 +168,7 @@ public class DataLogs implements INBTTReady {
 		*/
         GL11.glEnable(GL11.GL_TEXTURE_2D);
 
-        FontRenderer fontrenderer = Minecraft.getMinecraft().fontRenderer;
+        Font fontrenderer = Minecraft.getMinecraft().fontRenderer;
         GL11.glPushMatrix();
         float scale = 0.01f;
         GL11.glScalef(scale, scale, 1f);
@@ -212,7 +212,7 @@ public class DataLogs implements INBTTReady {
         return str;
     }
 
-    public static void draw(NBTTagCompound nbt, float margeX, float margeY, String textHeader) {
+    public static void draw(CompoundTag nbt, float margeX, float margeY, String textHeader) {
         if (nbt == null) return;
         byte[] data = nbt.getByteArray("log");
         if (data == null) return;

@@ -2,8 +2,8 @@ package mods.eln.sixnode.energymeter;
 
 import mods.eln.gui.*;
 import mods.eln.sixnode.energymeter.EnergyMeterElement.Mod;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -20,7 +20,7 @@ public class EnergyMeterGui extends GuiContainerEln {
 
     boolean isLogged;
 
-    public EnergyMeterGui(EntityPlayer player, IInventory inventory, EnergyMeterRender render) {
+    public EnergyMeterGui(Player player, Container inventory, EnergyMeterRender render) {
         super(new EnergyMeterContainer(player, inventory));
         this.render = render;
     }

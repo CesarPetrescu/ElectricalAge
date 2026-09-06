@@ -9,19 +9,19 @@ import mods.eln.misc.Obj3D.Obj3DPart
 import mods.eln.misc.Utils
 import mods.eln.misc.UtilsClient
 import mods.eln.wiki.Data
-import net.minecraft.block.Block
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.init.Blocks
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.ActionResult
-import net.minecraft.util.EnumActionResult
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.world.InteractionResultHolder
+import net.minecraft.world.InteractionResult
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth
+import net.minecraft.world.level.Level
 import org.lwjgl.opengl.GL11
 
 class PortableOreScannerItem(name: String, obj: Obj3D,
@@ -40,9 +40,9 @@ class PortableOreScannerItem(name: String, obj: Obj3D,
 
     private val damagePerBreakLevel = 3
 
-    override fun onUpdate(stack: ItemStack, world: World, entity: Entity, par4: Int, par5: Boolean) {
+    override fun onUpdate(stack: ItemStack, world: Level, entity: Entity, par4: Int, par5: Boolean) {
         if (world.isRemote) return
-        if (entity !is EntityPlayerMP) return
+        if (entity !is ServerPlayer) return
         val state = getState(stack)
         var counter = getCounter(stack)
 
@@ -67,8 +67,8 @@ class PortableOreScannerItem(name: String, obj: Obj3D,
         }
     }
 
-    override fun onItemRightClick(s: ItemStack, w: World, p: EntityPlayer): ActionResult<ItemStack> {
-        if (w.isRemote) return ActionResult(EnumActionResult.SUCCESS, s)
+    override fun onItemRightClick(s: ItemStack, w: Level, p: Player): InteractionResultHolder<ItemStack> {
+        if (w.isRemote) return InteractionResultHolder(InteractionResult.SUCCESS, s)
         val energy = getEnergy(s)
         val state = getState(s)
 
@@ -83,7 +83,7 @@ class PortableOreScannerItem(name: String, obj: Obj3D,
             }
             else -> {}
         }
-        return ActionResult(EnumActionResult.SUCCESS, s)
+        return InteractionResultHolder(InteractionResult.SUCCESS, s)
     }
 
     override fun setParent(item: Item, damage: Int) {
@@ -91,8 +91,8 @@ class PortableOreScannerItem(name: String, obj: Obj3D,
         Data.addPortable(newItemStack())
     }
 
-    override fun getDefaultNBT(): NBTTagCompound? {
-        val nbt = NBTTagCompound()
+    override fun getDefaultNBT(): CompoundTag? {
+        val nbt = CompoundTag()
         nbt.setDouble("e", energyStorage * 0.2)
         nbt.setByte("s", State.Boot.serialized)
         nbt.setShort("c", bootTime)
@@ -100,7 +100,7 @@ class PortableOreScannerItem(name: String, obj: Obj3D,
         return nbt
     }
 
-    override fun addInformation(itemStack: ItemStack?, entityPlayer: EntityPlayer, list: MutableList<Any?>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack?, entityPlayer: Player, list: MutableList<Any?>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         list.add(tr("Discharge power: %sW", Utils.plotValue(dischargePower)))
         if (itemStack != null) {
@@ -141,7 +141,7 @@ class PortableOreScannerItem(name: String, obj: Obj3D,
         getNbt(stack).setByte("d", value)
     }
 
-    override fun onDroppedByPlayer(stack: ItemStack, player: EntityPlayer): Boolean {
+    override fun onDroppedByPlayer(stack: ItemStack, player: Player): Boolean {
         setState(stack, State.Idle)
         return super.onDroppedByPlayer(stack, player)
     }
@@ -162,7 +162,7 @@ class PortableOreScannerItem(name: String, obj: Obj3D,
         return 0
     }
 
-    override fun onBlockStartBreak(itemstack: ItemStack, x: Int, y: Int, z: Int, player: EntityPlayer): Boolean {
+    override fun onBlockStartBreak(itemstack: ItemStack, x: Int, y: Int, z: Int, player: Player): Boolean {
         if (!player.world.isRemote) {
             setDamage(itemstack, (getDamage(itemstack) + 1).toByte())
         }
@@ -360,7 +360,7 @@ class PortableOreScannerItem(name: String, obj: Obj3D,
 
         class OreScannerConfigElement(var blockKey: Int, var factor: Float)
 
-        fun generate(w: World, posX: Double, posY: Double, posZ: Double, alphaY: Float, alphaX: Float) {
+        fun generate(w: Level, posX: Double, posY: Double, posZ: Double, alphaY: Float, alphaX: Float) {
             val blockKeyFactor = OreColorMapping.map
 
             val posXint = Math.round(posX).toInt()
@@ -386,16 +386,16 @@ class PortableOreScannerItem(name: String, obj: Obj3D,
                     var vz = camDist
 
                     run {
-                        val sin = MathHelper.sin(alphaX)
-                        val cos = MathHelper.cos(alphaX)
+                        val sin = Mth.sin(alphaX)
+                        val cos = Mth.cos(alphaX)
 
                         val temp = vy
                         vy = vy * cos - vz * sin
                         vz = vz * cos + temp * sin
                     }
                     run {
-                        val sin = MathHelper.sin(alphaY)
-                        val cos = MathHelper.cos(alphaY)
+                        val sin = Mth.sin(alphaY)
+                        val cos = Mth.cos(alphaY)
 
                         val temp = vx
                         vx = vx * cos - vz * sin
@@ -421,9 +421,9 @@ class PortableOreScannerItem(name: String, obj: Obj3D,
                     var d = 0f
 
                     while (d < viewRange) {
-                        val xFloor = MathHelper.floor(x).toFloat()
-                        val yFloor = MathHelper.floor(y).toFloat()
-                        val zFloor = MathHelper.floor(z).toFloat()
+                        val xFloor = Mth.floor(x).toFloat()
+                        val yFloor = Mth.floor(y).toFloat()
+                        val zFloor = Mth.floor(z).toFloat()
 
                         var dx = x - xFloor
                         var dy = y - yFloor

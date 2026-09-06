@@ -8,7 +8,7 @@ import mods.eln.node.transparent.TransparentNodeDescriptor;
 import mods.eln.node.transparent.TransparentNodeElementRender;
 import mods.eln.node.transparent.TransparentNodeEntity;
 import mods.eln.sound.LoopedSound;
-import net.minecraft.client.audio.ISound;
+import net.minecraft.client.resources.sounds.SoundInstance;
 import org.lwjgl.opengl.GL11;
 
 import java.io.DataInputStream;
@@ -28,7 +28,7 @@ public class TurbineRender extends TransparentNodeElementRender {
     public TurbineRender(TransparentNodeEntity tileEntity, TransparentNodeDescriptor descriptor) {
         super(tileEntity, descriptor);
         this.descriptor = (TurbineDescriptor) descriptor;
-        addLoopedSound(new LoopedSound(this.descriptor.soundFile, coordinate(), ISound.AttenuationType.LINEAR) {
+        addLoopedSound(new LoopedSound(this.descriptor.soundFile, coordinate(), SoundInstance.AttenuationType.LINEAR) {
             @Override
             public float getVolume() {
                 return 0.1f * factorLimiter.getPosition();

@@ -2,14 +2,14 @@ package mods.eln.sixnode.electricalwatch;
 
 import mods.eln.gui.GuiContainerEln;
 import mods.eln.gui.GuiHelperContainer;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
 
 public class ElectricalWatchGui extends GuiContainerEln {
 
     ElectricalWatchRender render;
 
-    public ElectricalWatchGui(EntityPlayer player, IInventory inventory, ElectricalWatchRender render) {
+    public ElectricalWatchGui(Player player, Container inventory, ElectricalWatchRender render) {
         super(new ElectricalWatchContainer(player, inventory));
         this.render = render;
     }

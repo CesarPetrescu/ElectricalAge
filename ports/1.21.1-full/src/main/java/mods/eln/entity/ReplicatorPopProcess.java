@@ -1,16 +1,16 @@
 package mods.eln.entity;
 
 import mods.eln.init.Config;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.GameRules;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.GameRules;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import mods.eln.misc.Utils;
 import mods.eln.sim.IProcess;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.EnumDifficulty;
-import net.minecraft.world.EnumSkyBlock;
-import net.minecraft.world.World;
+import net.minecraft.world.Difficulty;
+import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.Level;
 
 public class ReplicatorPopProcess implements IProcess {
 
@@ -19,7 +19,7 @@ public class ReplicatorPopProcess implements IProcess {
         if (!Config.INSTANCE.getReplicatorSpawn())
             return;
 
-        World world = FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(0);
+        Level world = FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(0);
 
         int replicatorCount = 0;
 
@@ -33,11 +33,11 @@ public class ReplicatorPopProcess implements IProcess {
             }
         }
 
-        if (world.getDifficulty() == EnumDifficulty.PEACEFUL) return;
+        if (world.getDifficulty() == Difficulty.PEACEFUL) return;
 
         if (world.getWorldInfo().isThundering() && world.getGameRules().getBoolean("doMobSpawning")) {
             for (Object obj : world.playerEntities) {
-                EntityPlayerMP player = (EntityPlayerMP) obj;
+                ServerPlayer player = (ServerPlayer) obj;
                 if (Math.random() * (world.playerEntities.size()) < time * Config.INSTANCE.getReplicatorSpawnPerSecondPerPlayer() && player.world == world) {
                     int x, y, z;
                     x = (int) (player.posX + Utils.rand(-100, 100));
@@ -48,7 +48,7 @@ public class ReplicatorPopProcess implements IProcess {
                     while (y < 250) {
                         BlockPos pos = new BlockPos(x, y, z);
                         // Skip solid blocks and bright areas
-                        if (!world.isAirBlock(pos) || Utils.getLight(world, EnumSkyBlock.BLOCK, pos) > 6) {
+                        if (!world.isAirBlock(pos) || Utils.getLight(world, LightLayer.BLOCK, pos) > 6) {
                             y++;
                         } else {
                             // Check if there's enough vertical space (2 blocks)

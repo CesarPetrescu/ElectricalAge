@@ -1,14 +1,14 @@
 package mods.eln.gui;
 
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
 
 public class SlotFilter extends SlotWithSkinAndComment {
 
     IItemStackFilter[] itemStackFilter;
     int stackLimit;
 
-    public SlotFilter(IInventory par1iInventory, int slot, int x, int y,
+    public SlotFilter(Container par1iInventory, int slot, int x, int y,
                       int stackLimit, IItemStackFilter[] itemStackFilter, SlotSkin skin, String[] comment) {
         super(par1iInventory, slot, x, y, skin, comment);
 

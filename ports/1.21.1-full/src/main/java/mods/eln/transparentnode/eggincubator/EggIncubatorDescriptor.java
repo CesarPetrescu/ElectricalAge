@@ -10,13 +10,13 @@ import mods.eln.sim.mna.misc.MnaConst;
 import mods.eln.sim.nbt.NbtElectricalLoad;
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor;
 import mods.eln.wiki.Data;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import org.lwjgl.opengl.GL11;
 
 import java.util.List;
@@ -27,7 +27,7 @@ public class EggIncubatorDescriptor extends TransparentNodeDescriptor {
     Obj3D defaultFeroObj;
     public ElectricalCableDescriptor cable;
     private Obj3DPart lamp;
-    private EntityItem eggEntity;
+    private ItemEntity eggEntity;
     private Obj3DPart lampf;
 
     Obj3DPart main;
@@ -112,8 +112,8 @@ public class EggIncubatorDescriptor extends TransparentNodeDescriptor {
     }
 
     @Override
-    public void addCollisionBoxesToList(AxisAlignedBB par5AxisAlignedBB, List list, BlockPos pos) {
-        AxisAlignedBB bb = new AxisAlignedBB(pos);
+    public void addCollisionBoxesToList(AABB par5AxisAlignedBB, List list, BlockPos pos) {
+        AABB bb = new AABB(pos);
         bb = bb.setMaxY(0.5);
         if (par5AxisAlignedBB.intersects(bb)) list.add(bb);
     }

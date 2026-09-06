@@ -3,7 +3,7 @@ package mods.eln.sixnode.electricalbreaker;
 import mods.eln.misc.INBTTReady;
 import mods.eln.sim.IProcess;
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundTag;
 
 public class ElectricalBreakerCutProcess implements IProcess, INBTTReady {
 
@@ -47,12 +47,12 @@ public class ElectricalBreakerCutProcess implements IProcess, INBTTReady {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt, String str) {
+    public void readFromNBT(CompoundTag nbt, String str) {
         T = nbt.getFloat(str + "T");
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt, String str) {
+    public CompoundTag writeToNBT(CompoundTag nbt, String str) {
         nbt.setFloat(str + "T", (float) T);
         return nbt;
     }

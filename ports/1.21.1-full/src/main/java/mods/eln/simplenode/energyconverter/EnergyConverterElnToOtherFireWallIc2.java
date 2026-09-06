@@ -1,7 +1,7 @@
 package mods.eln.simplenode.energyconverter;
 
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 
 //public class EnergyConverterElnToOtherFireWallIc2 {
 //

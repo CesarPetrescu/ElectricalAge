@@ -11,10 +11,10 @@ import mods.eln.node.transparent.TransparentNodeElementRender;
 import mods.eln.node.transparent.TransparentNodeEntity;
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor;
 import mods.eln.sound.LoopedSound;
-import net.minecraft.client.audio.ISound;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
+import net.minecraft.client.resources.sounds.SoundInstance;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import org.lwjgl.opengl.GL11;
 
 import java.io.DataInputStream;
@@ -29,7 +29,7 @@ public class TransformerRender extends TransparentNodeElementRender {
     public TransformerRender(TransparentNodeEntity tileEntity, TransparentNodeDescriptor descriptor) {
         super(tileEntity, descriptor);
         this.descriptor = (TransformerDescriptor) descriptor;
-        addLoopedSound(new LoopedSound("eln:Transformer", coordinate(), ISound.AttenuationType.LINEAR) {
+        addLoopedSound(new LoopedSound("eln:Transformer", coordinate(), SoundInstance.AttenuationType.LINEAR) {
             @Override
             public float getVolume() {
                 if (load.getPosition() > TransformerRender.this.descriptor.minimalLoadToHum)
@@ -55,7 +55,7 @@ public class TransformerRender extends TransparentNodeElementRender {
     }
 
     @Override
-    public GuiScreen newGuiDraw(Direction side, EntityPlayer player) {
+    public Screen newGuiDraw(Direction side, Player player) {
         return new TransformerGuiDraw(player, inventory, this);
     }
 

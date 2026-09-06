@@ -1,16 +1,16 @@
 package mods.eln.sixnode.tutorialsign;
 
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.neoforged.bus.api.SubscribeEvent;
 import mods.eln.misc.Utils;
 import mods.eln.node.six.SixNodeBlock;
 import mods.eln.node.six.SixNodeElementRender;
 import mods.eln.node.six.SixNodeEntity;
 import net.minecraft.client.Minecraft;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import org.lwjgl.opengl.GL11;
 
@@ -26,16 +26,16 @@ public class TutorialSignOverlay {
     @SubscribeEvent
     public void render(RenderGameOverlayEvent.Text event) {
         Minecraft mc = Minecraft.getMinecraft();
-        EntityPlayerSP player = mc.player;
+        LocalPlayer player = mc.player;
 
         if (oldRender != null) {
             oldRender.lightInterpol.setTarget(0);
             oldRender = null;
         }
 
-        int px = MathHelper.floor(player.posX), py = MathHelper.floor(player.posY), pz = MathHelper.floor(player.posZ);
+        int px = Mth.floor(player.posX), py = Mth.floor(player.posY), pz = Mth.floor(player.posZ);
         int r = 1;
-        World w = player.world;
+        Level w = player.world;
 
         TutorialSignRender best = null;
         double bestDistance = 10000;
@@ -45,7 +45,7 @@ public class TutorialSignOverlay {
                 for (int z = pz - r; z <= pz + r; z++) {
                     BlockPos pos = new BlockPos(x, y, z);
                     if (w.getBlockState(pos).getBlock() instanceof SixNodeBlock) {
-                        TileEntity e = w.getTileEntity(pos);
+                        BlockEntity e = w.getTileEntity(pos);
                         if (e instanceof SixNodeEntity) {
                             SixNodeEntity sne = (SixNodeEntity) e;
                             for (SixNodeElementRender render : sne.elementRenderList) {

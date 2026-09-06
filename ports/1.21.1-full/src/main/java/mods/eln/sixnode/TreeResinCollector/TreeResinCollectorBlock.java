@@ -1,21 +1,21 @@
 package mods.eln.sixnode.TreeResinCollector;
 
-import net.minecraft.block.BlockContainer;
+import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 
-public class TreeResinCollectorBlock extends BlockContainer {
+public class TreeResinCollectorBlock extends BaseEntityBlock {
 
     public TreeResinCollectorBlock(int id) {
         super(Material.WOOD);
@@ -23,13 +23,13 @@ public class TreeResinCollectorBlock extends BlockContainer {
     }
 
     @Override
-    public boolean isOpaqueCube(IBlockState state) {
+    public boolean isOpaqueCube(BlockState state) {
         return false;
     }
 
     @NotNull
     @Override
-    public TileEntity createNewTileEntity(World world, int a) {
+    public BlockEntity createNewTileEntity(Level world, int a) {
         return new TreeResinCollectorTileEntity();
     }
 
@@ -44,12 +44,12 @@ public class TreeResinCollectorBlock extends BlockContainer {
 
 
     @Override
-    public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+    public boolean onBlockActivated(Level worldIn, BlockPos pos, BlockState state, Player playerIn, InteractionHand hand, Direction facing, float hitX, float hitY, float hitZ) {
         return ((TreeResinCollectorTileEntity) worldIn.getTileEntity(pos)).onBlockActivated();
     }
 
     @Override
-    public void onNeighborChange(IBlockAccess world, BlockPos pos, BlockPos neighbor) {
+    public void onNeighborChange(BlockGetter world, BlockPos pos, BlockPos neighbor) {
         super.onNeighborChange(world, pos, neighbor);
         // TODO(1.10): Should implement this. (But it wasn't there in 1.7...)
 //        if (!canPlaceBlockOnSide(world, x, y, z, world.getBlockMetadata(x, y, z))) {

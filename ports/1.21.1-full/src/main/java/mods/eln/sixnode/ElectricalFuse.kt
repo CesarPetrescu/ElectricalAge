@@ -14,10 +14,10 @@ import mods.eln.sim.ThermalLoad
 import mods.eln.sim.mna.component.Resistor
 import mods.eln.sim.nbt.NbtElectricalLoad
 import mods.eln.wiki.Data
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
 import org.lwjgl.opengl.GL11
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -71,14 +71,14 @@ class ElectricalFuseHolderDescriptor(name: String, obj: Obj3D) :
         }
     }
 
-    override fun addInformation(itemStack: ItemStack?, entityPlayer: EntityPlayer?, list: MutableList<String>?, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack?, entityPlayer: Player?, list: MutableList<String>?, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         if (list != null) {
             I18N.tr("Protects electrical components.\nFuse melts if current exceeds the\nfuse limit").split("\n").forEach { list.add(it) }
         }
     }
 
-    override fun getFrontFromPlace(side: Direction, player: EntityPlayer) =
+    override fun getFrontFromPlace(side: Direction, player: Player) =
         super.getFrontFromPlace(side, player).inverse()
 }
 
@@ -122,12 +122,12 @@ class ElectricalFuseHolderElement(sixNode: SixNode, side: Direction, descriptor:
         electricalProcessList.add(fuseProcess)
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound?) {
+    override fun readFromNBT(nbt: CompoundTag?) {
         super.readFromNBT(nbt)
         if (nbt != null) {
             front = LRDU.readFromNBT(nbt, "front")
 
-            val fuseCompound = nbt.getTag("fuse") as? NBTTagCompound
+            val fuseCompound = nbt.getTag("fuse") as? CompoundTag
             if (fuseCompound != null) {
                 val fuseStack = ItemStack(nbt)
                 if (fuseStack.count > 0) {
@@ -139,13 +139,13 @@ class ElectricalFuseHolderElement(sixNode: SixNode, side: Direction, descriptor:
         }
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound?): NBTTagCompound? {
+    override fun writeToNBT(nbt: CompoundTag?): CompoundTag? {
         super.writeToNBT(nbt)
         if (nbt != null) {
             front.writeToNBT(nbt, "front")
 
             if (installedFuse != null) {
-                val fuseCompaound = NBTTagCompound()
+                val fuseCompaound = CompoundTag()
                 installedFuse!!.newItemStack().writeToNBT(fuseCompaound)
                 nbt.setTag("fuse", fuseCompaound)
             }
@@ -203,7 +203,7 @@ class ElectricalFuseHolderElement(sixNode: SixNode, side: Direction, descriptor:
         refreshSwitchResistor()
     }
 
-    override fun onBlockActivated(entityPlayer: EntityPlayer?, side: Direction?, vx: Float, vy: Float, vz: Float): Boolean {
+    override fun onBlockActivated(entityPlayer: Player?, side: Direction?, vx: Float, vy: Float, vz: Float): Boolean {
         if (onBlockActivatedRotate(entityPlayer)) return true
 
         var takenOutFuse: ElectricalFuseDescriptor? = null

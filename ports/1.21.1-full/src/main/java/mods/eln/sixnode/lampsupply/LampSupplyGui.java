@@ -1,8 +1,8 @@
 package mods.eln.sixnode.lampsupply;
 
 import mods.eln.gui.*;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -19,7 +19,7 @@ public class LampSupplyGui extends GuiContainerEln {
     private HashMap<Object, Integer> powerMap = new HashMap<Object, Integer>();
     private HashMap<Object, Integer> wirelessMap = new HashMap<Object, Integer>();
 
-    public LampSupplyGui(LampSupplyRender render, EntityPlayer player, IInventory inventory) {
+    public LampSupplyGui(LampSupplyRender render, Player player, Container inventory) {
         super(new LampSupplyContainer(player, inventory));
         this.render = render;
     }

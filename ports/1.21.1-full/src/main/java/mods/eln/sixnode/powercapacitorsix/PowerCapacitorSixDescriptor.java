@@ -11,9 +11,9 @@ import mods.eln.misc.VoltageLevelColor;
 import mods.eln.misc.series.ISerie;
 import mods.eln.node.six.SixNodeDescriptor;
 import mods.eln.wiki.Data;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
 import org.lwjgl.opengl.GL11;
 
 public class PowerCapacitorSixDescriptor extends SixNodeDescriptor {
@@ -50,7 +50,7 @@ public class PowerCapacitorSixDescriptor extends SixNodeDescriptor {
         return serie.getValue(cableCount - 1) / uTemp / uTemp;
     }
 
-    public double getCValue(IInventory inventory) {
+    public double getCValue(Container inventory) {
         ItemStack core = inventory.getStackInSlot(PowerCapacitorSixContainer.redId);
         ItemStack diel = inventory.getStackInSlot(PowerCapacitorSixContainer.dielectricId);
 
@@ -62,7 +62,7 @@ public class PowerCapacitorSixDescriptor extends SixNodeDescriptor {
         }
     }
 
-    public double getUNominalValue(IInventory inventory) {
+    public double getUNominalValue(Container inventory) {
         ItemStack diel = inventory.getStackInSlot(PowerCapacitorSixContainer.dielectricId);
         if (diel.isEmpty())
             return 10000;
@@ -72,7 +72,7 @@ public class PowerCapacitorSixDescriptor extends SixNodeDescriptor {
         }
     }
 
-    public void setParent(net.minecraft.item.Item item, int damage) {
+    public void setParent(net.minecraft.world.item.Item item, int damage) {
         super.setParent(item, damage);
         Data.addEnergy(newItemStack());
     }
@@ -107,7 +107,7 @@ public class PowerCapacitorSixDescriptor extends SixNodeDescriptor {
 //    }
 
     @Override
-    public LRDU getFrontFromPlace(Direction side, EntityPlayer player) {
+    public LRDU getFrontFromPlace(Direction side, Player player) {
         return super.getFrontFromPlace(side, player).left();
     }
 }

@@ -10,9 +10,9 @@ import mods.eln.node.six.SixNodeDescriptor;
 import mods.eln.node.six.SixNodeElementInventory;
 import mods.eln.node.six.SixNodeElementRender;
 import mods.eln.node.six.SixNodeEntity;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -27,7 +27,7 @@ public class BatteryChargerRender extends SixNodeElementRender {
 
     float alpha = 0;
 
-    EntityItem[] b = new EntityItem[4];
+    ItemEntity[] b = new ItemEntity[4];
     boolean powerOn;
     private float voltage;
 
@@ -62,7 +62,7 @@ public class BatteryChargerRender extends SixNodeElementRender {
         if (alpha > 360) alpha -= 360;
     }
 
-    public void drawEntityItem(EntityItem entityItem, double x, double y, double z, float roty, float scale) {
+    public void drawEntityItem(ItemEntity entityItem, double x, double y, double z, float roty, float scale) {
         UtilsClient.drawEntityItem(entityItem, x, y, z, roty, scale);
     }
 
@@ -72,7 +72,7 @@ public class BatteryChargerRender extends SixNodeElementRender {
     }
 
     @Override
-    public GuiScreen newGuiDraw(Direction side, EntityPlayer player) {
+    public Screen newGuiDraw(Direction side, Player player) {
         return new BatteryChargerGui(this, player, inventory);
     }
 

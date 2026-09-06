@@ -4,9 +4,9 @@ import mods.eln.misc.Coordinate;
 import mods.eln.misc.INBTTReady;
 import mods.eln.misc.Utils;
 import mods.eln.sim.IProcess;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 class WindTurbineSlowProcess implements IProcess, INBTTReady {
     //private static final double localWinDeriveMax = 0.1;
@@ -63,7 +63,7 @@ class WindTurbineSlowProcess implements IProcess, INBTTReady {
 
             int blockBusyCount = -d.blockMalusSubCount;
             if (turbine.node.coordinate.doesWorldExist()) {
-                World world = turbine.node.coordinate.world();
+                Level world = turbine.node.coordinate.world();
 
                 for (int x = x1; x <= x2; x++) {
                     for (int y = y1; y <= y2; y++) {
@@ -121,13 +121,13 @@ class WindTurbineSlowProcess implements IProcess, INBTTReady {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt, String str) {
+    public void readFromNBT(CompoundTag nbt, String str) {
         localWind = nbt.getDouble(str + name + "localWind");
         environmentWindFactor = nbt.getDouble(str + name + "environementWindFactor");
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt, String str) {
+    public CompoundTag writeToNBT(CompoundTag nbt, String str) {
         nbt.setDouble(str + name + "localWind", localWind);
         nbt.setDouble(str + name + "environementWindFactor", environmentWindFactor);
         return nbt;

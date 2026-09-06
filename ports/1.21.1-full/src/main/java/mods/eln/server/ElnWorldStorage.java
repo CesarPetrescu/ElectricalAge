@@ -1,11 +1,11 @@
 package mods.eln.server;
 
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.world.World;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.storage.MapStorage;
-import net.minecraft.world.storage.WorldSavedData;
+import net.minecraft.world.level.saveddata.SavedData;
 
-public class ElnWorldStorage extends WorldSavedData {
+public class ElnWorldStorage extends SavedData {
 
     private int dim;
 
@@ -15,7 +15,7 @@ public class ElnWorldStorage extends WorldSavedData {
         super(str);
     }
 
-    public static ElnWorldStorage forWorld(World world) {
+    public static ElnWorldStorage forWorld(Level world) {
         // Retrieves the MyWorldData instance for the given world, creating it if necessary
         MapStorage storage = world.getPerWorldStorage();
         int dim = world.provider.getDimension();
@@ -32,13 +32,13 @@ public class ElnWorldStorage extends WorldSavedData {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt) {
+    public void readFromNBT(CompoundTag nbt) {
         dim = nbt.getInteger("dim");
         ServerEventListener.readFromEaWorldNBT(nbt);
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+    public CompoundTag writeToNBT(CompoundTag nbt) {
         nbt.setInteger("dim", dim);
         ServerEventListener.writeToEaWorldNBT(nbt, dim);
         return nbt;

@@ -5,7 +5,7 @@ import mods.eln.misc.Direction
 import mods.eln.misc.INBTTReady
 import mods.eln.node.NodeManager
 import mods.eln.sim.process.destruct.ShaftSpeedWatchdog
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.nbt.CompoundTag
 import java.util.*
 
 
@@ -159,11 +159,11 @@ class ShaftNetwork() : INBTTReady {
         return ret
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound, str: String?) {
+    override fun readFromNBT(nbt: CompoundTag, str: String?) {
         rads = nbt.getFloat(str + "rads").toDouble()
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound, str: String?): NBTTagCompound?{
+    override fun writeToNBT(nbt: CompoundTag, str: String?): CompoundTag?{
         nbt.setFloat(str + "rads", rads.toFloat())
         return nbt
     }

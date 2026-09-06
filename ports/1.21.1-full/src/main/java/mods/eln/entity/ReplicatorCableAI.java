@@ -10,14 +10,14 @@ import mods.eln.node.six.SixNodeElement;
 import mods.eln.sim.*;
 import mods.eln.sim.mna.component.Resistor;
 import mods.eln.sixnode.electricalcable.ElectricalCableElement;
-import net.minecraft.entity.ai.EntityAIBase;
-import net.minecraft.pathfinding.Path;
-import net.minecraft.util.DamageSource;
+import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.level.pathfinder.Path;
+import net.minecraft.world.damagesource.DamageSource;
 
 import java.util.List;
 import java.util.Random;
 
-public class ReplicatorCableAI extends EntityAIBase implements ITimeRemoverObserver {
+public class ReplicatorCableAI extends Goal implements ITimeRemoverObserver {
 
     ReplicatorEntity entity;
 

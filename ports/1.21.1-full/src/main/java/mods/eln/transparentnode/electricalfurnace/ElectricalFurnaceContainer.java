@@ -10,10 +10,10 @@ import mods.eln.item.regulator.RegulatorSlot;
 import mods.eln.misc.BasicContainer;
 import mods.eln.node.INodeContainer;
 import mods.eln.node.NodeBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.Slot;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 
 import static mods.eln.i18n.I18N.tr;
 
@@ -21,7 +21,7 @@ public class ElectricalFurnaceContainer extends BasicContainer implements INodeC
 
     NodeBase node = null;
 
-    public ElectricalFurnaceContainer(NodeBase node, EntityPlayer player, IInventory inventory) {
+    public ElectricalFurnaceContainer(NodeBase node, Player player, Container inventory) {
         super(player, inventory, new Slot[]{
             new SlotWithSkin(inventory, ElectricalFurnaceElement.outSlotId, 84, 58, SlotSkin.big) {
                 @Override

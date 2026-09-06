@@ -1,16 +1,16 @@
 package mods.eln.node.simple;
 
 import mods.eln.misc.Coordinate;
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemBlock;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
-public class SimpleNodeItem extends ItemBlock {
+public class SimpleNodeItem extends BlockItem {
     SimpleNodeBlock block;
 
     public SimpleNodeItem(Block b) {
@@ -19,7 +19,7 @@ public class SimpleNodeItem extends ItemBlock {
     }
 
     @Override
-    public boolean placeBlockAt(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumFacing side, float hitX, float hitY, float hitZ, IBlockState newState) {
+    public boolean placeBlockAt(ItemStack stack, Player player, Level world, BlockPos pos, Direction side, float hitX, float hitY, float hitZ, BlockState newState) {
         SimpleNode node = null;
         if (!world.isRemote) {
             node = block.newNode();
@@ -32,7 +32,7 @@ public class SimpleNodeItem extends ItemBlock {
             return false;
         }
 
-        IBlockState state = world.getBlockState(pos);
+        BlockState state = world.getBlockState(pos);
         if (state.getBlock() == this.block) {
             this.block.onBlockPlacedBy(world, pos, state, player, stack);
         }

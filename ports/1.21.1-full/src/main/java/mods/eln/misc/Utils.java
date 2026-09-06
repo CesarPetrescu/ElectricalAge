@@ -9,46 +9,46 @@ import mods.eln.init.Items;
 import mods.eln.misc.Obj3D.Obj3DPart;
 import mods.eln.node.ITileEntitySpawnClient;
 import mods.eln.sim.PhysicalConstant;
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityOtherPlayerMP;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
+import net.minecraft.client.player.RemotePlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.item.crafting.IRecipe;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityFurnace;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.NonNullList;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.FurnaceBlockEntity;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.core.NonNullList;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.util.text.TextComponentString;
-import net.minecraft.world.EnumSkyBlock;
-import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import mods.eln.packets.GenericPacket;
 import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemHandlerHelper;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.minecraftforge.oredict.OreDictionary;
 import org.lwjgl.opengl.GL11;
 
@@ -60,8 +60,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-import static net.minecraft.init.Blocks.FLOWING_WATER;
-import static net.minecraft.init.Blocks.WATER;
+import static net.minecraft.world.level.block.Blocks.FLOWING_WATER;
+import static net.minecraft.world.level.block.Blocks.WATER;
 
 public class Utils {
 
@@ -161,12 +161,12 @@ public class Utils {
         return false;
     }
 
-    public static Direction entityLivingViewDirection(EntityLivingBase entityLiving) {
+    public static Direction entityLivingViewDirection(LivingEntity entityLiving) {
         if (entityLiving.rotationPitch > 45)
             return Direction.YN;
         if (entityLiving.rotationPitch < -45)
             return Direction.YP;
-        int dirx = MathHelper.floor((double) (entityLiving.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
+        int dirx = Mth.floor((double) (entityLiving.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
         if (dirx == 3)
             return Direction.XP;
         if (dirx == 0)
@@ -176,8 +176,8 @@ public class Utils {
         return Direction.ZN;
     }
 
-    public static Direction entityLivingHorizontalViewDirection(EntityLivingBase entityLiving) {
-        int dirx = MathHelper.floor((double) (entityLiving.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
+    public static Direction entityLivingHorizontalViewDirection(LivingEntity entityLiving) {
+        int dirx = Mth.floor((double) (entityLiving.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
         if (dirx == 3)
             return Direction.XP;
         if (dirx == 0)
@@ -202,7 +202,7 @@ public class Utils {
 	 * if (var2 instanceof ItemTool && ((ItemTool) var2).getToolMaterialName().equals("WOOD")) return 200; if (var2 instanceof ItemSword && ((ItemSword) var2).func_77825_f().equals("WOOD")) return 200; if (var2 instanceof ItemHoe && ((ItemHoe) var2).func_77842_f().equals("WOOD")) return 200; if (var1 == Items.stick.shiftedIndex) return 100; if (var1 == Items.coal.shiftedIndex) return 1600; if (var1 == Items.bucketLava.shiftedIndex) return 20000; if (var1 == Block.sapling.blockID) return 100; if (var1 == Items.blazeRod.shiftedIndex) return 2400; return GameRegistry.getFuelValue(par0ItemStack); } }
 	 */
     public static double getItemEnergie(ItemStack par0ItemStack) {
-        return burnTimeToEnergyFactor * 80000.0 / 1600 * TileEntityFurnace.getItemBurnTime(par0ItemStack);
+        return burnTimeToEnergyFactor * 80000.0 / 1600 * FurnaceBlockEntity.getItemBurnTime(par0ItemStack);
     }
 
     public static double getCoalEnergyReference() {
@@ -379,12 +379,12 @@ public class Utils {
         return header + plotValue(buckets, "B ");
     }
 
-    public static void readFromNBT(NBTTagCompound nbt, String str, IInventory inventory) {
-        NBTTagList var2 = nbt.getTagList(str, 10);
+    public static void readFromNBT(CompoundTag nbt, String str, Container inventory) {
+        ListTag var2 = nbt.getTagList(str, 10);
         inventory.clear();
 
         for (int var3 = 0; var3 < var2.tagCount(); ++var3) {
-            NBTTagCompound var4 = (NBTTagCompound) var2.getCompoundTagAt(var3);
+            CompoundTag var4 = (CompoundTag) var2.getCompoundTagAt(var3);
             int var5 = var4.getByte("Slot") & 255;
 
             if (var5 < inventory.getSizeInventory()) {
@@ -393,13 +393,13 @@ public class Utils {
         }
     }
 
-    public static NBTTagCompound writeToNBT(NBTTagCompound nbt, String str, IInventory inventory) {
-        NBTTagList var2 = new NBTTagList();
+    public static CompoundTag writeToNBT(CompoundTag nbt, String str, Container inventory) {
+        ListTag var2 = new ListTag();
 
         for (int var3 = 0; var3 < inventory.getSizeInventory(); ++var3) {
             ItemStack stack = inventory.getStackInSlot(var3);
             if (stack != null && !stack.isEmpty()) {
-                NBTTagCompound var4 = new NBTTagCompound();
+                CompoundTag var4 = new CompoundTag();
                 var4.setByte("Slot", (byte) var3);
                 stack.writeToNBT(var4);
                 var2.appendTag(var4);
@@ -410,7 +410,7 @@ public class Utils {
         return nbt;
     }
 
-    public static void sendPacketToClient(ByteArrayOutputStream bos, EntityPlayerMP player) {
+    public static void sendPacketToClient(ByteArrayOutputStream bos, ServerPlayer player) {
         Eln.elnNetwork.sendTo(new GenericPacket(bos.toByteArray()), player);
     }
 
@@ -431,16 +431,16 @@ public class Utils {
         );
     }
 
-    public static IBlockState getLoadedBlockState(World world, BlockPos pos) {
+    public static BlockState getLoadedBlockState(Level world, BlockPos pos) {
         if (world == null) return null;
-        net.minecraft.world.chunk.Chunk chunk = world.getChunkProvider().getLoadedChunk(pos.getX() >> 4, pos.getZ() >> 4);
+        net.minecraft.world.level.chunk.LevelChunk chunk = world.getChunkProvider().getLoadedChunk(pos.getX() >> 4, pos.getZ() >> 4);
         if (chunk == null || chunk.isEmpty()) return null;
         return chunk.getBlockState(pos);
     }
 
-    public static int getLoadedBlockLightOpacity(World world, BlockPos pos) {
+    public static int getLoadedBlockLightOpacity(Level world, BlockPos pos) {
         if (world == null) return 0;
-        net.minecraft.world.chunk.Chunk chunk = world.getChunkProvider().getLoadedChunk(pos.getX() >> 4, pos.getZ() >> 4);
+        net.minecraft.world.level.chunk.LevelChunk chunk = world.getChunkProvider().getLoadedChunk(pos.getX() >> 4, pos.getZ() >> 4);
         if (chunk == null || chunk.isEmpty()) return 0;
         return chunk.getBlockLightOpacity(pos);
     }
@@ -569,7 +569,7 @@ public class Utils {
     // Into utilsClient To
     public static double getWeatherNoLoad(int dim) {
         if (!getWorldExist(dim)) return 0.0;
-        World world = getWorld(dim);
+        Level world = getWorld(dim);
         if (world.isThundering())
             return 1.0;
         if (world.isRaining())
@@ -577,7 +577,7 @@ public class Utils {
         return 0.0;
     }
 
-    public static World getWorld(int dim) {
+    public static Level getWorld(int dim) {
         return FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(dim);
     }
 
@@ -589,7 +589,7 @@ public class Utils {
         if (!getWorldExist(worldId)) {
             return Math.max(0.0, Eln.windProcess.getWind(y));
         } else {
-            World world = getWorld(worldId);
+            Level world = getWorld(worldId);
             float factor = 1f + world.getRainStrength(0) * 0.2f + world.getThunderStrength(0) * 0.2f;
             return Math.max(0.0, Eln.windProcess.getWind(y) * factor + world.getRainStrength(0) * 1f + world.getThunderStrength(0) * 2f);
         }
@@ -601,7 +601,7 @@ public class Utils {
     // return Math.max(0.0, Eln.wind.getWind(y) * factor + world.getRainStrength(0) * 1f + world.getWeightedThunderStrength(0) * 2f);
     // }
 
-    public static void dropItem(ItemStack itemStack, BlockPos pos, World world) {
+    public static void dropItem(ItemStack itemStack, BlockPos pos, Level world) {
         if (itemStack == null)
             return;
         if (world.getGameRules().getBoolean("doTileDrops")) {
@@ -609,7 +609,7 @@ public class Utils {
             double var7 = (double) (world.rand.nextFloat() * var6) + (double) (1.0F - var6) * 0.5D;
             double var9 = (double) (world.rand.nextFloat() * var6) + (double) (1.0F - var6) * 0.5D;
             double var11 = (double) (world.rand.nextFloat() * var6) + (double) (1.0F - var6) * 0.5D;
-            EntityItem drop = new EntityItem(world, (double) pos.getX() + var7, (double) pos.getY() + var9, (double) pos.getZ() + var11, itemStack);
+            ItemEntity drop = new ItemEntity(world, (double) pos.getX() + var7, (double) pos.getY() + var9, (double) pos.getZ() + var11, itemStack);
             drop.setPickupDelay(10);
             world.spawnEntity(drop);
         }
@@ -620,7 +620,7 @@ public class Utils {
 
     }
 
-    public static boolean tryPutStackInInventory(ItemStack stack, IInventory inventory) {
+    public static boolean tryPutStackInInventory(ItemStack stack, Container inventory) {
         if (inventory == null) return false;
         if (stack == null || stack.isEmpty()) return true;
         int limit = inventory.getInventoryStackLimit();
@@ -682,7 +682,7 @@ public class Utils {
     }
 
     @Deprecated
-    public static boolean canPutStackInInventory(ItemStack[] stackList, IInventory inventory, int[] slotsIdList) {
+    public static boolean canPutStackInInventory(ItemStack[] stackList, Container inventory, int[] slotsIdList) {
         int limit = inventory.getInventoryStackLimit();
         ItemStack[] outputStack = new ItemStack[slotsIdList.length];
         ItemStack[] inputStack = new ItemStack[stackList.length];
@@ -732,7 +732,7 @@ public class Utils {
     }
 
     @Deprecated
-    public static boolean tryPutStackInInventory(ItemStack[] stackList, IInventory inventory, int[] slotsIdList) {
+    public static boolean tryPutStackInInventory(ItemStack[] stackList, Container inventory, int[] slotsIdList) {
         int limit = inventory.getInventoryStackLimit();
 
         for (ItemStack stack : stackList) {
@@ -794,7 +794,7 @@ public class Utils {
         return Utils.newItemStack(id, 1, damage);
     }
 
-    public static EntityItem unserializeItemStackToEntityItem(DataInputStream stream, EntityItem old, TileEntity tileEntity) throws IOException {
+    public static ItemEntity unserializeItemStackToEntityItem(DataInputStream stream, ItemEntity old, BlockEntity tileEntity) throws IOException {
         short itemId, ItemDamage;
         if ((itemId = stream.readShort()) == -1) {
             stream.readShort();
@@ -807,7 +807,7 @@ public class Utils {
             ItemDamage = stream.readShort();
             if (old == null || Item.getIdFromItem(old.getItem().getItem()) != itemId || old.getItem().getItemDamage() != ItemDamage) {
                 BlockPos pos = tileEntity.getPos();
-                return new EntityItem(tileEntity.getWorld(), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 1.2, Utils.newItemStack(itemId, 1, ItemDamage));
+                return new ItemEntity(tileEntity.getWorld(), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 1.2, Utils.newItemStack(itemId, 1, ItemDamage));
             } else {
                 return old;
             }
@@ -818,7 +818,7 @@ public class Utils {
         return Minecraft.getMinecraft().isGamePaused();
     }
 
-    public static int getLight(World w, EnumSkyBlock e, BlockPos pos) {
+    public static int getLight(Level w, LightLayer e, BlockPos pos) {
         return w.getLightFor(e, pos);
     }
 
@@ -838,7 +838,7 @@ public class Utils {
 	 * public float frameTime() { float time = Minecraft.getMinecraft().entityRenderer.performanceToFps(par0) }
 	 */
 
-    public static void notifyNeighbor(TileEntity t) {
+    public static void notifyNeighbor(BlockEntity t) {
         notifyNodeNeighbors(t.getWorld(), t.getPos());
     }
 
@@ -846,7 +846,7 @@ public class Utils {
      * Notifies all blocks in a 3x3x3 area to update.
      * This is crucial for ELN nodes that can connect diagonally/around corners.
      */
-    public static void notifyNodeNeighbors(World world, BlockPos pos) {
+    public static void notifyNodeNeighbors(Level world, BlockPos pos) {
         for (int x = -1; x <= 1; x++) {
             for (int y = -1; y <= 1; y++) {
                 for (int z = -1; z <= 1; z++) {
@@ -854,13 +854,13 @@ public class Utils {
                     BlockPos neighborPos = pos.add(x, y, z);
                     
                     // Notify TileEntities that implement ITileEntitySpawnClient (ELN standard)
-                    TileEntity te = world.getTileEntity(neighborPos);
+                    BlockEntity te = world.getTileEntity(neighborPos);
                     if (te instanceof ITileEntitySpawnClient) {
                         ((ITileEntitySpawnClient) te).tileEntityNeighborSpawn();
                     }
                     
                     // Trigger block update to force re-render on client
-                    IBlockState state = world.getBlockState(neighborPos);
+                    BlockState state = world.getBlockState(neighborPos);
                     world.notifyBlockUpdate(neighborPos, state, state, 3);
                 }
             }
@@ -872,9 +872,9 @@ public class Utils {
         world.markBlockRangeForRenderUpdate(pos.add(-1, -1, -1), pos.add(1, 1, 1));
     }
 
-    public static boolean playerHasMeter(EntityPlayer entityPlayer) {
+    public static boolean playerHasMeter(Player entityPlayer) {
         // In case future Minecraft versions allow you to grow more hands.
-        for (EnumHand hand : EnumHand.values()) {
+        for (InteractionHand hand : InteractionHand.values()) {
             ItemStack heldItem = entityPlayer.getHeldItem(hand);
             if (Items.multiMeterElement.checkSameItemStack(heldItem)
                 || Items.thermometerElement.checkSameItemStack(heldItem)
@@ -888,7 +888,7 @@ public class Utils {
         int level = coord.world().getStrongPower(coord.pos);
         if (level >= 15) return 15;
 
-        EnumFacing facing = side.getInverse().toForge();
+        Direction facing = side.getInverse().toForge();
         switch (side) {
             case YN:
             case YP:
@@ -924,8 +924,8 @@ public class Utils {
         return level;
     }
 
-    public static boolean isPlayerAround(World world, AxisAlignedBB axisAlignedBB) {
-        return !world.getEntitiesWithinAABB(EntityPlayer.class, axisAlignedBB).isEmpty();
+    public static boolean isPlayerAround(Level world, AABB axisAlignedBB) {
+        return !world.getEntitiesWithinAABB(Player.class, axisAlignedBB).isEmpty();
     }
 
     public static Object getItemObject(ItemStack stack) {
@@ -1012,13 +1012,13 @@ public class Utils {
         return false;
     }
 
-    public static Vec3d getVec05(Coordinate c) {
+    public static Vec3 getVec05(Coordinate c) {
         int x = c.pos.getX(), y = c.pos.getY(), z = c.pos.getZ();
-        return new Vec3d(x + (x < 0 ? -1 : 1) * 0.5, y + (y < 0 ? -1 : 1) * 0.5, z + (z < 0 ? -1 : 1) * 0.5);
+        return new Vec3(x + (x < 0 ? -1 : 1) * 0.5, y + (y < 0 ? -1 : 1) * 0.5, z + (z < 0 ? -1 : 1) * 0.5);
     }
 
     public static double getHeadPosY(Entity e) {
-        if (e instanceof EntityOtherPlayerMP)
+        if (e instanceof RemotePlayer)
             return e.posY + e.getEyeHeight();
         return e.posY;
     }
@@ -1029,22 +1029,22 @@ public class Utils {
 	 * return entity.inventory.getCurrentItem() == stack && Eln.playerManager.get(entity).getInteractRise(); }
 	 */
 
-    public static boolean isCreative(EntityPlayerMP entityPlayer) {
+    public static boolean isCreative(ServerPlayer entityPlayer) {
         return entityPlayer.isCreative();
     }
 
-    public static boolean mustDropItem(EntityPlayerMP entityPlayer) {
+    public static boolean mustDropItem(ServerPlayer entityPlayer) {
         return entityPlayer == null || !isCreative(entityPlayer);
     }
 
     public static void serverTeleport(Entity e, double x, double y, double z) {
-        if (e instanceof EntityPlayerMP)
+        if (e instanceof ServerPlayer)
             e.setPositionAndUpdate(x, y, z);
         else
             e.setPosition(x, y, z);
     }
 
-    public static ArrayList<Block> traceRay(World world, double x, double y,
+    public static ArrayList<Block> traceRay(Level world, double x, double y,
                                             double z, double tx, double ty, double tz) {
         ArrayList<Block> blockList = new ArrayList<Block>();
 
@@ -1077,20 +1077,20 @@ public class Utils {
     }
 
     interface TraceRayWeight {
-        float getWeight(IBlockState block);
+        float getWeight(BlockState block);
     }
 
     public static class TraceRayWeightOpaque implements TraceRayWeight {
 
         @Override
-        public float getWeight(IBlockState block) {
+        public float getWeight(BlockState block) {
             if (block == null)
                 return 0;
             return block.isOpaqueCube() ? 1f : 0f;
         }
     }
 
-    public static float traceRay(World w, double posX, double posY, double posZ, double targetX, double targetY, double targetZ, TraceRayWeight weight) {
+    public static float traceRay(Level w, double posX, double posY, double posZ, double targetX, double targetY, double targetZ, TraceRayWeight weight) {
         int posXint = (int) Math.round(posX);
         int posYint = (int) Math.round(posY);
         int posZint = (int) Math.round(posZ);
@@ -1120,9 +1120,9 @@ public class Utils {
         float d = 0;
 
         while (d < rangeMax) {
-            float xFloor = MathHelper.floor(x);
-            float yFloor = MathHelper.floor(y);
-            float zFloor = MathHelper.floor(z);
+            float xFloor = Mth.floor(x);
+            float yFloor = Mth.floor(y);
+            float zFloor = Mth.floor(z);
 
             float dx = x - xFloor, dy = y - yFloor, dz = z - zFloor;
             dx = (vx > 0 ? (1 - dx) * vxInv : -dx * vxInv);
@@ -1135,7 +1135,7 @@ public class Utils {
             int yInt = (int) yFloor;
             int zInt = (int) zFloor;
 
-            IBlockState blockState = Blocks.AIR.getDefaultState();
+            BlockState blockState = Blocks.AIR.getDefaultState();
 
             BlockPos pos = new BlockPos(xInt + posXint, yInt + posYint, zInt + posZint);
             if (!w.isAirBlock(pos))
@@ -1302,17 +1302,17 @@ public class Utils {
 */
     }
 
-    public static double getWorldTime(World world) {
+    public static double getWorldTime(Level world) {
         return world.getWorldTime() / (23999.0);
     }
 
     public static boolean isWateryEnoughForTurbine(Coordinate waterCoord) {
-        IBlockState blockState = waterCoord.getBlockState();
+        BlockState blockState = waterCoord.getBlockState();
         Block block = blockState.getBlock();
         return Block.isEqualTo(block, FLOWING_WATER) || Block.isEqualTo(block, WATER);
     }
 
-    public static void sendMessage(EntityPlayer entityPlayer, String string) {
+    public static void sendMessage(Player entityPlayer, String string) {
         entityPlayer.sendStatusMessage(new TextComponentString(string), true);
     }
 
@@ -1324,10 +1324,10 @@ public class Utils {
         return new ItemStack(i, size, damage);
     }
 
-    public static List<NBTTagCompound> getTags(NBTTagCompound nbt) {
+    public static List<CompoundTag> getTags(CompoundTag nbt) {
         Object[] set = nbt.getKeySet().toArray();
 
-        ArrayList<NBTTagCompound> tags = new ArrayList<NBTTagCompound>();
+        ArrayList<CompoundTag> tags = new ArrayList<CompoundTag>();
 
         for (Object aSet : set) {
             tags.add(nbt.getCompoundTag((String) aSet));
@@ -1335,11 +1335,11 @@ public class Utils {
         return tags;
     }
 
-    public static boolean isRemote(IBlockAccess world) {
-        if (!(world instanceof World)) {
+    public static boolean isRemote(BlockGetter world) {
+        if (!(world instanceof Level)) {
             fatal();
         }
-        return ((World) world).isRemote;
+        return ((Level) world).isRemote;
     }
 
     public static boolean nullCheck(Object o) {
@@ -1398,8 +1398,8 @@ public class Utils {
         addSmelting(parentBlock, parentItemDamage, findItemStack, 0.3f);
     }
 
-    public static NBTTagCompound newNbtTagCompund(NBTTagCompound nbt, String string) {
-        NBTTagCompound cmp = new NBTTagCompound();
+    public static CompoundTag newNbtTagCompund(CompoundTag nbt, String string) {
+        CompoundTag cmp = new CompoundTag();
         nbt.setTag(string, cmp);
         return cmp;
     }
@@ -1426,7 +1426,7 @@ public class Utils {
         return s;
     }
 
-    public static void generateHeightMap(Chunk chunk) {
+    public static void generateHeightMap(LevelChunk chunk) {
     }
 
     public static int getUuid() {
@@ -1449,7 +1449,7 @@ public class Utils {
     }
 
     // @SideOnly(Side.SERVER)
-    public static boolean isPlayerUsingWrench(EntityPlayer player) {
+    public static boolean isPlayerUsingWrench(Player player) {
         if (player == null) return false;
         if (Eln.playerManager.get(player).getInteractEnable()) return true;
         ItemStack stack = player.inventory.getCurrentItem();
@@ -1489,13 +1489,13 @@ public class Utils {
         Utils.println("********");
     }
 
-    public static int getMetaFromPos(World worldIn, BlockPos pos){
-        IBlockState state = worldIn.getBlockState(pos);
+    public static int getMetaFromPos(Level worldIn, BlockPos pos){
+        BlockState state = worldIn.getBlockState(pos);
         return state.getBlock().getMetaFromState(state);
     }
 
     public static int getMetaFromPos(Coordinate coord){
-        IBlockState state = coord.world().getBlockState(coord.pos);
+        BlockState state = coord.world().getBlockState(coord.pos);
         return state.getBlock().getMetaFromState(state);
     }
 

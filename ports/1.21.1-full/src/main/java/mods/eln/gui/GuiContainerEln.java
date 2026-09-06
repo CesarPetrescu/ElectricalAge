@@ -4,17 +4,17 @@ import mods.eln.gui.GuiTextFieldEln.GuiTextFieldElnObserver;
 import mods.eln.gui.IGuiObject.IGuiObjectObserver;
 import mods.eln.gui.ISlotSkin.SlotSkin;
 import mods.eln.misc.UtilsClient;
-import net.minecraft.client.gui.inventory.GuiContainer;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.Slot;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.resources.ResourceLocation;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
-public abstract class GuiContainerEln extends GuiContainer implements IGuiObjectObserver, GuiTextFieldElnObserver {
+public abstract class GuiContainerEln extends AbstractContainerScreen implements IGuiObjectObserver, GuiTextFieldElnObserver {
 
     public GuiHelperContainer helper;
 
@@ -22,7 +22,7 @@ public abstract class GuiContainerEln extends GuiContainer implements IGuiObject
 
     static final ResourceLocation slotSkin = new ResourceLocation("textures/gui/container/furnace.png");
 
-    public GuiContainerEln(Container par1Container) {
+    public GuiContainerEln(AbstractContainerMenu par1Container) {
         super(par1Container);
     }
 

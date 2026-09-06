@@ -1,6 +1,6 @@
 package cofh.api.energy;
 
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundTag;
 
 /**
  * Reference implementation of {@link IEnergyStorage}. Use/extend this or implement your own.
@@ -31,7 +31,7 @@ public class EnergyStorage implements IEnergyStorage {
 		this.maxExtract = maxExtract;
 	}
 
-	public EnergyStorage readFromNBT(NBTTagCompound nbt) {
+	public EnergyStorage readFromNBT(CompoundTag nbt) {
 
 		this.energy = nbt.getInteger("Energy");
 
@@ -41,7 +41,7 @@ public class EnergyStorage implements IEnergyStorage {
 		return this;
 	}
 
-	public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+	public CompoundTag writeToNBT(CompoundTag nbt) {
 
 		if (energy < 0) {
 			energy = 0;

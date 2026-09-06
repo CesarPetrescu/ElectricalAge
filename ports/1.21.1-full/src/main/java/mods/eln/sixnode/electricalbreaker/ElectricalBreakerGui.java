@@ -1,9 +1,9 @@
 package mods.eln.sixnode.electricalbreaker;
 
 import mods.eln.gui.*;
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -12,13 +12,13 @@ import static mods.eln.i18n.I18N.tr;
 
 public class ElectricalBreakerGui extends GuiContainerEln {
 
-    GuiButton toogleSwitch;
+    Button toogleSwitch;
     GuiTextFieldEln setUmin, setUmax;
     ElectricalBreakerRender render;
 
     enum SelectedType {none, min, max}
 
-    public ElectricalBreakerGui(EntityPlayer player, IInventory inventory, ElectricalBreakerRender render) {
+    public ElectricalBreakerGui(Player player, Container inventory, ElectricalBreakerRender render) {
         super(new ElectricalBreakerContainer(player, inventory));
         this.render = render;
     }

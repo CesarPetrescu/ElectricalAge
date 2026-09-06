@@ -6,13 +6,13 @@ import mcp.mobius.waila.api.IWailaDataAccessor
 import mcp.mobius.waila.api.IWailaDataProvider
 import mods.eln.misc.Coordinate
 import mods.eln.node.transparent.TransparentNodeEntity
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.text.TextFormatting
-import net.minecraft.world.World
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.world.level.block.entity.BlockEntity
+import net.minecraft.core.BlockPos
+import net.minecraft.ChatFormatting
+import net.minecraft.world.level.Level
 import net.minecraftforge.fml.common.Optional
 
 @Optional.Interface(iface = "mcp.mobius.waila.api.IWailaDataProvider", modid = "Waila")
@@ -31,8 +31,8 @@ class TransparentNodeWailaProvider : IWailaDataProvider {
         return currenttip
     }
 
-    override fun getNBTData(player: EntityPlayerMP?, te: TileEntity?, tag: NBTTagCompound?, world: World?, pos: BlockPos?): NBTTagCompound {
-        return tag ?: NBTTagCompound()
+    override fun getNBTData(player: ServerPlayer?, te: BlockEntity?, tag: CompoundTag?, world: Level?, pos: BlockPos?): CompoundTag {
+        return tag ?: CompoundTag()
     }
 
     override fun getWailaStack(accessor: IWailaDataAccessor, config: IWailaConfigHandler?): ItemStack {

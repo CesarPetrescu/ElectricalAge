@@ -5,15 +5,15 @@ import mods.eln.item.electricalinterface.IItemEnergyBattery
 import mods.eln.misc.Utils
 import mods.eln.misc.UtilsClient
 import mods.eln.wiki.Data
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.ActionResult
-import net.minecraft.util.EnumActionResult
-import net.minecraft.util.ResourceLocation
-import net.minecraft.world.World
+import net.minecraft.world.entity.player.Player
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.world.InteractionResultHolder
+import net.minecraft.world.InteractionResult
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.level.Level
 
 class ElectricalLampItem(name: String, private var lightMin: Int, private var rangeMin: Int, private var dischargeMin: Double, private var lightMax: Int,
                          private var rangeMax: Int, internal var dischargeMax: Double, internal var energyStorage: Double, internal var chargePower: Double) : LampItem(name), IItemEnergyBattery {
@@ -52,8 +52,8 @@ class ElectricalLampItem(name: String, private var lightMin: Int, private var ra
         }
     }
 
-    override fun getDefaultNBT(): NBTTagCompound? {
-        val nbt = NBTTagCompound()
+    override fun getDefaultNBT(): CompoundTag? {
+        val nbt = CompoundTag()
         nbt.setDouble("energy", 0.0)
         nbt.setBoolean("powerOn", false)
         nbt.setInteger("rand", (Math.random() * 0xFFFFFFF).toInt())
@@ -72,24 +72,24 @@ class ElectricalLampItem(name: String, private var lightMin: Int, private var ra
         return if (getLightState(stack) == 1) lightMin else lightMax
     }
 
-    override fun onItemRightClick(s: ItemStack, w: World, p: EntityPlayer): ActionResult<ItemStack> {
+    override fun onItemRightClick(s: ItemStack, w: Level, p: Player): InteractionResultHolder<ItemStack> {
         if (!w.isRemote) {
             var lightState = getLightState(s) + 1
             if (lightState > 2) lightState = 0
             //((EntityPlayer) entity).sendMessage("Flashlight !!!");
             when (lightState) {
-                0 -> Utils.sendMessage(p as EntityPlayerMP, "Flashlight OFF")
-                1 -> Utils.sendMessage(p as EntityPlayerMP, "Flashlight ON")
-                2 -> Utils.sendMessage(p as EntityPlayerMP, "Flashlight BOOSTED")
+                0 -> Utils.sendMessage(p as ServerPlayer, "Flashlight OFF")
+                1 -> Utils.sendMessage(p as ServerPlayer, "Flashlight ON")
+                2 -> Utils.sendMessage(p as ServerPlayer, "Flashlight BOOSTED")
                 else -> {
                 }
             }
             setLightState(s, lightState)
         }
-        return ActionResult(EnumActionResult.SUCCESS, s)
+        return InteractionResultHolder(InteractionResult.SUCCESS, s)
     }
 
-    override fun addInformation(itemStack: ItemStack?, entityPlayer: EntityPlayer, list: MutableList<Any?>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack?, entityPlayer: Player, list: MutableList<Any?>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
 
         list.add(tr("Discharge power: %sW", Utils.plotValue(dischargeMin)))

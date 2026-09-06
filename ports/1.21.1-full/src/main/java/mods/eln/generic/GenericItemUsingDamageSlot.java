@@ -2,8 +2,8 @@ package mods.eln.generic;
 
 import mods.eln.gui.ISlotWithComment;
 import mods.eln.gui.SlotWithSkin;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 
@@ -16,7 +16,7 @@ public class GenericItemUsingDamageSlot extends SlotWithSkin implements ISlotWit
     Class[] descriptorClassList;
     int stackLimit;
 
-    public GenericItemUsingDamageSlot(IInventory inventory, int slot, int x, int y,
+    public GenericItemUsingDamageSlot(Container inventory, int slot, int x, int y,
                                       int stackLimit, Class[] descriptorClassList, SlotSkin skin, String[] comment) {
         super(inventory, slot, x, y, skin);
         this.stackLimit = stackLimit;
@@ -24,7 +24,7 @@ public class GenericItemUsingDamageSlot extends SlotWithSkin implements ISlotWit
         this.comment = comment;
     }
 
-    public GenericItemUsingDamageSlot(IInventory inventory, int slot, int x, int y,
+    public GenericItemUsingDamageSlot(Container inventory, int slot, int x, int y,
                                       int stackLimit, Class descriptorClassList, SlotSkin skin, String[] comment) {
         super(inventory, slot, x, y, skin);
         this.stackLimit = stackLimit;

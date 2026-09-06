@@ -1,6 +1,6 @@
 package mods.eln.node;
 
-import net.minecraft.block.Block;
+import net.minecraft.world.level.block.Block;
 
 public class NodeBlockItemWithSubTypes extends NodeBlockItem {
 

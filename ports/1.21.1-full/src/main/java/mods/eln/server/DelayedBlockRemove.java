@@ -3,7 +3,7 @@ package mods.eln.server;
 import mods.eln.Eln;
 import mods.eln.misc.Coordinate;
 import mods.eln.server.DelayedTaskManager.ITask;
-import net.minecraft.init.Blocks;
+import net.minecraft.world.level.block.Blocks;
 
 import java.util.HashSet;
 import java.util.Set;

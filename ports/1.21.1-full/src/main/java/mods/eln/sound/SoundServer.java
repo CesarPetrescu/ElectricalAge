@@ -3,7 +3,7 @@ package mods.eln.sound;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import mods.eln.Eln;
 import mods.eln.misc.Utils;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.MinecraftServer;
 
 import java.io.ByteArrayOutputStream;
@@ -37,7 +37,7 @@ public class SoundServer {
             MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
 
             for (Object obj : p.world.playerEntities) {
-                EntityPlayerMP player = (EntityPlayerMP) obj;
+                ServerPlayer player = (ServerPlayer) obj;
                 if (player.dimension == p.world.provider.getDimension() && player.getDistance(p.x, p.y, p.z) < p.rangeMax + 2)
                     ;
                 Utils.sendPacketToClient(bos, player);

@@ -1,15 +1,15 @@
 package mods.eln.misc;
 
 import mods.eln.node.NodeBlockEntity;
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
@@ -20,7 +20,7 @@ public class Coordinate implements INBTTReady {
     @Nonnull
     public BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(0, 0, 0);
     private int dimension = 0;
-    private World w = null;
+    private Level w = null;
 
     public Coordinate() {
     }
@@ -31,7 +31,7 @@ public class Coordinate implements INBTTReady {
         dimension = coord.dimension;
     }
 
-    public Coordinate(NBTTagCompound nbt, String str) {
+    public Coordinate(CompoundTag nbt, String str) {
         readFromNBT(nbt, str);
     }
 
@@ -46,7 +46,7 @@ public class Coordinate implements INBTTReady {
         this.dimension = dimension;
     }
 
-    public Coordinate(@Nonnull BlockPos o, @Nonnull World w) {
+    public Coordinate(@Nonnull BlockPos o, @Nonnull Level w) {
         pos.setPos(o.getX(), o.getY(), o.getZ());
         this.dimension = w.provider.getDimension();
     }
@@ -56,14 +56,14 @@ public class Coordinate implements INBTTReady {
         this.dimension = dimension;
     }
 
-    public Coordinate(int x, int y, int z, World world) {
+    public Coordinate(int x, int y, int z, Level world) {
         pos.setPos(x, y, z);
         dimension = world.provider.getDimension();
         if (world.isRemote)
             this.w = world;
     }
 
-    public Coordinate(TileEntity entity) {
+    public Coordinate(BlockEntity entity) {
         BlockPos o = entity.getPos();
         pos.setPos(o.getX(), o.getY(), o.getZ());
         dimension = entity.getWorld().provider.getDimension();
@@ -81,7 +81,7 @@ public class Coordinate implements INBTTReady {
         return dimension;
     }
 
-    public World world() {
+    public Level world() {
         if (w == null) {
             w = DimensionManager.getWorld(getDimension());
         }
@@ -100,7 +100,7 @@ public class Coordinate implements INBTTReady {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt, String str) {
+    public void readFromNBT(CompoundTag nbt, String str) {
         int x = nbt.getInteger(str + "x");
         int y = nbt.getInteger(str + "y");
         int z = nbt.getInteger(str + "z");
@@ -109,7 +109,7 @@ public class Coordinate implements INBTTReady {
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt, String str) {
+    public CompoundTag writeToNBT(CompoundTag nbt, String str) {
         nbt.setInteger(str + "x", pos.getX());
         nbt.setInteger(str + "y", pos.getY());
         nbt.setInteger(str + "z", pos.getZ());
@@ -132,12 +132,12 @@ public class Coordinate implements INBTTReady {
         return moved;
     }
 
-    public static AxisAlignedBB getAxisAlignedBB(Coordinate a, Coordinate b) {
-        return new AxisAlignedBB(a.pos, b.pos);
+    public static AABB getAxisAlignedBB(Coordinate a, Coordinate b) {
+        return new AABB(a.pos, b.pos);
     }
 
-    public AxisAlignedBB getAxisAlignedBB(int ray) {
-        return new AxisAlignedBB(
+    public AABB getAxisAlignedBB(int ray) {
+        return new AABB(
             new BlockPos(pos.getX() - ray, pos.getY() - ray, pos.getZ() - ray),
             new BlockPos(pos.getX() + ray + 1, pos.getY() + ray + 1, pos.getZ() + ray + 1));
     }
@@ -158,11 +158,11 @@ public class Coordinate implements INBTTReady {
         pos.setPos(vp[0], vp[1], vp[2]);
     }
 
-    public void setPosition(Vec3d vp) {
+    public void setPosition(Vec3 vp) {
         pos.setPos(vp.x, vp.y, vp.z);
     }
 
-    public TileEntity getTileEntity() {
+    public BlockEntity getTileEntity() {
         return world().getTileEntity(pos);
     }
 
@@ -188,7 +188,7 @@ public class Coordinate implements INBTTReady {
         pos.getZ() + o.getZ());
     }
 
-    public void setWorld(World world) {
+    public void setWorld(Level world) {
         if (world.isRemote)
             w = world;
         dimension = world.provider.getDimension();
@@ -202,7 +202,7 @@ public class Coordinate implements INBTTReady {
         return world().isAirBlock(pos);
     }
 
-    public IBlockState getBlockState() {
+    public BlockState getBlockState() {
         return world().getBlockState(pos);
     }
 

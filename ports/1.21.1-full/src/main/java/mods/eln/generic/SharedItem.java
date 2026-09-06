@@ -1,9 +1,9 @@
 package mods.eln.generic;
 
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraftforge.common.ISpecialArmor;
 
 public class SharedItem extends GenericItemUsingDamage<GenericItemUsingDamageDescriptor> implements ISpecialArmor {
@@ -24,18 +24,18 @@ public class SharedItem extends GenericItemUsingDamage<GenericItemUsingDamageDes
     }
 
     @Override
-    public ArmorProperties getProperties(EntityLivingBase player,
+    public ArmorProperties getProperties(LivingEntity player,
                                          ItemStack armor, DamageSource source, double damage, int slot) {
         return new ArmorProperties(10, 1.0, 10000);
     }
 
     @Override
-    public int getArmorDisplay(EntityPlayer player, ItemStack armor, int slot) {
+    public int getArmorDisplay(Player player, ItemStack armor, int slot) {
         return 4;
     }
 
     @Override
-    public void damageArmor(EntityLivingBase entity, ItemStack stack,
+    public void damageArmor(LivingEntity entity, ItemStack stack,
                             DamageSource source, int damage, int slot) {
     }
 }

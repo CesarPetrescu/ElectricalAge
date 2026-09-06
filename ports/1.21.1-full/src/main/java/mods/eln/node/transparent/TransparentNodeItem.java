@@ -6,17 +6,16 @@ import mods.eln.misc.Coordinate;
 import mods.eln.misc.Direction;
 import mods.eln.misc.Utils;
 import mods.eln.node.NodeBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.block.SoundType;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 public class TransparentNodeItem extends GenericItemBlockUsingDamage<TransparentNodeDescriptor> {
 
@@ -28,11 +27,11 @@ public class TransparentNodeItem extends GenericItemBlockUsingDamage<Transparent
 
 
     @Override
-    public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+    public InteractionResult onItemUse(Player player, Level world, BlockPos pos, InteractionHand hand, net.minecraft.core.Direction facing, float hitX, float hitY, float hitZ) {
         ItemStack stack = player.getHeldItem(hand);
-        if (stack.isEmpty()) return EnumActionResult.FAIL;
+        if (stack.isEmpty()) return InteractionResult.FAIL;
 
-        IBlockState iblockstate = world.getBlockState(pos);
+        BlockState iblockstate = world.getBlockState(pos);
         Block block = iblockstate.getBlock();
 
         if (!block.isReplaceable(world, pos)) {
@@ -41,7 +40,7 @@ public class TransparentNodeItem extends GenericItemBlockUsingDamage<Transparent
 
         if (player.canPlayerEdit(pos, facing, stack) && world.mayPlace(this.block, pos, false, facing, null)) {
             TransparentNodeDescriptor descriptor = getDescriptor(stack);
-            if (descriptor == null) return EnumActionResult.FAIL;
+            if (descriptor == null) return InteractionResult.FAIL;
 
             Direction direction = Direction.fromFacing(facing).getInverse();
             Direction front = descriptor.getFrontFromPlace(direction, player);
@@ -52,17 +51,17 @@ public class TransparentNodeItem extends GenericItemBlockUsingDamage<Transparent
             BlockPos adjustedPos = pos.add(v[0], v[1], v[2]);
 
             if (!world.getBlockState(adjustedPos).getBlock().isReplaceable(world, adjustedPos)) {
-                return EnumActionResult.FAIL;
+                return InteractionResult.FAIL;
             }
 
             Coordinate coord = new Coordinate(adjustedPos, world);
             String error = descriptor.checkCanPlace(coord, front);
             if (error != null) {
                 if (!world.isRemote) Utils.sendMessage(player, error);
-                return EnumActionResult.FAIL;
+                return InteractionResult.FAIL;
             }
 
-            if (world.isRemote) return EnumActionResult.SUCCESS;
+            if (world.isRemote) return InteractionResult.SUCCESS;
 
             // Plot ghosts
             GhostGroup ghostgroup = descriptor.getGhostGroup(front);
@@ -74,26 +73,26 @@ public class TransparentNodeItem extends GenericItemBlockUsingDamage<Transparent
 
             // Set block state
             int metadata = node.getBlockMetadata();
-            IBlockState newState = this.block.getStateFromMeta(metadata);
+            BlockState newState = this.block.getStateFromMeta(metadata);
             if (world.setBlockState(adjustedPos, newState, 3)) {
                 // Play placement sound
                 SoundType soundtype = this.block.getSoundType(newState, world, adjustedPos, player);
-                world.playSound(player, adjustedPos, soundtype.getPlaceSound(), SoundCategory.BLOCKS, (soundtype.getVolume() + 1.0F) / 2.0F, soundtype.getPitch() * 0.8F);
+                world.playSound(player, adjustedPos, soundtype.getPlaceSound(), SoundSource.BLOCKS, (soundtype.getVolume() + 1.0F) / 2.0F, soundtype.getPitch() * 0.8F);
                 
                 // Notify block
                 ((NodeBlock) this.block).onBlockPlacedBy(world, adjustedPos, front, player, newState);
                 
                 stack.shrink(1);
                 node.checkCanStay(true);
-                return EnumActionResult.SUCCESS;
+                return InteractionResult.SUCCESS;
             }
         }
 
-        return EnumActionResult.FAIL;
+        return InteractionResult.FAIL;
     }
 
     @Override
-    public boolean placeBlockAt(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumFacing side, float hitX, float hitY, float hitZ, IBlockState state) {
+    public boolean placeBlockAt(ItemStack stack, Player player, Level world, BlockPos pos, net.minecraft.core.Direction side, float hitX, float hitY, float hitZ, BlockState state) {
         // Handled in onItemUse
         return false;
     }

@@ -4,14 +4,14 @@ import mods.eln.generic.GenericItemBlockUsingDamageDescriptor;
 import mods.eln.ghost.GhostGroup;
 import mods.eln.misc.*;
 import mods.eln.node.transparent.TransparentNode.FrontType;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockHopper;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.HopperBlock;
 import net.minecraft.block.BlockStone;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import org.lwjgl.opengl.GL11;
 
 import java.util.List;
@@ -109,7 +109,7 @@ public class TransparentNodeDescriptor extends GenericItemBlockUsingDamageDescri
             Coordinate temp = new Coordinate(coord);
             temp.move(Direction.YN);
             block = temp.getBlockState().getBlock();
-            if (block == null || ((!block.isOpaqueCube(temp.getBlockState())) && block instanceof BlockHopper == false))
+            if (block == null || ((!block.isOpaqueCube(temp.getBlockState())) && block instanceof HopperBlock == false))
                 return tr("You can't place this block at this side");
         }
         if (mustHaveCeiling()) {
@@ -153,7 +153,7 @@ public class TransparentNodeDescriptor extends GenericItemBlockUsingDamageDescri
     }
 
 
-    public Direction getFrontFromPlace(Direction side, EntityLivingBase entityLiving) {
+    public Direction getFrontFromPlace(Direction side, LivingEntity entityLiving) {
         Direction front = Direction.XN;
         switch (getFrontType()) {
             case BlockSide:
@@ -201,8 +201,8 @@ public class TransparentNodeDescriptor extends GenericItemBlockUsingDamageDescri
         return 0;
     }
 
-    public void addCollisionBoxesToList(AxisAlignedBB par5AxisAlignedBB, List<AxisAlignedBB> list, BlockPos pos) {
-        AxisAlignedBB bb = new AxisAlignedBB(pos);
+    public void addCollisionBoxesToList(AABB par5AxisAlignedBB, List<AABB> list, BlockPos pos) {
+        AABB bb = new AABB(pos);
         if (par5AxisAlignedBB.intersects(bb)) list.add(bb);
     }
 

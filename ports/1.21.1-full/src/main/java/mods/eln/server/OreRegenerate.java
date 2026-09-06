@@ -2,16 +2,16 @@ package mods.eln.server;
 
 import mods.eln.init.Config;
 import mods.eln.init.ModBlock;
-import net.minecraft.block.Block;
+import net.minecraft.world.level.block.Block;
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent;
 import mods.eln.misc.Utils;
-import net.minecraft.world.WorldServer;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.world.ChunkEvent;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.level.ChunkEvent;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -22,8 +22,8 @@ public class OreRegenerate {
     HashSet<ChunkRef> alreadyLoadedChunks = new HashSet<>();
 
     public OreRegenerate() {
-        MinecraftForge.EVENT_BUS.register(this);
-        MinecraftForge.EVENT_BUS.register(this);
+        NeoForge.EVENT_BUS.register(this);
+        NeoForge.EVENT_BUS.register(this);
     }
 
     static class ChunkRef {
@@ -62,8 +62,8 @@ public class OreRegenerate {
                 ChunkRef j = jobs.pollLast();
                 if (!Config.INSTANCE.getForceOreRegen()) return;
 
-                WorldServer server = FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(j.worldId);
-                Chunk chunk = server.getChunk(j.x, j.z);
+                ServerLevel server = FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(j.worldId);
+                LevelChunk chunk = server.getChunk(j.x, j.z);
 
                 for (int y = 0; y < 60; y += 2) {
                     for (int z = y & 1; z < 16; z += 2) {
@@ -91,7 +91,7 @@ public class OreRegenerate {
     public void chunkLoad(ChunkEvent.Load e) {
         //	if (e.world.isRemote == false) Utils.println("Chunk loaded!");
         if (e.getWorld().isRemote || (!Config.INSTANCE.getForceOreRegen())) return;
-        Chunk c = e.getChunk();
+        LevelChunk c = e.getChunk();
         ChunkRef ref = new ChunkRef(c.x, c.z, c.getWorld().provider.getDimension());
         if (alreadyLoadedChunks.contains(ref)) {
             Utils.println("Already regenerated!");

@@ -6,13 +6,12 @@ import mods.eln.misc.Direction;
 import mods.eln.misc.Utils;
 import mods.eln.sixnode.wirelesssignal.WirelessUtils.WirelessSignalSpot;
 import mods.eln.sixnode.wirelesssignal.aggregator.BiggerAggregator;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,8 +24,8 @@ public class WirelessSignalAnalyserItemDescriptor extends GenericItemUsingDamage
     }
 
     @Override
-    public EnumActionResult onItemUse(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing side, float vx, float vy, float vz) {
-        if (world.isRemote) return EnumActionResult.PASS;
+    public InteractionResult onItemUse(ItemStack stack, Player player, Level world, BlockPos pos, InteractionHand hand, net.minecraft.core.Direction side, float vx, float vy, float vz) {
+        if (world.isRemote) return InteractionResult.PASS;
         Utils.sendMessage(player, "-------------------");
         Direction dir = Direction.fromFacing(side);
         Coordinate c = new Coordinate(pos, world);
@@ -61,6 +60,6 @@ public class WirelessSignalAnalyserItemDescriptor extends GenericItemUsingDamage
 		if (list.size() == 0) {
 			Utils.sendMessage(player, "No wireless signal in area!");
 		}*/
-        return EnumActionResult.PASS;
+        return InteractionResult.PASS;
     }
 }

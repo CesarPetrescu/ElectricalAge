@@ -1,12 +1,12 @@
 package mods.eln.misc;
 
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.ISidedInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 
-public class FakeSideInventory implements ISidedInventory {
+public class FakeSideInventory implements WorldlyContainer {
 
     static private final FakeSideInventory instance = new FakeSideInventory();
 
@@ -54,7 +54,7 @@ public class FakeSideInventory implements ISidedInventory {
     }
 
     @Override
-    public ITextComponent getDisplayName() {
+    public Component getDisplayName() {
         return null;
     }
 
@@ -68,17 +68,17 @@ public class FakeSideInventory implements ISidedInventory {
     }
 
     @Override
-    public boolean isUsableByPlayer(EntityPlayer player) {
+    public boolean isUsableByPlayer(Player player) {
         return false;
     }
 
     @Override
-    public void openInventory(EntityPlayer var1) {
+    public void openInventory(Player var1) {
 
     }
 
     @Override
-    public void closeInventory(EntityPlayer var1) {
+    public void closeInventory(Player var1) {
 
     }
 
@@ -108,17 +108,17 @@ public class FakeSideInventory implements ISidedInventory {
     }
 
     @Override
-    public int[] getSlotsForFace(EnumFacing var1) {
+    public int[] getSlotsForFace(Direction var1) {
         return new int[]{};
     }
 
     @Override
-    public boolean canInsertItem(int var1, ItemStack var2, EnumFacing var3) {
+    public boolean canInsertItem(int var1, ItemStack var2, Direction var3) {
         return false;
     }
 
     @Override
-    public boolean canExtractItem(int var1, ItemStack var2, EnumFacing var3) {
+    public boolean canExtractItem(int var1, ItemStack var2, Direction var3) {
         return false;
     }
 }

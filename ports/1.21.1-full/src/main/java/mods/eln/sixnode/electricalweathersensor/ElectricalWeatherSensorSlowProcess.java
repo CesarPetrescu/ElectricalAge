@@ -4,8 +4,8 @@ import mods.eln.misc.Coordinate;
 import mods.eln.misc.INBTTReady;
 import mods.eln.misc.RcInterpolator;
 import mods.eln.sim.IProcess;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.world.World;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.Level;
 
 public class ElectricalWeatherSensorSlowProcess implements IProcess, INBTTReady {
 
@@ -31,7 +31,7 @@ public class ElectricalWeatherSensorSlowProcess implements IProcess, INBTTReady 
             float target = 0f;
 
             if (coord.doesWorldExist()) {
-                World world = coord.world();
+                Level world = coord.world();
 
                 if (world.isRaining()) {
                     //float f = Math.max(0f, (float)((premonitionTime - rain * time) / premonitionTime));
@@ -60,13 +60,13 @@ public class ElectricalWeatherSensorSlowProcess implements IProcess, INBTTReady 
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt, String str) {
+    public void readFromNBT(CompoundTag nbt, String str) {
         rc.setValue(nbt.getFloat(str + "rc"));
 
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt, String str) {
+    public CompoundTag writeToNBT(CompoundTag nbt, String str) {
         nbt.setFloat(str + "rc", rc.get());
         return nbt;
     }

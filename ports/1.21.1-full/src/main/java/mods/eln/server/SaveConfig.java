@@ -1,10 +1,10 @@
 package mods.eln.server;
 
 import mods.eln.Eln;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.world.storage.WorldSavedData;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.saveddata.SavedData;
 
-public class SaveConfig extends WorldSavedData {
+public class SaveConfig extends SavedData {
 
     public static SaveConfig instance;
 
@@ -21,7 +21,7 @@ public class SaveConfig extends WorldSavedData {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt) {
+    public void readFromNBT(CompoundTag nbt) {
         heatFurnaceFuel = nbt.getBoolean("heatFurnaceFuel");
         electricalLampAging = nbt.getBoolean("electricalLampAging");
         batteryAging = nbt.getBoolean("batteryAging");
@@ -32,7 +32,7 @@ public class SaveConfig extends WorldSavedData {
     }
 
     @Override
-        public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+        public CompoundTag writeToNBT(CompoundTag nbt) {
         nbt.setBoolean("heatFurnaceFuel", heatFurnaceFuel);
         nbt.setBoolean("electricalLampAging", electricalLampAging);
         nbt.setBoolean("batteryAging", batteryAging);

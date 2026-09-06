@@ -1,8 +1,8 @@
 package mods.eln.misc;
 
-import net.minecraft.network.INetHandler;
-import net.minecraft.network.Packet;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.PacketListener;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.FriendlyByteBuf;
 
 import java.nio.ByteBuffer;
 
@@ -52,14 +52,14 @@ public class ElnPacket implements Packet {
 	}*/
 
     @Override
-    public void processPacket(INetHandler arg0) {
+    public void processPacket(PacketListener arg0) {
     }
 
     @Override
-    public void readPacketData(PacketBuffer arg0) {
+    public void readPacketData(FriendlyByteBuf arg0) {
     }
 
     @Override
-    public void writePacketData(PacketBuffer arg0) {
+    public void writePacketData(FriendlyByteBuf arg0) {
     }
 }

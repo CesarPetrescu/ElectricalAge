@@ -1,8 +1,8 @@
 package mods.eln.item;
 
-import net.minecraft.item.ItemPickaxe;
+import net.minecraft.world.item.PickaxeItem;
 
-public class ItemPickaxeEln extends ItemPickaxe {
+public class ItemPickaxeEln extends PickaxeItem {
 
     public ItemPickaxeEln(ToolMaterial arg0) {
         super(arg0);

@@ -2,7 +2,7 @@ package mods.eln.simplenode.energyconverter;
 
 import cofh.api.energy.IEnergyReceiver;
 import mods.eln.Other;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 class EnergyConverterElnToOtherFireWallRf {
     // TODO(1.10): Fix RF conversion
@@ -12,7 +12,7 @@ class EnergyConverterElnToOtherFireWallRf {
         if (e.getNode() == null) return;
 
         EnergyConverterElnToOtherNode node = (EnergyConverterElnToOtherNode) e.getNode();
-        TileEntity tileEntity = node.getFront().getInverse().applyToTileEntity(e);
+        BlockEntity tileEntity = node.getFront().getInverse().applyToTileEntity(e);
 
         if (!(tileEntity instanceof IEnergyReceiver)) return;
         IEnergyReceiver receiver = (IEnergyReceiver) tileEntity;

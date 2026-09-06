@@ -18,13 +18,13 @@ import mods.eln.sim.nbt.NbtElectricalLoad;
 import mods.eln.sim.process.destruct.VoltageStateWatchDog;
 import mods.eln.sim.process.destruct.WorldExplosion;
 import mods.eln.sound.SoundCommand;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.core.BlockPos;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -152,7 +152,7 @@ public class TeleporterElement extends TransparentNodeElement implements ITelepo
     }
 
     @Override
-    public boolean onBlockActivated(EntityPlayer entityPlayer, Direction side,
+    public boolean onBlockActivated(Player entityPlayer, Direction side,
                                     float vx, float vy, float vz) {
 
         return false;
@@ -164,7 +164,7 @@ public class TeleporterElement extends TransparentNodeElement implements ITelepo
     private double powerCharge = 2000;
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+    public CompoundTag writeToNBT(CompoundTag nbt) {
 
         super.writeToNBT(nbt);
 
@@ -177,7 +177,7 @@ public class TeleporterElement extends TransparentNodeElement implements ITelepo
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt) {
+    public void readFromNBT(CompoundTag nbt) {
 
         super.readFromNBT(nbt);
 
@@ -311,10 +311,10 @@ public class TeleporterElement extends TransparentNodeElement implements ITelepo
                 } else {
                     Coordinate c = getTeleportCoordinate();
                     double distance = getTeleportCoordinate().trueDistanceTo(target.getTeleportCoordinate());
-                    AxisAlignedBB bb = descriptor.getBB(node.coordinate, front);
-                    int playerCount = c.world().getEntitiesWithinAABB(EntityPlayer.class, bb).size();
-                    int itemCount = c.world().getEntitiesWithinAABB(EntityItem.class, bb).size();
-                    int petCount = c.world().getEntitiesWithinAABB(EntityLivingBase.class, bb).size() - playerCount;
+                    AABB bb = descriptor.getBB(node.coordinate, front);
+                    int playerCount = c.world().getEntitiesWithinAABB(Player.class, bb).size();
+                    int itemCount = c.world().getEntitiesWithinAABB(ItemEntity.class, bb).size();
+                    int petCount = c.world().getEntitiesWithinAABB(LivingEntity.class, bb).size() - playerCount;
                     // Object o = c.world().getEntitiesWithinAABB(EntityItem.class,bb);
                     energyTarget = 10000 +
                         40000 * playerCount +
@@ -424,7 +424,7 @@ public class TeleporterElement extends TransparentNodeElement implements ITelepo
                     }
                     if (powerLoad.getU() < descriptor.cable.electricalNominalVoltage * 0.8) {
                         sendIdToAllClient(eventInstablePowerSupply);
-                        AxisAlignedBB bb = descriptor.getBB(node.coordinate, front);
+                        AABB bb = descriptor.getBB(node.coordinate, front);
                         List list = node.coordinate.world().getEntitiesWithinAABB(Entity.class, bb);
                         for (Object o : list) {
                             Entity e = (Entity) o;
@@ -463,7 +463,7 @@ public class TeleporterElement extends TransparentNodeElement implements ITelepo
                     timeCounter += time;
                     if (timeCounter > 0) {
 
-                        AxisAlignedBB bb = descriptor.getBB(node.coordinate, front);
+                        AABB bb = descriptor.getBB(node.coordinate, front);
                         List list = node.coordinate.world().getEntitiesWithinAABB(Entity.class, bb);
                         for (Object o : list) {
                             Entity e = (Entity) o;

@@ -4,7 +4,7 @@ import mods.eln.Eln;
 import mods.eln.init.Cable;
 import mods.eln.misc.INBTTReady;
 import mods.eln.sim.nbt.NbtElectricalGateInput;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundTag;
 
 public abstract class NodeElectricalGateInputHysteresisProcess implements IProcess, INBTTReady {
 
@@ -36,12 +36,12 @@ public abstract class NodeElectricalGateInputHysteresisProcess implements IProce
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt, String str) {
+    public void readFromNBT(CompoundTag nbt, String str) {
         state = nbt.getBoolean(str + name + "state");
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt, String str) {
+    public CompoundTag writeToNBT(CompoundTag nbt, String str) {
         nbt.setBoolean(str + name + "state", state);
         return nbt;
     }

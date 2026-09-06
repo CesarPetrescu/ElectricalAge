@@ -5,33 +5,33 @@ import mods.eln.misc.Utils;
 import mods.eln.node.NodeBase;
 import mods.eln.node.NodeBlock;
 import mods.eln.node.NodeBlockEntity;
-import net.minecraft.block.Block;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.state.BlockStateContainer;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.Item;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumBlockRenderType;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Random;
 
-import net.minecraft.block.properties.PropertyInteger;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 
 public class TransparentNodeBlock extends NodeBlock {
 
-    public static final PropertyInteger META = PropertyInteger.create("meta", 0, 15);
+    public static final IntegerProperty META = IntegerProperty.create("meta", 0, 15);
 
     public TransparentNodeBlock(Material material,
                                 Class tileEntityClass) {
@@ -40,17 +40,17 @@ public class TransparentNodeBlock extends NodeBlock {
     }
 
     @Override
-    protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, META);
+    protected StateDefinition createBlockState() {
+        return new StateDefinition(this, META);
     }
 
     @Override
-    public IBlockState getStateFromMeta(int meta) {
+    public BlockState getStateFromMeta(int meta) {
         return getDefaultState().withProperty(META, meta);
     }
 
     @Override
-    public int getMetaFromState(IBlockState state) {
+    public int getMetaFromState(BlockState state) {
         return state.getValue(META);
     }
 
@@ -73,7 +73,7 @@ public class TransparentNodeBlock extends NodeBlock {
 */
 
     @Override
-    public boolean isOpaqueCube(IBlockState state) {
+    public boolean isOpaqueCube(BlockState state) {
         return false;
     }
 
@@ -84,14 +84,14 @@ public class TransparentNodeBlock extends NodeBlock {
 
 
     @Override
-    public boolean removedByPlayer(IBlockState state, World world, BlockPos pos, EntityPlayer entityPlayer, boolean willHarvest) {
+    public boolean removedByPlayer(BlockState state, Level world, BlockPos pos, Player entityPlayer, boolean willHarvest) {
         if (!world.isRemote) {
             NodeBlockEntity entity = (NodeBlockEntity) world.getTileEntity(pos);
             if (entity != null) {
                 NodeBase nodeBase = entity.getNode();
                 if (nodeBase instanceof TransparentNode) {
                     TransparentNode t = (TransparentNode) nodeBase;
-                    t.removedByPlayer = (EntityPlayerMP) entityPlayer;
+                    t.removedByPlayer = (ServerPlayer) entityPlayer;
                 }
             }
         }
@@ -112,7 +112,7 @@ public class TransparentNodeBlock extends NodeBlock {
 
     @Nullable
     @Override
-    public Item getItemDropped(IBlockState state, Random rand, int fortune) {
+    public Item getItemDropped(BlockState state, Random rand, int fortune) {
         return null;
     }
 
@@ -120,8 +120,8 @@ public class TransparentNodeBlock extends NodeBlock {
         return 0;
     }
 
-    public void addCollisionBoxesToList(World world, BlockPos pos, AxisAlignedBB par5AxisAlignedBB, List list, Entity entity) {
-        TileEntity tileEntity = world.getTileEntity(pos);
+    public void addCollisionBoxesToList(Level world, BlockPos pos, AABB par5AxisAlignedBB, List list, Entity entity) {
+        BlockEntity tileEntity = world.getTileEntity(pos);
         if ((!(tileEntity instanceof TransparentNodeEntity))) {
             addCollisionBoxToList(pos, entity.getCollisionBoundingBox(), list, par5AxisAlignedBB);
         } else {
@@ -130,11 +130,11 @@ public class TransparentNodeBlock extends NodeBlock {
     }
 
     @Override
-    public TileEntity createTileEntity(World var1, IBlockState state) {
+    public BlockEntity createTileEntity(Level var1, BlockState state) {
         try {
             for (EntityMetaTag tag : EntityMetaTag.values()) {
                 if (tag.meta == state.getBlock().getMetaFromState(state)) {
-                    return (TileEntity) tag.cls.getConstructor().newInstance();
+                    return (BlockEntity) tag.cls.getConstructor().newInstance();
                 }
             }
             // Sadly, this will happen a lot with pre-metatag worlds.
@@ -142,7 +142,7 @@ public class TransparentNodeBlock extends NodeBlock {
             // serious downside to getting the wrong subclass so long as they really
             // wanted the superclass.
             System.out.println("Unknown block meta-tag: " + state.getBlock().getMetaFromState(state));
-            return (TileEntity) EntityMetaTag.Basic.cls.getConstructor().newInstance();
+            return (BlockEntity) EntityMetaTag.Basic.cls.getConstructor().newInstance();
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             e.printStackTrace();
         }

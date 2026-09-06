@@ -11,16 +11,16 @@ import mods.eln.sim.ElectricalConnection;
 import mods.eln.sim.ElectricalLoad;
 import mods.eln.sim.ThermalConnection;
 import mods.eln.sim.ThermalLoad;
-import net.minecraft.block.Block;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.chunk.LevelChunk;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -78,7 +78,7 @@ public class SixNode extends Node {
         lrduElementMask.clear();
     }
 
-    public boolean createSubBlock(ItemStack itemStack, Direction direction, EntityPlayer player) {
+    public boolean createSubBlock(ItemStack itemStack, Direction direction, Player player) {
         SixNodeDescriptor descriptor = Eln.sixNodeItem.getDescriptor(itemStack);
         if (sideElementList[direction.getInt()] != null) {
             return false;
@@ -132,7 +132,7 @@ public class SixNode extends Node {
 	    }*/
 
 
-    public boolean playerAskToBreakSubBlock(EntityPlayerMP entityPlayer, Direction direction) {
+    public boolean playerAskToBreakSubBlock(ServerPlayer entityPlayer, Direction direction) {
         if (sideElementList[direction.getInt()] == null) {
             return deleteSubBlock(entityPlayer, direction);
         }
@@ -147,7 +147,7 @@ public class SixNode extends Node {
 
     }
 
-    public boolean deleteSubBlock(EntityPlayerMP entityPlayer, Direction direction) {
+    public boolean deleteSubBlock(ServerPlayer entityPlayer, Direction direction) {
         if (sideElementList[direction.getInt()] == null) {
             return false;
         }
@@ -174,7 +174,7 @@ public class SixNode extends Node {
         return false;
     }
 
-    public void readFromNBT(NBTTagCompound nbt) {
+    public void readFromNBT(CompoundTag nbt) {
         super.readFromNBT(nbt.getCompoundTag("node"));
 
         sixNodeCacheBlock = Block.getBlockById(nbt.getInteger("cacheBlockId"));
@@ -224,7 +224,7 @@ public class SixNode extends Node {
         return false;
     }
 
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+    public CompoundTag writeToNBT(CompoundTag nbt) {
         int idx = 0;
         nbt.setInteger("cacheBlockId", Block.getIdFromBlock(sixNodeCacheBlock));
         nbt.setByte("cacheBlockMeta", sixNodeCacheBlockMeta);
@@ -240,7 +240,7 @@ public class SixNode extends Node {
             idx++;
         }
 
-        NBTTagCompound nodeNbt = new NBTTagCompound();
+        CompoundTag nodeNbt = new CompoundTag();
         super.writeToNBT(nodeNbt);
         nbt.setTag("node", nodeNbt);
         return nbt;
@@ -330,7 +330,7 @@ public class SixNode extends Node {
     }
 
     @Override
-    public void initializeFromThat(Direction front, EntityLivingBase entityLiving,
+    public void initializeFromThat(Direction front, LivingEntity entityLiving,
                                    ItemStack itemStack) {
         neighborBlockRead();
 
@@ -476,7 +476,7 @@ public class SixNode extends Node {
         lrduElementMask.set(elementSide, elementSide.getLRDUGoingTo(side), false);
     }
 
-    public boolean onBlockActivated(EntityPlayer entityPlayer, Direction side, float vx, float vy, float vz) {
+    public boolean onBlockActivated(Player entityPlayer, Direction side, float vx, float vy, float vz) {
         if (sixNodeCacheBlock != Blocks.AIR) {
             return false;
         } else {
@@ -507,7 +507,7 @@ public class SixNode extends Node {
 
             if (accepted) {
                 setNeedPublish(true);
-                if (Utils.isCreative((EntityPlayerMP) entityPlayer) == false)
+                if (Utils.isCreative((ServerPlayer) entityPlayer) == false)
                     entityPlayer.inventory.decrStackSize(entityPlayer.inventory.currentItem, 1);
 
                 //if(sixNodeCacheMapId != sixNodeCacheMapIdOld)
@@ -538,13 +538,13 @@ public class SixNode extends Node {
         return sideElementList[side.getInt()].hasGui();
     }
 
-    public IInventory getInventory(Direction side) {
+    public Container getInventory(Direction side) {
         if (sideElementList[side.getInt()] == null)
             return null;
         return sideElementList[side.getInt()].getInventory();
     }
 
-    public Container newContainer(Direction side, EntityPlayer player) {
+    public AbstractContainerMenu newContainer(Direction side, Player player) {
         if (sideElementList[side.getInt()] == null)
             return null;
         return sideElementList[side.getInt()].newContainer(side, player);
@@ -567,7 +567,7 @@ public class SixNode extends Node {
     }
 
     @Override
-    public void networkUnserialize(DataInputStream stream, EntityPlayerMP player) {
+    public void networkUnserialize(DataInputStream stream, ServerPlayer player) {
         super.networkUnserialize(stream, player);
 
         Direction side;

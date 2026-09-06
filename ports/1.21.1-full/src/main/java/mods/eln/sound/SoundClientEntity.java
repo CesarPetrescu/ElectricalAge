@@ -2,17 +2,17 @@ package mods.eln.sound;
 
 import mods.eln.client.IUuidEntity;
 import mods.eln.misc.Utils;
-import net.minecraft.client.audio.ISound;
-import net.minecraft.client.audio.SoundManager;
+import net.minecraft.client.resources.sounds.SoundInstance;
+import net.minecraft.client.sounds.SoundEngine;
 
 public class SoundClientEntity implements IUuidEntity {
 
-    public ISound sound;
-    public SoundManager sm;
+    public SoundInstance sound;
+    public SoundEngine sm;
 
     int borneTimer = 5;
 
-    public SoundClientEntity(SoundManager sm, ISound sound) {
+    public SoundClientEntity(SoundEngine sm, SoundInstance sound) {
         this.sound = sound;
         this.sm = sm;
     }

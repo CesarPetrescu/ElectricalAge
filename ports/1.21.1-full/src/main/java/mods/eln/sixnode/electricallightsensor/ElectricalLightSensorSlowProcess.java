@@ -3,9 +3,9 @@ package mods.eln.sixnode.electricallightsensor;
 import mods.eln.misc.Coordinate;
 import mods.eln.misc.Utils;
 import mods.eln.sim.IProcess;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.EnumSkyBlock;
-import net.minecraft.world.World;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.Level;
 
 public class ElectricalLightSensorSlowProcess implements IProcess {
 
@@ -30,10 +30,10 @@ public class ElectricalLightSensorSlowProcess implements IProcess {
             Coordinate coord = element.sixNode.coordinate;
             //int light = coord.world().getSavedLightValue(EnumSkyBlock.Sky, coord.x, coord.y, coord.z) - coord.world().skylightSubtracted;
             //	Utils.println("Light : " + light);
-            World world = coord.world();
+            Level world = coord.world();
             //if(element.descriptor.dayLightOnly) {
             if (world.provider.hasSkyLight()) {
-                int i1 = Utils.getLight(world, EnumSkyBlock.SKY, coord.pos) - world.getSkylightSubtracted();
+                int i1 = Utils.getLight(world, LightLayer.SKY, coord.pos) - world.getSkylightSubtracted();
                 i1 = Math.max(0, i1);
                 float f = world.getCelestialAngleRadians(1.0F);
 
@@ -43,7 +43,7 @@ public class ElectricalLightSensorSlowProcess implements IProcess {
                     f += (((float) Math.PI * 2F) - f) * 0.2F;
                 }
 
-                i1 = Math.round((float) i1 * MathHelper.cos(f));
+                i1 = Math.round((float) i1 * Mth.cos(f));
 
                 if (i1 < 0) {
                     i1 = 0;
@@ -59,7 +59,7 @@ public class ElectricalLightSensorSlowProcess implements IProcess {
             if (!element.descriptor.dayLightOnly) {
                 // light = Math.max(light, (int)(world.getBlockLightValue(coord.x, coord.y, coord.z)));
                 //light = 0;
-                light = Math.max(light, Utils.getLight(world, EnumSkyBlock.BLOCK, coord.pos));
+                light = Math.max(light, Utils.getLight(world, LightLayer.BLOCK, coord.pos));
             }
             element.outputGateProcess.setOutputNormalized(light / 15.0);
         }

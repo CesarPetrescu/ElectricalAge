@@ -7,13 +7,13 @@ import mods.eln.misc.Obj3D.Obj3DPart;
 import mods.eln.node.transparent.TransparentNodeDescriptor;
 import mods.eln.sim.ElectricalLoad;
 import mods.eln.wiki.Data;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import org.lwjgl.opengl.GL11;
 
 import java.util.List;
@@ -66,7 +66,7 @@ public class SolarPanelDescriptor extends TransparentNodeDescriptor {
     }
 
 
-    public void setParent(net.minecraft.item.Item item, int damage) {
+    public void setParent(net.minecraft.world.item.Item item, int damage) {
         super.setParent(item, damage);
         Data.addEnergy(newItemStack());
     }
@@ -94,7 +94,7 @@ public class SolarPanelDescriptor extends TransparentNodeDescriptor {
     }
 
     @Override
-    public Direction getFrontFromPlace(Direction side, EntityLivingBase entityLiving) {
+    public Direction getFrontFromPlace(Direction side, LivingEntity entityLiving) {
         Direction front = super.getFrontFromPlace(side, entityLiving);
         if (groundCoordinate != null) {
             // For large panels, restrict to Z axis (North/South) to allow flipping but prevent 90-degree rotation
@@ -135,7 +135,7 @@ public class SolarPanelDescriptor extends TransparentNodeDescriptor {
 //    }
 
     @Override
-    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List list, boolean par4) {
+    public void addInformation(ItemStack itemStack, Player entityPlayer, List list, boolean par4) {
         super.addInformation(itemStack, entityPlayer, list, par4);
 
         list.add(tr("Produces power fromFacing solar radiation."));
@@ -145,12 +145,12 @@ public class SolarPanelDescriptor extends TransparentNodeDescriptor {
     }
 
     @Override
-    public void addCollisionBoxesToList(AxisAlignedBB par5AxisAlignedBB, List list, BlockPos pos) {
+    public void addCollisionBoxesToList(AABB par5AxisAlignedBB, List list, BlockPos pos) {
         if (canRotate) {
             super.addCollisionBoxesToList(par5AxisAlignedBB, list, pos);
             return;
         }
-        AxisAlignedBB bb = new AxisAlignedBB(pos).setMaxY(0.5);
+        AABB bb = new AABB(pos).setMaxY(0.5);
         if (par5AxisAlignedBB.intersects(bb)) list.add(bb);
     }
 }

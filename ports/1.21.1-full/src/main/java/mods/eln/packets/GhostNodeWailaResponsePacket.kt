@@ -3,7 +3,7 @@ package mods.eln.packets
 import io.netty.buffer.ByteBuf
 import mods.eln.misc.Coordinate
 import mods.eln.misc.Direction
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import net.minecraftforge.fml.common.network.ByteBufUtils
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage
 

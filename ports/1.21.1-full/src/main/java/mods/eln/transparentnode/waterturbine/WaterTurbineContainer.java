@@ -4,15 +4,15 @@ package mods.eln.transparentnode.waterturbine;
 import mods.eln.misc.BasicContainer;
 import mods.eln.node.INodeContainer;
 import mods.eln.node.NodeBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.Slot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
+import net.minecraft.world.inventory.Slot;
 
 public class WaterTurbineContainer extends BasicContainer implements INodeContainer {
 
     NodeBase node = null;
 
-    public WaterTurbineContainer(NodeBase node, EntityPlayer player, IInventory inventory) {
+    public WaterTurbineContainer(NodeBase node, Player player, Container inventory) {
         super(player, inventory, new Slot[]{
             //new GenericItemUsingDamageSlot(inventory, windRotorSlotId, 62 +  0,17 + 0,1, WindRotorDescriptor.class,SlotSkin.medium,new String[]{"Wind rotor slot"}),
             //new GenericItemUsingDamageSlot(inventory, dynamoSlotId, 62 +  18,17 + 0,1, DynamoDescriptor.class,SlotSkin.medium,new String[]{"Dynamo slot"})

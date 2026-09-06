@@ -5,14 +5,14 @@ import mods.eln.generic.GenericItemUsingDamageDescriptor
 import mods.eln.i18n.I18N.tr
 import mods.eln.item.electricalinterface.IItemEnergyBattery
 import mods.eln.misc.Utils
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Blocks
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level
 
 open class ElectricalTool(name: String, private var strengthOn: Float, private var strengthOff: Float,
                           private var energyStorage: Double, private var energyPerBlock: Double, internal var chargePower: Double) : GenericItemUsingDamageDescriptor(name), IItemEnergyBattery {
@@ -20,20 +20,20 @@ open class ElectricalTool(name: String, private var strengthOn: Float, private v
     internal var light: Int = 0
     internal var range: Int = 0
 
-    override fun onEntitySwing(entityLiving: EntityLivingBase, stack: ItemStack): Boolean {
+    override fun onEntitySwing(entityLiving: LivingEntity, stack: ItemStack): Boolean {
         if (entityLiving.world.isRemote) return false
 
         Eln.itemEnergyInventoryProcess.addExclusion(this, 2.0)
         return super.onEntitySwing(entityLiving, stack)
     }
 
-    override fun onBlockDestroyed(stack: ItemStack, w: World, state: IBlockState, pos: BlockPos, entity: EntityLivingBase?): Boolean {
+    override fun onBlockDestroyed(stack: ItemStack, w: Level, state: BlockState, pos: BlockPos, entity: LivingEntity?): Boolean {
         subtractEnergyForBlockBreak(stack, state)
         Utils.println("destroy")
         return true
     }
 
-    fun subtractEnergyForBlockBreak(stack: ItemStack, state: IBlockState) {
+    fun subtractEnergyForBlockBreak(stack: ItemStack, state: BlockState) {
         if (getDestroySpeed(stack, state) == strengthOn) {
             var e = getEnergy(stack) - energyPerBlock
             if (e < 0) e = 0.0
@@ -45,15 +45,15 @@ open class ElectricalTool(name: String, private var strengthOn: Float, private v
         return if (getEnergy(stack) >= energyPerBlock) strengthOn else strengthOff
     }
 
-    override fun getDefaultNBT(): NBTTagCompound? {
-        val nbt = NBTTagCompound()
+    override fun getDefaultNBT(): CompoundTag? {
+        val nbt = CompoundTag()
         nbt.setDouble("energy", 0.0)
         nbt.setBoolean("powerOn", false)
         nbt.setInteger("rand", (Math.random() * 0xFFFFFFF).toInt())
         return nbt
     }
 
-    override fun addInformation(itemStack: ItemStack?, entityPlayer: EntityPlayer, list: MutableList<Any?>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack?, entityPlayer: Player, list: MutableList<Any?>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
 
         if (itemStack != null)

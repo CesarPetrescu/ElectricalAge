@@ -18,9 +18,9 @@ import mods.eln.sim.nbt.NbtElectricalGateOutputProcess;
 import mods.eln.sixnode.wirelesssignal.IWirelessSignalSpot;
 import mods.eln.sixnode.wirelesssignal.IWirelessSignalTx;
 import mods.eln.sixnode.wirelesssignal.WirelessUtils;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.nbt.CompoundTag;
 
 import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
@@ -163,7 +163,7 @@ public class ModbusRtuElement extends SixNodeElement implements IModbusSlave {
     }
 
     @Override
-    public void destroy(EntityPlayerMP entityPlayer) {
+    public void destroy(ServerPlayer entityPlayer) {
         super.destroy(entityPlayer);
         unregister();
     }
@@ -186,7 +186,7 @@ public class ModbusRtuElement extends SixNodeElement implements IModbusSlave {
     }
 
     @Override
-    public boolean onBlockActivated(EntityPlayer entityPlayer, Direction side, float vx, float vy, float vz) {
+    public boolean onBlockActivated(Player entityPlayer, Direction side, float vx, float vy, float vz) {
         if (Utils.isPlayerUsingWrench(entityPlayer)) {
             if (side.isY()) {
                 front = front.getNextClockwise();
@@ -299,7 +299,7 @@ public class ModbusRtuElement extends SixNodeElement implements IModbusSlave {
     }
 
     @Override
-    public void networkUnserialize(DataInputStream stream, EntityPlayerMP player) {
+    public void networkUnserialize(DataInputStream stream, ServerPlayer player) {
         super.networkUnserialize(stream, player);
         try {
             switch (stream.readByte()) {
@@ -457,7 +457,7 @@ public class ModbusRtuElement extends SixNodeElement implements IModbusSlave {
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+    public CompoundTag writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
         nbt.setInteger("station", station);
         nbt.setString("name", name);
@@ -481,7 +481,7 @@ public class ModbusRtuElement extends SixNodeElement implements IModbusSlave {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt) {
+    public void readFromNBT(CompoundTag nbt) {
         super.readFromNBT(nbt);
         station = nbt.getInteger("station");
         name = nbt.getString("name");

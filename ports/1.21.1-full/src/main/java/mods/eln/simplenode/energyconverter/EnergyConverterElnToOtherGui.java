@@ -4,7 +4,7 @@ import mods.eln.gui.GuiHelper;
 import mods.eln.gui.GuiScreenEln;
 import mods.eln.gui.GuiVerticalTrackBar;
 import mods.eln.gui.IGuiObject;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.world.entity.player.Player;
 
 import static mods.eln.i18n.I18N.tr;
 
@@ -13,7 +13,7 @@ public class EnergyConverterElnToOtherGui extends GuiScreenEln {
     EnergyConverterElnToOtherEntity render;
     GuiVerticalTrackBar voltage;
 
-    public EnergyConverterElnToOtherGui(EntityPlayer player, EnergyConverterElnToOtherEntity render) {
+    public EnergyConverterElnToOtherGui(Player player, EnergyConverterElnToOtherEntity render) {
         this.render = render;
     }
 

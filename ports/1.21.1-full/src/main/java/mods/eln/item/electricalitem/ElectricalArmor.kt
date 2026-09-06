@@ -6,28 +6,28 @@ import mods.eln.item.electricalinterface.IItemEnergyBattery
 import mods.eln.misc.Utils
 import mods.eln.wiki.Data
 import net.minecraft.client.util.ITooltipFlag
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.EntityEquipmentSlot
-import net.minecraft.item.ItemArmor
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.DamageSource
-import net.minecraft.world.World
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.entity.EquipmentSlot
+import net.minecraft.world.item.ArmorItem
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.world.level.Level
 import net.minecraftforge.common.ISpecialArmor
 
-class ElectricalArmor(materialIn: ItemArmor.ArmorMaterial,
+class ElectricalArmor(materialIn: ArmorItem.ArmorMaterial,
                       renderSlotIn: Int,
-                      equipmentSlotIn: EntityEquipmentSlot,
+                      equipmentSlotIn: EquipmentSlot,
                       private var energyStorage: Double,
                       internal var chargePower: Double,
                       private var ratioMax: Double,
                       private var ratioMaxEnergy: Double,
                       private var energyPerDamage: Double) : genericArmorItem(materialIn, renderSlotIn, equipmentSlotIn), IItemEnergyBattery, ISpecialArmor {
 
-    private val defaultNBT: NBTTagCompound
+    private val defaultNBT: CompoundTag
         get() {
-            val nbt = NBTTagCompound()
+            val nbt = CompoundTag()
             nbt.setDouble("energy", 0.0)
             nbt.setBoolean("powerOn", false)
             nbt.setInteger("rand", (Math.random() * 0xFFFFFFF).toInt())
@@ -38,15 +38,15 @@ class ElectricalArmor(materialIn: ItemArmor.ArmorMaterial,
         Data.addPortable(ItemStack(this))
     }
 
-    override fun getProperties(player: EntityLivingBase, armor: ItemStack, source: DamageSource, damage: Double, slot: Int): ISpecialArmor.ArmorProperties {
+    override fun getProperties(player: LivingEntity, armor: ItemStack, source: DamageSource, damage: Double, slot: Int): ISpecialArmor.ArmorProperties {
         return ISpecialArmor.ArmorProperties(100, Math.min(1.0, getEnergy(armor) / ratioMaxEnergy) * ratioMax, (getEnergy(armor) / energyPerDamage * 25.0).toInt())
     }
 
-    override fun getArmorDisplay(player: EntityPlayer, armor: ItemStack, slot: Int): Int {
+    override fun getArmorDisplay(player: Player, armor: ItemStack, slot: Int): Int {
         return (Math.min(1.0, getEnergy(armor) / ratioMaxEnergy) * ratioMax * 20.0).toInt()
     }
 
-    override fun damageArmor(entity: EntityLivingBase, stack: ItemStack, source: DamageSource, damage: Int, slot: Int) {
+    override fun damageArmor(entity: LivingEntity, stack: ItemStack, source: DamageSource, damage: Int, slot: Int) {
         var e = getEnergy(stack)
         e = Math.max(0.0, e - damage * energyPerDamage)
         setEnergy(stack, e)
@@ -61,15 +61,15 @@ class ElectricalArmor(materialIn: ItemArmor.ArmorMaterial,
         return false
     }
 
-    private fun getNbt(stack: ItemStack): NBTTagCompound {
-        val nbt: NBTTagCompound? = stack.tagCompound
+    private fun getNbt(stack: ItemStack): CompoundTag {
+        val nbt: CompoundTag? = stack.tagCompound
         if (nbt == null) {
             stack.tagCompound = defaultNBT
         }
         return stack.tagCompound!!
     }
 
-    override fun addInformation(stack: ItemStack, worldIn: World?, tooltip: MutableList<String>, flagIn: ITooltipFlag) {
+    override fun addInformation(stack: ItemStack, worldIn: Level?, tooltip: MutableList<String>, flagIn: ITooltipFlag) {
         super.addInformation(stack, worldIn, tooltip, flagIn)
         tooltip.add(tr("Charge power: %sW", chargePower.toInt()))
         tooltip.add(tr("Stored energy: %sJ (%s)", getEnergy(stack),

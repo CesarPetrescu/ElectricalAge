@@ -2,20 +2,20 @@ package mods.eln.misc;
 
 import mods.eln.gui.ISlotSkin.SlotSkin;
 import mods.eln.gui.SlotWithSkin;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.inventory.ClickType;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.Slot;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.Container;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-public class BasicContainer extends Container {
+public class BasicContainer extends AbstractContainerMenu {
 
-    protected IInventory inventory;
+    protected Container inventory;
 
-    public BasicContainer(EntityPlayer player, IInventory inventory, Slot[] slot) {
+    public BasicContainer(Player player, Container inventory, Slot[] slot) {
         this.inventory = inventory;
 
         for (int i = 0; i < slot.length; i++) {
@@ -26,11 +26,11 @@ public class BasicContainer extends Container {
     }
 
     @Override
-    public boolean canInteractWith(@NotNull EntityPlayer player) {
+    public boolean canInteractWith(@NotNull Player player) {
         return inventory.isUsableByPlayer(player);
     }
 
-    protected void bindPlayerInventory(InventoryPlayer inventoryPlayer) {
+    protected void bindPlayerInventory(Inventory inventoryPlayer) {
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 9; j++) {
                 addSlotToContainer(new SlotWithSkin(inventoryPlayer, j + i * 9 + 9, j * 18, i * 18, SlotSkin.medium));
@@ -51,7 +51,7 @@ public class BasicContainer extends Container {
         return super.addSlotToContainer(slot);
     }
 
-    public ItemStack transferStackInSlot(EntityPlayer player, int slotId) {
+    public ItemStack transferStackInSlot(Player player, int slotId) {
         ItemStack movedStack = ItemStack.EMPTY;
         Slot slot = this.inventorySlots.get(slotId);
         if (slot != null && slot.getHasStack()) {
@@ -85,7 +85,7 @@ public class BasicContainer extends Container {
     }
 
     @Override
-    public ItemStack slotClick(int arg0, int arg1, ClickType type, EntityPlayer arg3) {
+    public ItemStack slotClick(int arg0, int arg1, ClickType type, Player arg3) {
         if (arg0 >= this.inventorySlots.size()) {
             System.out.println("Damned !!! What happen ?");
             Utils.sendMessage(arg3, "Damn! Sorry, this is a debug");

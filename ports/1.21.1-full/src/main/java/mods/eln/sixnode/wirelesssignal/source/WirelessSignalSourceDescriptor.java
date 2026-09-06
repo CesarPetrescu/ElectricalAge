@@ -4,9 +4,9 @@ import mods.eln.misc.VoltageLevelColor;
 import mods.eln.node.six.SixNodeDescriptor;
 import mods.eln.sixnode.electricalgatesource.ElectricalGateSourceRenderObj;
 import mods.eln.wiki.Data;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.lwjgl.opengl.GL11;
 
 public class WirelessSignalSourceDescriptor extends SixNodeDescriptor {
@@ -26,7 +26,7 @@ public class WirelessSignalSourceDescriptor extends SixNodeDescriptor {
         voltageLevelColor = VoltageLevelColor.SignalVoltage;
     }
 
-    void draw(float factor, float distance, TileEntity e) {
+    void draw(float factor, float distance, BlockEntity e) {
         render.draw(factor, distance, e);
     }
 

@@ -2,20 +2,19 @@ package mods.eln.node;
 
 import mods.eln.misc.Direction;
 import mods.eln.misc.Utils;
-import net.minecraft.block.Block;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumBlockRenderType;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -37,32 +36,32 @@ public abstract class NodeBlock extends Block {//BlockContainer
     }
 
     @Override
-    public float getBlockHardness(IBlockState blockState, World worldIn, BlockPos pos) {
+    public float getBlockHardness(BlockState blockState, Level worldIn, BlockPos pos) {
         return 1.0f;
     }
 
     @Override
-    public int getWeakPower(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos, EnumFacing side) {
+    public int getWeakPower(BlockState blockState, BlockGetter blockAccess, BlockPos pos, net.minecraft.core.Direction side) {
         NodeBlockEntity entity = (NodeBlockEntity) blockAccess.getTileEntity(pos);
         if (entity == null) return 0;
         return entity.isProvidingWeakPower(Direction.fromFacing(side));
     }
 
     @Override
-    public boolean canConnectRedstone(IBlockState state, IBlockAccess world, BlockPos pos, EnumFacing side) {
+    public boolean canConnectRedstone(BlockState state, BlockGetter world, BlockPos pos, net.minecraft.core.Direction side) {
         NodeBlockEntity entity = (NodeBlockEntity) world.getTileEntity(pos);
         if (entity == null) return false;
         return entity.canConnectRedstone(Direction.fromFacing(side));
     }
 
     @Override
-    public boolean canProvidePower(IBlockState state) {
+    public boolean canProvidePower(BlockState state) {
 
         return super.canProvidePower(state);
     }
 
     @Override
-    public boolean isOpaqueCube(IBlockState state) {
+    public boolean isOpaqueCube(BlockState state) {
         return true;
     }
 
@@ -72,14 +71,14 @@ public abstract class NodeBlock extends Block {//BlockContainer
     }
 
     @Override
-    public EnumBlockRenderType getRenderType(IBlockState state) {
-        return EnumBlockRenderType.ENTITYBLOCK_ANIMATED;
+    public RenderShape getRenderType(BlockState state) {
+        return RenderShape.ENTITYBLOCK_ANIMATED;
     }
 
 
     @Override
-    public int getLightValue(IBlockState state, IBlockAccess world, BlockPos pos) {
-        final TileEntity entity = world.getTileEntity(pos);
+    public int getLightValue(BlockState state, BlockGetter world, BlockPos pos) {
+        final BlockEntity entity = world.getTileEntity(pos);
         if (entity == null || !(entity instanceof NodeBlockEntity)) return 0;
         NodeBlockEntity tileEntity = (NodeBlockEntity) entity;
         return tileEntity.getLightValue();
@@ -87,7 +86,7 @@ public abstract class NodeBlock extends Block {//BlockContainer
 
 
     //client server
-    public boolean onBlockPlacedBy(World world, BlockPos pos, Direction front, EntityLivingBase entityLiving, IBlockState state) {
+    public boolean onBlockPlacedBy(Level world, BlockPos pos, Direction front, LivingEntity entityLiving, BlockState state) {
 
         NodeBlockEntity tileEntity = (NodeBlockEntity) world.getTileEntity(pos);
 
@@ -96,7 +95,7 @@ public abstract class NodeBlock extends Block {//BlockContainer
     }
 
     @SideOnly(Side.SERVER)
-    public void onBlockAdded(World par1World, BlockPos pos) {
+    public void onBlockAdded(Level par1World, BlockPos pos) {
         if (!par1World.isRemote) {
             NodeBlockEntity entity = (NodeBlockEntity) par1World.getTileEntity(pos);
             entity.onBlockAdded();
@@ -105,7 +104,7 @@ public abstract class NodeBlock extends Block {//BlockContainer
 
 
     @Override
-    public void breakBlock(World world, BlockPos pos, IBlockState state) {
+    public void breakBlock(Level world, BlockPos pos, BlockState state) {
         if (!world.isRemote) {
             NodeBlockEntity entity = (NodeBlockEntity) world.getTileEntity(pos);
             if (entity != null) {
@@ -116,7 +115,7 @@ public abstract class NodeBlock extends Block {//BlockContainer
     }
 
     @Override
-    public void onNeighborChange(IBlockAccess world, BlockPos pos, BlockPos neighbor) {
+    public void onNeighborChange(BlockGetter world, BlockPos pos, BlockPos neighbor) {
         if (!Utils.isRemote(world)) {
             NodeBlockEntity entity = (NodeBlockEntity) world.getTileEntity(pos);
             entity.onNeighborBlockChange();
@@ -125,12 +124,12 @@ public abstract class NodeBlock extends Block {//BlockContainer
 
 
     @Override
-    public int damageDropped(IBlockState state) {
+    public int damageDropped(BlockState state) {
         return getMetaFromState(state);
     }
 
     //@SideOnly(Side.CLIENT)
-    public void getSubBlocks(int par1, CreativeTabs tab, List subItems) {
+    public void getSubBlocks(int par1, CreativeModeTab tab, List subItems) {
         for (int ix = 0; ix < blockItemNbr; ix++) {
             subItems.add(new ItemStack(this, 1, ix));
         }
@@ -138,21 +137,21 @@ public abstract class NodeBlock extends Block {//BlockContainer
 
     //client server
     @Override
-    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer entityPlayer, EnumHand hand, EnumFacing side, float vx, float vy, float vz) {
+    public boolean onBlockActivated(Level world, BlockPos pos, BlockState state, Player entityPlayer, InteractionHand hand, net.minecraft.core.Direction side, float vx, float vy, float vz) {
         NodeBlockEntity entity = (NodeBlockEntity) world.getTileEntity(pos);
 //    	entityPlayer.openGui( Eln.instance, 0,world,x ,y, z);
         return entity.onBlockActivated(entityPlayer, Direction.fromFacing(side), vx, vy, vz);
     }
 
     @Override
-    public boolean hasTileEntity(IBlockState state) {
+    public boolean hasTileEntity(BlockState state) {
         return true; // All NodeBlocks have tile entities
     }
 
     @Override
-    public TileEntity createTileEntity(World var1, IBlockState state) {
+    public BlockEntity createTileEntity(Level var1, BlockState state) {
         try {
-            TileEntity entity = (TileEntity) tileEntityClass.getConstructor().newInstance();
+            BlockEntity entity = (BlockEntity) tileEntityClass.getConstructor().newInstance();
             return entity;
         } catch (Exception e) {
             e.printStackTrace();

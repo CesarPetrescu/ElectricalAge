@@ -1,9 +1,9 @@
 package mods.eln.sixnode.electricalsensor;
 
 import mods.eln.gui.*;
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -16,7 +16,7 @@ public class ElectricalSensorGui extends GuiContainerEln {
     GuiTextFieldEln lowValue, highValue;
     ElectricalSensorRender render;
 
-    public ElectricalSensorGui(EntityPlayer player, IInventory inventory, ElectricalSensorRender render) {
+    public ElectricalSensorGui(Player player, Container inventory, ElectricalSensorRender render) {
         super(new ElectricalSensorContainer(player, inventory, render.descriptor));
         this.render = render;
     }

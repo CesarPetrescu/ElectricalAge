@@ -10,8 +10,8 @@ import mods.eln.sim.ElectricalConnection;
 import mods.eln.sim.ElectricalLoad;
 import mods.eln.sim.mna.misc.MnaConst;
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -43,7 +43,7 @@ public class GridLink implements INBTTReady {
         this.cable = cable;
     }
 
-    public GridLink(NBTTagCompound nbt, String str) {
+    public GridLink(CompoundTag nbt, String str) {
         readFromNBT(nbt, str);
     }
 
@@ -163,7 +163,7 @@ public class GridLink implements INBTTReady {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt, String str) {
+    public void readFromNBT(CompoundTag nbt, String str) {
         a.readFromNBT(nbt, str + "a");
         b.readFromNBT(nbt, str + "b");
         as = Direction.readFromNBT(nbt, str + "as");
@@ -173,7 +173,7 @@ public class GridLink implements INBTTReady {
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt, String str) {
+    public CompoundTag writeToNBT(CompoundTag nbt, String str) {
         a.writeToNBT(nbt, str + "a");
         b.writeToNBT(nbt, str + "b");
         as.writeToNBT(nbt, str + "as");

@@ -3,23 +3,22 @@ package mods.eln.node.simple;
 import mods.eln.misc.DescriptorBase;
 import mods.eln.misc.Direction;
 import mods.eln.misc.Utils;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockContainer;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 
-public abstract class SimpleNodeBlock extends BlockContainer {
+public abstract class SimpleNodeBlock extends BaseEntityBlock {
 
     protected SimpleNodeBlock(Material material) {
         super(material);
@@ -38,7 +37,7 @@ public abstract class SimpleNodeBlock extends BlockContainer {
     }
 
 
-    Direction getFrontForPlacement(EntityLivingBase e) {
+    Direction getFrontForPlacement(LivingEntity e) {
         return Utils.entityLivingViewDirection(e).getInverse();
     }
 
@@ -54,7 +53,7 @@ public abstract class SimpleNodeBlock extends BlockContainer {
     protected abstract SimpleNode newNode();
 
 
-    SimpleNode getNode(World world, BlockPos pos) {
+    SimpleNode getNode(Level world, BlockPos pos) {
         SimpleNodeEntity entity = (SimpleNodeEntity) world.getTileEntity(pos);
         if (entity != null) {
             return entity.getNode();
@@ -62,17 +61,17 @@ public abstract class SimpleNodeBlock extends BlockContainer {
         return null;
     }
 
-    public SimpleNodeEntity getEntity(World world, BlockPos pos) {
+    public SimpleNodeEntity getEntity(Level world, BlockPos pos) {
         SimpleNodeEntity entity = (SimpleNodeEntity) world.getTileEntity(pos);
         return entity;
     }
 
     @Override
-    public boolean removedByPlayer(IBlockState state, World world, BlockPos pos, EntityPlayer entityPlayer, boolean willHarvest) {
+    public boolean removedByPlayer(BlockState state, Level world, BlockPos pos, Player entityPlayer, boolean willHarvest) {
         if (!world.isRemote) {
             SimpleNode node = getNode(world, pos);
             if (node != null) {
-                node.removedByPlayer = (EntityPlayerMP) entityPlayer;
+                node.removedByPlayer = (ServerPlayer) entityPlayer;
             }
         }
         return super.removedByPlayer(state, world, pos, entityPlayer, willHarvest);
@@ -89,7 +88,7 @@ public abstract class SimpleNodeBlock extends BlockContainer {
 
     // server
     @Override
-    public void onBlockAdded(World par1World, BlockPos pos, IBlockState state) {
+    public void onBlockAdded(Level par1World, BlockPos pos, BlockState state) {
         if (!par1World.isRemote) {
             SimpleNodeEntity entity = (SimpleNodeEntity) par1World.getTileEntity(pos);
             entity.onBlockAdded();
@@ -98,7 +97,7 @@ public abstract class SimpleNodeBlock extends BlockContainer {
 
     // server
     @Override
-    public void breakBlock(World par1World, BlockPos pos, IBlockState state) {
+    public void breakBlock(Level par1World, BlockPos pos, BlockState state) {
         SimpleNodeEntity entity = (SimpleNodeEntity) par1World.getTileEntity(pos);
         entity.onBreakBlock();
         super.breakBlock(par1World, pos, state);
@@ -106,7 +105,7 @@ public abstract class SimpleNodeBlock extends BlockContainer {
     }
 
     @Override
-    public void onNeighborChange(IBlockAccess world, BlockPos pos, BlockPos neighbor) {
+    public void onNeighborChange(BlockGetter world, BlockPos pos, BlockPos neighbor) {
         if (!Utils.isRemote(world)) {
             SimpleNodeEntity entity = (SimpleNodeEntity) world.getTileEntity(pos);
             entity.onNeighborBlockChange();
@@ -116,7 +115,7 @@ public abstract class SimpleNodeBlock extends BlockContainer {
     // client server
 
     @Override
-    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+    public boolean onBlockActivated(Level world, BlockPos pos, BlockState state, Player playerIn, InteractionHand hand, net.minecraft.core.Direction facing, float hitX, float hitY, float hitZ) {
         SimpleNodeEntity entity = (SimpleNodeEntity) world.getTileEntity(pos);
         return entity.onBlockActivated(playerIn, Direction.fromFacing(facing), hitX, hitY, hitZ);
     }

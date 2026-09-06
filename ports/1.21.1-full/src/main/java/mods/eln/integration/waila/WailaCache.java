@@ -11,7 +11,7 @@ import mods.eln.packets.GhostNodeWailaRequestPacket;
 import mods.eln.packets.GhostNodeWailaResponsePacket;
 import mods.eln.packets.SixNodeWailaRequestPacket;
 import mods.eln.packets.TransparentNodeRequestPacket;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.HashMap;
 import java.util.Map;

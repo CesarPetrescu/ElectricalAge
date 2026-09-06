@@ -6,7 +6,7 @@ import mods.eln.misc.Coordinate;
 import mods.eln.misc.Utils;
 import mods.eln.sixnode.wirelesssignal.IWirelessSignalTx;
 import mods.eln.sixnode.wirelesssignal.tx.WirelessSignalTxElement;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundTag;
 
 public class ServerWirelessTxStatus extends WirelessTxStatus implements IWirelessSignalTx, IModbusSlot {
 
@@ -25,7 +25,7 @@ public class ServerWirelessTxStatus extends WirelessTxStatus implements IWireles
         rtu.mapping.add(this);
     }
 
-    public ServerWirelessTxStatus(NBTTagCompound nbt, String str, ModbusRtuElement rtu) {
+    public ServerWirelessTxStatus(CompoundTag nbt, String str, ModbusRtuElement rtu) {
         super();
         readFromNBT(nbt, str);
         this.coordinate = rtu.sixNode.coordinate;

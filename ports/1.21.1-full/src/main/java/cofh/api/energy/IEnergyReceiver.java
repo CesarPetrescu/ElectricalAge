@@ -1,6 +1,6 @@
 package cofh.api.energy;
 
-import net.minecraft.util.EnumFacing;
+import net.minecraft.core.Direction;
 
 /**
  * Implement this interface on Tile Entities which should receive energy, generally storing it in one or more internal {@link IEnergyStorage} objects.
@@ -19,6 +19,6 @@ public interface IEnergyReceiver extends IEnergyHandler {
 	 * @param simulate   If TRUE, the charge will only be simulated.
 	 * @return Amount of energy that was (or would have been, if simulated) received.
 	 */
-	int receiveEnergy(EnumFacing from, int maxReceive, boolean simulate);
+	int receiveEnergy(Direction from, int maxReceive, boolean simulate);
 
 }

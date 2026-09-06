@@ -4,7 +4,7 @@ import mods.eln.misc.Obj3D
 import mods.eln.misc.VoltageLevelColor
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor
 import mods.eln.wiki.Data
-import net.minecraft.item.Item
+import net.minecraft.world.item.Item
 
 class ElectricalFuseDescriptor(name: String, val cableDescriptor: ElectricalCableDescriptor?, obj: Obj3D?) :
     GenericItemUsingDamageDescriptorUpgrade(name) {

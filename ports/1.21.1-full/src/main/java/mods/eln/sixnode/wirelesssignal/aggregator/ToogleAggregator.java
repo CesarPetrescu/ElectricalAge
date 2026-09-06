@@ -2,7 +2,7 @@ package mods.eln.sixnode.wirelesssignal.aggregator;
 
 import mods.eln.misc.INBTTReady;
 import mods.eln.sixnode.wirelesssignal.IWirelessSignalTx;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundTag;
 
 import java.util.Collection;
 
@@ -23,13 +23,13 @@ public class ToogleAggregator extends BiggerAggregator implements INBTTReady {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt, String str) {
+    public void readFromNBT(CompoundTag nbt, String str) {
         state = nbt.getBoolean(str + "state");
         oldValue = nbt.getDouble(str + "oldValue");
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt, String str) {
+    public CompoundTag writeToNBT(CompoundTag nbt, String str) {
         nbt.setBoolean(str + "state", state);
         nbt.setDouble(str + "oldValue", oldValue);
         return nbt;

@@ -2,13 +2,13 @@ package mods.eln.misc;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.renderer.RenderItem;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.play.client.CPacketCustomPayload;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
 import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
 import mods.eln.Eln;
 import mods.eln.GuiHandler;
@@ -17,20 +17,20 @@ import mods.eln.node.six.SixNodeEntity;
 import mods.eln.node.transparent.TransparentNodeEntity;
 import mods.eln.packets.GenericPacket;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.entity.Render;
-import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.EnumSkyBlock;
-import net.minecraft.world.World;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.Level;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
@@ -44,7 +44,7 @@ import static mods.eln.i18n.I18N.tr;
 
 public class UtilsClient {
 
-    public static GuiScreen guiLastOpen;
+    public static Screen guiLastOpen;
 
     static boolean lightmapTexUnitTextureEnable;
 
@@ -55,9 +55,9 @@ public class UtilsClient {
     private UtilsClient() {
     }
 
-    private static float distanceFromClientPlayer(World world, int xCoord, int yCoord, int zCoord) {
+    private static float distanceFromClientPlayer(Level world, int xCoord, int yCoord, int zCoord) {
         // TODO(1.10): Not sure this will work in multiplayer.
-        EntityPlayerSP player = Minecraft.getMinecraft().player;
+        LocalPlayer player = Minecraft.getMinecraft().player;
 
         return (float) Math.sqrt((xCoord - player.posX) * (xCoord - player.posX)
             + (yCoord - player.posY) * (yCoord - player.posY)
@@ -69,11 +69,11 @@ public class UtilsClient {
         return distanceFromClientPlayer(tileEntity.getWorld(), pos.getX(), pos.getY(), pos.getZ());
     }
 
-    public static EntityPlayerSP getClientPlayer() {
+    public static LocalPlayer getClientPlayer() {
         return Minecraft.getMinecraft().player;
     }
 
-    public static void drawHaloNoLightSetup(Obj3DPart halo, float r, float g, float b, World w, BlockPos pos, boolean bilinear) {
+    public static void drawHaloNoLightSetup(Obj3DPart halo, float r, float g, float b, Level w, BlockPos pos, boolean bilinear) {
         if (halo == null)
             return;
         if (bilinear)
@@ -89,13 +89,13 @@ public class UtilsClient {
             disableBilinear();
     }
 
-    public static void clientOpenGui(GuiScreen gui) {
+    public static void clientOpenGui(Screen gui) {
         guiLastOpen = gui;
-        EntityPlayerSP clientPlayer = getClientPlayer();
+        LocalPlayer clientPlayer = getClientPlayer();
         clientPlayer.openGui(Eln.instance, GuiHandler.genericOpen, clientPlayer.world, 0, 0, 0);
     }
 
-    public static void drawHalo(Obj3DPart halo, float r, float g, float b, World w, BlockPos pos, boolean bilinear) {
+    public static void drawHalo(Obj3DPart halo, float r, float g, float b, Level w, BlockPos pos, boolean bilinear) {
         disableLight();
         enableBlend();
 
@@ -104,11 +104,11 @@ public class UtilsClient {
         disableBlend();
     }
 
-    public static void drawHaloNoLightSetup(Obj3DPart halo, float r, float g, float b, TileEntity e, boolean bilinear) {
+    public static void drawHaloNoLightSetup(Obj3DPart halo, float r, float g, float b, BlockEntity e, boolean bilinear) {
         drawHaloNoLightSetup(halo, r, g, b, e.getWorld(), e.getPos(), bilinear);
     }
 
-    public static void drawHalo(Obj3DPart halo, float r, float g, float b, TileEntity e, boolean bilinear) {
+    public static void drawHalo(Obj3DPart halo, float r, float g, float b, BlockEntity e, boolean bilinear) {
         drawHalo(halo, r, g, b, e.getWorld(), e.getPos(), bilinear);
     }
 
@@ -134,7 +134,7 @@ public class UtilsClient {
             return;
         if (bilinear)
             enableBilinear();
-        int light = getLight(e.world, new BlockPos(MathHelper.floor(e.posX), MathHelper.floor(e.posY), MathHelper.floor(e.posZ)));
+        int light = getLight(e.world, new BlockPos(Mth.floor(e.posX), Mth.floor(e.posY), Mth.floor(e.posZ)));
         // light =
         // e.world.getLightBrightnessForSkyBlocks(MathHelper.floor(e.posX),
         // MathHelper.floor(e.posY), MathHelper.floor(e.posZ),0);
@@ -345,7 +345,7 @@ public class UtilsClient {
         disableBlend();
     }
 
-    public static void drawGuiBackground(ResourceLocation ressource, GuiScreen guiScreen, int xSize, int ySize) {
+    public static void drawGuiBackground(ResourceLocation ressource, Screen guiScreen, int xSize, int ySize) {
         bindTexture(ressource);
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         int x = (guiScreen.width - xSize) / 2;
@@ -369,7 +369,7 @@ public class UtilsClient {
         GL11.glColor4f(1f, 1f, 1f, 1f);
     }
 
-    static public void drawEntityItem(EntityItem entityItem, double x, double y, double z, float roty, float scale) {
+    static public void drawEntityItem(ItemEntity entityItem, double x, double y, double z, float roty, float scale) {
         if (entityItem == null) return;
 
         entityItem.hoverStart = 0.0f;
@@ -378,7 +378,7 @@ public class UtilsClient {
         entityItem.motionY = 0.0;
         entityItem.motionZ = 0.0;
 
-        Render<? super EntityItem> render = Minecraft.getMinecraft().getRenderManager().getEntityRenderObject(entityItem);
+        EntityRenderer<? super ItemEntity> render = Minecraft.getMinecraft().getRenderManager().getEntityRenderObject(entityItem);
         if (render == null) return;
 
         GL11.glPushMatrix();
@@ -526,7 +526,7 @@ public class UtilsClient {
         return Math.sqrt(x * x + y * y + z * z);
     }
 
-    private static int getLight(World w, BlockPos pos) {
+    private static int getLight(Level w, BlockPos pos) {
         // TODO(1.10): Is this right?
         return w.getLight(pos);
 //        w.getLight()
@@ -590,7 +590,7 @@ public class UtilsClient {
         return Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
     }
 
-    public static double getWeather(World world) {
+    public static double getWeather(Level world) {
         if (world.isThundering())
             return 1.0;
         if (world.isRaining())

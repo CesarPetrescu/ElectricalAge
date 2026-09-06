@@ -6,13 +6,13 @@ import mods.eln.misc.Direction;
 import mods.eln.misc.LRDU;
 import mods.eln.misc.Utils;
 import mods.eln.node.NodeBlockEntity;
-import net.minecraft.block.Block;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.inventory.Container;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.LevelChunk;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -82,13 +82,13 @@ public class SixNodeEntity extends NodeBlockEntity {
         return elementRenderList[direction.getInt()] != null;
     }
 
-    public Container newContainer(Direction side, EntityPlayer player) {
+    public AbstractContainerMenu newContainer(Direction side, Player player) {
         SixNode n = ((SixNode) getNode());
         if (n == null) return null;
         return n.newContainer(side, player);
     }
 
-    public GuiScreen newGuiDraw(Direction side, EntityPlayer player) {
+    public Screen newGuiDraw(Direction side, Player player) {
         return elementRenderList[side.getInt()].newGuiDraw(side, player);
     }
 
@@ -130,7 +130,7 @@ public class SixNodeEntity extends NodeBlockEntity {
 
         return 0;
     }*/
-    public int getDamageValue(World world, int x, int y, int z) {
+    public int getDamageValue(Level world, int x, int y, int z) {
         if (world.isRemote) {
             for (int idx = 0; idx < 6; idx++) {
                 if (elementRenderList[idx] != null) {
@@ -141,7 +141,7 @@ public class SixNodeEntity extends NodeBlockEntity {
         return 0;
     }
 
-    public boolean hasVolume(World world, int x, int y, int z) {
+    public boolean hasVolume(Level world, int x, int y, int z) {
         if (world.isRemote) {
             for (SixNodeElementRender e : elementRenderList) {
                 if (e != null && e.sixNodeDescriptor.hasVolume())

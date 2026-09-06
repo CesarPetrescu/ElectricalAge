@@ -1,13 +1,13 @@
 package mods.eln.fluid;
 
 import mods.eln.misc.INBTTReady;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.Direction;
 import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidTank;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.minecraftforge.fluids.FluidTankInfo;
-import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
 
 import javax.annotation.Nullable;
@@ -87,14 +87,14 @@ public class ElementFluidHandler implements IFluidHandler, INBTTReady {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt, String str) {
+    public void readFromNBT(CompoundTag nbt, String str) {
         tank.readFromNBT(nbt.getCompoundTag(str + "tank"));
         fluid_heat_mb = nbt.getFloat(str + "fhm");
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt, String str) {
-        NBTTagCompound t = new NBTTagCompound();
+    public CompoundTag writeToNBT(CompoundTag nbt, String str) {
+        CompoundTag t = new CompoundTag();
         tank.writeToNBT(t);
         nbt.setTag(str + "tank", t);
         nbt.setFloat(str + "fhm", fluid_heat_mb);

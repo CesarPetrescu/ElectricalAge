@@ -10,9 +10,9 @@ import mods.eln.misc.*;
 import mods.eln.sound.LoopedSound;
 import mods.eln.sound.LoopedSoundManager;
 import mods.eln.sound.SoundCommand;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
 import org.lwjgl.opengl.GL11;
 
 import java.io.ByteArrayOutputStream;
@@ -200,11 +200,11 @@ public abstract class SixNodeElementRender {
         loopedSoundManager.dispose();
     }
 
-    public GuiScreen newGuiDraw(Direction side, EntityPlayer player) {
+    public Screen newGuiDraw(Direction side, Player player) {
         return null;
     }
 
-    public IInventory getInventory() {
+    public Container getInventory() {
         return null;
     }
 

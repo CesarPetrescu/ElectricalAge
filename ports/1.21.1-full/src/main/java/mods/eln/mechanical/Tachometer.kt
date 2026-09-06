@@ -22,10 +22,10 @@ import mods.eln.sim.IProcess
 import mods.eln.sim.ThermalLoad
 import mods.eln.sim.nbt.NbtElectricalGateOutput
 import mods.eln.sim.nbt.NbtElectricalGateOutputProcess
-import net.minecraft.client.gui.GuiButton
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.client.gui.components.Button
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.world.entity.player.Player
+import net.minecraft.nbt.CompoundTag
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -75,7 +75,7 @@ open class TachometerElement(node: TransparentNode, desc_: TransparentNodeDescri
 
     override fun thermoMeterString(side: Direction?): String? = null
 
-    override fun onBlockActivated(entityPlayer: EntityPlayer?, side: Direction?, vx: Float, vy: Float,
+    override fun onBlockActivated(entityPlayer: Player?, side: Direction?, vx: Float, vy: Float,
                                   vz: Float): Boolean = false
 
     override fun networkSerialize(stream: DataOutputStream) {
@@ -100,13 +100,13 @@ open class TachometerElement(node: TransparentNode, desc_: TransparentNodeDescri
         return type
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
         minRads = nbt.getFloat("minRads")
         maxRads = nbt.getFloat("maxRads")
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound? {
+    override fun writeToNBT(nbt: CompoundTag): CompoundTag? {
         super.writeToNBT(nbt)
         nbt.setFloat("minRads", minRads)
         nbt.setFloat("maxRads", maxRads)
@@ -137,11 +137,11 @@ class TachometerRender(entity: TransparentNodeEntity, desc: TransparentNodeDescr
         maxRads = stream.readFloat()
     }
 
-    override fun newGuiDraw(side: Direction?, player: EntityPlayer?): GuiScreen? = TachometerGui(this)
+    override fun newGuiDraw(side: Direction?, player: Player?): Screen? = TachometerGui(this)
 }
 
 class TachometerGui(val render: TachometerRender) : GuiScreenEln() {
-    val validate: GuiButton by lazy { newGuiButton(82, 12, 80, I18N.tr("Validate")) }
+    val validate: Button by lazy { newGuiButton(82, 12, 80, I18N.tr("Validate")) }
     val lowValue: GuiTextFieldEln by lazy { newGuiTextField(8, 24, 70) }
     val highValue: GuiTextFieldEln by lazy { newGuiTextField(8, 8, 70) }
 

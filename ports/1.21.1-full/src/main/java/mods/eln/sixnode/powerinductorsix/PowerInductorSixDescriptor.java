@@ -12,9 +12,9 @@ import mods.eln.misc.series.ISerie;
 import mods.eln.node.six.SixNodeDescriptor;
 import mods.eln.sim.mna.misc.MnaConst;
 import mods.eln.wiki.Data;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
 import org.lwjgl.opengl.GL11;
 
 public class PowerInductorSixDescriptor extends SixNodeDescriptor {
@@ -45,12 +45,12 @@ public class PowerInductorSixDescriptor extends SixNodeDescriptor {
         return serie.getValue(cableCount - 1);
     }
 
-    public double getlValue(IInventory inventory) {
+    public double getlValue(Container inventory) {
         ItemStack core = inventory.getStackInSlot(PowerInductorSixContainer.cableId);
         return getlValue(core.getCount());
     }
 
-    public double getRsValue(IInventory inventory) {
+    public double getRsValue(Container inventory) {
         ItemStack core = inventory.getStackInSlot(PowerInductorSixContainer.coreId);
 
         if (core.isEmpty()) return MnaConst.highImpedance;
@@ -61,7 +61,7 @@ public class PowerInductorSixDescriptor extends SixNodeDescriptor {
         return Cable.Companion.getLowVoltage().descriptor.electricalRs * coreFactor;
     }
 
-    public void setParent(net.minecraft.item.Item item, int damage) {
+    public void setParent(net.minecraft.world.item.Item item, int damage) {
         super.setParent(item, damage);
         Data.addEnergy(newItemStack());
     }
@@ -99,7 +99,7 @@ public class PowerInductorSixDescriptor extends SixNodeDescriptor {
 //    }
 
     @Override
-    public LRDU getFrontFromPlace(Direction side, EntityPlayer player) {
+    public LRDU getFrontFromPlace(Direction side, Player player) {
         return super.getFrontFromPlace(side, player).left();
     }
 }

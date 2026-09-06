@@ -1,14 +1,14 @@
 package mods.eln.transparentnode.teleporter;
 
 import mods.eln.gui.*;
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.world.entity.player.Player;
 
 import static mods.eln.i18n.I18N.tr;
 
 public class TeleporterGui extends GuiScreenEln {
 
-    public TeleporterGui(EntityPlayer player, TeleporterRender render) {
+    public TeleporterGui(Player player, TeleporterRender render) {
 
         this.render = render;
     }
@@ -17,7 +17,7 @@ public class TeleporterGui extends GuiScreenEln {
     GuiTextFieldEln target;
     GuiVerticalTrackBar chargePower;
     GuiVerticalTrackBarHeat chargeBar;
-    GuiButton start;
+    Button start;
 
 
     TeleporterRender render;

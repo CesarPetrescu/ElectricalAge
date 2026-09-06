@@ -5,8 +5,8 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import mods.eln.node.simple.SimpleNode;
 import mods.eln.node.simple.SimpleNodeBlock;
 import net.minecraft.block.material.Material;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.Level;
 
 public class ComputerProbeBlock extends SimpleNodeBlock {
 
@@ -18,7 +18,7 @@ public class ComputerProbeBlock extends SimpleNodeBlock {
     }
 
     @Override
-    public TileEntity createNewTileEntity(World var1, int var2) {
+    public BlockEntity createNewTileEntity(Level var1, int var2) {
         return new ComputerProbeEntity();
     }
 

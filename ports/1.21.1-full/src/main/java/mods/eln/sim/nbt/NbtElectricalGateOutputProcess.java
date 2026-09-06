@@ -8,7 +8,7 @@ import mods.eln.misc.Utils;
 import mods.eln.sim.ElectricalLoad;
 import mods.eln.sim.mna.SubSystem;
 import mods.eln.sim.mna.component.Capacitor;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundTag;
 
 public class NbtElectricalGateOutputProcess extends Capacitor implements INBTTReady {
 
@@ -45,13 +45,13 @@ public class NbtElectricalGateOutputProcess extends Capacitor implements INBTTRe
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt, String str) {
+    public void readFromNBT(CompoundTag nbt, String str) {
         setHighImpedance(nbt.getBoolean(str + name + "highImpedance"));
         U = nbt.getDouble(str + name + "U");
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt, String str) {
+    public CompoundTag writeToNBT(CompoundTag nbt, String str) {
         nbt.setBoolean(str + name + "highImpedance", highImpedance);
         nbt.setDouble(str + name + "U", U);
         return nbt;

@@ -11,11 +11,11 @@ import mods.eln.sim.*;
 import mods.eln.sim.mna.component.Resistor;
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor;
 import mods.eln.wiki.Data;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 
 import java.util.List;
 
@@ -182,8 +182,8 @@ public class BatteryDescriptor extends TransparentNodeDescriptor {
     }
 
     @Override
-    public NBTTagCompound getDefaultNBT() {
-        NBTTagCompound nbt = new NBTTagCompound();
+    public CompoundTag getDefaultNBT() {
+        CompoundTag nbt = new CompoundTag();
 
         nbt.setDouble("charge", startCharge);
         nbt.setDouble("life", 1.0);
@@ -191,7 +191,7 @@ public class BatteryDescriptor extends TransparentNodeDescriptor {
     }
 
     @Override
-    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List list, boolean par4) {
+    public void addInformation(ItemStack itemStack, Player entityPlayer, List list, boolean par4) {
         super.addInformation(itemStack, entityPlayer, list, par4);
         list.add(Utils.plotVolt(tr("Nominal voltage: "), electricalU));
         list.add(Utils.plotPower(tr("Nominal power: "), electricalStdP));
@@ -257,7 +257,7 @@ public class BatteryDescriptor extends TransparentNodeDescriptor {
 //    }
 
     @Override
-    public boolean onEntityItemUpdate(EntityItem entityItem) {
+    public boolean onEntityItemUpdate(ItemEntity entityItem) {
         if (entityItem.isBurning()) {
             entityItem.world.createExplosion(entityItem, entityItem.posX, entityItem.posY, entityItem.posZ, 2, true);
             entityItem.extinguish();

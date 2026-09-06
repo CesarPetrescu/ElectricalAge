@@ -19,14 +19,14 @@ import mods.eln.sim.mna.component.Resistor;
 import mods.eln.sim.nbt.NbtElectricalLoad;
 import mods.eln.sim.process.destruct.VoltageStateWatchDog;
 import mods.eln.sim.process.destruct.WorldExplosion;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.passive.EntityChicken;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.animal.Chicken;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Mth;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -76,9 +76,9 @@ public class EggIncubatorElement extends TransparentNodeElement {
                 descriptor.setState(powerResistor, true);
                 if (energy <= 0) {
                     inventory.decrStackSize(EggIncubatorContainer.EggSlotId, 1);
-                    EntityChicken chicken = new EntityChicken(node.coordinate.world());
+                    Chicken chicken = new Chicken(node.coordinate.world());
                     chicken.setGrowingAge(-24000);
-                    chicken.setLocationAndAngles(node.coordinate.pos.getX() + 0.5, node.coordinate.pos.getY() + 0.5, node.coordinate.pos.getZ() + 0.5, MathHelper.wrapDegrees(node.coordinate.world().rand.nextFloat() * 360.0F), 0.0F);
+                    chicken.setLocationAndAngles(node.coordinate.pos.getX() + 0.5, node.coordinate.pos.getY() + 0.5, node.coordinate.pos.getZ() + 0.5, Mth.wrapDegrees(node.coordinate.world().rand.nextFloat() * 360.0F), 0.0F);
                     chicken.rotationYawHead = chicken.rotationYaw;
                     chicken.renderYawOffset = chicken.rotationYaw;
                     node.coordinate.world().spawnEntity(chicken);
@@ -96,12 +96,12 @@ public class EggIncubatorElement extends TransparentNodeElement {
         }
 
         @Override
-        public void readFromNBT(NBTTagCompound nbt, String str) {
+        public void readFromNBT(CompoundTag nbt, String str) {
             energy = nbt.getDouble(str + "energyCounter");
         }
 
         @Override
-        public NBTTagCompound writeToNBT(NBTTagCompound nbt, String str) {
+        public CompoundTag writeToNBT(CompoundTag nbt, String str) {
             nbt.setDouble(str + "energyCounter", energy);
             return nbt;
         }
@@ -142,12 +142,12 @@ public class EggIncubatorElement extends TransparentNodeElement {
         connect();
     }
 
-    public void inventoryChange(IInventory inventory) {
+    public void inventoryChange(Container inventory) {
         needPublish();
     }
 
     @Override
-    public boolean onBlockActivated(EntityPlayer entityPlayer, Direction side, float vx, float vy, float vz) {
+    public boolean onBlockActivated(Player entityPlayer, Direction side, float vx, float vy, float vz) {
         return false;
     }
 
@@ -157,7 +157,7 @@ public class EggIncubatorElement extends TransparentNodeElement {
     }
 
     @Override
-    public Container newContainer(Direction side, EntityPlayer player) {
+    public AbstractContainerMenu newContainer(Direction side, Player player) {
         return new EggIncubatorContainer(player, inventory, node);
     }
 
@@ -166,7 +166,7 @@ public class EggIncubatorElement extends TransparentNodeElement {
     }
 
     @Override
-    public IInventory getInventory() {
+    public Container getInventory() {
         return inventory;
     }
 

@@ -2,8 +2,8 @@ package mods.eln.sound
 
 import mods.eln.misc.Coordinate
 import net.minecraft.client.audio.*
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.SoundCategory
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.sounds.SoundSource
 
 abstract class LoopedSound(val sample: String, val coord: Coordinate,
                            val attentuationType: ISound.AttenuationType = ISound.AttenuationType.LINEAR) : ITickableSound {
@@ -40,5 +40,5 @@ abstract class LoopedSound(val sample: String, val coord: Coordinate,
         return this.soundEventAccessor
     }
 
-    override fun getCategory() = SoundCategory.BLOCKS
+    override fun getCategory() = SoundSource.BLOCKS
 }

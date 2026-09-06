@@ -1,8 +1,8 @@
 package cofh.api.energy;
 
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 
 /**
  * Reference implementation of {@link IEnergyContainerItem}. Use/extend this or implement your own.
@@ -66,7 +66,7 @@ public class ItemEnergyContainer extends Item implements IEnergyContainerItem {
 	public int receiveEnergy(ItemStack container, int maxReceive, boolean simulate) {
 
 		if (!container.hasTagCompound()) {
-			container.setTagCompound(new NBTTagCompound());
+			container.setTagCompound(new CompoundTag());
 		}
 		int energy = container.getTagCompound().getInteger("Energy");
 		int energyReceived = Math.min(capacity - energy, Math.min(this.maxReceive, maxReceive));

@@ -4,9 +4,9 @@ import mods.eln.generic.GenericItemUsingDamageSlot;
 import mods.eln.gui.ISlotSkin.SlotSkin;
 import mods.eln.item.EntitySensorFilterDescriptor;
 import mods.eln.misc.BasicContainer;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.Slot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
+import net.minecraft.world.inventory.Slot;
 
 import static mods.eln.i18n.I18N.tr;
 
@@ -14,7 +14,7 @@ public class ElectricalEntitySensorContainer extends BasicContainer {
 
     public static final int filterId = 0;
 
-    public ElectricalEntitySensorContainer(EntityPlayer player, IInventory inventory) {
+    public ElectricalEntitySensorContainer(Player player, Container inventory) {
         super(player, inventory, new Slot[]{
             new GenericItemUsingDamageSlot(inventory, filterId, 184 / 2 - 12, 8, 1,
                 EntitySensorFilterDescriptor.class,

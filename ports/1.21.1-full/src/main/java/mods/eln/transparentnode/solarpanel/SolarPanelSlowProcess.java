@@ -3,10 +3,10 @@ package mods.eln.transparentnode.solarpanel;
 import mods.eln.misc.Coordinate;
 import mods.eln.misc.Utils;
 import mods.eln.sim.IProcess;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 
 @SuppressWarnings("SuspiciousNameCombination")
 public class SolarPanelSlowProcess implements IProcess {
@@ -48,7 +48,7 @@ public class SolarPanelSlowProcess implements IProcess {
 
 
         Coordinate coordinate = solarPanel.node.coordinate;
-        Vec3d v = Utils.getVec05(coordinate);
+        Vec3 v = Utils.getVec05(coordinate);
         double x = v.x + solarPanel.descriptor.solarOffsetX, y = v.y + solarPanel.descriptor.solarOffsetY, z = v.z + solarPanel.descriptor.solarOffsetZ;
 
 
@@ -60,7 +60,7 @@ public class SolarPanelSlowProcess implements IProcess {
 
         if (!coordinate.doesWorldExist()) return light;
 
-        World world = coordinate.world();
+        Level world = coordinate.world();
         if (world.getWorldInfo().isRaining()) light *= 0.5;
         if (world.getWorldInfo().isThundering()) light *= 0.5;
 
@@ -77,7 +77,7 @@ public class SolarPanelSlowProcess implements IProcess {
         int iterationLimit = 256;
         while (y <= 256.0 && iterationLimit-- > 0) {
             BlockPos pos = new BlockPos((int) x, (int) y, (int) z);
-            net.minecraft.world.chunk.Chunk chunk = world.getChunkProvider().getLoadedChunk(pos.getX() >> 4, pos.getZ() >> 4);
+            net.minecraft.world.level.chunk.LevelChunk chunk = world.getChunkProvider().getLoadedChunk(pos.getX() >> 4, pos.getZ() >> 4);
             if (chunk == null || chunk.isEmpty()) break;
             double opacity = chunk.getBlockLightOpacity(pos);
             light *= (255 - opacity) / 255;
@@ -91,7 +91,7 @@ public class SolarPanelSlowProcess implements IProcess {
         return light;
     }
 
-    static double getSolarAlpha(World world) {
+    static double getSolarAlpha(Level world) {
         double alpha = world.getCelestialAngleRadians(0f);
         if (alpha < Math.PI / 2 * 3) {
             alpha += Math.PI / 2;

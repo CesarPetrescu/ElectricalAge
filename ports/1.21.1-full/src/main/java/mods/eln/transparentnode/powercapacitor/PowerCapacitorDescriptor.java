@@ -7,8 +7,8 @@ import mods.eln.misc.Obj3D;
 import mods.eln.misc.series.ISerie;
 import mods.eln.node.transparent.TransparentNodeDescriptor;
 import mods.eln.wiki.Data;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
 
 public class PowerCapacitorDescriptor extends TransparentNodeDescriptor {
 
@@ -40,7 +40,7 @@ public class PowerCapacitorDescriptor extends TransparentNodeDescriptor {
         return serie.getValue(cableCount - 1) / uTemp / uTemp;
     }
 
-    public double getCValue(IInventory inventory) {
+    public double getCValue(Container inventory) {
         ItemStack core = inventory.getStackInSlot(PowerCapacitorContainer.redId);
         ItemStack diel = inventory.getStackInSlot(PowerCapacitorContainer.dielectricId);
         if (core.isEmpty() || diel.isEmpty())
@@ -50,7 +50,7 @@ public class PowerCapacitorDescriptor extends TransparentNodeDescriptor {
         }
     }
 
-    public double getUNominalValue(IInventory inventory) {
+    public double getUNominalValue(Container inventory) {
         ItemStack diel = inventory.getStackInSlot(PowerCapacitorContainer.dielectricId);
         if (diel.isEmpty())
             return 10000;
@@ -60,7 +60,7 @@ public class PowerCapacitorDescriptor extends TransparentNodeDescriptor {
         }
     }
 
-    public void setParent(net.minecraft.item.Item item, int damage) {
+    public void setParent(net.minecraft.world.item.Item item, int damage) {
         super.setParent(item, damage);
         Data.addEnergy(newItemStack());
     }

@@ -1,12 +1,12 @@
 package mods.eln.gui;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.GuiTextField;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.components.EditBox;
 
 import java.util.ArrayList;
 
-public class GuiTextFieldEln extends GuiTextField implements IGuiObject {
+public class GuiTextFieldEln extends EditBox implements IGuiObject {
 
     int xPos, yPos, width, height;
     GuiTextFieldElnObserver observer;
@@ -16,7 +16,7 @@ public class GuiTextFieldEln extends GuiTextField implements IGuiObject {
 
     IGuiObjectObserver iGuiObjectObserver;
 
-    public GuiTextFieldEln(int componentId, FontRenderer par1FontRenderer, int x, int y, int w, int h, GuiHelper helper) {
+    public GuiTextFieldEln(int componentId, Font par1FontRenderer, int x, int y, int w, int h, GuiHelper helper) {
         super(componentId,
             par1FontRenderer, x, y, w, h);
         setTextColor(-1);
@@ -30,7 +30,7 @@ public class GuiTextFieldEln extends GuiTextField implements IGuiObject {
         this.helper = helper;
     }
 
-    public GuiTextFieldEln(int componentId, FontRenderer par1FontRenderer, int x, int y, int w, GuiHelper helper) {
+    public GuiTextFieldEln(int componentId, Font par1FontRenderer, int x, int y, int w, GuiHelper helper) {
         this(componentId, par1FontRenderer, x, y, w, 12, helper);
     }
 
