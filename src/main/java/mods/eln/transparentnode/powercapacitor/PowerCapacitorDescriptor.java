@@ -6,8 +6,8 @@ import mods.eln.item.DielectricItem;
 import mods.eln.misc.IFunction;
 import mods.eln.misc.Obj3D;
 import mods.eln.node.transparent.TransparentNodeDescriptor;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
 
 public class PowerCapacitorDescriptor extends TransparentNodeDescriptor {
 
@@ -39,9 +39,9 @@ public class PowerCapacitorDescriptor extends TransparentNodeDescriptor {
         return serie.getValue(cableCount - 1) / uTemp / uTemp;
     }
 
-    public double getCValue(IInventory inventory) {
-        ItemStack core = inventory.getStackInSlot(PowerCapacitorContainer.redId);
-        ItemStack diel = inventory.getStackInSlot(PowerCapacitorContainer.dielectricId);
+    public double getCValue(Container inventory) {
+        ItemStack core = inventory.getItem(PowerCapacitorContainer.redId);
+        ItemStack diel = inventory.getItem(PowerCapacitorContainer.dielectricId);
         if (core == null || diel == null)
             return getCValue(0, 0);
         else {
@@ -49,8 +49,8 @@ public class PowerCapacitorDescriptor extends TransparentNodeDescriptor {
         }
     }
 
-    public double getUNominalValue(IInventory inventory) {
-        ItemStack diel = inventory.getStackInSlot(PowerCapacitorContainer.dielectricId);
+    public double getUNominalValue(Container inventory) {
+        ItemStack diel = inventory.getItem(PowerCapacitorContainer.dielectricId);
         if (diel == null)
             return 10000;
         else {
@@ -59,7 +59,7 @@ public class PowerCapacitorDescriptor extends TransparentNodeDescriptor {
         }
     }
 
-    public void setParent(net.minecraft.item.Item item, int damage) {
+    public void setParent(net.minecraft.level().item.Item item, int damage) {
         super.setParent(item, damage);
         //Data.addEnergy(newItemStack());
     }

@@ -9,9 +9,9 @@ import mods.eln.node.transparent.TransparentNodeDescriptor;
 import mods.eln.node.transparent.TransparentNodeElementInventory;
 import mods.eln.node.transparent.TransparentNodeElementRender;
 import mods.eln.node.transparent.TransparentNodeEntity;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,7 +40,7 @@ public class HeatFurnaceRender extends TransparentNodeElementRender {
 
     boolean boot = true;
 
-    EntityItem entityItemIn;
+    ItemEntity entityItemIn;
 
     public HeatFurnaceRender(TransparentNodeEntity tileEntity, TransparentNodeDescriptor descriptor) {
         super(tileEntity, descriptor);
@@ -60,7 +60,7 @@ public class HeatFurnaceRender extends TransparentNodeElementRender {
 
     @Override
     public void refresh(float deltaT) {
-        if (!Utils.isPlayerAround(getTileEntity().getWorld(), coord.getAxisAlignedBB(1)))
+        if (!Utils.isPlayerAround(getTileEntity().getLevel(), coord.getAxisAlignedBB(1)))
             interpolator.setTarget(0f);
         else
             interpolator.setTarget(1f);
@@ -73,7 +73,7 @@ public class HeatFurnaceRender extends TransparentNodeElementRender {
 
     @Nullable
     @Override
-    public GuiScreen newGuiDraw(@NotNull Direction side, @NotNull EntityPlayer player) {
+    public Screen newGuiDraw(@NotNull Direction side, @NotNull Player player) {
         return new HeatFurnaceGuiDraw(player, inventory, this);
     }
 

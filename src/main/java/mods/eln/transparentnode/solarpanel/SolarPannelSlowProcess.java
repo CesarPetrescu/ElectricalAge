@@ -4,9 +4,9 @@ import mods.eln.misc.McBridge;
 import mods.eln.misc.Coordinate;
 import mods.eln.misc.Utils;
 import mods.eln.sim.IProcess;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
+import net.minecraft.core.BlockPos;
 
 public class SolarPannelSlowProcess implements IProcess {
     SolarPanelElement solarPannel;
@@ -41,13 +41,13 @@ public class SolarPannelSlowProcess implements IProcess {
         //	Utils.print("solarAlpha : " + solarAlpha + "  ");
         if (solarAlpha >= Math.PI) return 0.0;
 
-        if (solarPannel.getInventory().getStackInSlot(SolarPanelContainer.trackerSlotId) != null) {
+        if (solarPannel.getInventory().getItem(SolarPanelContainer.trackerSlotId) != null) {
             solarPannel.panelAlpha = solarPannel.descriptor.alphaTrunk(solarAlpha);
         }
 
 
         Coordinate coordinate = solarPannel.node.coordinate;
-        Vec3d v = Utils.getVec05(coordinate);
+        Vec3 v = Utils.getVec05(coordinate);
         double x = v.x + solarPannel.descriptor.solarOffsetX, y = v.y + solarPannel.descriptor.solarOffsetY, z = v.z + solarPannel.descriptor.solarOffsetZ;
 
 
@@ -59,9 +59,9 @@ public class SolarPannelSlowProcess implements IProcess {
 
         if (coordinate.getWorldExist() == false) return light;
 
-        World world = coordinate.world();
-        if (world.getWorldInfo().isRaining()) light *= 0.5;
-        if (world.getWorldInfo().isThundering()) light *= 0.5;
+        Level world = coordinate.world();
+        if (world.getLevelData().isRaining()) light *= 0.5;
+        if (world.getLevelData().isThundering()) light *= 0.5;
 
 
         double xD = Math.cos(solarAlpha), yD = Math.sin(solarAlpha);
@@ -91,14 +91,14 @@ public class SolarPannelSlowProcess implements IProcess {
         return light;
     }
 
-    public static double getSolarAlpha(World world) {
+    public static double getSolarAlpha(Level world) {
         double alpha = world.getCelestialAngleRadians(0f);
         if (alpha < Math.PI / 2 * 3) {
             alpha += Math.PI / 2;
         } else {
             alpha -= Math.PI / 2 * 3;
         }
-        //return ((((world.getWorldTime()%24000)*12.0/13.0 +500 ) / 24000.0) )% 1.0 * Math.PI*2;
+        //return ((((world.getDayTime()%24000)*12.0/13.0 +500 ) / 24000.0) )% 1.0 * Math.PI*2;
         return alpha;
     }
 

@@ -4,9 +4,9 @@ import mods.eln.Eln
 import mods.eln.item.electricalitem.OreScannerConfigElement
 import mods.eln.misc.Utils
 import net.minecraftforge.fml.common.registry.ForgeRegistries
-import net.minecraft.block.Block
-import net.minecraft.init.Blocks
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.resources.ResourceLocation
 import net.minecraftforge.oredict.OreDictionary
 
 /**

@@ -8,9 +8,9 @@ import mods.eln.node.transparent.TransparentNodeDescriptor;
 import mods.eln.node.transparent.TransparentNodeElementInventory;
 import mods.eln.node.transparent.TransparentNodeElementRender;
 import mods.eln.node.transparent.TransparentNodeEntity;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,7 +26,7 @@ public class ElectricalFurnaceRender extends TransparentNodeElementRender {
     public float temperature = 0;
     public boolean powerOn, heatingCorpOn;
     //float temperatureTarget;
-    EntityItem entityItemIn = null;
+    ItemEntity entityItemIn = null;
 
     long time;
 
@@ -71,7 +71,7 @@ public class ElectricalFurnaceRender extends TransparentNodeElementRender {
 
     @Nullable
     @Override
-    public GuiScreen newGuiDraw(@NotNull Direction side, @NotNull EntityPlayer player) {
+    public Screen newGuiDraw(@NotNull Direction side, @NotNull Player player) {
         return new ElectricalFurnaceGuiDraw(player, inventory, this);
     }
 
@@ -102,7 +102,7 @@ public class ElectricalFurnaceRender extends TransparentNodeElementRender {
                 entityItemIn = null;
                 stream.readShort();
             } else {
-                entityItemIn = new EntityItem(getTileEntity().getWorld(), getTileEntity().getPos().getX() + 0.5, getTileEntity().getPos().getY() + 0.5, getTileEntity().getPos().getZ() + 1.2, Utils.newItemStack(read, 1, stream.readShort()));
+                entityItemIn = new ItemEntity(getTileEntity().getLevel(), getTileEntity().getBlockPos().getX() + 0.5, getTileEntity().getBlockPos().getY() + 0.5, getTileEntity().getBlockPos().getZ() + 1.2, Utils.newItemStack(read, 1, stream.readShort()));
             }
 
             heatingCorpResistorP = stream.readShort();

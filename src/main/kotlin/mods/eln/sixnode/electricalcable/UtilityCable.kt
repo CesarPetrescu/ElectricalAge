@@ -39,14 +39,14 @@ import mods.eln.sim.nbt.NbtThermalLoad
 import mods.eln.sim.process.heater.ElectricalLoadHeatThermalLoad
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.RenderHelper
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.inventory.IInventory
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.DamageSource
-import net.minecraft.util.EnumParticleTypes
-import net.minecraft.util.text.TextFormatting
+import net.minecraft.world.entity.player.Player
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.Container
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.core.particles.ParticleTypes
+import net.minecraft.ChatFormatting
 import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
 import org.lwjgl.opengl.GL11
 import java.io.DataInputStream
@@ -102,7 +102,7 @@ interface IUtilityCableInventory {
          * or the function is called on a non-utility cable item
          */
         @JvmStatic @JvmOverloads
-        fun trimCable(srcItemStack: ItemStack, dstInventory: IInventory, dstIndex: Int, creativeFree: Boolean = false): Boolean {
+        fun trimCable(srcItemStack: ItemStack, dstInventory: Container, dstIndex: Int, creativeFree: Boolean = false): Boolean {
             val srcCableDesc = Utils.getItemObject(srcItemStack) as? UtilityCableDescriptor ?: return false
 
             val dstItemStack = srcCableDesc.newItemStack()
@@ -115,8 +115,8 @@ interface IUtilityCableInventory {
                 srcCableDesc.setRemainingLengthMeters(dstItemStack, requiredCableLength)
                 if (!creativeFree) srcCableDesc.setRemainingLengthMeters(srcItemStack, existingCableLength - requiredCableLength)
                 if (!creativeFree && abs(srcCableDesc.getRemainingLengthMeters(srcItemStack)) < UtilityCableDescriptor.LENGTH_METERS_EPSILON) srcItemStack.count -= 1
-                dstInventory.setInventorySlotContents(dstIndex, dstItemStack)
-                dstInventory.markDirty()
+                dstInventory.setItem(dstIndex, dstItemStack)
+                dstInventory.setChanged()
                 return true
             } else return false
         }
@@ -221,16 +221,16 @@ class UtilityCableDescriptor(
         return floor(rawLength).coerceAtLeast(1.0)
     }
 
-    private fun getOrCreateNbt(stack: ItemStack): NBTTagCompound {
-        if (stack.tagCompound == null) {
-            stack.tagCompound = getDefaultNBT()
+    private fun getOrCreateNbt(stack: ItemStack): CompoundTag {
+        if (stack.tagCompound /* TODO(components) */ == null) {
+            stack.tagCompound /* TODO(components) */ = getDefaultNBT()
         }
-        return stack.tagCompound!!
+        return stack.tagCompound /* TODO(components) */!!
     }
 
     fun getRemainingLengthMeters(stack: ItemStack): Double {
         val nbt = getOrCreateNbt(stack)
-        return if (nbt.hasKey(nbtLengthMeters)) {
+        return if (nbt.contains(nbtLengthMeters)) {
             nbt.getDouble(nbtLengthMeters).coerceAtLeast(0.0)
         } else {
             defaultLengthMeters()
@@ -248,13 +248,13 @@ class UtilityCableDescriptor(
     fun consumeLengthForPlacement(stack: ItemStack) {
         val nbt = getOrCreateNbt(stack)
         val remaining = (getRemainingLengthMeters(stack) - placeLengthMeters).coerceAtLeast(0.0)
-        nbt.setDouble(nbtLengthMeters, remaining)
+        nbt.putDouble(nbtLengthMeters, remaining)
     }
 
     fun placementLengthMeters(): Double = placeLengthMeters
 
-    override fun getDefaultNBT(): NBTTagCompound {
-        return NBTTagCompound().apply {
+    override fun getDefaultNBT(): CompoundTag {
+        return CompoundTag().apply {
             setDouble(nbtLengthMeters, defaultLengthMeters())
             setString(nbtUniqueId, UUID.randomUUID().toString())
         }
@@ -266,7 +266,7 @@ class UtilityCableDescriptor(
 
     override fun getItemStackLimit(stack: ItemStack): Int = 1
 
-    override fun addInformation(itemStack: ItemStack, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack, entityPlayer: Player?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         list.add(tr("Conductor: %1$ %2$", material.label, sizeLabel))
         list.add(tr("Equivalent area: %1$ mm2", metricSizeLabel))
@@ -287,10 +287,10 @@ class UtilityCableDescriptor(
         super.renderItem(type, item, *data)
         if (type != ItemRenderType.INVENTORY) return
 
-        val font = Minecraft.getMinecraft().fontRenderer
+        val font = Minecraft.getInstance().font
         val overlay = compactLengthLabel(item)
         val scale = 0.5f
-        val scaledWidth = font.getStringWidth(overlay) * scale
+        val scaledWidth = font.width(overlay) * scale
         val x = ((16f - scaledWidth) / scale).toInt()
         val y = 24
 
@@ -365,7 +365,7 @@ class UtilityCableElement(
         }
     }
 
-    override fun destroy(entityPlayer: EntityPlayerMP?) {
+    override fun destroy(entityPlayer: ServerPlayer?) {
         if (useUuid()) {
             stop(getUuid())
         }
@@ -386,7 +386,7 @@ class UtilityCableElement(
         breakdownConnections.clear()
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
         val b = nbt.getByte("color")
         singleColor = b.toInt() and 0xF
@@ -396,12 +396,12 @@ class UtilityCableElement(
         shockCooldown = nbt.getDouble("shockCooldown")
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound) {
+    override fun writeToNBT(nbt: CompoundTag) {
         super.writeToNBT(nbt)
-        nbt.setByte("color", (singleColor + (colorCare shl 4)).toByte())
-        nbt.setByte("palette", paletteIndex.toByte())
-        nbt.setBoolean("bound", conductorsBound)
-        nbt.setDouble("shockCooldown", shockCooldown)
+        nbt.putByte("color", (singleColor + (colorCare shl 4)).toByte())
+        nbt.putByte("palette", paletteIndex.toByte())
+        nbt.putBoolean("bound", conductorsBound)
+        nbt.putDouble("shockCooldown", shockCooldown)
     }
 
     override fun getElectricalLoad(lrdu: LRDU, mask: Int): ElectricalLoad {
@@ -556,7 +556,7 @@ class UtilityCableElement(
         }
     }
 
-    override fun onBlockActivated(entityPlayer: EntityPlayer, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
+    override fun onBlockActivated(entityPlayer: Player, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
         if (isPlayerUsingWrench(entityPlayer)) {
             if (!descriptor.actsAsSingleConductor && descriptor.supportsPaletteSelection) {
                 paletteIndex = (paletteIndex + 1) % descriptor.colorPalettes.size
@@ -570,7 +570,7 @@ class UtilityCableElement(
         }
 
         if (descriptor.actsAsSingleConductor && descriptor.insulated) {
-            val currentItemStack = entityPlayer.heldItemMainhand
+            val currentItemStack = entityPlayer.mainHandItem
             val gen = GenericItemUsingDamageDescriptor.getDescriptor(currentItemStack)
             if (gen is BrushDescriptor) {
                 val brushColor = gen.getColor(currentItemStack)
@@ -713,25 +713,25 @@ class UtilityCableElement(
         }
     }
 
-    private fun dyeToChat(color: Int): TextFormatting {
-        if (isGroundColor(color)) return TextFormatting.DARK_GREEN
+    private fun dyeToChat(color: Int): ChatFormatting {
+        if (isGroundColor(color)) return ChatFormatting.DARK_GREEN
         return when (color and 0xF) {
-            0 -> TextFormatting.BLACK
-            1 -> TextFormatting.RED
-            2 -> TextFormatting.DARK_GREEN
-            3 -> TextFormatting.GOLD
-            4 -> TextFormatting.BLUE
-            5 -> TextFormatting.DARK_PURPLE
-            6 -> TextFormatting.AQUA
-            7 -> TextFormatting.GRAY
-            8 -> TextFormatting.DARK_GRAY
-            9 -> TextFormatting.LIGHT_PURPLE
-            10 -> TextFormatting.GREEN
-            11 -> TextFormatting.YELLOW
-            12 -> TextFormatting.BLUE
-            13 -> TextFormatting.DARK_PURPLE
-            14 -> TextFormatting.GOLD
-            else -> TextFormatting.WHITE
+            0 -> ChatFormatting.BLACK
+            1 -> ChatFormatting.RED
+            2 -> ChatFormatting.DARK_GREEN
+            3 -> ChatFormatting.GOLD
+            4 -> ChatFormatting.BLUE
+            5 -> ChatFormatting.DARK_PURPLE
+            6 -> ChatFormatting.AQUA
+            7 -> ChatFormatting.GRAY
+            8 -> ChatFormatting.DARK_GRAY
+            9 -> ChatFormatting.LIGHT_PURPLE
+            10 -> ChatFormatting.GREEN
+            11 -> ChatFormatting.YELLOW
+            12 -> ChatFormatting.BLUE
+            13 -> ChatFormatting.DARK_PURPLE
+            14 -> ChatFormatting.GOLD
+            else -> ChatFormatting.WHITE
         }
     }
 
@@ -817,9 +817,9 @@ class UtilityCableElement(
             else -> return
         }
         val world = coord.world()
-        val players = world.getEntitiesWithinAABB(EntityPlayer::class.java, coord.getAxisAlignedBB(1))
+        val players = world.getEntitiesOfClass(Player::class.java, coord.getAxisAlignedBB(1))
         for (player in players) {
-            (player as? EntityPlayer)?.attackEntityFrom(DamageSource("electrical_cable"), damage)
+            (player as? Player)?.hurt(DamageSource("electrical_cable"), damage)
         }
     }
 
@@ -866,7 +866,7 @@ class UtilityCableRender(
     override fun drawCableAuto() = false
 
     override fun draw() {
-        Minecraft.getMinecraft().profiler.startSection("UtilityCable")
+        Minecraft.getInstance().profiler.startSection("UtilityCable")
         if (descriptor.insulated && descriptor.flatStyle && !descriptor.actsAsSingleConductor) {
             val jacket = jacketColor()
             GL11.glColor3f(jacket[0], jacket[1], jacket[2])
@@ -889,7 +889,7 @@ class UtilityCableRender(
         }
         emitOverheatSmoke()
         GL11.glColor3f(1f, 1f, 1f)
-        Minecraft.getMinecraft().profiler.endSection()
+        Minecraft.getInstance().profiler.endSection()
     }
 
     override fun glListDraw() {
@@ -1022,8 +1022,8 @@ class UtilityCableRender(
         if (temperatureCelsius.toDouble() < startSmokingAt || temperatureCelsius.toDouble() >= descriptor.meltTemperatureCelsius) {
             return
         }
-        val world = tileEntity.world ?: return
-        if (!world.isRemote) {
+        val world = tileEntity.level ?: return
+        if (!world.isClientSide) {
             return
         }
         val intensity = ((temperatureCelsius.toDouble() - startSmokingAt) / (descriptor.meltTemperatureCelsius - startSmokingAt)).coerceIn(0.0, 0.999)
@@ -1036,7 +1036,7 @@ class UtilityCableRender(
         val dx = (world.rand.nextDouble() - 0.5) * 0.22
         val dy = world.rand.nextDouble() * 0.08 + 0.02
         val dz = (world.rand.nextDouble() - 0.5) * 0.22
-        world.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, baseX + dx, baseY + dy, baseZ + dz, 0.0, 0.02 + intensity * 0.03, 0.0)
+        world.spawnParticle(ParticleTypes.SMOKE_NORMAL, baseX + dx, baseY + dy, baseZ + dz, 0.0, 0.02 + intensity * 0.03, 0.0)
     }
 
     private fun shouldDrawJunctionNode(): Boolean {

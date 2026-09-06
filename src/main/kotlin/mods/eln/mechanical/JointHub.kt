@@ -9,9 +9,9 @@ import mods.eln.node.transparent.TransparentNodeDescriptor
 import mods.eln.node.transparent.TransparentNodeEntity
 import mods.eln.sim.ElectricalLoad
 import mods.eln.sim.ThermalLoad
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.entity.player.Player
+import net.minecraft.nbt.CompoundTag
 import org.lwjgl.opengl.GL11
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -62,7 +62,7 @@ class JointHubDescriptor(baseName: String, obj: Obj3D) : SimpleShaftDescriptor(b
         }
     }
 
-    override fun getFrontFromPlace(side: Direction, entityLiving: EntityLivingBase?): Direction = Direction.XP
+    override fun getFrontFromPlace(side: Direction, entityLiving: LivingEntity?): Direction = Direction.XP
 }
 
 class JointHubElement(node: TransparentNode, desc_: TransparentNodeDescriptor) : SimpleShaftElement(node, desc_) {
@@ -87,12 +87,12 @@ class JointHubElement(node: TransparentNode, desc_: TransparentNodeDescriptor) :
         connectedSides.serialize(stream)
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound) {
+    override fun writeToNBT(nbt: CompoundTag) {
         super.writeToNBT(nbt)
         connectedSides.writeToNBT(nbt, "connectedSides")
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
         connectedSides.readFromNBT(nbt, "connectedSides")
     }

@@ -12,7 +12,7 @@ import mods.eln.sixnode.electricalcable.UtilityCableDescriptor
 import mods.eln.sixnode.electricalcable.UtilityCableElement
 import mods.eln.sixnode.electricalcable.UtilityCableMaterial
 import mods.eln.sixnode.electricalcable.UtilityCablePalette
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.nbt.CompoundTag
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotSame
 import org.junit.Assert.assertTrue
@@ -186,7 +186,7 @@ class GroundCableElementTest {
             side,
             ElectricalCableDescriptor("Test Electrical Cable", null, "Test cable", false)
         )
-        cable.readFromNBT(NBTTagCompound().also { it.setByte("color", (color + (1 shl 4)).toByte()) })
+        cable.readFromNBT(CompoundTag().also { it.setByte("color", (color + (1 shl 4)).toByte()) })
         return cable
     }
 

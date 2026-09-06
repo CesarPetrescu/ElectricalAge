@@ -1,30 +1,30 @@
 package mods.eln.misc
 
-import net.minecraftforge.common.MinecraftForge
+import net.neoforged.neoforge.common.NeoForge
 
 import net.minecraftforge.fml.common.FMLCommonHandler
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.neoforged.bus.api.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
-import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent
-import net.minecraft.tileentity.TileEntity
+import net.neoforged.neoforge.event.tick.ServerTickEvent
+import net.minecraft.world.level.block.entity.BlockEntity
 import java.util.*
 
 class TileEntityDestructor {
-    var destroyList = ArrayList<TileEntity>()
+    var destroyList = ArrayList<BlockEntity>()
     fun clear() {
         destroyList.clear()
     }
 
-    fun add(tile: TileEntity) {
+    fun add(tile: BlockEntity) {
         destroyList.add(tile)
     }
 
     @SubscribeEvent
-    fun tick(event: ServerTickEvent) {
+    fun tick(event: ServerTickEvent.Post) {
         if (event.phase != TickEvent.Phase.START) return
         for (t in destroyList) {
-            if (t.world != null && t.world.getTileEntity(t.xCoord, t.yCoord, t.zCoord) === t) {
-                t.world.setBlockToAir(t.xCoord, t.yCoord, t.zCoord)
+            if (t.level != null && t.level.getBlockEntity(t.xCoord, t.yCoord, t.zCoord) === t) {
+                t.level.setBlockToAir(t.xCoord, t.yCoord, t.zCoord)
                 Utils.println("destroy light at " + t.xCoord + " " + t.yCoord + " " + t.zCoord)
             }
         }
@@ -32,6 +32,6 @@ class TileEntityDestructor {
     }
 
     init {
-        MinecraftForge.EVENT_BUS.register(this)
+        NeoForge.EVENT_BUS.register(this)
     }
 }

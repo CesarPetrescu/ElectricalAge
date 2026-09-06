@@ -3,7 +3,7 @@ package mods.eln.sim.nbt
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import mods.eln.sim.mna.state.VoltageState
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.nbt.CompoundTag
 
 class NbtResistorTest {
     @Test
@@ -13,7 +13,7 @@ class NbtResistorTest {
         val resistor = NbtResistor("r", a, b)
         resistor.resistance = 12.0
 
-        val nbt = NBTTagCompound()
+        val nbt = CompoundTag()
         resistor.writeToNBT(nbt, "pfx")
         assertEquals(12.0, nbt.getDouble("pfxR"))
 

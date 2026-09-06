@@ -19,7 +19,7 @@ object ShaftDebugLogger {
         if (!coordinate.worldExist) return
 
         val world = coordinate.world()
-        val second = world.totalWorldTime / 20L
+        val second = world.gameTime / 20L
         if (second != lastSecond) {
             lastSecond = second
             dumpedNetworks.clear()

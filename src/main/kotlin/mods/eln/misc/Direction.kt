@@ -2,10 +2,10 @@
 package mods.eln.misc
 
 import mods.eln.misc.Utils.isTheClass
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.math.Vec3d
-import net.minecraft.util.EnumFacing
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.world.level.block.entity.BlockEntity
+import net.minecraft.world.phys.Vec3
+import net.minecraft.core.Direction as EnumFacing
 import org.lwjgl.opengl.GL11
 
 /**
@@ -87,18 +87,18 @@ enum class Direction(var int: Int) {
      * @param tileEntity tile entity to check
      * @return Adjacent tile entity or null if none exists
      */
-    fun applyToTileEntity(tileEntity: TileEntity?): TileEntity? {
+    fun applyToTileEntity(tileEntity: BlockEntity?): BlockEntity? {
         if (tileEntity == null) return null
         val coords = intArrayOf(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord)
         coords[int / 2] += sign
-        return if (tileEntity.world != null && tileEntity.world.isBlockLoaded(coords[0], coords[1], coords[2])) {
-            tileEntity.world.getTileEntity(coords[0], coords[1], coords[2])
+        return if (tileEntity.level != null && tileEntity.level.isBlockLoaded(coords[0], coords[1], coords[2])) {
+            tileEntity.level.getBlockEntity(coords[0], coords[1], coords[2])
         } else {
             null
         }
     }
 
-    fun applyToTileEntityAndSameClassThan(tileEntity: TileEntity?, c: Class<*>?): TileEntity? {
+    fun applyToTileEntityAndSameClassThan(tileEntity: BlockEntity?, c: Class<*>?): BlockEntity? {
         if (tileEntity == null) return null
         val findedEntity = applyToTileEntity(tileEntity) ?: return null
         return if (!isTheClass(findedEntity, c!!)) null else findedEntity
@@ -319,7 +319,7 @@ enum class Direction(var int: Int) {
         }
     }
 
-    fun getTileEntity(coordinate: Coordinate): TileEntity {
+    fun getTileEntity(coordinate: Coordinate): BlockEntity {
         var x = coordinate.x
         var y = coordinate.y
         var z = coordinate.z
@@ -331,11 +331,11 @@ enum class Direction(var int: Int) {
             ZN -> z--
             ZP -> z++
         }
-        return coordinate.world().getTileEntity(x, y, z)!!
+        return coordinate.world().getBlockEntity(x, y, z)!!
     }
 
-    fun writeToNBT(nbt: NBTTagCompound, name: String?) {
-        nbt.setByte(name, int.toByte())
+    fun writeToNBT(nbt: CompoundTag, name: String?) {
+        nbt.putByte(name, int.toByte())
     }
 
     fun rotateFromXN(p: DoubleArray) {
@@ -405,19 +405,19 @@ enum class Direction(var int: Int) {
     /**
      * Rotates [p] out of the XN frame into this direction's.
      *
-     * Returns a new vector rather than mutating in place: Vec3d became immutable in 1.9.
+     * Returns a new vector rather than mutating in place: Vec3 became immutable in 1.9.
      */
-    fun rotateFromXN(p: Vec3d): Vec3d {
+    fun rotateFromXN(p: Vec3): Vec3 {
         val x = p.x
         val y = p.y
         val z = p.z
         return when (this) {
             XN -> p
-            XP -> Vec3d(-x, y, -z)
-            YN -> Vec3d(y, x, -z)
-            YP -> Vec3d(y, -x, z)
-            ZN -> Vec3d(-z, y, x)
-            ZP -> Vec3d(z, y, -x)
+            XP -> Vec3(-x, y, -z)
+            YN -> Vec3(y, x, -z)
+            YP -> Vec3(y, -x, z)
+            ZN -> Vec3(-z, y, x)
+            ZP -> Vec3(z, y, -x)
         }
     }
 
@@ -538,7 +538,7 @@ enum class Direction(var int: Int) {
         }
 
         @JvmStatic
-        fun readFromNBT(nbt: NBTTagCompound, name: String): Direction? {
+        fun readFromNBT(nbt: CompoundTag, name: String): Direction? {
             return fromInt(nbt.getByte(name).toInt())
         }
 

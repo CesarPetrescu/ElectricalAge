@@ -1,6 +1,6 @@
 package mods.eln.registration
 
-import net.minecraft.init.SoundEvents
+import net.minecraft.sounds.SoundEvents
 
 import net.minecraftforge.fml.common.registry.GameRegistry
 import mods.eln.Eln
@@ -27,13 +27,13 @@ import mods.eln.railroad.ElectricMinecartItem
 import mods.eln.sixnode.electricaldatalogger.DataLogsPrintDescriptor
 import mods.eln.sixnode.wirelesssignal.WirelessSignalAnalyserItemDescriptor
 import mods.eln.wiki.Data
-import net.minecraft.entity.monster.IMob
-import net.minecraft.entity.passive.EntityAnimal
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.creativetab.CreativeTabs
+import net.minecraft.world.entity.monster.Enemy
+import net.minecraft.world.entity.animal.Animal
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.CreativeModeTab
 import net.minecraft.item.*
-import net.minecraft.item.Item.ToolMaterial
-import net.minecraft.item.ItemArmor.ArmorMaterial
+import net.minecraft.world.item.Tiers
+import net.minecraft.world.item.ArmorMaterials
 import net.minecraftforge.common.util.EnumHelper
 import net.minecraftforge.oredict.OreDictionary
 import kotlin.ExperimentalUnsignedTypes
@@ -41,7 +41,7 @@ import kotlin.OptIn
 
 object ItemRegistration {
 
-    private fun mapSharedGroup(id: Int, tab: CreativeTabs) {
+    private fun mapSharedGroup(id: Int, tab: CreativeModeTab) {
         Eln.sharedItem.setCreativeTabForGroup(id, tab)
         Eln.sharedItemStackOne.setCreativeTabForGroup(id, tab)
     }
@@ -1679,20 +1679,20 @@ object ItemRegistration {
             subId = 40
             name = I18N.TR_NAME(I18N.Type.NONE, "Player Filter")
             val desc =
-                EntitySensorFilterDescriptor(name, EntityPlayer::class.java, 0f, 1f, 0f)
+                EntitySensorFilterDescriptor(name, Player::class.java, 0f, 1f, 0f)
             Eln.sharedItem.addElement(subId + (id shl 6), desc)
         }
         run {
             subId = 41
             name = I18N.TR_NAME(I18N.Type.NONE, "Monster Filter")
-            val desc = EntitySensorFilterDescriptor(name, IMob::class.java, 1f, 0f, 0f)
+            val desc = EntitySensorFilterDescriptor(name, Enemy::class.java, 1f, 0f, 0f)
             Eln.sharedItem.addElement(subId + (id shl 6), desc)
         }
         run {
             subId = 42
             name = I18N.TR_NAME(I18N.Type.NONE, "Animal Filter")
             val desc = EntitySensorFilterDescriptor(
-                name, EntityAnimal::class.java, .3f, .3f,
+                name, Animal::class.java, .3f, .3f,
                 1f
             )
             Eln.sharedItem.addElement(subId + (id shl 6), desc)
@@ -1885,7 +1885,7 @@ object ItemRegistration {
         run {
             name = I18N.TR_NAME(I18N.Type.ITEM, "Copper Helmet")
             Eln.helmetCopper = genericArmorItem(
-                ArmorMaterial.IRON, 2, ArmourType.Helmet, "eln:textures" +
+                ArmorMaterials.IRON, 2, ArmourType.Helmet, "eln:textures" +
                         "/armor/copper_layer_1.png", "eln:textures/armor/copper_layer_2.png"
             ).setTranslationKey(name).setCreativeTab(Eln.creativeTabToolsArmor) as ItemArmor
             ElnRegistry.registerItem(Eln.helmetCopper, "Eln.$name")
@@ -1894,7 +1894,7 @@ object ItemRegistration {
         run {
             name = I18N.TR_NAME(I18N.Type.ITEM, "Copper Chestplate")
             Eln.chestplateCopper = genericArmorItem(
-                ArmorMaterial.IRON, 2, ArmourType.Chestplate, "eln" +
+                ArmorMaterials.IRON, 2, ArmourType.Chestplate, "eln" +
                         ":textures/armor/copper_layer_1.png", "eln:textures/armor/copper_layer_2.png"
             ).setTranslationKey(name)
                 .setCreativeTab(Eln.creativeTabToolsArmor) as ItemArmor
@@ -1904,7 +1904,7 @@ object ItemRegistration {
         run {
             name = I18N.TR_NAME(I18N.Type.ITEM, "Copper Leggings")
             Eln.legsCopper = genericArmorItem(
-                ArmorMaterial.IRON, 2, ArmourType.Leggings, "eln:textures" +
+                ArmorMaterials.IRON, 2, ArmourType.Leggings, "eln:textures" +
                         "/armor/copper_layer_1.png", "eln:textures/armor/copper_layer_2.png"
             ).setTranslationKey(name)
                 .setCreativeTab(Eln.creativeTabToolsArmor) as ItemArmor
@@ -1914,7 +1914,7 @@ object ItemRegistration {
         run {
             name = I18N.TR_NAME(I18N.Type.ITEM, "Copper Boots")
             Eln.bootsCopper = genericArmorItem(
-                ArmorMaterial.IRON, 2, ArmourType.Boots, "eln:textures" +
+                ArmorMaterials.IRON, 2, ArmourType.Boots, "eln:textures" +
                         "/armor/copper_layer_1.png", "eln:textures/armor/copper_layer_2.png"
             ).setTranslationKey(name).setCreativeTab(Eln.creativeTabToolsArmor) as ItemArmor
             ElnRegistry.registerItem(Eln.bootsCopper, "Eln.$name")
@@ -1979,34 +1979,34 @@ object ItemRegistration {
         var name: String
         run {
             name = I18N.TR_NAME(I18N.Type.ITEM, "Copper Sword")
-            Eln.swordCopper = ItemSword(ToolMaterial.IRON).setTranslationKey(name).setCreativeTab(Eln.creativeTabToolsArmor)
+            Eln.swordCopper = ItemSword(Tiers.IRON).setTranslationKey(name).setCreativeTab(Eln.creativeTabToolsArmor)
             ElnRegistry.registerItem(Eln.swordCopper, "Eln.$name")
             ElnRegistry.registerCustomItemStack(name, ItemStack(Eln.swordCopper))
         }
         run {
             name = I18N.TR_NAME(I18N.Type.ITEM, "Copper Hoe")
             Eln.hoeCopper =
-                ItemHoe(ToolMaterial.IRON).setTranslationKey(name)
+                ItemHoe(Tiers.IRON).setTranslationKey(name)
                     .setCreativeTab(Eln.creativeTabToolsArmor)
             ElnRegistry.registerItem(Eln.hoeCopper, "Eln.$name")
             ElnRegistry.registerCustomItemStack(name, ItemStack(Eln.hoeCopper))
         }
         run {
             name = I18N.TR_NAME(I18N.Type.ITEM, "Copper Shovel")
-            Eln.shovelCopper = ItemSpade(ToolMaterial.IRON).setTranslationKey(name).setCreativeTab(Eln.creativeTabToolsArmor)
+            Eln.shovelCopper = ItemSpade(Tiers.IRON).setTranslationKey(name).setCreativeTab(Eln.creativeTabToolsArmor)
             ElnRegistry.registerItem(Eln.shovelCopper, "Eln.$name")
             ElnRegistry.registerCustomItemStack(name, ItemStack(Eln.shovelCopper))
         }
         run {
             name = I18N.TR_NAME(I18N.Type.ITEM, "Copper Pickaxe")
-            Eln.pickaxeCopper = ItemPickaxeEln(ToolMaterial.IRON).setTranslationKey(name).setCreativeTab(Eln.creativeTabToolsArmor)
+            Eln.pickaxeCopper = ItemPickaxeEln(Tiers.IRON).setTranslationKey(name).setCreativeTab(Eln.creativeTabToolsArmor)
             ElnRegistry.registerItem(Eln.pickaxeCopper, "Eln.$name")
             ElnRegistry.registerCustomItemStack(name, ItemStack(Eln.pickaxeCopper))
         }
         run {
             name = I18N.TR_NAME(I18N.Type.ITEM, "Copper Axe")
             Eln.axeCopper =
-                ItemAxeEln(ToolMaterial.IRON).setTranslationKey(name)
+                ItemAxeEln(Tiers.IRON).setTranslationKey(name)
                     .setCreativeTab(Eln.creativeTabToolsArmor)
             ElnRegistry.registerItem(Eln.axeCopper, "Eln.$name")
             ElnRegistry.registerCustomItemStack(name, ItemStack(Eln.axeCopper))

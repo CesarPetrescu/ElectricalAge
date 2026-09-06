@@ -44,14 +44,14 @@ import mods.eln.sim.process.destruct.WorldExplosion
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor
 import mods.eln.sound.LoopedSound
 import mods.eln.wiki.Data
-import net.minecraft.client.audio.ISound
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.Container
-import net.minecraft.inventory.IInventory
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.client.resources.sounds.SoundInstance
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.inventory.AbstractContainerMenu
+import net.minecraft.world.Container
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
 import mods.eln.client.itemrender.IItemRenderer
 import org.lwjgl.opengl.GL11
 import java.io.DataInputStream
@@ -91,7 +91,7 @@ class LegacyDcDcDescriptor(name: String, objM: Obj3D, coreM: Obj3D, casingM: Obj
         Data.addWiring(newItemStack())
     }
 
-    override fun addInformation(itemStack: ItemStack, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack, entityPlayer: Player?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         Collections.addAll(list, *tr("Transforms an input voltage to\nan output voltage.")!!.split("\n".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray())
     }
@@ -245,9 +245,9 @@ class LegacyDcDcElement(transparentNode: TransparentNode, descriptor: Transparen
     }
 
     private fun computeInventory() {
-        val primaryCable = inventory.getStackInSlot(LegacyDcDcContainer.primaryCableSlotId)
-        val secondaryCable = inventory.getStackInSlot(LegacyDcDcContainer.secondaryCableSlotId)
-        val core = inventory.getStackInSlot(LegacyDcDcContainer.ferromagneticSlotId)
+        val primaryCable = inventory.getItem(LegacyDcDcContainer.primaryCableSlotId)
+        val secondaryCable = inventory.getItem(LegacyDcDcContainer.secondaryCableSlotId)
+        val core = inventory.getItem(LegacyDcDcContainer.ferromagneticSlotId)
 
         primaryVoltageWatchdog.setNominalVoltage(3200.0)
         secondaryVoltageWatchdog.setNominalVoltage(3200.0)
@@ -283,14 +283,14 @@ class LegacyDcDcElement(transparentNode: TransparentNode, descriptor: Transparen
         }
     }
 
-    override fun inventoryChange(inventory: IInventory?) {
+    override fun inventoryChange(inventory: Container?) {
         disconnect()
         computeInventory()
         connect()
         needPublish()
     }
 
-    override fun onBlockActivated(player: EntityPlayer, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
+    override fun onBlockActivated(player: Player, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
         return false
     }
 
@@ -298,7 +298,7 @@ class LegacyDcDcElement(transparentNode: TransparentNode, descriptor: Transparen
         return true
     }
 
-    override fun newContainer(side: Direction, player: EntityPlayer): Container? {
+    override fun newContainer(side: Direction, player: Player): AbstractContainerMenu? {
         return LegacyDcDcContainer(player, inventory)
     }
 
@@ -315,17 +315,17 @@ class LegacyDcDcElement(transparentNode: TransparentNode, descriptor: Transparen
     override fun networkSerialize(stream: DataOutputStream) {
         super.networkSerialize(stream)
         try {
-            if (inventory.getStackInSlot(0).isNothing())
+            if (inventory.getItem(0).isNothing())
                 stream.writeByte(0)
             else
-                stream.writeByte(inventory.getStackInSlot(0)!!.count)
-            if (inventory.getStackInSlot(1).isNothing())
+                stream.writeByte(inventory.getItem(0)!!.count)
+            if (inventory.getItem(1).isNothing())
                 stream.writeByte(0)
             else
-                stream.writeByte(inventory.getStackInSlot(1)!!.count)
-            Utils.serialiseItemStack(stream, inventory.getStackInSlot(LegacyDcDcContainer.ferromagneticSlotId))
-            Utils.serialiseItemStack(stream, inventory.getStackInSlot(LegacyDcDcContainer.primaryCableSlotId))
-            Utils.serialiseItemStack(stream, inventory.getStackInSlot(LegacyDcDcContainer.secondaryCableSlotId))
+                stream.writeByte(inventory.getItem(1)!!.count)
+            Utils.serialiseItemStack(stream, inventory.getItem(LegacyDcDcContainer.ferromagneticSlotId))
+            Utils.serialiseItemStack(stream, inventory.getItem(LegacyDcDcContainer.primaryCableSlotId))
+            Utils.serialiseItemStack(stream, inventory.getItem(LegacyDcDcContainer.secondaryCableSlotId))
             node!!.lrduCubeMask.getTranslate(front.down()).serialize(stream)
             var load = 0f
             if (primaryMaxCurrent != 0.0 && secondaryMaxCurrent != 0.0) {
@@ -333,7 +333,7 @@ class LegacyDcDcElement(transparentNode: TransparentNode, descriptor: Transparen
                     secondaryLoad.current / secondaryMaxCurrent).toFloat(), 0f, 1f)
             }
             stream.writeFloat(load)
-            stream.writeBoolean(!inventory.getStackInSlot(3).isNothing())
+            stream.writeBoolean(!inventory.getItem(3).isNothing())
         } catch (e: IOException) {
             e.printStackTrace()
         }
@@ -350,8 +350,8 @@ class LegacyDcDcElement(transparentNode: TransparentNode, descriptor: Transparen
         return info
     }
 
-    override fun readConfigTool(compound: NBTTagCompound, invoker: EntityPlayer) {
-        if (compound.hasKey("isolator")) {
+    override fun readConfigTool(compound: CompoundTag, invoker: Player) {
+        if (compound.contains("isolator")) {
             disconnect()
             reconnect()
             needPublish()
@@ -364,10 +364,10 @@ class LegacyDcDcElement(transparentNode: TransparentNode, descriptor: Transparen
             inventoryChange(inventory)
     }
 
-    override fun writeConfigTool(compound: NBTTagCompound, invoker: EntityPlayer) {
-        ConfigCopyToolDescriptor.writeCableType(compound, "primary", inventory.getStackInSlot(LegacyDcDcContainer.primaryCableSlotId))
-        ConfigCopyToolDescriptor.writeCableType(compound, "secondary", inventory.getStackInSlot(LegacyDcDcContainer.secondaryCableSlotId))
-        ConfigCopyToolDescriptor.writeGenDescriptor(compound, "core", inventory.getStackInSlot(LegacyDcDcContainer.ferromagneticSlotId))
+    override fun writeConfigTool(compound: CompoundTag, invoker: Player) {
+        ConfigCopyToolDescriptor.writeCableType(compound, "primary", inventory.getItem(LegacyDcDcContainer.primaryCableSlotId))
+        ConfigCopyToolDescriptor.writeCableType(compound, "secondary", inventory.getItem(LegacyDcDcContainer.secondaryCableSlotId))
+        ConfigCopyToolDescriptor.writeGenDescriptor(compound, "core", inventory.getItem(LegacyDcDcContainer.ferromagneticSlotId))
     }
 }
 
@@ -416,7 +416,7 @@ class LegacyDcDcRender(tileEntity: TransparentNodeEntity, val descriptor: Transp
     private var cableRenderType: CableRenderType? = null
 
     init {
-        addLoopedSound(object : LoopedSound("eln:transformer", coordinate(), ISound.AttenuationType.LINEAR) {
+        addLoopedSound(object : LoopedSound("eln:transformer", coordinate(), SoundInstance.AttenuationType.LINEAR) {
             override fun getVolume(): Float {
                 return if (load.position > (descriptor as LegacyDcDcDescriptor).minimalLoadToHum)
                     0.1f * (load.position - descriptor.minimalLoadToHum) / (1 - descriptor.minimalLoadToHum)
@@ -510,7 +510,7 @@ class LegacyDcDcRender(tileEntity: TransparentNodeEntity, val descriptor: Transp
         load.step(deltaT)
 
         if (hasCasing) {
-            if (!Utils.isPlayerAround(tileEntity.world, coordinate.moved(front!!).getAxisAlignedBB(0)))
+            if (!Utils.isPlayerAround(tileEntity.level, coordinate.moved(front!!).getAxisAlignedBB(0)))
                 doorOpen.target = 0f
             else
                 doorOpen.target = 1f
@@ -518,18 +518,18 @@ class LegacyDcDcRender(tileEntity: TransparentNodeEntity, val descriptor: Transp
         }
     }
 
-    override fun newGuiDraw(side: Direction, player: EntityPlayer): GuiScreen? {
+    override fun newGuiDraw(side: Direction, player: Player): Screen? {
         return LegacyDcDcGui(player, inventory, this)
     }
 }
 
-class LegacyDcDcGui(player: EntityPlayer, inventory: IInventory, val render: LegacyDcDcRender): GuiContainerEln(LegacyDcDcContainer(player, inventory)) {
+class LegacyDcDcGui(player: Player, inventory: Container, val render: LegacyDcDcRender): GuiContainerEln(LegacyDcDcContainer(player, inventory)) {
     override fun newHelper(): GuiHelperContainer {
         return GuiHelperContainer(this, 176, 194 - 33 + 20, 8, 84 + 194 - 166 - 33 + 20, "transformer.png")
     }
 }
 
-class LegacyDcDcContainer(player: EntityPlayer, inventory: IInventory) : BasicContainer(player, inventory,
+class LegacyDcDcContainer(player: Player, inventory: Container) : BasicContainer(player, inventory,
     arrayOf(
         SixNodeItemSlot(inventory, primaryCableSlotId, 58, 30, 16,
             arrayOf<Class<*>>(ElectricalCableDescriptor::class.java),

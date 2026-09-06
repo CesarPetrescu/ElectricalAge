@@ -31,14 +31,14 @@ import mods.eln.sim.nbt.NbtElectricalLoad
 import mods.eln.sim.process.destruct.BipoleVoltageWatchdog
 import mods.eln.sim.process.destruct.WorldExplosion
 import mods.eln.wiki.Data
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Items
-import net.minecraft.inventory.Container
-import net.minecraft.inventory.IInventory
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Items
+import net.minecraft.world.inventory.AbstractContainerMenu
+import net.minecraft.world.Container
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
 import mods.eln.client.itemrender.IItemRenderer
 import org.lwjgl.opengl.GL11
 import java.util.HashMap
@@ -59,16 +59,16 @@ class PowerCapacitorSixDescriptor(name: String,
         return serie.getValue((cableCount - 1) / uTemp / uTemp)
     }
 
-    fun getCValue(inventory: IInventory): Double {
-        val core = inventory.getStackInSlot(PowerCapacitorSixContainer.redId)
-        val diel = inventory.getStackInSlot(PowerCapacitorSixContainer.dielectricId)
+    fun getCValue(inventory: Container): Double {
+        val core = inventory.getItem(PowerCapacitorSixContainer.redId)
+        val diel = inventory.getItem(PowerCapacitorSixContainer.dielectricId)
         return if (core == null || diel == null) getCValue(0, 0.0) else {
             getCValue(core.count, getUNominalValue(inventory))
         }
     }
 
-    fun getUNominalValue(inventory: IInventory): Double {
-        val diel = inventory.getStackInSlot(PowerCapacitorSixContainer.dielectricId)
+    fun getUNominalValue(inventory: Container): Double {
+        val diel = inventory.getItem(PowerCapacitorSixContainer.dielectricId)
         return if (diel == null) 10000.0 else {
             val desc = GenericItemUsingDamageDescriptor.getDescriptor(diel, DielectricItem::class.java) as? DielectricItem
             if (desc == null) 10000.0 else desc.uNominal * diel.count
@@ -107,7 +107,7 @@ class PowerCapacitorSixDescriptor(name: String,
 
     override fun addInformation(
         itemStack: ItemStack?,
-        entityPlayer: EntityPlayer?,
+        entityPlayer: Player?,
         list: MutableList<String>?,
         par4: Boolean
     ) {
@@ -121,7 +121,7 @@ class PowerCapacitorSixDescriptor(name: String,
         return RealisticEnum.UNREALISTIC
     }
 
-    override fun getFrontFromPlace(side: Direction, player: EntityPlayer): LRDU {
+    override fun getFrontFromPlace(side: Direction, player: Player): LRDU {
         return super.getFrontFromPlace(side, player)!!.left()
     }
 
@@ -222,12 +222,12 @@ class PowerCapacitorSixElement(SixNode: SixNode, side: Direction, descriptor: Si
         }
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound) {
+    override fun writeToNBT(nbt: CompoundTag) {
         super.writeToNBT(nbt)
-        nbt.setDouble("punkELeft", punkProcess.eLeft)
+        nbt.putDouble("punkELeft", punkProcess.eLeft)
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
         punkProcess.eLeft = nbt.getDouble("punkELeft")
         if (java.lang.Double.isNaN(punkProcess.eLeft)) punkProcess.eLeft = 0.0
@@ -238,13 +238,13 @@ class PowerCapacitorSixElement(SixNode: SixNode, side: Direction, descriptor: Si
         return true
     }
 
-    override fun newContainer(side: Direction, player: EntityPlayer): Container {
+    override fun newContainer(side: Direction, player: Player): AbstractContainerMenu {
         return PowerCapacitorSixContainer(player, inventory)
     }
 
-    override fun readConfigTool(compound: NBTTagCompound, invoker: EntityPlayer) {
-        if (compound.hasKey("capRedstoneAmt")) {
-            val desired = compound.getInteger("capRedstoneAmt")
+    override fun readConfigTool(compound: CompoundTag, invoker: Player) {
+        if (compound.contains("capRedstoneAmt")) {
+            val desired = compound.getInt("capRedstoneAmt")
             object : ItemMovingHelper() {
                 override fun acceptsStack(stack: ItemStack): Boolean {
                     return stack.item === Items.REDSTONE
@@ -256,8 +256,8 @@ class PowerCapacitorSixElement(SixNode: SixNode, side: Direction, descriptor: Si
             }.move(invoker.inventory, inventory, PowerCapacitorSixContainer.redId, desired)
             reconnect()
         }
-        if (compound.hasKey("capDielectricAmt")) {
-            val desired = compound.getInteger("capDielectricAmt")
+        if (compound.contains("capDielectricAmt")) {
+            val desired = compound.getInt("capDielectricAmt")
             val dielectric = GenericItemUsingDamageDescriptor.getByName("Dielectric")
             object : ItemMovingHelper() {
                 override fun acceptsStack(stack: ItemStack): Boolean {
@@ -272,18 +272,18 @@ class PowerCapacitorSixElement(SixNode: SixNode, side: Direction, descriptor: Si
         }
     }
 
-    override fun writeConfigTool(compound: NBTTagCompound, invoker: EntityPlayer) {
-        var stack = inventory.getStackInSlot(PowerCapacitorSixContainer.redId)
+    override fun writeConfigTool(compound: CompoundTag, invoker: Player) {
+        var stack = inventory.getItem(PowerCapacitorSixContainer.redId)
         if (stack.isNothing()) {
-            compound.setInteger("capRedstoneAmt", 0)
+            compound.putInt("capRedstoneAmt", 0)
         } else {
-            compound.setInteger("capRedstoneAmt", stack.count)
+            compound.putInt("capRedstoneAmt", stack.count)
         }
-        stack = inventory.getStackInSlot(PowerCapacitorSixContainer.dielectricId)
+        stack = inventory.getItem(PowerCapacitorSixContainer.dielectricId)
         if (stack.isNothing()) {
-            compound.setInteger("capDielectricAmt", 0)
+            compound.putInt("capDielectricAmt", 0)
         } else {
-            compound.setInteger("capDielectricAmt", stack.count)
+            compound.putInt("capDielectricAmt", stack.count)
         }
     }
 
@@ -308,12 +308,12 @@ class PowerCapacitorSixRender(tileEntity: SixNodeEntity, side: Direction, descri
         descriptor.draw()
     }
 
-    override fun newGuiDraw(side: Direction, player: EntityPlayer): GuiScreen {
+    override fun newGuiDraw(side: Direction, player: Player): Screen {
         return PowerCapacitorSixGui(player, inventory, this)
     }
 }
 
-class PowerCapacitorSixGui(player: EntityPlayer, inventory: IInventory, var render: PowerCapacitorSixRender) : GuiContainerEln(PowerCapacitorSixContainer(player, inventory)) {
+class PowerCapacitorSixGui(player: Player, inventory: Container, var render: PowerCapacitorSixRender) : GuiContainerEln(PowerCapacitorSixContainer(player, inventory)) {
 
     override fun guiObjectEvent(`object`: IGuiObject) {
         super.guiObjectEvent(`object`)
@@ -330,7 +330,7 @@ class PowerCapacitorSixGui(player: EntityPlayer, inventory: IInventory, var rend
     }
 }
 
-class PowerCapacitorSixContainer(player: EntityPlayer, inventory: IInventory) : BasicContainer(player, inventory, arrayOf(
+class PowerCapacitorSixContainer(player: Player, inventory: Container) : BasicContainer(player, inventory, arrayOf(
     SlotFilter(inventory, redId, 132, 8, 13, arrayOf(ItemStackFilter(Items.REDSTONE)),
         ISlotSkin.SlotSkin.medium, arrayOf(tr("Redstone slot"), tr("(Increases capacity)"))),
     GenericItemUsingDamageSlot(inventory, dielectricId, 132 + 20, 8, 20, DielectricItem::class.java,

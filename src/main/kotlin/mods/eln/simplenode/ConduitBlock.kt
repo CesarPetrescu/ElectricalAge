@@ -7,16 +7,16 @@ import mods.eln.node.simple.SimpleNodeBlock
 import mods.eln.node.simple.SimpleNodeEntity
 import mods.eln.sim.ElectricalLoad
 import net.minecraft.block.material.Material
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.block.state.IBlockState
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.level.block.entity.BlockEntity
+import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter
+import net.minecraft.world.level.Level
 
 class ConduitBlock(): SimpleNodeBlock(Material.ROCK) {
 
-    override fun createNewTileEntity(worldIn: World?, meta: Int): TileEntity {
+    override fun createNewTileEntity(worldIn: Level?, meta: Int): BlockEntity {
         return ConduitEntity()
     }
 
@@ -25,7 +25,7 @@ class ConduitBlock(): SimpleNodeBlock(Material.ROCK) {
     }
 
 
-    override fun isSideSolid(state: IBlockState, world: IBlockAccess, pos: BlockPos, side: EnumFacing): Boolean {
+    override fun isSideSolid(state: BlockState, world: BlockGetter, pos: BlockPos, side: EnumFacing): Boolean {
         return true
     }
 }

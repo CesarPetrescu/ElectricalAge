@@ -3,8 +3,8 @@ package mods.eln.transparentnode.waterturbine;
 import mods.eln.gui.GuiContainerEln;
 import mods.eln.gui.GuiHelperContainer;
 import mods.eln.node.transparent.TransparentNodeElementInventory;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
 
 
 public class WaterTurbineGuiDraw extends GuiContainerEln {
@@ -14,7 +14,7 @@ public class WaterTurbineGuiDraw extends GuiContainerEln {
     WaterTurbineRender render;
 
 
-    public WaterTurbineGuiDraw(EntityPlayer player, IInventory inventory, WaterTurbineRender render) {
+    public WaterTurbineGuiDraw(Player player, Container inventory, WaterTurbineRender render) {
         super(new WaterTurbineContainer(null, player, inventory));
         this.inventory = (TransparentNodeElementInventory) inventory;
         this.render = render;

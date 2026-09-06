@@ -17,9 +17,9 @@ import mods.eln.sim.nbt.NbtElectricalGateOutputProcess;
 import mods.eln.sixnode.wirelesssignal.IWirelessSignalSpot;
 import mods.eln.sixnode.wirelesssignal.IWirelessSignalTx;
 import mods.eln.sixnode.wirelesssignal.WirelessUtils;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -165,7 +165,7 @@ public class ModbusRtuElement extends SixNodeElement implements IModbusSlave {
     }
 
     @Override
-    public void destroy(EntityPlayerMP entityPlayer) {
+    public void destroy(ServerPlayer entityPlayer) {
         super.destroy(entityPlayer);
         unregister();
     }
@@ -188,7 +188,7 @@ public class ModbusRtuElement extends SixNodeElement implements IModbusSlave {
     }
 
     @Override
-    public boolean onBlockActivated(EntityPlayer entityPlayer, Direction side, float vx, float vy, float vz) {
+    public boolean onBlockActivated(Player entityPlayer, Direction side, float vx, float vy, float vz) {
         if (Utils.isPlayerUsingWrench(entityPlayer)) {
             if (side.isY()) {
                 front = front.getNextClockwise();
@@ -301,7 +301,7 @@ public class ModbusRtuElement extends SixNodeElement implements IModbusSlave {
     }
 
     @Override
-    public void networkUnserialize(DataInputStream stream, EntityPlayerMP player) {
+    public void networkUnserialize(DataInputStream stream, ServerPlayer player) {
         super.networkUnserialize(stream, player);
         try {
             switch (stream.readByte()) {
@@ -459,21 +459,21 @@ public class ModbusRtuElement extends SixNodeElement implements IModbusSlave {
     }
 
     @Override
-    public void writeToNBT(NBTTagCompound nbt) {
+    public void writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setInteger("station", station);
-        nbt.setString("name", name);
+        nbt.putInt("station", station);
+        nbt.putString("name", name);
 
         int idx;
 
-        nbt.setInteger("txCnt", wirelessTxStatusList.size());
+        nbt.putInt("txCnt", wirelessTxStatusList.size());
         idx = 0;
         for (ServerWirelessTxStatus tx : wirelessTxStatusList.values()) {
             tx.writeToNBT(nbt, "tx" + idx);
             idx++;
         }
 
-        nbt.setInteger("rxCnt", wirelessRxStatusList.size());
+        nbt.putInt("rxCnt", wirelessRxStatusList.size());
         idx = 0;
         for (ServerWirelessRxStatus rx : wirelessRxStatusList.values()) {
             rx.writeToNBT(nbt, "rx" + idx);
@@ -482,19 +482,19 @@ public class ModbusRtuElement extends SixNodeElement implements IModbusSlave {
     }
 
     @Override
-    public void readFromNBT(@NotNull NBTTagCompound nbt) {
+    public void readFromNBT(@NotNull CompoundTag nbt) {
         super.readFromNBT(nbt);
-        station = nbt.getInteger("station");
+        station = nbt.getInt("station");
         name = nbt.getString("name");
 
         int cnt;
 
-        cnt = nbt.getInteger("txCnt");
+        cnt = nbt.getInt("txCnt");
         for (int idx = 0; idx < cnt; idx++) {
             ServerWirelessTxStatus tx = new ServerWirelessTxStatus(nbt, "tx" + idx, this);
             wirelessTxStatusList.put(tx.uuid, tx);
         }
-        cnt = nbt.getInteger("rxCnt");
+        cnt = nbt.getInt("rxCnt");
         for (int idx = 0; idx < cnt; idx++) {
             ServerWirelessRxStatus rx = new ServerWirelessRxStatus(nbt, "rx" + idx, this);
             wirelessRxStatusList.put(rx.uuid, rx);

@@ -3,7 +3,7 @@ package mods.eln.transparentnode.eggincubator;
 import mods.eln.node.transparent.TransparentNodeElement;
 import mods.eln.node.transparent.TransparentNodeElementInventory;
 import mods.eln.node.transparent.TransparentNodeElementRender;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 
 public class EggIncubatorInventory extends TransparentNodeElementInventory {
 
@@ -21,12 +21,12 @@ public class EggIncubatorInventory extends TransparentNodeElementInventory {
     }
 
     @Override
-    public boolean canInsertItem(int var1, ItemStack var2, int var3) {
+    public boolean canPlaceItemThroughFace(int var1, ItemStack var2, int var3) {
         return true;
     }
 
     @Override
-    public boolean canExtractItem(int var1, ItemStack var2, int var3) {
+    public boolean canTakeItemThroughFace(int var1, ItemStack var2, int var3) {
         return false;
     }
 }

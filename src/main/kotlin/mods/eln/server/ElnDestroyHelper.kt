@@ -8,10 +8,10 @@ import mods.eln.node.NodeBase
 import mods.eln.node.NodeManager
 import mods.eln.node.six.SixNode
 import mods.eln.node.transparent.TransparentNode
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.inventory.IInventory
-import net.minecraft.item.ItemStack
-import net.minecraft.world.World
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.Container
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.Level
 import mods.eln.misc.getBlock
 import mods.eln.misc.setBlockToAir
 
@@ -21,9 +21,9 @@ data class ElnDestroySummary(
 )
 
 object ElnDestroyHelper {
-    fun destroyAroundPlayer(world: World, player: EntityPlayerMP, radius: Int): ElnDestroySummary? {
+    fun destroyAroundPlayer(world: Level, player: ServerPlayer, radius: Int): ElnDestroySummary? {
         val nodeManager = NodeManager.instance ?: return null
-        val center = Coordinate(player.posX.toInt(), player.posY.toInt(), player.posZ.toInt(), world)
+        val center = Coordinate(player.x.toInt(), player.y.toInt(), player.z.toInt(), world)
         return destroyWithinBounds(
             world = world,
             nodeManager = nodeManager,
@@ -38,7 +38,7 @@ object ElnDestroyHelper {
     }
 
     fun destroyWithinBounds(
-        world: World,
+        world: Level,
         nodeManager: NodeManager,
         minX: Int,
         maxX: Int,
@@ -46,9 +46,9 @@ object ElnDestroyHelper {
         maxY: Int,
         minZ: Int,
         maxZ: Int,
-        player: EntityPlayerMP
+        player: ServerPlayer
     ): ElnDestroySummary {
-        val dim = world.provider.dimension
+        val dim = world.dimension()
         val targetNodes = nodeManager.nodeList.filter {
             val c = it.coordinate
             c.dimension == dim &&
@@ -78,7 +78,7 @@ object ElnDestroyHelper {
         return ElnDestroySummary(nodesDestroyed, blocksCleared)
     }
 
-    fun clearElnBlock(world: World, x: Int, y: Int, z: Int): Boolean {
+    fun clearElnBlock(world: Level, x: Int, y: Int, z: Int): Boolean {
         val block = world.getBlock(x, y, z)
         val isElnBlock =
             block == Eln.sixNodeBlock ||
@@ -89,15 +89,15 @@ object ElnDestroyHelper {
         return true
     }
 
-    private fun clearInventoryWithoutDrops(inventory: IInventory?) {
+    private fun clearInventoryWithoutDrops(inventory: Container?) {
         if (inventory == null) return
-        for (slot in 0 until inventory.sizeInventory) {
-            inventory.setInventorySlotContents(slot, ItemStack.EMPTY)
+        for (slot in 0 until inventory.containerSize) {
+            inventory.setItem(slot, ItemStack.EMPTY)
         }
-        inventory.markDirty()
+        inventory.setChanged()
     }
 
-    private fun destroyElnNodeWithoutDrops(world: World, nodeManager: NodeManager, node: NodeBase, player: EntityPlayerMP): Boolean {
+    private fun destroyElnNodeWithoutDrops(world: Level, nodeManager: NodeManager, node: NodeBase, player: ServerPlayer): Boolean {
         val coord = node.coordinate
         val expectedBlock = when (node) {
             is SixNode -> Eln.sixNodeBlock
@@ -111,7 +111,7 @@ object ElnDestroyHelper {
                     node.sideElementList.forEach { element ->
                         clearInventoryWithoutDrops(element?.inventory)
                     }
-                    node.sixNodeCacheBlock = net.minecraft.init.Blocks.AIR
+                    node.sixNodeCacheBlock = net.minecraft.level.level.block.Blocks.AIR
                     for (direction in Direction.values()) {
                         if (node.getSideEnable(direction)) {
                             node.deleteSubBlock(player, direction)

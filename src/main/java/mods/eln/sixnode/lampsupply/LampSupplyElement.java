@@ -33,11 +33,11 @@ import mods.eln.sixnode.wirelesssignal.aggregator.BiggerAggregator;
 import mods.eln.sixnode.wirelesssignal.aggregator.IWirelessSignalAggregator;
 import mods.eln.sixnode.wirelesssignal.aggregator.SmallerAggregator;
 import mods.eln.sixnode.wirelesssignal.aggregator.ToogleAggregator;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.nbt.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -67,7 +67,7 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
     public Resistor loadResistor;
     public IProcess lampSupplySlowProcess = new LampSupplySlowProcess();
 
-    private final IInventory inventory = new SixNodeElementInventory(1, 64, this, LampSupplyContainer.requiredCableLength);
+    private final Container inventory = new SixNodeElementInventory(1, 64, this, LampSupplyContainer.requiredCableLength);
 
     // ElectricalCableDescriptor here covers utility cables
     // Java reports the Kotlin vararg of descriptor classes as an unchecked array creation here.
@@ -100,7 +100,7 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
     IWirelessSignalAggregator[][] aggregators;
 
     @Override
-    public IInventory getInventory() {
+    public Container getInventory() {
         if (inventoryProxy != null)
             return inventoryProxy.getInventory();
         else
@@ -109,7 +109,7 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
 
     @Nullable
     @Override
-    public Container newContainer(@NotNull Direction side, @NotNull EntityPlayer player) {
+    public AbstractContainerMenu newContainer(@NotNull Direction side, @NotNull Player player) {
         return new LampSupplyContainer(player, inventoryProxy.getInventory());
     }
 
@@ -210,7 +210,7 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
 
     @Override
     public ElectricalLoad getElectricalLoad(LRDU lrdu, int mask) {
-        if (getInventory().getStackInSlot(LampSupplyContainer.cableSlotId) == null) return null;
+        if (getInventory().getItem(LampSupplyContainer.cableSlotId) == null) return null;
         if (front == lrdu) return powerLoad;
         return null;
     }
@@ -223,7 +223,7 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
 
     @Override
     public int getConnectionMask(LRDU lrdu) {
-        if (getInventory().getStackInSlot(LampSupplyContainer.cableSlotId) == null) return 0;
+        if (getInventory().getItem(LampSupplyContainer.cableSlotId) == null) return 0;
         if (front == lrdu) return NodeBase.maskElectricalPower;
         return 0;
     }
@@ -272,10 +272,10 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
     }
 
     @Override
-    public boolean onBlockActivated(EntityPlayer entityPlayer, Direction side, float vx, float vy, float vz) {
+    public boolean onBlockActivated(Player entityPlayer, Direction side, float vx, float vy, float vz) {
         if (onBlockActivatedRotate(entityPlayer)) return true;
 
-        ItemStack playerEquippedItem = entityPlayer.getHeldItemMainhand();
+        ItemStack playerEquippedItem = entityPlayer.getMainHandItem();
         GenericItemBlockUsingDamageDescriptor desc = GenericItemBlockUsingDamageDescriptor.getDescriptor(playerEquippedItem, GenericCableDescriptor.class);
         boolean takeItem = false;
 
@@ -293,7 +293,7 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
     }
 
     @Override
-    public void destroy(EntityPlayerMP entityPlayer) {
+    public void destroy(ServerPlayer entityPlayer) {
         super.destroy(entityPlayer);
         unregister();
     }
@@ -315,11 +315,11 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
         super.writeToNBT(nbt);
         int idx = 0;
         for (Entry e : entries) {
-            nbt.setString("entry_p" + idx, e.powerChannel);
-            nbt.setString("entry_w" + idx, e.wirelessChannel);
-            nbt.setBoolean("channelStates" + idx, channelStates[idx]);
+            nbt.putString("entry_p" + idx, e.powerChannel);
+            nbt.putString("entry_w" + idx, e.wirelessChannel);
+            nbt.putBoolean("channelStates" + idx, channelStates[idx]);
 
-            nbt.setInteger("selectedAggregator" + idx, e.aggregator);
+            nbt.putInt("selectedAggregator" + idx, e.aggregator);
             ((ToogleAggregator) aggregators[idx][2]).writeToNBT(nbt, "toogleAggregator" + idx);
 
             idx++;
@@ -334,13 +334,13 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
         }
 
         super.readFromNBT(nbt);
-        if (nbt.hasKey("channel")) {
+        if (nbt.contains("channel")) {
             entries.get(0).powerChannel = nbt.getString("channel");
 
         } else {
             idx = 0;
-            while (nbt.hasKey("entry_p" + idx)) {
-                entries.set(idx, new Entry(nbt.getString("entry_p" + idx), nbt.getString("entry_w" + idx), nbt.getInteger("selectedAggregator" + idx)));
+            while (nbt.contains("entry_p" + idx)) {
+                entries.set(idx, new Entry(nbt.getString("entry_p" + idx), nbt.getString("entry_w" + idx), nbt.getInt("selectedAggregator" + idx)));
                 channelStates[idx] = nbt.getBoolean("channelStates" + idx);
 
                 ((ToogleAggregator) aggregators[idx][2]).readFromNBT(nbt, "toogleAggregator" + idx);
@@ -357,7 +357,7 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
     }
 
     void setupFromInventory() {
-        ItemStack cableStack = getInventory().getStackInSlot(LampSupplyContainer.cableSlotId);
+        ItemStack cableStack = getInventory().getItem(LampSupplyContainer.cableSlotId);
         if (!McBridge.isNothing(cableStack)) {
             GenericItemBlockUsingDamageDescriptor desc = GenericItemBlockUsingDamageDescriptor.getDescriptor(cableStack, GenericCableDescriptor.class);
             if (desc instanceof GenericCableDescriptor) {
@@ -422,7 +422,7 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
                 stream.writeChar(e.aggregator);
             }
 
-            Utils.serialiseItemStack(stream, getInventory().getStackInSlot(LampSupplyContainer.cableSlotId));
+            Utils.serialiseItemStack(stream, getInventory().getItem(LampSupplyContainer.cableSlotId));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -440,16 +440,16 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
         return getRange(descriptor, inventoryProxy.getInventory());
     }
 
-    private int getRange(LampSupplyDescriptor desc, IInventory inventory2) {
-        ItemStack stack = getInventory().getStackInSlot(LampSupplyContainer.cableSlotId);
+    private int getRange(LampSupplyDescriptor desc, Container inventory2) {
+        ItemStack stack = getInventory().getItem(LampSupplyContainer.cableSlotId);
         if (McBridge.isNothing(stack)) return desc.range;
         return desc.range + stack.getCount();
     }
 
     @Override
-    public void readConfigTool(NBTTagCompound compound, EntityPlayer invoker) {
-        if(compound.hasKey("powerChannels")) {
-            NBTTagList list = compound.getTagList("powerChannels", 8);
+    public void readConfigTool(NBTTagCompound compound, Player invoker) {
+        if(compound.contains("powerChannels")) {
+            NBTTagList list = compound.getList("powerChannels", 8);
             for(int idx = 0; idx < descriptor.channelCount && idx < list.tagCount(); idx++) {
                 channelRemove(this, idx, entries.get(idx).powerChannel);
                 entries.get(idx).powerChannel = list.getStringTagAt(idx);
@@ -457,8 +457,8 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
             }
             needPublish();
         }
-        if(compound.hasKey("wirelessChannels")) {
-            NBTTagList list = compound.getTagList("wirelessChannels", 8);
+        if(compound.contains("wirelessChannels")) {
+            NBTTagList list = compound.getList("wirelessChannels", 8);
             for(int idx = 0; idx < descriptor.channelCount && idx < list.tagCount(); idx++) {
                 channelRemove(this, idx, entries.get(idx).wirelessChannel);
                 entries.get(idx).wirelessChannel = list.getStringTagAt(idx);
@@ -466,7 +466,7 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
             }
             needPublish();
         }
-        if(compound.hasKey("aggregators")) {
+        if(compound.contains("aggregators")) {
             int[] aggregators = compound.getIntArray("aggregators");
             for(int idx = 0; idx < descriptor.channelCount && idx < aggregators.length; idx++) {
                 entries.get(idx).aggregator = aggregators[idx];
@@ -478,7 +478,7 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
     }
 
     @Override
-    public void writeConfigTool(NBTTagCompound compound, EntityPlayer invoker) {
+    public void writeConfigTool(NBTTagCompound compound, Player invoker) {
         NBTTagList powerList = new NBTTagList();
         NBTTagList wirelessList = new NBTTagList();
         int[] aggregators = new int[descriptor.channelCount];
@@ -487,10 +487,10 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
             wirelessList.appendTag(new NBTTagString(entries.get(idx).wirelessChannel));
             aggregators[idx] = entries.get(idx).aggregator;
         }
-        compound.setTag("powerChannels", powerList);
-        compound.setTag("wirelessChannels", wirelessList);
-        compound.setIntArray("aggregators", aggregators);
-        ItemStack cables = getInventory().getStackInSlot(0);
+        compound.put("powerChannels", powerList);
+        compound.put("wirelessChannels", wirelessList);
+        compound.putIntArray("aggregators", aggregators);
+        ItemStack cables = getInventory().getItem(0);
         ConfigCopyToolDescriptor.writeCableType(compound, cables);
     }
 }

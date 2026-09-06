@@ -4,8 +4,8 @@ import mods.eln.node.GhostNode
 import mods.eln.node.NodeBase
 import mods.eln.sim.ElectricalLoad
 import mods.eln.sim.ThermalLoad
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.item.ItemStack
 
 class GhostPowerNode(origin: Coordinate, front: Direction, offset: Coordinate, val load: ElectricalLoad, val mask: Int = NodeBase.maskElectricalPower): GhostNode() {
 
@@ -18,7 +18,7 @@ class GhostPowerNode(origin: Coordinate, front: Direction, offset: Coordinate, v
         onBlockPlacedBy(coord, Direction.XN, null, null)
     }
 
-    override fun initializeFromThat(front: Direction, entityLiving: EntityLivingBase?, itemStack: ItemStack?) {
+    override fun initializeFromThat(front: Direction, entityLiving: LivingEntity?, itemStack: ItemStack?) {
         connect()
     }
 

@@ -1,17 +1,17 @@
 package mods.eln.entity
 
-import net.minecraft.entity.EntityCreature
-import net.minecraft.entity.ai.EntityAIBase
-import net.minecraft.entity.ai.RandomPositionGenerator
+import net.minecraft.world.entity.PathfinderMob
+import net.minecraft.world.entity.ai.goal.Goal
+import net.minecraft.world.entity.ai.util.DefaultRandomPos
 import mods.eln.misc.xCoord
 import mods.eln.misc.yCoord
 import mods.eln.misc.zCoord
 
 class ConfigurableAiWander(
-    private val entity: EntityCreature,
+    private val entity: PathfinderMob,
     private val speed: Double,
     private val randLimit: Int
-) : EntityAIBase() {
+) : Goal() {
     private var xPosition = 0.0
     private var yPosition = 0.0
     private var zPosition = 0.0
@@ -25,7 +25,7 @@ class ConfigurableAiWander(
         if (entity.idleTime >= 100) return false
         if (entity.rng.nextInt(randLimit) != 0) return false
 
-        val vec3 = RandomPositionGenerator.findRandomTarget(entity, 10, 7) ?: return false
+        val vec3 = DefaultRandomPos.findRandomTarget(entity, 10, 7) ?: return false
         xPosition = vec3.x
         yPosition = vec3.y
         zPosition = vec3.z

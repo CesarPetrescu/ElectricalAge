@@ -3,10 +3,10 @@ package mods.eln.sixnode.lampsocket
 import mods.eln.cable.CableItemSlot
 import mods.eln.item.lampitem.LampItemSlot
 import mods.eln.misc.BasicContainer
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.IInventory
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.Container
 
-class LampSocketContainer(player: EntityPlayer, inventory: IInventory, descriptor: LampSocketDescriptor) :
+class LampSocketContainer(player: Player, inventory: Container, descriptor: LampSocketDescriptor) :
     BasicContainer(
         player, inventory, arrayOf(
             LampItemSlot(inventory, LAMP_SLOT_ID, 16 + 1, 59 + 1, 1, descriptor.acceptedLampTypes),

@@ -5,7 +5,7 @@ import kotlin.test.assertEquals
 import mods.eln.misc.FunctionTable
 import mods.eln.sim.ThermalLoad
 import mods.eln.sim.mna.component.VoltageSource
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.nbt.CompoundTag
 
 class NbtBatteryProcessTest {
     @Test
@@ -15,7 +15,7 @@ class NbtBatteryProcessTest {
         process.Q = 2.5
         process.life = 0.75
 
-        val nbt = NBTTagCompound()
+        val nbt = CompoundTag()
         process.writeToNBT(nbt, "pfx")
 
         val other = NbtBatteryProcess(null, null, table, 10.0, VoltageSource("b2"), ThermalLoad())
@@ -28,9 +28,9 @@ class NbtBatteryProcessTest {
     @Test
     fun readFromNbtHandlesInvalidValues() {
         val table = FunctionTable(doubleArrayOf(1.0, 1.0), 1.0)
-        val nbt = NBTTagCompound()
-        nbt.setDouble("pfxNBPQ", Double.NaN)
-        nbt.setDouble("pfxNBPlife", Double.POSITIVE_INFINITY)
+        val nbt = CompoundTag()
+        nbt.putDouble("pfxNBPQ", Double.NaN)
+        nbt.putDouble("pfxNBPlife", Double.POSITIVE_INFINITY)
 
         val other = NbtBatteryProcess(null, null, table, 10.0, VoltageSource("b"), ThermalLoad())
         other.readFromNBT(nbt, "pfx")

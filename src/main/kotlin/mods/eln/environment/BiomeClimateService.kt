@@ -3,10 +3,10 @@ package mods.eln.environment
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import mods.eln.Eln
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraft.world.biome.Biome
-import net.minecraftforge.fml.relauncher.ReflectionHelper
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level
+import net.minecraft.world.level.biome.Biome
+import net.neoforged.fml.util.ObfuscationReflectionHelper
 import java.lang.reflect.Field
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
@@ -38,14 +38,14 @@ object BiomeClimateService {
     @Volatile private var startupAuditComplete = false
 
     @JvmStatic
-    fun sample(world: World, x: Int, y: Int, z: Int): ClimateState {
+    fun sample(world: Level, x: Int, y: Int, z: Int): ClimateState {
         ensureLoaded()
 
         val weather = getWeatherSnapshot(world)
         val biome = world.getBiome(BlockPos(x, y, z))
         val profile = resolveProfileForBiome(biome)
 
-        val dayBlend = dayBlendForWorldTicks(world.worldTime)
+        val dayBlend = dayBlendForWorldTicks(world.dayTime)
         val biomeTemperatureC = interpolateTemperature(profile.dayHighCelsius, profile.nightLowCelsius, dayBlend)
         var temperatureC = biomeTemperatureC
         var humidity = interpolateHumidity(profile.dayHumidityPercent, profile.nightHumidityPercent, dayBlend)
@@ -338,9 +338,9 @@ object BiomeClimateService {
         }
     }
 
-    private fun getWeatherSnapshot(world: World): WeatherSnapshot {
-        val dimension = world.provider.dimension
-        val tick = world.totalWorldTime
+    private fun getWeatherSnapshot(world: Level): WeatherSnapshot {
+        val dimension = world.dimension()
+        val tick = world.gameTime
 
         synchronized(this) {
             val cached = weatherByDimension[dimension]
@@ -441,7 +441,7 @@ object BiomeClimateService {
      */
     private val biomeNameField: Field? by lazy {
         try {
-            ReflectionHelper.findField(Biome::class.java, "biomeName", "field_76791_y")
+            ObfuscationReflectionHelper.findField(Biome::class.java, "biomeName", "field_76791_y")
         } catch (_: Throwable) {
             null
         }

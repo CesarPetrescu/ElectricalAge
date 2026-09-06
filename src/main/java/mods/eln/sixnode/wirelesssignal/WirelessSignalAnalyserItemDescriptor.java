@@ -7,9 +7,9 @@ import mods.eln.misc.Direction;
 import mods.eln.misc.Utils;
 import mods.eln.sixnode.wirelesssignal.WirelessUtils.WirelessSignalSpot;
 import mods.eln.sixnode.wirelesssignal.aggregator.BiggerAggregator;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,8 +22,8 @@ public class WirelessSignalAnalyserItemDescriptor extends GenericItemUsingDamage
     }
 
     @Override
-    public boolean onItemUse(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side, float vx, float vy, float vz) {
-        if (world.isRemote) return true;
+    public boolean onItemUse(ItemStack stack, Player player, Level world, int x, int y, int z, int side, float vx, float vy, float vz) {
+        if (world.isClientSide) return true;
         Utils.sendMessage(player, "-------------------");
         Direction dir = Direction.fromIntMinecraftSide(side);
         Coordinate c = new Coordinate(x, y, z, world);

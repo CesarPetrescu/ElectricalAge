@@ -134,7 +134,7 @@ class PowerSourceBipoleTest {
         process.setMaximumVoltage(50.0)
         process.setMaximumCurrent(2.5)
 
-        val nbt = net.minecraft.nbt.NBTTagCompound()
+        val nbt = net.minecraft.nbt.CompoundTag()
         process.writeToNBT(nbt, "pfx")
 
         val other = PowerSourceBipole(aState, bState, aSrc, bSrc)

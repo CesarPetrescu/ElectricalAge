@@ -3,8 +3,8 @@ package mods.eln.fluid
 import mods.eln.registration.ElnRegistry
 
 import net.minecraft.block.material.Material
-import net.minecraft.init.Blocks
-import net.minecraft.item.ItemBlock
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.BlockItem
 import net.minecraftforge.fluids.BlockFluidClassic
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidRegistry
@@ -18,7 +18,7 @@ class BlockElnFluid(
 
     init {
         setTranslationKey(internalName)
-        ElnRegistry.registerBlock(this, internalName, ItemBlock::class.java)
+        ElnRegistry.registerBlock(this, internalName, BlockItem::class.java)
         if (density <= FluidRegistry.WATER.density) {
             displacements[Blocks.WATER] = false
             displacements[Blocks.FLOWING_WATER] = false

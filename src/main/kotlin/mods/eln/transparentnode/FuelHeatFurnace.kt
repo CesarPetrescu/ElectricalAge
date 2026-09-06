@@ -22,12 +22,12 @@ import mods.eln.sim.process.destruct.ThermalLoadWatchDog
 import mods.eln.sim.process.destruct.WorldExplosion
 import mods.eln.sound.LoopedSound
 import mods.eln.wiki.Data
-import net.minecraft.client.gui.GuiButton
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.IInventory
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.client.gui.components.Button
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.Container
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
 import mods.eln.client.itemrender.IItemRenderer
 import org.lwjgl.opengl.GL11
 import java.io.DataInputStream
@@ -84,7 +84,7 @@ class FuelHeatFurnaceDescriptor(name: String, model: Obj3D, val thermal: Thermal
     override fun renderItem(type: IItemRenderer.ItemRenderType, item: ItemStack, vararg data: Any) =
         if (type == IItemRenderer.ItemRenderType.INVENTORY) super.renderItem(type, item, *data) else draw()
 
-    override fun addInformation(itemStack: ItemStack?, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack?, entityPlayer: Player?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         list.add(tr("Generates heat when supplied with fuel."))
         list.add(Utils.plotCelsius(tr("  Max. temperature: "), thermal.maximumTemperature))
@@ -119,7 +119,7 @@ class FuelHeatFurnaceElement(transparentNode: TransparentNode, descriptor: Trans
     private val controlProcess = object : RegulatorProcess("controller") {
         override fun process(time: Double) {
             val nominalPower = if (mainSwitch)
-                FuelBurnerDescriptor.getDescriptor(inventory.getStackInSlot(FuelHeatFurnaceContainer.FuelBurnerSlot))?.producedHeatPower ?: 0.0
+                FuelBurnerDescriptor.getDescriptor(inventory.getItem(FuelHeatFurnaceContainer.FuelBurnerSlot))?.producedHeatPower ?: 0.0
             else
                 0.0
 
@@ -189,7 +189,7 @@ class FuelHeatFurnaceElement(transparentNode: TransparentNode, descriptor: Trans
         connect()
     }
 
-    override fun onBlockActivated(player: EntityPlayer, side: Direction, vx: Float, vy: Float, vz: Float) = false
+    override fun onBlockActivated(player: Player, side: Direction, vx: Float, vy: Float, vz: Float) = false
 
     override fun networkSerialize(stream: DataOutputStream) {
         super.networkSerialize(stream)
@@ -199,7 +199,7 @@ class FuelHeatFurnaceElement(transparentNode: TransparentNode, descriptor: Trans
         stream.writeFloat(setTemperature.toFloat())
         stream.writeFloat(actualHeatPower.toFloat())
         stream.writeFloat(thermalLoad.temperatureCelsius.toFloat())
-        stream.writeInt(FuelBurnerDescriptor.getDescriptor(inventory.getStackInSlot(FuelHeatFurnaceContainer.FuelBurnerSlot))?.type ?: -1)
+        stream.writeInt(FuelBurnerDescriptor.getDescriptor(inventory.getItem(FuelHeatFurnaceContainer.FuelBurnerSlot))?.type ?: -1)
     }
 
     override fun networkUnserialize(stream: DataInputStream): Byte {
@@ -221,18 +221,18 @@ class FuelHeatFurnaceElement(transparentNode: TransparentNode, descriptor: Trans
         return unserializeNulldId
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound) {
+    override fun writeToNBT(nbt: CompoundTag) {
         super.writeToNBT(nbt)
         tank.writeToNBT(nbt, "tank")
-        nbt.setBoolean("externalControlled", externalControlled)
-        nbt.setBoolean("mainSwitch", mainSwitch)
-        nbt.setDouble("heaterControlValue", heaterControlValue)
-        nbt.setDouble("manualControl", manualControl)
-        nbt.setDouble("setTemperature", setTemperature)
-        nbt.setDouble("actualHeatPower", actualHeatPower)
+        nbt.putBoolean("externalControlled", externalControlled)
+        nbt.putBoolean("mainSwitch", mainSwitch)
+        nbt.putDouble("heaterControlValue", heaterControlValue)
+        nbt.putDouble("manualControl", manualControl)
+        nbt.putDouble("setTemperature", setTemperature)
+        nbt.putDouble("actualHeatPower", actualHeatPower)
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
         tank.readFromNBT(nbt, "tank")
         externalControlled = nbt.getBoolean("externalControlled")
@@ -252,10 +252,10 @@ class FuelHeatFurnaceElement(transparentNode: TransparentNode, descriptor: Trans
         return info
     }
 
-    override fun inventoryChange(inventory: IInventory?) {
-        mainSwitch = mainSwitch && !inventory?.getStackInSlot(FuelHeatFurnaceContainer.FuelBurnerSlot).isNothing()
+    override fun inventoryChange(inventory: Container?) {
+        mainSwitch = mainSwitch && !inventory?.getItem(FuelHeatFurnaceContainer.FuelBurnerSlot).isNothing()
 
-        val regulatorStack = inventory?.getStackInSlot(FuelHeatFurnaceContainer.RegulatorSlot)
+        val regulatorStack = inventory?.getItem(FuelHeatFurnaceContainer.RegulatorSlot)
         if (!regulatorStack.isNothing() && !externalControlled) {
             val regulator = Utils.getItemObject(regulatorStack) as IRegulatorDescriptor
             regulator.applyTo(controlProcess, 500.0, 20.0, 0.2, 0.1)
@@ -264,7 +264,7 @@ class FuelHeatFurnaceElement(transparentNode: TransparentNode, descriptor: Trans
         }
     }
 
-    override fun newContainer(side: Direction, player: EntityPlayer) = FuelHeatFurnaceContainer(node, player, inventory)
+    override fun newContainer(side: Direction, player: Player) = FuelHeatFurnaceContainer(node, player, inventory)
 }
 
 class FuelHeatFurnaceRender(tileEntity: TransparentNodeEntity, descriptor: TransparentNodeDescriptor) :
@@ -295,7 +295,7 @@ class FuelHeatFurnaceRender(tileEntity: TransparentNodeEntity, descriptor: Trans
         (transparentNodeDescriptor as FuelHeatFurnaceDescriptor).draw(type, mainSwitch, heatPower != 0f)
     }
 
-    override fun newGuiDraw(side: Direction, player: EntityPlayer) = FuelHeatFurnaceGui(player, inventory, this)
+    override fun newGuiDraw(side: Direction, player: Player) = FuelHeatFurnaceGui(player, inventory, this)
 
     override fun networkUnserialize(stream: DataInputStream) {
         super.networkUnserialize(stream)
@@ -314,7 +314,7 @@ class FuelHeatFurnaceRender(tileEntity: TransparentNodeEntity, descriptor: Trans
     }
 }
 
-class FuelHeatFurnaceContainer(val base: NodeBase?, player: EntityPlayer, inventory: IInventory) :
+class FuelHeatFurnaceContainer(val base: NodeBase?, player: Player, inventory: Container) :
     BasicContainer(player, inventory,
         arrayOf(GenericItemUsingDamageSlot(inventory, FuelBurnerSlot, 26, 58, 1, FuelBurnerDescriptor::class.java,
             SlotSkin.medium, arrayOf(tr("Fuel burner slot"))),
@@ -330,10 +330,10 @@ class FuelHeatFurnaceContainer(val base: NodeBase?, player: EntityPlayer, invent
     override val refreshRateDivider = 1
 }
 
-class FuelHeatFurnaceGui(player: EntityPlayer, val inventory: IInventory, val render: FuelHeatFurnaceRender) :
+class FuelHeatFurnaceGui(player: Player, val inventory: Container, val render: FuelHeatFurnaceRender) :
     GuiContainerEln(FuelHeatFurnaceContainer(null, player, inventory)) {
-    lateinit var externalControlled: GuiButton
-    lateinit var mainSwitch: GuiButton
+    lateinit var externalControlled: Button
+    lateinit var mainSwitch: Button
 
     lateinit var manualControl: GuiVerticalTrackBar
     lateinit var setTemperature: GuiVerticalTrackBarHeat
@@ -367,12 +367,12 @@ class FuelHeatFurnaceGui(player: EntityPlayer, val inventory: IInventory, val re
             mainSwitch.displayString = tr("Furnace is on")
         else
             mainSwitch.displayString = tr("Furnace is off")
-        mainSwitch.enabled = !inventory.getStackInSlot(FuelHeatFurnaceContainer.FuelBurnerSlot).isNothing()
+        mainSwitch.enabled = !inventory.getItem(FuelHeatFurnaceContainer.FuelBurnerSlot).isNothing()
 
         if (render.manualControl.pending) {
             manualControl.value = render.manualControl.value
         }
-        manualControl.setEnable(inventory.getStackInSlot(FuelHeatFurnaceContainer.RegulatorSlot).isNothing() &&
+        manualControl.setEnable(inventory.getItem(FuelHeatFurnaceContainer.RegulatorSlot).isNothing() &&
             !render.externalControlled)
         manualControl.setComment(0, Utils.plotPercent(tr("Control value at "), manualControl.value.toDouble()))
         manualControl.setComment(1, Utils.plotPower(tr("Heat Power: "), render.heatPower.toDouble()))
@@ -380,7 +380,7 @@ class FuelHeatFurnaceGui(player: EntityPlayer, val inventory: IInventory, val re
         if (render.setTemperature.pending) {
             setTemperature.value = render.setTemperature.value
         }
-        setTemperature.setEnable(!inventory.getStackInSlot(FuelHeatFurnaceContainer.RegulatorSlot).isNothing() &&
+        setTemperature.setEnable(!inventory.getItem(FuelHeatFurnaceContainer.RegulatorSlot).isNothing() &&
             !render.externalControlled)
         setTemperature.temperatureHit = Math.max(0f, render.actualTemperature)
         setTemperature.setComment(0, tr("Temperature"))

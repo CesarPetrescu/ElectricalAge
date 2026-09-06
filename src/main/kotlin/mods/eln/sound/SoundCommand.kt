@@ -1,8 +1,8 @@
 package mods.eln.sound
 
 import mods.eln.misc.Coordinate
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.world.World
+import net.minecraft.world.level.block.entity.BlockEntity
+import net.minecraft.world.level.Level
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
@@ -12,7 +12,7 @@ import mods.eln.misc.zCoord
 
 class SoundCommand {
     @JvmField
-    var world: World? = null
+    var world: Level? = null
     @JvmField
     var x: Double = 0.0
     @JvmField
@@ -82,7 +82,7 @@ class SoundCommand {
     }
 
     fun play() {
-        if (world!!.isRemote) SoundClient.play(this)
+        if (world!!.isClientSide) SoundClient.play(this)
         else SoundServer.play(this)
     }
 
@@ -94,8 +94,8 @@ class SoundCommand {
         return this
     }
 
-    fun set(c: TileEntity): SoundCommand {
-        world = c.world
+    fun set(c: BlockEntity): SoundCommand {
+        world = c.level
         x = c.xCoord + 0.5
         y = c.yCoord + 0.5
         z = c.zCoord + 0.5
@@ -103,7 +103,7 @@ class SoundCommand {
         return this
     }
 
-    fun set(x: Double, y: Double, z: Double, w: World?): SoundCommand {
+    fun set(x: Double, y: Double, z: Double, w: Level?): SoundCommand {
         world = w
         this.x = x
         this.y = y
@@ -194,7 +194,7 @@ class SoundCommand {
 
     companion object {
         @Throws(IOException::class)
-        fun fromStream(stream: DataInputStream, w: World?): SoundCommand {
+        fun fromStream(stream: DataInputStream, w: Level?): SoundCommand {
             val p = SoundCommand()
             p.world = w
 

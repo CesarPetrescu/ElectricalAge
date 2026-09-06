@@ -5,26 +5,26 @@ import mods.eln.Eln
 import mods.eln.misc.Coordinate
 import mods.eln.misc.Direction.Companion.fromFacing
 import mods.eln.node.transparent.TransparentNodeEntity
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyInteger
+import net.minecraft.world.level.block.state.properties.IntegerProperty
 import net.minecraft.block.state.BlockFaceShape
-import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.util.EnumBlockRenderType
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.RayTraceResult
-import net.minecraft.util.math.Vec3d
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.StateDefinition
+import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.RenderShape
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand
+import net.minecraft.world.phys.AABB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.phys.HitResult
+import net.minecraft.world.phys.Vec3
+import net.minecraft.world.level.BlockGetter
+import net.minecraft.world.level.Level
 import java.util.Random
 
 /**
@@ -42,27 +42,27 @@ class GhostBlock : Block(Material.IRON) {
         defaultState = blockState.baseState.withProperty(SHAPE, tCube)
     }
 
-    override fun createBlockState(): BlockStateContainer = BlockStateContainer(this, SHAPE)
+    override fun createBlockState(): StateDefinition = StateDefinition(this, SHAPE)
 
-    override fun getStateFromMeta(meta: Int): IBlockState =
+    override fun getStateFromMeta(meta: Int): BlockState =
         defaultState.withProperty(SHAPE, meta.coerceIn(tCube, tLadder))
 
-    override fun getMetaFromState(state: IBlockState): Int = state.getValue(SHAPE)
+    override fun getMetaFromState(state: BlockState): Int = state.getValue(SHAPE)
 
-    private fun shapeOf(state: IBlockState) = state.getValue(SHAPE)
+    private fun shapeOf(state: BlockState) = state.getValue(SHAPE)
 
-    override fun getBoundingBox(state: IBlockState, world: IBlockAccess, pos: BlockPos): AxisAlignedBB =
+    override fun getBoundingBox(state: BlockState, world: BlockGetter, pos: BlockPos): AABB =
         when (shapeOf(state)) {
             tFloor -> FLOOR_BOX
             tLadder -> LADDER_BOX
             else -> FULL_BLOCK_AABB
         }
 
-    override fun getItemDropped(state: IBlockState, random: Random, fortune: Int): Item? = null
+    override fun getItemDropped(state: BlockState, random: Random, fortune: Int): Item? = null
 
     override fun addCollisionBoxToList(
-        state: IBlockState, world: World, pos: BlockPos, entityBox: AxisAlignedBB,
-        collidingBoxes: MutableList<AxisAlignedBB>, entity: Entity?, isActualState: Boolean
+        state: BlockState, world: Level, pos: BlockPos, entityBox: AABB,
+        collidingBoxes: MutableList<AABB>, entity: Entity?, isActualState: Boolean
     ) {
         when (shapeOf(state)) {
             tFloor -> addCollisionBoxToList(pos, entityBox, collidingBoxes, FLOOR_BOX)
@@ -73,7 +73,7 @@ class GhostBlock : Block(Material.IRON) {
                 if (te is TransparentNodeEntity) {
                     @Suppress("UNCHECKED_CAST")
                     te.addCollisionBoxesToList(
-                        entityBox, collidingBoxes as MutableList<AxisAlignedBB?>, element.elementCoordinate
+                        entityBox, collidingBoxes as MutableList<AABB?>, element.elementCoordinate
                     )
                 } else {
                     super.addCollisionBoxToList(state, world, pos, entityBox, collidingBoxes, entity, isActualState)
@@ -82,7 +82,7 @@ class GhostBlock : Block(Material.IRON) {
         }
     }
 
-    override fun getSelectedBoundingBox(state: IBlockState, world: World, pos: BlockPos): AxisAlignedBB =
+    override fun getSelectedBoundingBox(state: BlockState, world: Level, pos: BlockPos): AABB =
         when (shapeOf(state)) {
             tFloor -> FLOOR_BOX.offset(pos)
             tLadder -> LADDER_BOX.offset(pos)
@@ -90,49 +90,49 @@ class GhostBlock : Block(Material.IRON) {
         }
 
     override fun collisionRayTrace(
-        blockState: IBlockState, world: World, pos: BlockPos, startVec: Vec3d, endVec: Vec3d
-    ): RayTraceResult? = rayTrace(pos, startVec, endVec, getBoundingBox(blockState, world, pos))
+        blockState: BlockState, world: Level, pos: BlockPos, startVec: Vec3, endVec: Vec3
+    ): HitResult? = rayTrace(pos, startVec, endVec, getBoundingBox(blockState, world, pos))
 
-    override fun isLadder(state: IBlockState, world: IBlockAccess, pos: BlockPos, entity: EntityLivingBase?): Boolean =
+    override fun isLadder(state: BlockState, world: BlockGetter, pos: BlockPos, entity: LivingEntity?): Boolean =
         shapeOf(state) == tLadder
 
-    override fun isOpaqueCube(state: IBlockState): Boolean = false
+    override fun isOpaqueCube(state: BlockState): Boolean = false
 
-    override fun isFullCube(state: IBlockState): Boolean = false
+    override fun isFullCube(state: BlockState): Boolean = false
 
-    override fun getRenderType(state: IBlockState): EnumBlockRenderType = EnumBlockRenderType.INVISIBLE
+    override fun getRenderType(state: BlockState): RenderShape = RenderShape.INVISIBLE
 
     override fun getPickBlock(
-        state: IBlockState, target: RayTraceResult, world: World, pos: BlockPos, player: EntityPlayer
+        state: BlockState, target: HitResult, world: Level, pos: BlockPos, player: Player
     ): ItemStack = ItemStack.EMPTY
 
     override fun getBlockFaceShape(
-        world: IBlockAccess, state: IBlockState, pos: BlockPos, face: EnumFacing
+        world: BlockGetter, state: BlockState, pos: BlockPos, face: EnumFacing
     ): BlockFaceShape = BlockFaceShape.UNDEFINED
 
-    override fun breakBlock(world: World, pos: BlockPos, state: IBlockState) {
-        if (!world.isRemote) {
+    override fun breakBlock(world: Level, pos: BlockPos, state: BlockState) {
+        if (!world.isClientSide) {
             getElement(world, pos.x, pos.y, pos.z)?.breakBlock()
         }
         super.breakBlock(world, pos, state)
     }
 
     override fun onBlockActivated(
-        world: World, pos: BlockPos, state: IBlockState, player: EntityPlayer,
-        hand: EnumHand, side: EnumFacing, vx: Float, vy: Float, vz: Float
+        world: Level, pos: BlockPos, state: BlockState, player: Player,
+        hand: InteractionHand, side: EnumFacing, vx: Float, vy: Float, vz: Float
     ): Boolean {
-        if (!world.isRemote) {
+        if (!world.isClientSide) {
             val element = getElement(world, pos.x, pos.y, pos.z)
             if (element != null) return element.onBlockActivated(player, fromFacing(side), vx, vy, vz)
         }
         return true
     }
 
-    fun getElement(world: World?, x: Int, y: Int, z: Int): GhostElement? {
+    fun getElement(world: Level?, x: Int, y: Int, z: Int): GhostElement? {
         return Eln.ghostManager.getGhost(Coordinate(x, y, z, world!!))
     }
 
-    override fun getBlockHardness(blockState: IBlockState, world: World, pos: BlockPos): Float = 0.5f
+    override fun getBlockHardness(blockState: BlockState, world: Level, pos: BlockPos): Float = 0.5f
 
     val nodeUuid: String
         get() = "g"
@@ -143,9 +143,9 @@ class GhostBlock : Block(Material.IRON) {
         const val tLadder = 2
 
         @JvmField
-        val SHAPE: PropertyInteger = PropertyInteger.create("shape", tCube, tLadder)
+        val SHAPE: IntegerProperty = IntegerProperty.create("shape", tCube, tLadder)
 
-        private val FLOOR_BOX = AxisAlignedBB(0.0, 0.0, 0.0, 1.0, 0.0625, 1.0)
-        private val LADDER_BOX = AxisAlignedBB(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+        private val FLOOR_BOX = AABB(0.0, 0.0, 0.0, 1.0, 0.0625, 1.0)
+        private val LADDER_BOX = AABB(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
     }
 }

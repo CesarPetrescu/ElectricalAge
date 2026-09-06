@@ -1,8 +1,8 @@
 package mods.eln.mqtt
 
 import mods.eln.misc.Coordinate
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagList
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.nbt.ListTag
 import java.security.SecureRandom
 import java.util.Locale
 
@@ -48,11 +48,11 @@ object MqttSignalControllerRegistry {
 
     @JvmStatic
     @Synchronized
-    fun readFromNbt(tag: NBTTagCompound?) {
+    fun readFromNbt(tag: CompoundTag?) {
         if (tag == null || !tag.getBoolean("present")) return
         assignments.clear()
         usedIds.clear()
-        val list = tag.getTagList("entries", 10)
+        val list = tag.getList("entries", 10)
         for (i in 0 until list.tagCount()) {
             val entryTag = list.getCompoundTagAt(i)
             val coord = Coordinate()
@@ -67,16 +67,16 @@ object MqttSignalControllerRegistry {
 
     @JvmStatic
     @Synchronized
-    fun writeToNbt(tag: NBTTagCompound) {
-        tag.setBoolean("present", true)
-        val list = NBTTagList()
+    fun writeToNbt(tag: CompoundTag) {
+        tag.putBoolean("present", true)
+        val list = ListTag()
         assignments.values.forEach { entry ->
-            val entryTag = NBTTagCompound()
+            val entryTag = CompoundTag()
             entry.coordinate.writeToNBT(entryTag, "coord")
-            entryTag.setString("id", entry.controllerId)
+            entryTag.putString("id", entry.controllerId)
             list.appendTag(entryTag)
         }
-        tag.setTag("entries", list)
+        tag.put("entries", list)
     }
 
     @Synchronized

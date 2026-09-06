@@ -1,35 +1,35 @@
 package mods.eln.entity
 
 import mods.eln.misc.Utils
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityList
-import net.minecraft.entity.EnumCreatureAttribute
-import net.minecraft.entity.SharedMonsterAttributes
-import net.minecraft.entity.ai.EntityAIAttackMelee
-import net.minecraft.entity.ai.EntityAIHurtByTarget
-import net.minecraft.entity.ai.EntityAILookIdle
-import net.minecraft.entity.ai.EntityAIMoveThroughVillage
-import net.minecraft.entity.ai.EntityAIMoveTowardsRestriction
-import net.minecraft.entity.ai.EntityAINearestAttackableTarget
-import net.minecraft.entity.ai.EntityAISwimming
-import net.minecraft.entity.ai.EntityAIWatchClosest
-import net.minecraft.entity.monster.EntityMob
-import net.minecraft.entity.passive.EntityVillager
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Items
-import net.minecraft.init.SoundEvents
-import net.minecraft.item.ItemMonsterPlacer
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.DamageSource
-import net.minecraft.util.SoundEvent
-import net.minecraft.util.math.BlockPos
-import net.minecraft.block.Block
-import net.minecraft.world.World
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.EntityType
+import net.minecraft.world.entity.MobType
+import net.minecraft.world.entity.ai.attributes.Attributes
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal
+import net.minecraft.world.entity.ai.goal.MoveThroughVillageGoal
+import net.minecraft.world.entity.ai.goal.MoveTowardsRestrictionGoal
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal
+import net.minecraft.world.entity.ai.goal.FloatGoal
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal
+import net.minecraft.world.entity.monster.Monster
+import net.minecraft.world.entity.npc.Villager
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Items
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.item.SpawnEggItem
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.sounds.SoundEvent
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.Level
 import java.util.ArrayList
 import java.util.Random
 
-class ReplicatorEntity(world: World) : EntityMob(world) {
+class ReplicatorEntity(world: Level) : Monster(world) {
     var isSpawnedFromWeather = false
     var hungerTime = 10.0 * 60.0
     var hungerToEnergy = 10.0 * hungerTime
@@ -44,22 +44,22 @@ class ReplicatorEntity(world: World) : EntityMob(world) {
 
         val replicatorAi = ReplicatorCableAI(this)
         var priority = 0
-        tasks.addTask(priority++, EntityAISwimming(this))
-        // 1.8 split target selection out of the melee task: one EntityAIAttackMelee attacks
+        tasks.addTask(priority++, FloatGoal(this))
+        // 1.8 split target selection out of the melee task: one MeleeAttackGoal attacks
         // whatever the target tasks below have chosen, replacing the three per-class tasks.
-        tasks.addTask(priority++, EntityAIAttackMelee(this, 1.0, false))
+        tasks.addTask(priority++, MeleeAttackGoal(this, 1.0, false))
         tasks.addTask(priority++, replicatorAi)
-        tasks.addTask(priority++, EntityAIMoveTowardsRestriction(this, 1.0))
-        tasks.addTask(priority++, EntityAIMoveThroughVillage(this, 1.0, false))
+        tasks.addTask(priority++, MoveTowardsRestrictionGoal(this, 1.0))
+        tasks.addTask(priority++, MoveThroughVillageGoal(this, 1.0, false))
         tasks.addTask(priority++, ConfigurableAiWander(this, 1.0, 20))
-        tasks.addTask(priority, EntityAIWatchClosest(this, EntityPlayer::class.java, 8.0f))
-        tasks.addTask(priority++, EntityAILookIdle(this))
+        tasks.addTask(priority, LookAtPlayerGoal(this, Player::class.java, 8.0f))
+        tasks.addTask(priority++, RandomLookAroundGoal(this))
 
         priority = 1
-        targetTasks.addTask(priority++, EntityAIHurtByTarget(this, true))
+        targetTasks.addTask(priority++, HurtByTargetGoal(this, true))
         // checkSight values are 1.7.10's: players must be visible, villagers and other replicators need not be.
-        targetTasks.addTask(priority, EntityAINearestAttackableTarget(this, EntityPlayer::class.java, true))
-        targetTasks.addTask(priority, EntityAINearestAttackableTarget(this, EntityVillager::class.java, false))
+        targetTasks.addTask(priority, NearestAttackableTargetGoal(this, Player::class.java, true))
+        targetTasks.addTask(priority, NearestAttackableTargetGoal(this, Villager::class.java, false))
         targetTasks.addTask(priority++, ReplicatorHungryAttack(this, ReplicatorEntity::class.java, false))
     }
 
@@ -83,10 +83,10 @@ class ReplicatorEntity(world: World) : EntityMob(world) {
         }
         if (hunger < hungerToDuplicate) {
             val entityLiving = ReplicatorEntity(world)
-            entityLiving.setLocationAndAngles(posX, posY, posZ, 0.0f, 0.0f)
-            entityLiving.rotationYawHead = entityLiving.rotationYaw
-            entityLiving.renderYawOffset = entityLiving.rotationYaw
-            world.spawnEntity(entityLiving)
+            entityLiving.moveTo(posX, posY, posZ, 0.0f, 0.0f)
+            entityLiving.rotationYawHead = entityLiving.yRot
+            entityLiving.renderYawOffset = entityLiving.yRot
+            world.addFreshEntity(entityLiving)
             entityLiving.playLivingSound()
             hunger = 0.0
         }
@@ -98,10 +98,10 @@ class ReplicatorEntity(world: World) : EntityMob(world) {
 
     override fun applyEntityAttributes() {
         super.applyEntityAttributes()
-        getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).baseValue = 8.0
-        getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).baseValue = 8.0
-        getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).baseValue = 0.23000000417232513
-        getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).baseValue = 3.0
+        getEntityAttribute(Attributes.FOLLOW_RANGE).baseValue = 8.0
+        getEntityAttribute(Attributes.MAX_HEALTH).baseValue = 8.0
+        getEntityAttribute(Attributes.MOVEMENT_SPEED).baseValue = 0.23000000417232513
+        getEntityAttribute(Attributes.ATTACK_DAMAGE).baseValue = 3.0
     }
 
     // isAIEnabled() is gone: every EntityLiving runs its AI tasks on 1.8+.
@@ -123,27 +123,27 @@ class ReplicatorEntity(world: World) : EntityMob(world) {
 
         if (isSpawnedFromWeather && Math.random() < 0.33) {
             // Spawn eggs stop being damage-keyed in 1.9: the entity id travels in the stack's
-            // EntityTag NBT, which ItemMonsterPlacer writes for us.
-            val entityId = EntityList.getKey(ReplicatorEntity::class.java)
+            // EntityTag NBT, which SpawnEggItem writes for us.
+            val entityId = EntityType.getKey(ReplicatorEntity::class.java)
             if (entityId != null) {
                 val egg = ItemStack(Items.SPAWN_EGG)
-                ItemMonsterPlacer.applyEntityIdToItemStack(egg, entityId)
+                SpawnEggItem.applyEntityIdToItemStack(egg, entityId)
                 entityDropItem(egg, 0.5f)
             }
         }
     }
 
-    override fun getCreatureAttribute(): EnumCreatureAttribute {
-        return EnumCreatureAttribute.UNDEFINED
+    override fun getCreatureAttribute(): MobType {
+        return MobType.UNDEFINED
     }
 
-    override fun writeEntityToNBT(nbt: NBTTagCompound) {
+    override fun writeEntityToNBT(nbt: CompoundTag) {
         super.writeEntityToNBT(nbt)
-        nbt.setDouble("ElnHunger", hunger)
-        nbt.setBoolean("isSpawnedFromWeather", isSpawnedFromWeather)
+        nbt.putDouble("ElnHunger", hunger)
+        nbt.putBoolean("isSpawnedFromWeather", isSpawnedFromWeather)
     }
 
-    override fun readEntityFromNBT(nbt: NBTTagCompound) {
+    override fun readEntityFromNBT(nbt: CompoundTag) {
         super.readEntityFromNBT(nbt)
         hunger = nbt.getDouble("ElnHunger")
         isSpawnedFromWeather = nbt.getBoolean("isSpawnedFromWeather")

@@ -7,9 +7,9 @@ import mods.eln.gui.GuiTextFieldEln.GuiTextFieldElnObserver;
 import mods.eln.gui.IGuiObject;
 import mods.eln.misc.FC;
 import mods.eln.misc.UtilsClient;
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
 import org.lwjgl.opengl.GL11;
 
 import java.text.NumberFormat;
@@ -19,7 +19,7 @@ import static mods.eln.i18n.I18N.tr;
 
 public class ElectricalDataLoggerGui extends GuiContainerEln implements GuiTextFieldElnObserver {
 
-    GuiButton resetBt, voltageType, energyType, currentType, powerType, celsiusType, temperatureType, humidityType, percentType, noType, zeroLineToggle, config, printBt, pause;
+    Button resetBt, voltageType, energyType, currentType, powerType, celsiusType, temperatureType, humidityType, percentType, noType, zeroLineToggle, config, printBt, pause;
     GuiTextFieldEln samplingPeriod, maxValue, minValue, yCursorValue;
     ElectricalDataLoggerRender render;
     private static final int GUI_WIDTH = 176;
@@ -36,7 +36,7 @@ public class ElectricalDataLoggerGui extends GuiContainerEln implements GuiTextF
 
     State state = State.display;
 
-    public ElectricalDataLoggerGui(EntityPlayer player, IInventory inventory, ElectricalDataLoggerRender render) {
+    public ElectricalDataLoggerGui(Player player, Container inventory, ElectricalDataLoggerRender render) {
         super(new ElectricalDataLoggerContainer(player, inventory));
         this.render = render;
     }

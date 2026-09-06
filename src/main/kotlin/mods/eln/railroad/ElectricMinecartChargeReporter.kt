@@ -1,10 +1,10 @@
 package mods.eln.railroad
 
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.neoforged.bus.api.SubscribeEvent
 import mods.eln.Eln
 import mods.eln.i18n.I18N
 import mods.eln.misc.Utils
-import net.minecraftforge.event.entity.player.PlayerInteractEvent
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent
 
 class ElectricMinecartChargeReporter {
 
@@ -17,11 +17,11 @@ class ElectricMinecartChargeReporter {
 
     private fun report(event: PlayerInteractEvent) {
         val player = event.entityPlayer ?: return
-        val world = player.world
-        if (world == null || world.isRemote) return
+        val world = player.level
+        if (world == null || world.isClientSide) return
 
         val minecart = player.ridingEntity as? EntityElectricMinecart ?: return
-        val heldItem = player.heldItemMainhand ?: return
+        val heldItem = player.mainHandItem ?: return
         val multiMeter = Eln.multiMeterElement
         val allMeter = Eln.allMeterElement
         val holdingMeter = (multiMeter != null && multiMeter.checkSameItemStack(heldItem)) ||

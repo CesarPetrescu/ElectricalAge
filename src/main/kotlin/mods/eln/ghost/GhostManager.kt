@@ -5,11 +5,11 @@ import mods.eln.Eln
 import mods.eln.misc.Coordinate
 import mods.eln.misc.Utils.getTags
 import mods.eln.node.NodeManager
-import net.minecraft.block.Block
-import net.minecraft.init.Blocks
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.world.World
-import net.minecraft.world.storage.WorldSavedData
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.world.level.Level
+import net.minecraft.world.level.saveddata.SavedData
 import java.util.*
 import mods.eln.misc.getBlock
 import mods.eln.misc.isBlockLoaded
@@ -17,7 +17,7 @@ import mods.eln.misc.isReplaceable
 import mods.eln.misc.setBlock
 import mods.eln.misc.setBlockToAir
 
-class GhostManager(par1Str: String?) : WorldSavedData(par1Str) {
+class GhostManager(par1Str: String?) : SavedData(par1Str) {
     var ghostTable: MutableMap<Coordinate?, GhostElement> = Hashtable()
     var observerTable: MutableMap<Coordinate?, GhostObserver> = Hashtable()
     fun clear() {
@@ -100,15 +100,15 @@ class GhostManager(par1Str: String?) : WorldSavedData(par1Str) {
         coordinate.world().setBlockToAir(coordinate.x, coordinate.y, coordinate.z) //caca1.5.1
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
+    override fun writeToNBT(nbt: CompoundTag): CompoundTag {
 
         return nbt
     }
 
-    fun loadFromNBT(nbt: NBTTagCompound?) {
+    fun loadFromNBT(nbt: CompoundTag?) {
         for (o in getTags(nbt!!)) {
             val ghost = GhostElement()
             ghost.readFromNBT(o, "")
@@ -116,13 +116,13 @@ class GhostManager(par1Str: String?) : WorldSavedData(par1Str) {
         }
     }
 
-    fun saveToNBT(nbt: NBTTagCompound, dim: Int) {
+    fun saveToNBT(nbt: CompoundTag, dim: Int) {
         var nodeCounter = 0
         for (ghost in ghostTable.values) {
             if (dim != Int.MIN_VALUE && ghost.elementCoordinate!!.dimension != dim) continue
-            val nbtGhost = NBTTagCompound()
+            val nbtGhost = CompoundTag()
             ghost.writeToNBT(nbtGhost, "")
-            nbt.setTag("n" + nodeCounter++, nbtGhost)
+            nbt.put("n" + nodeCounter++, nbtGhost)
         }
     }
 
@@ -136,7 +136,7 @@ class GhostManager(par1Str: String?) : WorldSavedData(par1Str) {
         }
     }
 
-    fun canCreateGhostAt(world: World, x: Int, y: Int, z: Int): Boolean {
+    fun canCreateGhostAt(world: Level, x: Int, y: Int, z: Int): Boolean {
         return if (!world.isBlockLoaded(x, y, z)) {
             false
         } else !(world.getBlock(x, y, z) !== Blocks.AIR && !world.getBlock(x, y, z).isReplaceable(world, x, y, z))

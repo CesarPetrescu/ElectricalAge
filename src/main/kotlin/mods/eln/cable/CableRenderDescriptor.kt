@@ -1,7 +1,7 @@
 package mods.eln.cable
 
 import mods.eln.misc.UtilsClient.bindTexture
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.ResourceLocation
 
 class CableRenderDescriptor(modName: String?, cableTexture: String?, var widthPixel: Float, var heightPixel: Float) {
     var width: Float = widthPixel / 16

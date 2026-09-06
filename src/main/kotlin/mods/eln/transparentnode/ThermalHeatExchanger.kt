@@ -23,14 +23,14 @@ import mods.eln.sim.nbt.NbtElectricalGateInput
 import mods.eln.sim.nbt.NbtThermalLoad
 import mods.eln.sim.process.destruct.ThermalLoadWatchDog
 import mods.eln.sim.process.destruct.WorldExplosion
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
 import mods.eln.client.itemrender.IItemRenderer
-import net.minecraft.util.EnumFacing
+import net.minecraft.core.Direction as EnumFacing
 import net.minecraftforge.fluids.Fluid
-import net.minecraftforge.fluids.FluidStack
-import net.minecraftforge.fluids.FluidTank
+import net.neoforged.neoforge.fluids.FluidStack
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank
 import mods.eln.fluid.ISidedFluidHandler
 import org.lwjgl.opengl.GL11
 import java.lang.Math.ceil
@@ -63,7 +63,7 @@ class ThermalHeatExchangerDescriptor(
     override fun renderItem(type: IItemRenderer.ItemRenderType, item: ItemStack, vararg data: Any) =
         draw()//if (type == IItemRenderer.ItemRenderType.INVENTORY) super.renderItem(type, item, *data) else draw()
 
-    override fun addInformation(itemStack: ItemStack?, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack?, entityPlayer: Player?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         list.add(tr("Converts fluids between hot and cold states"))
         list.add(tr("Cold -> Hot = consumes heat"))
@@ -230,12 +230,12 @@ class ThermalHeatExchangerElement(
         Pair(tr("thermal power"), Utils.plotPower(joulesPerTick * 20))
     )
 
-    override fun writeToNBT(nbt: NBTTagCompound) {
+    override fun writeToNBT(nbt: CompoundTag) {
         super.writeToNBT(nbt)
         tank.writeToNBT(nbt, "tank")
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
         tank.readFromNBT(nbt, "tank")
     }
@@ -245,7 +245,7 @@ class ThermalHeatExchangerElement(
         connect()
     }
 
-    override fun onBlockActivated(player: EntityPlayer, side: Direction, vx: Float, vy: Float, vz: Float) = false
+    override fun onBlockActivated(player: Player, side: Direction, vx: Float, vy: Float, vz: Float) = false
 
     override fun getFluidHandler(): ISidedFluidHandler {
         return tank

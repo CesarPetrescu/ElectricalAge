@@ -7,7 +7,6 @@ import mods.eln.misc.Utils;
 import mods.eln.node.NodeBase;
 import mods.eln.node.six.SixNode;
 import mods.eln.node.six.SixNodeDescriptor;
-import mods.eln.node.six.SixNodeDescriptor;
 import mods.eln.node.six.SixNodeElement;
 import mods.eln.node.six.SixNodeElementInventory;
 import mods.eln.sim.ElectricalLoad;
@@ -18,11 +17,11 @@ import mods.eln.sim.nbt.NbtElectricalLoad;
 import mods.eln.sim.process.destruct.VoltageStateWatchDog;
 import mods.eln.sim.process.destruct.WorldExplosion;
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -49,7 +48,7 @@ public class HubElement extends SixNodeElement {
     }
 
     @Override
-    public void readFromNBT(@NotNull NBTTagCompound nbt) {
+    public void readFromNBT(@NotNull CompoundTag nbt) {
         super.readFromNBT(nbt);
         for (int idx = 0; idx < 6; idx++) {
             connectionGrid[idx] = nbt.getBoolean("connectionGrid" + idx);
@@ -57,21 +56,21 @@ public class HubElement extends SixNodeElement {
     }
 
     @Override
-    public void writeToNBT(NBTTagCompound nbt) {
+    public void writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
         for (int idx = 0; idx < 6; idx++) {
-            nbt.setBoolean("connectionGrid" + idx, connectionGrid[idx]);
+            nbt.putBoolean("connectionGrid" + idx, connectionGrid[idx]);
         }
     }
 
     @Override
-    public IInventory getInventory() {
+    public Container getInventory() {
         return inventory;
     }
 
     @Override
     public ElectricalLoad getElectricalLoad(LRDU lrdu, int mask) {
-        if (inventory.getStackInSlot(HubContainer.cableSlotId + lrdu.toInt()) != null)
+        if (inventory.getItem(HubContainer.cableSlotId + lrdu.toInt()) != null)
             return electricalLoad[lrdu.toInt()];
         return null;
     }
@@ -107,7 +106,7 @@ public class HubElement extends SixNodeElement {
         super.networkSerialize(stream);
         try {
             for (int idx = 0; idx < 4; idx++) {
-                Utils.serialiseItemStack(stream, inventory.getStackInSlot(HubContainer.cableSlotId + idx));
+                Utils.serialiseItemStack(stream, inventory.getItem(HubContainer.cableSlotId + idx));
             }
 
             for (int idx = 0; idx < 6; idx++) {
@@ -161,7 +160,7 @@ public class HubElement extends SixNodeElement {
             if (connectionGrid[idx]) {
                 LRDU[] lrdu = connectionIdToSide(idx);
 
-                if (inventory.getStackInSlot(HubContainer.cableSlotId + lrdu[0].toInt()) != null && inventory.getStackInSlot(HubContainer.cableSlotId + lrdu[1].toInt()) != null) {
+                if (inventory.getItem(HubContainer.cableSlotId + lrdu[0].toInt()) != null && inventory.getItem(HubContainer.cableSlotId + lrdu[1].toInt()) != null) {
                     Resistor r = new Resistor(electricalLoad[lrdu[0].toInt()], electricalLoad[lrdu[1].toInt()]);
                     r.setResistance(getCableDescriptorFromLrdu(lrdu[0]).electricalRs + getCableDescriptorFromLrdu(lrdu[1]).electricalRs);
                     electricalComponentList.add(r);
@@ -180,7 +179,7 @@ public class HubElement extends SixNodeElement {
     ElectricalCableDescriptor getCableDescriptorFromLrdu(LRDU lrdu) {
         ElectricalCableDescriptor cableDescriptor;
         ItemStack cable;
-        cable = inventory.getStackInSlot(HubContainer.cableSlotId + lrdu.toInt());
+        cable = inventory.getItem(HubContainer.cableSlotId + lrdu.toInt());
         SixNodeDescriptor descriptor = Eln.sixNodeItem.getDescriptor(cable);
         cableDescriptor = descriptor instanceof ElectricalCableDescriptor ? (ElectricalCableDescriptor) descriptor : null;
         return cableDescriptor;
@@ -212,12 +211,12 @@ public class HubElement extends SixNodeElement {
 
     @Nullable
     @Override
-    public Container newContainer(@NotNull Direction side, @NotNull EntityPlayer player) {
+    public AbstractContainerMenu newContainer(@NotNull Direction side, @NotNull Player player) {
         return new HubContainer(player, inventory);
     }
 
     @Override
-    public boolean onBlockActivated(EntityPlayer entityPlayer, Direction side, float vx, float vy, float vz) {
+    public boolean onBlockActivated(Player entityPlayer, Direction side, float vx, float vy, float vz) {
         return false;
     }
 

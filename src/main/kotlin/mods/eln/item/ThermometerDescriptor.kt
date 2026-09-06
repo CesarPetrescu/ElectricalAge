@@ -6,17 +6,17 @@ import mods.eln.generic.GenericItemUsingDamageDescriptor
 import mods.eln.i18n.I18N
 import mods.eln.misc.Utils
 import mods.eln.node.NodeBlock
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.world.World
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.Level
 import kotlin.math.floor
 import mods.eln.misc.getBlock
 
 class ThermometerDescriptor(name: String) : GenericItemUsingDamageDescriptor(name) {
     override fun onItemUse(
         stack: ItemStack?,
-        player: EntityPlayer?,
-        world: World?,
+        player: Player?,
+        world: Level?,
         x: Int,
         y: Int,
         z: Int,
@@ -25,7 +25,7 @@ class ThermometerDescriptor(name: String) : GenericItemUsingDamageDescriptor(nam
         vy: Float,
         vz: Float
     ): Boolean {
-        if (player == null || world == null || world.isRemote) {
+        if (player == null || world == null || world.isClientSide) {
             return false
         }
 
@@ -34,9 +34,9 @@ class ThermometerDescriptor(name: String) : GenericItemUsingDamageDescriptor(nam
             return false
         }
 
-        val playerX = floor(player.posX).toInt()
-        val playerY = floor(player.posY).toInt()
-        val playerZ = floor(player.posZ).toInt()
+        val playerX = floor(player.x).toInt()
+        val playerY = floor(player.y).toInt()
+        val playerZ = floor(player.z).toInt()
         val climateAtClick = BiomeClimateService.sample(world, x, y, z)
         val climateAtPlayer = BiomeClimateService.sample(world, playerX, playerY, playerZ)
         val biomeTempC = climateAtClick.temperatureCelsius

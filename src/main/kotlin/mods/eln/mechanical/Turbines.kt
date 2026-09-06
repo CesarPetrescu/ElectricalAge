@@ -23,12 +23,12 @@ import mods.eln.node.transparent.TransparentNodeElementInventory
 import mods.eln.node.transparent.TransparentNodeEntity
 import mods.eln.sim.IProcess
 import mods.eln.sim.nbt.NbtElectricalGateInput
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.inventory.Container
-import net.minecraft.inventory.IInventory
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.entity.player.Player
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.inventory.AbstractContainerMenu
+import net.minecraft.world.Container
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
 import org.lwjgl.opengl.GL11
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -104,7 +104,7 @@ abstract class TurbineDescriptor(baseName: String, obj: Obj3D) :
         obj.getPart("Fan")
     )
 
-    override fun addInformation(stack: ItemStack, player: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(stack: ItemStack, player: Player?, list: MutableList<String>, par4: Boolean) {
         list.add(tr("Converts %1$ into mechanical energy.",fluidDescription))
         list.add(tr("Requires a turbine blade to operate."))
         list.add(tr("Nominal usage ->"))
@@ -191,7 +191,7 @@ class TurbineElement(node: TransparentNode, desc_: TransparentNodeDescriptor) :
         var wearAccumulator = 0.0
 
         override fun process(time: Double) {
-            val bladeStack = inventory.getStackInSlot(BLADE_SLOT)
+            val bladeStack = inventory.getItem(BLADE_SLOT)
             val blade = TurbineBladeDescriptor.getDescriptor(bladeStack)
 
             // No blade installed means no power.
@@ -243,7 +243,7 @@ class TurbineElement(node: TransparentNode, desc_: TransparentNodeDescriptor) :
                     val newCondition = blade.getCondition(bladeStack) - wearAccumulator
                     wearAccumulator = 0.0
                     if (newCondition <= 0.0) {
-                        inventory.setInventorySlotContents(BLADE_SLOT, ItemStack.EMPTY)
+                        inventory.setItem(BLADE_SLOT, ItemStack.EMPTY)
                         needPublish()
                     } else {
                         blade.setCondition(bladeStack, newCondition)
@@ -252,14 +252,14 @@ class TurbineElement(node: TransparentNode, desc_: TransparentNodeDescriptor) :
             }
         }
 
-        override fun readFromNBT(nbt: NBTTagCompound, str: String) {
+        override fun readFromNBT(nbt: CompoundTag, str: String) {
             rc.readFromNBT(nbt, str)
             wearAccumulator = nbt.getDouble(str + "wearAccum")
         }
 
-        override fun writeToNBT(nbt: NBTTagCompound, str: String) {
+        override fun writeToNBT(nbt: CompoundTag, str: String) {
             rc.writeToNBT(nbt, str)
-            nbt.setDouble(str + "wearAccum", wearAccumulator)
+            nbt.putDouble(str + "wearAccum", wearAccumulator)
         }
     }
 
@@ -282,13 +282,13 @@ class TurbineElement(node: TransparentNode, desc_: TransparentNodeDescriptor) :
     override fun thermoMeterString(side: Direction): String =
         Utils.plotPercent(" Eff:", efficiency.toDouble()) + " " + desc.formatFluidRate(fluidRate)
 
-    override fun writeToNBT(nbt: NBTTagCompound) {
+    override fun writeToNBT(nbt: CompoundTag) {
         super.writeToNBT(nbt)
         tank.writeToNBT(nbt, "tank")
         turbineSlowProcess.writeToNBT(nbt, "proc")
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
         tank.readFromNBT(nbt, "tank")
         turbineSlowProcess.readFromNBT(nbt, "proc")
@@ -298,7 +298,7 @@ class TurbineElement(node: TransparentNode, desc_: TransparentNodeDescriptor) :
         val info = mutableMapOf<String, String>()
         info[tr("Speed")] = Utils.plotRads("", shaft.rads)
         info[tr("Energy")] = Utils.plotEnergy("", shaft.energy)
-        val bladeStack = inventory.getStackInSlot(BLADE_SLOT)
+        val bladeStack = inventory.getItem(BLADE_SLOT)
         val blade = TurbineBladeDescriptor.getDescriptor(bladeStack)
         if (blade != null && !bladeStack.isNothing()) {
             val condition = blade.getCondition(bladeStack)
@@ -308,7 +308,7 @@ class TurbineElement(node: TransparentNode, desc_: TransparentNodeDescriptor) :
                 lifeLeftH < 1.0  -> "<1h"
                 else             -> String.format("%.1fh", lifeLeftH)
             }
-            info[tr("Blade")] = bladeStack.displayName
+            info[tr("Blade")] = $1.hoverName
             info[tr("Life Left")] = lifeLeftStr
         } else {
             info[tr("Blade")] = tr("None")
@@ -327,7 +327,7 @@ class TurbineElement(node: TransparentNode, desc_: TransparentNodeDescriptor) :
     override fun networkSerialize(stream: DataOutputStream) {
         super.networkSerialize(stream)
         stream.writeFloat(volume)
-        val bladeStack = inventory.getStackInSlot(BLADE_SLOT)
+        val bladeStack = inventory.getItem(BLADE_SLOT)
         val blade = TurbineBladeDescriptor.getDescriptor(bladeStack)
         if (blade != null && !bladeStack.isNothing()) {
             stream.writeFloat(blade.getCondition(bladeStack).toFloat())
@@ -342,27 +342,27 @@ class TurbineElement(node: TransparentNode, desc_: TransparentNodeDescriptor) :
 
     override fun hasGui() = true
 
-    override fun newContainer(side: Direction, player: EntityPlayer): Container =
+    override fun newContainer(side: Direction, player: Player): AbstractContainerMenu =
         TurbineContainer(node, player, inventory)
 
-    override fun onBlockActivated(player: EntityPlayer, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
-        val held = player.heldItemMainhand ?: return false
+    override fun onBlockActivated(player: Player, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
+        val held = player.mainHandItem ?: return false
         if (Utils.getItemObject(held) !is TurbineBladeDescriptor) return false
         // Blade already installed, fall through so the GUI opens instead.
-        if (!inventory.getStackInSlot(BLADE_SLOT).isNothing()) return false
+        if (!inventory.getItem(BLADE_SLOT).isNothing()) return false
         // Slot is empty, insert the blade, keeping its condition NBT intact.
-        if (Eln.config.getBooleanOrElse("gameplay.qol.creativeNoConsumeInsertedItems", false) && player is EntityPlayerMP && Utils.isCreative(player)) {
+        if (Eln.config.getBooleanOrElse("gameplay.qol.creativeNoConsumeInsertedItems", false) && player is ServerPlayer && Utils.isCreative(player)) {
             val bladeCopy = held.copy()
             bladeCopy.count = 1
-            inventory.setInventorySlotContents(BLADE_SLOT, bladeCopy)
+            inventory.setItem(BLADE_SLOT, bladeCopy)
         } else {
-            inventory.setInventorySlotContents(BLADE_SLOT, held.splitStack(1))
+            inventory.setItem(BLADE_SLOT, held.split(1))
         }
         inventoryChange(inventory)
         return true
     }
 
-    override fun inventoryChange(inventory: IInventory?) {
+    override fun inventoryChange(inventory: Container?) {
         needPublish()
     }
 }
@@ -399,15 +399,15 @@ class TurbineRender(entity: TransparentNodeEntity, desc: TransparentNodeDescript
         super.draw()
     }
 
-    override fun newGuiDraw(side: Direction, player: EntityPlayer) =
+    override fun newGuiDraw(side: Direction, player: Player) =
         TurbineGui(player, inventory, this)
 }
 
-// Container
+// AbstractContainerMenu
 class TurbineContainer(
     val base: NodeBase?,
-    player: EntityPlayer,
-    inventory: IInventory
+    player: Player,
+    inventory: Container
 ) : BasicContainer(
     player,
     inventory,
@@ -429,8 +429,8 @@ class TurbineContainer(
 
 // GUI
 class TurbineGui(
-    player: EntityPlayer,
-    val inventory: IInventory,
+    player: Player,
+    val inventory: Container,
     val render: TurbineRender
 ) : GuiContainerEln(TurbineContainer(null, player, inventory)) {
 

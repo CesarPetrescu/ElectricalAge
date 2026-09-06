@@ -1,7 +1,7 @@
 package mods.eln.gui;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.GuiGraphics;
 
 import java.util.ArrayList;
 
@@ -29,7 +29,7 @@ public class GuiHelpText extends Gui implements IGuiObject {
         drawRect(xPosition + 1, yPosition - 1, xPosition + width - 1, yPosition + height + 1, 0xFF606060);
         drawRect(xPosition + 2, yPosition, xPosition + width - 2, yPosition + height, 0xFF808080);
 
-        this.drawCenteredString(Minecraft.getMinecraft().fontRenderer, "?", this.xPosition + this.width / 2, this.yPosition + (this.height - 8) / 2, 0xFF);
+        this.drawCenteredString(Minecraft.getInstance().font, "?", this.xPosition + this.width / 2, this.yPosition + (this.height - 8) / 2, 0xFF);
     }
 
     @Override
@@ -75,9 +75,9 @@ public class GuiHelpText extends Gui implements IGuiObject {
     public void idraw2(int x, int y) {
         if (/*visible == true && */(x >= xPosition && y >= yPosition && x < xPosition + width && y < yPosition + height)) {
             /*int px, py;
-			px = xPosition - helper.getHoveringTextWidth(comment, Minecraft.getMinecraft().fontRenderer) / 2;
+			px = xPosition - helper.getHoveringTextWidth(comment, Minecraft.getInstance().font) / 2;
 			py = yPosition + height + 20;*/
-            helper.drawHoveringText(comment, x, y, Minecraft.getMinecraft().fontRenderer);
+            helper.drawHoveringText(comment, x, y, Minecraft.getInstance().font);
         }
     }
 }

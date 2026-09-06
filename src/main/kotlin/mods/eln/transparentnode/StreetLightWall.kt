@@ -9,7 +9,7 @@ import mods.eln.sim.ThermalLoad
 import mods.eln.sim.mna.component.Resistor
 import mods.eln.sim.nbt.NbtElectricalLoad
 import mods.eln.sixnode.lampsupply.LampSupplyElement
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.entity.player.Player
 import org.lwjgl.opengl.GL11
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -71,7 +71,7 @@ class StreetLightWallElement(node: TransparentNode, descriptor: TransparentNodeD
         return null
     }
 
-    override fun onBlockActivated(player: EntityPlayer, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
+    override fun onBlockActivated(player: Player, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
         return false
     }
 

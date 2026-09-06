@@ -1,6 +1,6 @@
 package mods.eln.misc
 
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.nbt.CompoundTag
 
 class RcInterpolator(preTao: Float) : INBTTReady {
     var ff: Float = 1 / preTao
@@ -22,19 +22,19 @@ class RcInterpolator(preTao: Float) : INBTTReady {
         factorFiltered = target
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound, str: String) {
+    override fun readFromNBT(nbt: CompoundTag, str: String) {
         target = nbt.getFloat(str + "factor")
         // Reverse compatibility. Leave this please.
-        factorFiltered = if (nbt.hasKey("factorFiltred")) {
+        factorFiltered = if (nbt.contains("factorFiltred")) {
             nbt.getFloat(str + "factorFiltred")
         } else {
             nbt.getFloat(str + "factorFiltered")
         }
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound, str: String) {
-        nbt.setFloat(str + "factor", target)
-        nbt.setFloat(str + "factorFiltered", factorFiltered)
+    override fun writeToNBT(nbt: CompoundTag, str: String) {
+        nbt.putFloat(str + "factor", target)
+        nbt.putFloat(str + "factorFiltered", factorFiltered)
     }
 
     init {

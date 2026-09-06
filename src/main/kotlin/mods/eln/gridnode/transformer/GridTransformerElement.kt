@@ -17,7 +17,7 @@ import mods.eln.sim.process.destruct.ThermalLoadWatchDog
 import mods.eln.sim.process.destruct.VoltageStateWatchDog
 import mods.eln.sim.process.destruct.WorldExplosion
 import mods.eln.sim.process.heater.ElectricalLoadHeatThermalLoad
-import net.minecraft.util.math.Vec3d
+import net.minecraft.world.phys.Vec3
 import java.io.DataOutputStream
 
 class GridTransformerElement(node: TransparentNode, descriptor: TransparentNodeDescriptor) : GridElement(node, descriptor, 8) {
@@ -101,7 +101,7 @@ class GridTransformerElement(node: TransparentNode, descriptor: TransparentNodeD
     }
 
     // TODO: Factor this against super.
-    public override fun getCablePoint(side: Direction, i: Int): Vec3d {
+    public override fun getCablePoint(side: Direction, i: Int): Vec3 {
         if (i >= 2) throw AssertionError("Invalid cable point index")
         val idx = when (side) {
             front.left() -> 1

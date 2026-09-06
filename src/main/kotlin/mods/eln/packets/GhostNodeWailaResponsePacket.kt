@@ -5,7 +5,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage
 import io.netty.buffer.ByteBuf
 import mods.eln.misc.Coordinate
 import mods.eln.misc.Direction
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 
 class GhostNodeWailaResponsePacket(var coord: Coordinate = Coordinate(0, 0, 0, 0),
                                    var realCoord: Coordinate = Coordinate(0, 0, 0, 0),

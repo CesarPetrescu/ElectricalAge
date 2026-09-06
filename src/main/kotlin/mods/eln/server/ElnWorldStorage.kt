@@ -1,18 +1,18 @@
 package mods.eln.server
 
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.world.World
-import net.minecraft.world.storage.WorldSavedData
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.world.level.Level
+import net.minecraft.world.level.saveddata.SavedData
 
-class ElnWorldStorage(str: String?) : WorldSavedData(str) {
+class ElnWorldStorage(str: String?) : SavedData(str) {
     private var dim = 0
-    override fun readFromNBT(nbt: NBTTagCompound) {
-        dim = nbt.getInteger("dim")
+    override fun readFromNBT(nbt: CompoundTag) {
+        dim = nbt.getInt("dim")
         ServerEventListener.readFromEaWorldNBT(nbt, dim)
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
-        nbt.setInteger("dim", dim)
+    override fun writeToNBT(nbt: CompoundTag): CompoundTag {
+        nbt.putInt("dim", dim)
         ServerEventListener.writeToEaWorldNBT(nbt, dim)
         return nbt
     }
@@ -24,10 +24,10 @@ class ElnWorldStorage(str: String?) : WorldSavedData(str) {
     companion object {
         const val key = "eln.worldStorage"
         @JvmStatic
-        fun forWorld(world: World): ElnWorldStorage {
+        fun forWorld(world: Level): ElnWorldStorage {
             // Retrieves the MyWorldData instance for the given world, creating it if necessary
             val storage = world.perWorldStorage
-            val dim = world.provider.dimension
+            val dim = world.dimension()
             var result = storage.getOrLoadData(ElnWorldStorage::class.java, key + dim) as ElnWorldStorage?
             if (result == null) {
                 result = storage.getOrLoadData(ElnWorldStorage::class.java, key + dim + "back") as ElnWorldStorage?

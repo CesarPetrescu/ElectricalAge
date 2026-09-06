@@ -1,6 +1,6 @@
 package mods.eln.sixnode.lampsocket
 
-import net.minecraft.util.math.BlockPos
+import net.minecraft.core.BlockPos
 
 import mods.eln.item.lampitem.BoilerplateLampData
 import mods.eln.item.lampitem.LampDescriptor
@@ -9,8 +9,8 @@ import mods.eln.misc.Coordinate
 import mods.eln.misc.Utils
 import mods.eln.sim.IProcess
 import mods.eln.sixnode.lampsupply.LampSupplyElement
-import net.minecraft.item.ItemStack
-import net.minecraft.util.math.Vec3d
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.phys.Vec3
 import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
 import java.io.IOException
@@ -33,8 +33,8 @@ class LampSocketProcess(var element: LampSocketElement) : IProcess {
     private var cableInInventory = false
 
     override fun process(time: Double) {
-        val lampStack = element.inventory.getStackInSlot(LampSocketContainer.LAMP_SLOT_ID)
-        val cableStack = element.inventory.getStackInSlot(LampSocketContainer.CABLE_SLOT_ID)
+        val lampStack = element.inventory.getItem(LampSocketContainer.LAMP_SLOT_ID)
+        val cableStack = element.inventory.getItem(LampSocketContainer.CABLE_SLOT_ID)
 
         var activeLampSupplyConnection = false
         var newLightValue = BoilerplateLampData.MIN_LIGHT_VALUE
@@ -100,8 +100,8 @@ class LampSocketProcess(var element: LampSocketElement) : IProcess {
 
                 if (lampLife <= 0.0) {
                     newLightValue = BoilerplateLampData.MIN_LIGHT_VALUE
-                    element.inventory.setInventorySlotContents(LampSocketContainer.LAMP_SLOT_ID, ItemStack.EMPTY)
-                    element.inventory.markDirty()
+                    element.inventory.setItem(LampSocketContainer.LAMP_SLOT_ID, ItemStack.EMPTY)
+                    element.inventory.setChanged()
                 }
             }
         } else {
@@ -137,7 +137,7 @@ class LampSocketProcess(var element: LampSocketElement) : IProcess {
         val randTarget = growRate * deltaT * (actualLight.toDouble() / nominalLight.toDouble())
 
         if (randTarget > Math.random()) {
-            var rotationVector = Vec3d(1.0, 0.0, 0.0)
+            var rotationVector = Vec3(1.0, 0.0, 0.0)
             rotationVector = rotationVector.rotatePitch((element.projectionRotationAngle * (Math.PI / 180.0)).toFloat())
             rotationVector = rotationVector.rotateYaw(((Math.random() - 0.5) * Math.PI / 2.0).toFloat())
             rotationVector = rotationVector.rotatePitch(((Math.random() - 0.5) * Math.PI / 2.0).toFloat())
@@ -152,7 +152,7 @@ class LampSocketProcess(var element: LampSocketElement) : IProcess {
     }
 
     private fun placeSpot(lightValue: Int) {
-        var rotationVector = Vec3d(1.0, 0.0, 0.0)
+        var rotationVector = Vec3(1.0, 0.0, 0.0)
         rotationVector = rotationVector.rotatePitch((element.projectionRotationAngle * (Math.PI / 180.0)).toFloat())
         rotationVector = element.front.rotateOnXnLeft(rotationVector)
         rotationVector = element.side.rotateFromXN(rotationVector)
@@ -167,11 +167,11 @@ class LampSocketProcess(var element: LampSocketElement) : IProcess {
         LightBlockEntity.addLight(lbCoordinate, lightValue, lightTimeout)
     }
 
-    private fun raytrace(rotationVector: Vec3d, vectorLengthModifier: Int): Coordinate {
+    private fun raytrace(rotationVector: Vec3, vectorLengthModifier: Int): Coordinate {
         val origin = element.sixNode!!.coordinate.toVec3()
         val lbCoordinate = Coordinate(origin, element.sixNode!!.coordinate.dimension)
 
-        // Vec3d is immutable on 1.12, and this steps a ray one block at a time, so the position
+        // Vec3 is immutable on 1.12, and this steps a ray one block at a time, so the position
         // is carried in three doubles rather than reallocating a vector per step.
         var lightX = origin.x
         var lightY = origin.y

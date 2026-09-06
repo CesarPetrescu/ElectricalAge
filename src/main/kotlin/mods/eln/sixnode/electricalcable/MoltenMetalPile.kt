@@ -16,8 +16,8 @@ import mods.eln.node.six.SixNodeElement
 import mods.eln.node.six.SixNodeElementRender
 import mods.eln.node.six.SixNodeEntity
 import net.minecraft.client.Minecraft
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
 import org.lwjgl.opengl.GL11
 
 class MoltenMetalPileDescriptor(
@@ -26,7 +26,7 @@ class MoltenMetalPileDescriptor(
     @JvmField val render: CableRenderDescriptor
 ) : SixNodeDescriptor(name, MoltenMetalPileElement::class.java, MoltenMetalPileRender::class.java) {
 
-    override fun addInformation(itemStack: ItemStack, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack, entityPlayer: Player?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         list.add(tr("A puddle of molten %1$ from an overheated cable.", material.label.lowercase()))
     }
@@ -70,7 +70,7 @@ class MoltenMetalPileRender(
     override fun getCableRender(lrdu: LRDU) = descriptor.render
 
     override fun draw() {
-        Minecraft.getMinecraft().profiler.startSection("MoltenMetalPile")
+        Minecraft.getInstance().profiler.startSection("MoltenMetalPile")
         when (descriptor.material) {
             UtilityCableMaterial.COPPER -> GL11.glColor3f(0.92f, 0.38f, 0.10f)
             UtilityCableMaterial.ALUMINUM -> GL11.glColor3f(0.83f, 0.85f, 0.88f)
@@ -79,7 +79,7 @@ class MoltenMetalPileRender(
         glListCall()
         drawHotGlow()
         GL11.glColor3f(1f, 1f, 1f)
-        Minecraft.getMinecraft().profiler.endSection()
+        Minecraft.getInstance().profiler.endSection()
     }
 
     private fun drawHotGlow() {

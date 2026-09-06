@@ -2,16 +2,16 @@ package mods.eln.wiki;
 
 import mods.eln.gui.*;
 import mods.eln.misc.UtilsClient;
-import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.screens.Screen;
 
 import static mods.eln.i18n.I18N.tr;
 
 public class Default extends GuiScreenEln {
-    public Default(GuiScreen preview) {
+    public Default(Screen preview) {
         this.preview = preview;
     }
 
-    GuiScreen preview;
+    Screen preview;
     GuiHelper helper;
     GuiButtonEln previewBt;
     GuiTextFieldEln searchText;

@@ -5,11 +5,11 @@ import mods.eln.gui.GuiHelper;
 import mods.eln.gui.IGuiObject;
 import mods.eln.misc.UtilsClient;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.client.gui.Gui;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.resources.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 
 import java.util.List;
@@ -17,8 +17,8 @@ import java.util.List;
 public class GuiItemStack extends Gui implements IGuiObject {
 
     public GuiItemStack(int x, int y, ItemStack stack, GuiHelper helper) {
-        this.posX = x;
-        this.posY = y;
+        this.getX() = x;
+        this.getY() = y;
         h = 18;
         w = 18;
         this.stack = stack;
@@ -30,7 +30,7 @@ public class GuiItemStack extends Gui implements IGuiObject {
     ItemStack stack;
 
     public GuiHelper helper;
-    static final ResourceLocation slotSkin = new ResourceLocation("textures/gui/container/furnace.png");
+    static final ResourceLocation slotSkin = ResourceLocation.parse($1);
 
 
     @Override
@@ -103,8 +103,8 @@ public class GuiItemStack extends Gui implements IGuiObject {
             int px, py;
             px = posX;
             py = posY;
-            List list = stack.getTooltip(Minecraft.getMinecraft().player, ITooltipFlag.TooltipFlags.NORMAL);
-            helper.drawHoveringText(list, x, y, Minecraft.getMinecraft().fontRenderer);
+            List list = stack.getTooltip(Minecraft.getInstance().player, TooltipFlag.TooltipFlags.NORMAL);
+            helper.drawHoveringText(list, x, y, Minecraft.getInstance().font);
         }
     }
 
@@ -142,8 +142,8 @@ public class GuiItemStack extends Gui implements IGuiObject {
     @Override
     public void translate(int x, int y) {
 
-        this.posX += x;
-        this.posY += y;
+        this.getX() += x;
+        this.getY() += y;
     }
 
 

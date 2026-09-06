@@ -12,11 +12,11 @@ import mods.eln.sim.Simulator
 import mods.eln.sim.ThermalLoad
 import mods.eln.sim.mna.component.Resistor
 import mods.eln.wiki.Data
-import net.minecraft.entity.item.EntityItem
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.entity.item.ItemEntity
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
 import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
 import mods.eln.client.itemrender.IItemRenderer.ItemRendererHelper
 
@@ -117,14 +117,14 @@ class BatteryDescriptor(
         process.lifeNominalLost = lifeNominalLost
     }
 
-    override fun getDefaultNBT(): NBTTagCompound {
-        val nbt = NBTTagCompound()
-        nbt.setDouble("charge", startCharge)
-        nbt.setDouble("life", 1.0)
+    override fun getDefaultNBT(): CompoundTag {
+        val nbt = CompoundTag()
+        nbt.putDouble("charge", startCharge)
+        nbt.putDouble("life", 1.0)
         return nbt
     }
 
-    override fun addInformation(itemStack: ItemStack, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack, entityPlayer: Player?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         list.add(Utils.plotVolt(tr("Nominal voltage: "), electricalU))
         list.add(Utils.plotPower(tr("Nominal power: "), electricalStdP))
@@ -152,13 +152,13 @@ class BatteryDescriptor(
     }
 
     fun getChargeInTag(stack: ItemStack): Double {
-        if (!stack.hasTagCompound()) stack.tagCompound = defaultNBT
-        return stack.tagCompound!!.getDouble("charge")
+        if (!stack.hasTagCompound()) stack.tagCompound /* TODO(components) */ = defaultNBT
+        return stack.tagCompound /* TODO(components) */!!.getDouble("charge")
     }
 
     fun getLifeInTag(stack: ItemStack): Double {
-        if (!stack.hasTagCompound()) stack.tagCompound = defaultNBT
-        return stack.tagCompound!!.getDouble("life")
+        if (!stack.hasTagCompound()) stack.tagCompound /* TODO(components) */ = defaultNBT
+        return stack.tagCompound /* TODO(components) */!!.getDouble("life")
     }
 
     fun getEnergy(charge: Double, life: Double): Double {
@@ -191,11 +191,11 @@ class BatteryDescriptor(
         }
     }
 
-    override fun onEntityItemUpdate(entityItem: EntityItem): Boolean {
+    override fun onEntityItemUpdate(entityItem: ItemEntity): Boolean {
         if (entityItem.isBurning) {
-            entityItem.world.createExplosion(entityItem, entityItem.posX, entityItem.posY, entityItem.posZ, 2f, true)
+            entityItem.level.createExplosion(entityItem, entityItem.x, entityItem.y, entityItem.z, 2f, true)
             entityItem.extinguish()
-            entityItem.setDead()
+            entityItem.discard()
         }
         return false
     }

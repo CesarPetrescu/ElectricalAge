@@ -9,9 +9,9 @@ import mods.eln.sim.ElectricalLoad;
 import mods.eln.sim.mna.component.Resistor;
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor;
 import mods.eln.wiki.Data;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
@@ -127,7 +127,7 @@ public class ElectricalRelayDescriptor extends SixNodeDescriptor {
     }
 
     @Override
-    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List<String> list, boolean par4) {
+    public void addInformation(ItemStack itemStack, Player entityPlayer, List<String> list, boolean par4) {
         super.addInformation(itemStack, entityPlayer, list, par4);
         Collections.addAll(list, tr("A relay is an electrical\ncontact that conducts\ncurrent when a signal\nvoltage is applied.").split("\n"));
         Collections.addAll(list, tr("The relay's input behaves\nlike a Schmitt Trigger.").split("\n"));
@@ -179,7 +179,7 @@ public class ElectricalRelayDescriptor extends SixNodeDescriptor {
 
     @Nullable
     @Override
-    public LRDU getFrontFromPlace(@NotNull Direction side, @NotNull EntityPlayer player) {
+    public LRDU getFrontFromPlace(@NotNull Direction side, @NotNull Player player) {
         return super.getFrontFromPlace(side, player).left();
     }
 }

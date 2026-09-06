@@ -1,6 +1,6 @@
 package mods.eln.mechanical
 
-import net.minecraftforge.fml.common.Loader
+import net.neoforged.fml.ModList
 import net.minecraftforge.fml.common.LoaderState
 import mods.eln.Eln
 import mods.eln.misc.Coordinate
@@ -12,7 +12,7 @@ import mods.eln.node.transparent.TransparentNode
 import mods.eln.sim.process.destruct.DelayedDestruction
 import mods.eln.sim.process.destruct.ShaftSpeedWatchdog
 import mods.eln.sim.process.destruct.WorldExplosion
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.nbt.CompoundTag
 import java.util.*
 
 // Speed above which shafts will (by default) explode.
@@ -137,13 +137,13 @@ open class ShaftNetwork() : INBTTReady {
         merged and deserialized, causing them to lose energy just as if the
         components were newly added. This can cause, in the worst case, saved
         networks to explode on load. Although a bit of a hack, asking the FML
-        Loader about which state it's in seems to be the best workaround. At
+        ModList about which state it's in seems to be the best workaround. At
         some point, consider serializing network connectivity properly.
          */
 
-        val loadMerge = Loader.instance().loaderState == LoaderState.SERVER_ABOUT_TO_START
+        val loadMerge = ModList.instance().loaderState == LoaderState.SERVER_ABOUT_TO_START
         // val loadMerge = false
-        // Utils.println("SN.mS: state " + Loader.instance().loaderState.name)
+        // Utils.println("SN.mS: state " + ModList.instance().loaderState.name)
 
         // Utils.println(String.format("SN.mS: Merging %s r=%f e=%f, %s r=%f e=%f, loading=%s", this, rads, energy, other, other.rads, other.energy, loadMerge))
 
@@ -399,14 +399,14 @@ open class ShaftNetwork() : INBTTReady {
         return if (node is ShaftElement) node else null
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound, str: String) {
+    override fun readFromNBT(nbt: CompoundTag, str: String) {
         rads = nbt.getFloat(str + "rads").toDouble()
         if(!rads.isFinite()) rads = 0.0
         // Utils.println(String.format("SN.rFN: load %s r=%f", this, rads))
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound, str: String) {
-        nbt.setFloat(str + "rads", rads.toFloat())
+    override fun writeToNBT(nbt: CompoundTag, str: String) {
+        nbt.putFloat(str + "rads", rads.toFloat())
         // Utils.println(String.format("SN.wTN: save %s r=%f", this, rads))
     }
 

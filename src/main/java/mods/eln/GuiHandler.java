@@ -8,10 +8,10 @@ import mods.eln.misc.Direction;
 import mods.eln.misc.Utils;
 import mods.eln.misc.UtilsClient;
 import mods.eln.node.INodeEntity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.Level;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -19,15 +19,15 @@ import java.io.IOException;
 
 public class GuiHandler implements IGuiHandler {
 
-    INodeEntity getNodeEntity(World world, int x, int y, int z) {
-        TileEntity e = McBridge.getTileEntity(world, x, y, z);
+    INodeEntity getNodeEntity(Level world, int x, int y, int z) {
+        BlockEntity e = McBridge.getBlockEntity(world, x, y, z);
         if (e == null || false == e instanceof INodeEntity) return null;
         return (INodeEntity) e;
     }
 
     // returns an instance of the Container you made earlier
     @Override
-    public Object getServerGuiElement(int id, EntityPlayer player, World world,
+    public Object getServerGuiElement(int id, Player player, Level world,
                                       int x, int y, int z) {
         if (id == wireSnipsOpen) return new WireSnipsContainer(player);
         INodeEntity nodeEntity = getNodeEntity(world, x, y, z);
@@ -44,7 +44,7 @@ public class GuiHandler implements IGuiHandler {
                 stream.writeInt(x);
                 stream.writeInt(y);
                 stream.writeInt(z);
-                Utils.sendPacketToClient(bos, (EntityPlayerMP) player);
+                Utils.sendPacketToClient(bos, (ServerPlayer) player);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -59,7 +59,7 @@ public class GuiHandler implements IGuiHandler {
 
     // returns an instance of the Gui you made earlier
     @Override
-    public Object getClientGuiElement(int id, EntityPlayer player, World world,
+    public Object getClientGuiElement(int id, Player player, Level world,
                                       int x, int y, int z) {
         if (id == genericOpen) {
             return UtilsClient.guiLastOpen;

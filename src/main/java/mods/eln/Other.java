@@ -1,6 +1,6 @@
 package mods.eln;
 
-import net.minecraftforge.fml.common.Loader;
+import net.neoforged.fml.ModList;
 
 public class Other {
 
@@ -19,9 +19,9 @@ public class Other {
     public static final String modIdCc = "computercraft";
 
     public static void check() {
-        ic2Loaded = Loader.isModLoaded(modIdIc2);
-        ocLoaded = Loader.isModLoaded(modIdOc);
-        ccLoaded = Loader.isModLoaded(modIdCc);
+        ic2Loaded = ModList.isModLoaded(modIdIc2);
+        ocLoaded = ModList.isModLoaded(modIdOc);
+        ccLoaded = ModList.isModLoaded(modIdCc);
         // The RF bridge now speaks Forge Energy, which ships with Forge itself.
         teLoaded = true;
     }

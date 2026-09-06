@@ -4,8 +4,8 @@ import mods.eln.Eln
 import mods.eln.misc.Coordinate
 import mods.eln.misc.Direction
 import mods.eln.misc.LRDU
-import net.minecraft.block.Block
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.Level
 import java.util.*
 
 data class GhostGroupElement(var x: Int, var y: Int, var z: Int, var block: Block, var meta: Int)
@@ -56,7 +56,7 @@ class GhostGroup {
         return canBePloted(c.world(), c.x, c.y, c.z)
     }
 
-    fun canBePloted(world: World, x: Int, y: Int, z: Int): Boolean {
+    fun canBePloted(world: Level, x: Int, y: Int, z: Int): Boolean {
         for (element in elementList) {
             if (!Eln.ghostManager.canCreateGhostAt(world, x + element.x, y + element.y, z + element.z)) return false
         }

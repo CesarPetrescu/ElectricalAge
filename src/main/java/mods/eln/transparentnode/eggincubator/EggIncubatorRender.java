@@ -10,11 +10,11 @@ import mods.eln.node.transparent.TransparentNodeDescriptor;
 import mods.eln.node.transparent.TransparentNodeElementInventory;
 import mods.eln.node.transparent.TransparentNodeElementRender;
 import mods.eln.node.transparent.TransparentNodeEntity;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemStack;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
@@ -31,7 +31,7 @@ public class EggIncubatorRender extends TransparentNodeElementRender {
 
     byte eggStackSize;
 
-    EntityItem egg;
+    ItemEntity egg;
     public float voltage;
 
     LRDUMask priConn = new LRDUMask(), secConn = new LRDUMask(), eConn = new LRDUMask();
@@ -62,7 +62,7 @@ public class EggIncubatorRender extends TransparentNodeElementRender {
 
     @Nullable
     @Override
-    public GuiScreen newGuiDraw(@NotNull Direction side, @NotNull EntityPlayer player) {
+    public Screen newGuiDraw(@NotNull Direction side, @NotNull Player player) {
         return new EggIncubatorGuiDraw(player, inventory, this);
     }
 
@@ -72,7 +72,7 @@ public class EggIncubatorRender extends TransparentNodeElementRender {
         try {
             eggStackSize = stream.readByte();
             if (eggStackSize != 0) {
-                egg = new EntityItem(this.getTileEntity().getWorld(), 0, 0, 0, new ItemStack(Items.EGG));
+                egg = new ItemEntity(this.getBlockEntity().getLevel(), 0, 0, 0, new ItemStack(Items.EGG));
             } else {
                 egg = null;
             }

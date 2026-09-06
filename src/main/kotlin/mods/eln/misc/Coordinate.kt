@@ -2,16 +2,16 @@ package mods.eln.misc
 
 import net.minecraftforge.fml.common.FMLCommonHandler
 import mods.eln.node.NodeBlockEntity
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.client.Minecraft
-import net.minecraft.entity.Entity
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Vec3d
-import net.minecraft.world.World
+import net.minecraft.world.entity.Entity
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.world.level.block.entity.BlockEntity
+import net.minecraft.world.phys.AABB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.phys.Vec3
+import net.minecraft.world.level.Level
 import net.minecraftforge.client.MinecraftForgeClient
 import net.minecraftforge.common.DimensionManager
 import kotlin.math.abs
@@ -41,12 +41,12 @@ class Coordinate : INBTTReady {
         dimension = coord.dimension
     }
 
-    constructor(nbt: NBTTagCompound, str: String) {
+    constructor(nbt: CompoundTag, str: String) {
         readFromNBT(nbt, str)
     }
 
     // Emulates the default Minecraft behavior for determining block coordinates
-    constructor(v: Vec3d, d: Int) {
+    constructor(v: Vec3, d: Int) {
         x = floor(v.xCoord).toInt()
         y = floor(v.yCoord).toInt()
         z = floor(v.zCoord).toInt()
@@ -61,8 +61,8 @@ class Coordinate : INBTTReady {
         return dimension
     }
 
-    private var w: World? = null
-    fun world(): World {
+    private var w: Level? = null
+    fun world(): Level {
         return if (w == null) {
             FMLCommonHandler.instance().minecraftServerInstance.getWorld(worldDimension())
         } else w!!
@@ -72,7 +72,7 @@ class Coordinate : INBTTReady {
         x = entity.xCoord
         y = entity.yCoord
         z = entity.zCoord
-        dimension = entity.world.provider.dimension
+        dimension = entity.level.dimension()
     }
 
     constructor(x: Int, y: Int, z: Int, dimention: Int) {
@@ -82,20 +82,20 @@ class Coordinate : INBTTReady {
         this.dimension = dimention
     }
 
-    constructor(x: Int, y: Int, z: Int, world: World) {
+    constructor(x: Int, y: Int, z: Int, world: Level) {
         this.x = x
         this.y = y
         this.z = z
-        dimension = world.provider.dimension
-        if (world.isRemote) w = world
+        dimension = world.dimension()
+        if (world.isClientSide) w = world
     }
 
-    constructor(entity: TileEntity) {
+    constructor(entity: BlockEntity) {
         x = entity.xCoord
         y = entity.yCoord
         z = entity.zCoord
-        dimension = entity.world.provider.dimension
-        if (entity.world.isRemote) w = entity.world
+        dimension = entity.level.dimension()
+        if (entity.level.isClientSide) w = entity.level
     }
 
     fun newWithOffset(x: Int, y: Int, z: Int): Coordinate {
@@ -107,18 +107,18 @@ class Coordinate : INBTTReady {
         return other.x == x && other.y == y && other.z == z && other.dimension == dimension
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound, str: String) {
-        x = nbt.getInteger(str + "x")
-        y = nbt.getInteger(str + "y")
-        z = nbt.getInteger(str + "z")
-        dimension = nbt.getInteger(str + "d")
+    override fun readFromNBT(nbt: CompoundTag, str: String) {
+        x = nbt.getInt(str + "x")
+        y = nbt.getInt(str + "y")
+        z = nbt.getInt(str + "z")
+        dimension = nbt.getInt(str + "d")
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound, str: String) {
-        nbt.setInteger(str + "x", x)
-        nbt.setInteger(str + "y", y)
-        nbt.setInteger(str + "z", z)
-        nbt.setInteger(str + "d", dimension)
+    override fun writeToNBT(nbt: CompoundTag, str: String) {
+        nbt.putInt(str + "x", x)
+        nbt.putInt(str + "y", y)
+        nbt.putInt(str + "z", z)
+        nbt.putInt(str + "d", dimension)
     }
 
     override fun toString(): String {
@@ -149,17 +149,17 @@ class Coordinate : INBTTReady {
         }
 
     /** The full block state at this coordinate; 1.8+ answers shape questions (opacity, bounds) on the state, not the block. */
-    val blockState: IBlockState
+    val blockState: BlockState
         get() = world().getBlockState(x, y, z)
 
-    fun getAxisAlignedBB(ray: Int): AxisAlignedBB {
-        return AxisAlignedBB((
+    fun getAxisAlignedBB(ray: Int): AABB {
+        return AABB((
             x - ray).toDouble(), (y - ray).toDouble(), (z - ray).toDouble(), (
             x + ray + 1).toDouble(), (y + ray + 1).toDouble(), (z + ray + 1).toDouble())
     }
 
     fun distanceTo(e: Entity): Double {
-        return abs(e.posX - (x + 0.5)) + abs(e.posY - (y + 0.5)) + abs(e.posZ - (z + 0.5))
+        return abs(e.x - (x + 0.5)) + abs(e.y - (y + 0.5)) + abs(e.z - (z + 0.5))
     }
 
     val meta: Int
@@ -185,14 +185,14 @@ class Coordinate : INBTTReady {
     }
 
     // Emulates the default Minecraft behavior for determining block coordinates
-    fun setPosition(vp: Vec3d) {
+    fun setPosition(vp: Vec3) {
         x = floor(vp.xCoord).toInt()
         y = floor(vp.yCoord).toInt()
         z = floor(vp.zCoord).toInt()
     }
 
-    val tileEntity: TileEntity?
-        get() = world().getTileEntity(x, y, z)
+    val tileEntity: BlockEntity?
+        get() = world().getBlockEntity(x, y, z)
 
     fun invalidate() {
         x = -1
@@ -230,9 +230,9 @@ class Coordinate : INBTTReady {
         z += coordinate.z
     }
 
-    fun setWorld(world: World) {
-        if (world.isRemote) w = world
-        dimension = world.provider.dimension
+    fun setWorld(world: Level) {
+        if (world.isClientSide) w = world
+        dimension = world.dimension()
     }
 
     /**
@@ -271,14 +271,14 @@ class Coordinate : INBTTReady {
     }
 
     // Emulates the default Minecraft behavior for determining block coordinates
-    fun toVec3(): Vec3d {
-        return Vec3d(this.x + 0.5, this.y + 0.5, this.z + 0.5)
+    fun toVec3(): Vec3 {
+        return Vec3(this.x + 0.5, this.y + 0.5, this.z + 0.5)
     }
 
     companion object {
         @JvmStatic
-        fun getAxisAlignedBB(a: Coordinate, b: Coordinate): AxisAlignedBB {
-            return AxisAlignedBB(
+        fun getAxisAlignedBB(a: Coordinate, b: Coordinate): AABB {
+            return AABB(
                 a.x.coerceAtMost(b.x).toDouble(), a.y.coerceAtMost(b.y).toDouble(), a.z.coerceAtMost(b.z).toDouble(),
                 a.x.coerceAtLeast(b.x) + 1.0, a.y.coerceAtLeast(b.y) + 1.0, a.z.coerceAtLeast(b.z) + 1.0)
         }

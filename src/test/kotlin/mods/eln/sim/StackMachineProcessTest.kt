@@ -6,19 +6,18 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import mods.eln.misc.Recipe
 import mods.eln.misc.RecipesList
-import net.minecraft.inventory.IInventory
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.util.text.ITextComponent
-import net.minecraft.util.text.TextComponentString
+import net.minecraft.world.Container
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.network.chat.Component
 
-/** Minimal 1.12.2 IInventory: slots are never null, an empty slot holds ItemStack.EMPTY. */
-private class SimpleInventory(size: Int) : IInventory {
+/** Minimal 1.12.2 Container: slots are never null, an empty slot holds ItemStack.EMPTY. */
+private class SimpleInventory(size: Int) : Container {
     private val stacks = Array(size) { ItemStack.EMPTY }
-    override fun getSizeInventory(): Int = stacks.size
+    override fun getContainerSize(): Int = stacks.size
     override fun isEmpty(): Boolean = stacks.all { it.isEmpty }
-    override fun getStackInSlot(slot: Int): ItemStack = stacks[slot]
-    override fun decrStackSize(slot: Int, amount: Int): ItemStack {
+    override fun getItem(slot: Int): ItemStack = stacks[slot]
+    override fun removeItem(slot: Int, amount: Int): ItemStack {
         val stack = stacks[slot]
         if (stack.isEmpty) return ItemStack.EMPTY
         val removed = stack.copy()
@@ -28,25 +27,25 @@ private class SimpleInventory(size: Int) : IInventory {
         return removed
     }
 
-    override fun removeStackFromSlot(slot: Int): ItemStack {
+    override fun removeItemNoUpdate(slot: Int): ItemStack {
         val stack = stacks[slot]
         stacks[slot] = ItemStack.EMPTY
         return stack
     }
 
-    override fun setInventorySlotContents(slot: Int, stack: ItemStack) {
+    override fun setItem(slot: Int, stack: ItemStack) {
         stacks[slot] = stack
     }
 
     override fun getName(): String = "inv"
     override fun hasCustomName(): Boolean = false
-    override fun getDisplayName(): ITextComponent = TextComponentString(name)
-    override fun getInventoryStackLimit(): Int = 64
-    override fun markDirty() {}
-    override fun isUsableByPlayer(player: net.minecraft.entity.player.EntityPlayer): Boolean = true
-    override fun openInventory(player: net.minecraft.entity.player.EntityPlayer) {}
-    override fun closeInventory(player: net.minecraft.entity.player.EntityPlayer) {}
-    override fun isItemValidForSlot(slot: Int, stack: ItemStack): Boolean = true
+    override fun getDisplayName(): Component = Component.literal(name)
+    override fun getMaxStackSize(): Int = 64
+    override fun setChanged() {}
+    override fun stillValid(player: net.minecraft.level.entity.player.Player): Boolean = true
+    override fun startOpen(player: net.minecraft.level.entity.player.Player) {}
+    override fun stopOpen(player: net.minecraft.level.entity.player.Player) {}
+    override fun canPlaceItem(slot: Int, stack: ItemStack): Boolean = true
     override fun getField(id: Int): Int = 0
     override fun setField(id: Int, value: Int) {}
     override fun getFieldCount(): Int = 0
@@ -64,7 +63,7 @@ class StackMachineProcessTest {
         val inputItem = Item()
         val outputItem = Item()
         val input = ItemStack(inputItem, 1)
-        inventory.setInventorySlotContents(0, input)
+        inventory.setItem(0, input)
 
         val recipes = RecipesList()
         val output = ItemStack(outputItem, 1)
@@ -82,8 +81,8 @@ class StackMachineProcessTest {
 
         process.process(1.0)
 
-        assertTrue(inventory.getStackInSlot(0).isEmpty)
-        assertEquals(1, inventory.getStackInSlot(1).count)
+        assertTrue(inventory.getItem(0).isEmpty)
+        assertEquals(1, inventory.getItem(1).count)
     }
 
     @Test
@@ -92,7 +91,7 @@ class StackMachineProcessTest {
         val inputItem = Item()
         val outputItem = Item()
         val input = ItemStack(inputItem, 1)
-        inventory.setInventorySlotContents(0, input)
+        inventory.setItem(0, input)
 
         val recipes = RecipesList()
         val output = ItemStack(outputItem, 1)

@@ -3,7 +3,7 @@ package mods.eln.sim.nbt
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import mods.eln.sim.ThermalLoad
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.nbt.CompoundTag
 
 class NbtFurnaceProcessTest {
     @Test
@@ -13,7 +13,7 @@ class NbtFurnaceProcessTest {
         process.combustibleEnergy = 15.0
         process.gain = 0.4
 
-        val nbt = NBTTagCompound()
+        val nbt = CompoundTag()
         process.writeToNBT(nbt, "pfx")
 
         val other = NbtFurnaceProcess("f", load)
@@ -26,9 +26,9 @@ class NbtFurnaceProcessTest {
     @Test
     fun readFromNbtClampsGain() {
         val load = ThermalLoad()
-        val nbt = NBTTagCompound()
-        nbt.setFloat("pfxfQ", 5.0f)
-        nbt.setDouble("pfxfgain", 2.0)
+        val nbt = CompoundTag()
+        nbt.putFloat("pfxfQ", 5.0f)
+        nbt.putDouble("pfxfgain", 2.0)
 
         val other = NbtFurnaceProcess("f", load)
         other.readFromNBT(nbt, "pfx")

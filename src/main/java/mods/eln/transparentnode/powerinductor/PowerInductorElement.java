@@ -11,10 +11,10 @@ import mods.eln.sim.ElectricalLoad;
 import mods.eln.sim.ThermalLoad;
 import mods.eln.sim.mna.component.Inductor;
 import mods.eln.sim.nbt.NbtElectricalLoad;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.Container;
+import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -85,7 +85,7 @@ public class PowerInductorElement extends TransparentNodeElement {
     }
 
     @Override
-    public void inventoryChange(IInventory inventory) {
+    public void inventoryChange(Container inventory) {
         super.inventoryChange(inventory);
         setupPhysical();
     }
@@ -107,19 +107,19 @@ public class PowerInductorElement extends TransparentNodeElement {
     }
 
     @Override
-    public boolean onBlockActivated(@NotNull EntityPlayer player, @NotNull Direction side,
+    public boolean onBlockActivated(@NotNull Player player, @NotNull Direction side,
                                     float vx, float vy, float vz) {
 
         return false;
     }
 
     @Override
-    public void writeToNBT(NBTTagCompound nbt) {
+    public void writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt) {
+    public void readFromNBT(CompoundTag nbt) {
         super.readFromNBT(nbt);
         fromNbt = true;
     }
@@ -155,7 +155,7 @@ public class PowerInductorElement extends TransparentNodeElement {
     TransparentNodeElementInventory inventory = new TransparentNodeElementInventory(2, 64, this);
 
     @Override
-    public IInventory getInventory() {
+    public Container getInventory() {
 
         return inventory;
     }
@@ -167,7 +167,7 @@ public class PowerInductorElement extends TransparentNodeElement {
 
     @Nullable
     @Override
-    public Container newContainer(@NotNull Direction side, @NotNull EntityPlayer player) {
+    public AbstractContainerMenu newContainer(@NotNull Direction side, @NotNull Player player) {
         return new PowerInductorContainer(player, inventory);
     }
 

@@ -15,13 +15,13 @@ import mods.eln.node.six.SixNodeEntity
 import mods.eln.sixnode.genericcable.GenericCableDescriptor
 import mods.eln.sixnode.lampsocket.objrender.LampSocketSuspendedObjRender
 import mods.eln.sound.SoundCommand
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.projectile.EntityArrow
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.world.EnumSkyBlock
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.entity.projectile.AbstractArrow
+import net.minecraft.world.phys.AABB
+import net.minecraft.world.level.LightLayer
 import org.lwjgl.opengl.GL11
 import java.io.DataInputStream
 import java.io.IOException
@@ -121,7 +121,7 @@ class LampSocketRender(tileEntity: SixNodeEntity, side: Direction, sixNodeDescri
         descriptor.renderType.draw(this, UtilsClient.distanceFromClientPlayer(this.tileEntity).toDouble())
     }
 
-    override fun newGuiDraw(side: Direction, player: EntityPlayer): GuiScreen {
+    override fun newGuiDraw(side: Direction, player: Player): Screen {
         return LampSocketGui(player, this)
     }
 
@@ -130,11 +130,11 @@ class LampSocketRender(tileEntity: SixNodeEntity, side: Direction, sixNodeDescri
             entityTimeout -= deltaT
 
             if (entityTimeout < 0) {
-                entityList = tileEntity.getWorld().getEntitiesWithinAABB(Entity::class.java, Coordinate(
+                entityList = tileEntity.getLevel().getEntitiesOfClass(Entity::class.java, Coordinate(
                     tileEntity.xCoord,
                     tileEntity.yCoord - 2,
                     tileEntity.zCoord,
-                    tileEntity.getWorld()
+                    tileEntity.getLevel()
                 ).getAxisAlignedBB(2))
                 entityTimeout = 0.1
             }
@@ -143,16 +143,16 @@ class LampSocketRender(tileEntity: SixNodeEntity, side: Direction, sixNodeDescri
                 val e = o as Entity
                 var eFactor = 0
 
-                if (e is EntityArrow) eFactor = 1
-                if (e is EntityLivingBase) eFactor = 4
+                if (e is AbstractArrow) eFactor = 1
+                if (e is LivingEntity) eFactor = 4
                 if (eFactor == 0) continue
 
                 perturbVy += (e.motionZ * eFactor * deltaT)
                 perturbVz += (e.motionX * eFactor * deltaT)
             }
 
-            if (tileEntity.getWorld().getLightFor(EnumSkyBlock.SKY, tileEntity.pos) > 3) {
-                val weather = (UtilsClient.getWeather(tileEntity.getWorld()) * 0.9) + 0.1
+            if (tileEntity.getLevel().getBrightness(LightLayer.SKY, tileEntity.pos) > 3) {
+                val weather = (UtilsClient.getWeather(tileEntity.getLevel()) * 0.9) + 0.1
 
                 // TODO: Reduce swinging of lamps to some degree?
                 weatherAngleY += ((0.4 - Math.random()) * deltaT * (Math.PI / 0.2) * weather)
@@ -187,10 +187,10 @@ class LampSocketRender(tileEntity: SixNodeEntity, side: Direction, sixNodeDescri
         return cableDescriptor!!.render
     }
 
-    override fun getRenderBoundingBox(tileEntity: SixNodeEntity): AxisAlignedBB? {
+    override fun getRenderBoundingBox(tileEntity: SixNodeEntity): AABB? {
         if (!descriptor.extendedRenderBounds) return null
 
-        return AxisAlignedBB(
+        return AABB(
             (tileEntity.xCoord - 1).toDouble(),
             tileEntity.yCoord.toDouble(),
             (tileEntity.zCoord - 1).toDouble(),

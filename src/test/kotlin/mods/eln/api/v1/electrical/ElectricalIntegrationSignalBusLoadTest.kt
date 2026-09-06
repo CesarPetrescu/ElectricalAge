@@ -1,6 +1,6 @@
 package mods.eln.api.v1.electrical
 
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.nbt.CompoundTag
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -18,11 +18,11 @@ class ElectricalIntegrationSignalBusLoadTest {
     @Test
     fun writeReadNbtUsesStablePerChannelPrefixes() {
         val bus = ElectricalIntegration.SignalBusLoad("test.bus.persist") {}
-        val tag = NBTTagCompound()
+        val tag = CompoundTag()
 
         bus.writeToNbt(tag, "bus")
 
-        assertTrue(tag.hasKey("bus.redtest.bus.persist.redUc"))
-        assertTrue(tag.hasKey("bus.bluetest.bus.persist.blueUc"))
+        assertTrue(tag.contains("bus.redtest.bus.persist.redUc"))
+        assertTrue(tag.contains("bus.bluetest.bus.persist.blueUc"))
     }
 }

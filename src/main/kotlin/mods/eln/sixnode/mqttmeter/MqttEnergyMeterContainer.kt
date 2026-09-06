@@ -5,12 +5,12 @@ import mods.eln.misc.BasicContainer
 import mods.eln.node.six.SixNodeItemSlot
 import mods.eln.sixnode.currentcable.CurrentCableDescriptor
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.IInventory
-import net.minecraft.inventory.Slot
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.Container
+import net.minecraft.world.inventory.Slot
 import mods.eln.i18n.I18N.tr
 
-class MqttEnergyMeterContainer(player: EntityPlayer, inventory: IInventory) : BasicContainer(
+class MqttEnergyMeterContainer(player: Player, inventory: Container) : BasicContainer(
     player,
     inventory,
     arrayOf(

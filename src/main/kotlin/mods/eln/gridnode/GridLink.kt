@@ -10,8 +10,8 @@ import mods.eln.sim.ElectricalConnection
 import mods.eln.sim.mna.misc.MnaConst
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor
 import mods.eln.sixnode.electricalcable.UtilityCableDescriptor
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
 
 import java.util.HashSet
 import java.util.Optional
@@ -43,7 +43,7 @@ class GridLink : INBTTReady {
         this.cable = cable
     }
 
-    constructor(nbt: NBTTagCompound, str: String) {
+    constructor(nbt: CompoundTag, str: String) {
         readFromNBT(nbt, str)
     }
 
@@ -130,7 +130,7 @@ class GridLink : INBTTReady {
         return false
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound, str: String) {
+    override fun readFromNBT(nbt: CompoundTag, str: String) {
         a.readFromNBT(nbt, str + "a")
         b.readFromNBT(nbt, str + "b")
         `as` = Direction.readFromNBT(nbt, str + "as")!!
@@ -139,12 +139,12 @@ class GridLink : INBTTReady {
         cable = ItemStack(nbt)
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound, str: String) {
+    override fun writeToNBT(nbt: CompoundTag, str: String) {
         a.writeToNBT(nbt, str + "a")
         b.writeToNBT(nbt, str + "b")
         `as`.writeToNBT(nbt, str + "as")
         bs.writeToNBT(nbt, str + "bs")
-        nbt.setDouble(str + "rs", rs)
+        nbt.putDouble(str + "rs", rs)
         cable.writeToNBT(nbt)
     }
 

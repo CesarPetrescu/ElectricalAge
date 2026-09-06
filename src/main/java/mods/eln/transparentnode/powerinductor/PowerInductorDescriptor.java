@@ -7,8 +7,8 @@ import mods.eln.misc.Obj3D;
 import mods.eln.misc.IFunction;
 import mods.eln.node.transparent.TransparentNodeDescriptor;
 import mods.eln.sim.mna.misc.MnaConst;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
 
 public class PowerInductorDescriptor extends TransparentNodeDescriptor {
 
@@ -36,16 +36,16 @@ public class PowerInductorDescriptor extends TransparentNodeDescriptor {
         return serie.getValue(cableCount - 1);
     }
 
-    public double getlValue(IInventory inventory) {
-        ItemStack core = inventory.getStackInSlot(PowerInductorContainer.cableId);
+    public double getlValue(Container inventory) {
+        ItemStack core = inventory.getItem(PowerInductorContainer.cableId);
         if (core == null)
             return getlValue(0);
         else
             return getlValue(core.getCount());
     }
 
-    public double getRsValue(IInventory inventory) {
-        ItemStack core = inventory.getStackInSlot(PowerInductorContainer.coreId);
+    public double getRsValue(Container inventory) {
+        ItemStack core = inventory.getItem(PowerInductorContainer.coreId);
 
         if (core == null) return MnaConst.highImpedance;
         FerromagneticCoreDescriptor coreDescriptor = (FerromagneticCoreDescriptor) GenericItemUsingDamageDescriptor.getDescriptor(
@@ -57,7 +57,7 @@ public class PowerInductorDescriptor extends TransparentNodeDescriptor {
         return Eln.instance.lowVoltageCableDescriptor.electricalRs * coreFactor;
     }
 
-    public void setParent(net.minecraft.item.Item item, int damage) {
+    public void setParent(net.minecraft.level().item.Item item, int damage) {
         super.setParent(item, damage);
         //Data.addEnergy(newItemStack());
     }

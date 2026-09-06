@@ -1,15 +1,15 @@
 package mods.eln.client;
 
-import net.minecraftforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientCustomPacketEvent;
 import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
 import io.netty.channel.ChannelHandler.Sharable;
 import mods.eln.Eln;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.network.NetworkManager;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.network.Connection;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -18,7 +18,7 @@ import java.io.DataInputStream;
 public class ClientPacketHandler {
 
     public ClientPacketHandler() {
-        //MinecraftForge.EVENT_BUS.register(this);
+        //NeoForge.EVENT_BUS.register(this);
         Eln.eventChannel.register(this);
     }
 
@@ -27,8 +27,8 @@ public class ClientPacketHandler {
         //Utils.println("onClientPacket");
         FMLProxyPacket packet = event.getPacket();
         DataInputStream stream = new DataInputStream(new ByteArrayInputStream(packet.payload().array()));
-        NetworkManager manager = event.getManager();
-        EntityPlayer player = Minecraft.getMinecraft().player; // EntityPlayerSP
+        Connection manager = event.getManager();
+        Player player = Minecraft.getInstance().player; // EntityPlayerSP
 
         Eln.packetHandler.packetRx(stream, manager, player);
     }

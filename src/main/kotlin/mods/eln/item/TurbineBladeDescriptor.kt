@@ -4,10 +4,10 @@ import mods.eln.Eln
 import mods.eln.generic.GenericItemUsingDamage
 import mods.eln.i18n.I18N.tr
 import mods.eln.wiki.Data
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
 import mods.eln.misc.isNothing
 
 // Config data for one blade tier, mirrors BoilerplateLampData in LampTechnology.kt.
@@ -100,24 +100,24 @@ class TurbineBladeDescriptor(
     }
 
     // Condition is 0.0 (broken) to 1.0 (new). Stored in NBT so it survives inventory moves.
-    override fun getDefaultNBT(): NBTTagCompound {
-        val nbt = NBTTagCompound()
-        nbt.setDouble("condition", 1.0)
+    override fun getDefaultNBT(): CompoundTag {
+        val nbt = CompoundTag()
+        nbt.putDouble("condition", 1.0)
         return nbt
     }
 
     fun getCondition(stack: ItemStack): Double {
-        val tag = stack.tagCompound ?: return 1.0
-        return if (tag.hasKey("condition")) tag.getDouble("condition").coerceIn(0.0, 1.0) else 1.0
+        val tag = stack.tagCompound /* TODO(components) */ ?: return 1.0
+        return if (tag.contains("condition")) tag.getDouble("condition").coerceIn(0.0, 1.0) else 1.0
     }
 
     fun setCondition(stack: ItemStack, condition: Double) {
-        if (stack.tagCompound == null) stack.tagCompound = NBTTagCompound()
-        stack.tagCompound!!.setDouble("condition", condition.coerceIn(0.0, 1.0))
+        if (stack.tagCompound /* TODO(components) */ == null) stack.tagCompound /* TODO(components) */ = CompoundTag()
+        stack.tagCompound /* TODO(components) */!!.putDouble("condition", condition.coerceIn(0.0, 1.0))
     }
 
     private fun getConditionLabel(stack: ItemStack): String {
-        if (!stack.hasTagCompound() || !stack.tagCompound!!.hasKey("condition")) return tr("New")
+        if (!stack.hasTagCompound() || !stack.tagCompound /* TODO(components) */!!.contains("condition")) return tr("New")
         val c = getCondition(stack)
         return when {
             c >= 1.0  -> tr("New")
@@ -130,7 +130,7 @@ class TurbineBladeDescriptor(
 
     override fun addInformation(
         stack: ItemStack?,
-        player: EntityPlayer?,
+        player: Player?,
         list: MutableList<String>,
         par4: Boolean
     ) {

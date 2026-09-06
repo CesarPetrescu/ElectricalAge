@@ -7,9 +7,9 @@ import mods.eln.sim.mna.component.Resistor;
 import mods.eln.sim.nbt.NbtElectricalLoad;
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor;
 import mods.eln.wiki.Data;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
@@ -112,7 +112,7 @@ public class BatteryChargerDescriptor extends SixNodeDescriptor {
     }
 
     @Override
-    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List<String> list, boolean par4) {
+    public void addInformation(ItemStack itemStack, Player entityPlayer, List<String> list, boolean par4) {
         super.addInformation(itemStack, entityPlayer, list, par4);
         Collections.addAll(list, tr("Can be used to recharge\nelectrical items like:\nFlash Light, X-Ray scanner\nand Portable Battery ...").split("\\\n"));
         list.add(tr("Nominal voltage: %1$V", Utils.plotValue(nominalVoltage)));
@@ -131,7 +131,7 @@ public class BatteryChargerDescriptor extends SixNodeDescriptor {
 
     @Nullable
     @Override
-    public LRDU getFrontFromPlace(@NotNull Direction side, @NotNull EntityPlayer player) {
+    public LRDU getFrontFromPlace(@NotNull Direction side, @NotNull Player player) {
         return super.getFrontFromPlace(side, player).inverse();
     }
 }

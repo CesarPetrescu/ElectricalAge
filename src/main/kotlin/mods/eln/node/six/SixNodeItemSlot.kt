@@ -3,11 +3,11 @@ package mods.eln.node.six
 import mods.eln.Eln
 import mods.eln.gui.ISlotSkin.SlotSkin
 import mods.eln.gui.SlotWithSkinAndComment
-import net.minecraft.inventory.IInventory
-import net.minecraft.item.ItemStack
+import net.minecraft.world.Container
+import net.minecraft.world.item.ItemStack
 
 open class SixNodeItemSlot(
-    inventory: IInventory?, slot: Int,
+    inventory: Container?, slot: Int,
     x: Int, y: Int,
     var stackLimit: Int,
     var descriptorClassList: Array<Class<*>>, skin: SlotSkin, comment: Array<String>

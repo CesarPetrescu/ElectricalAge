@@ -2,8 +2,8 @@
 package mods.eln.node
 
 import mods.eln.misc.Direction
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.world.EnumSkyBlock
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.world.level.LightLayer
 import java.io.DataOutputStream
 import java.io.IOException
 import mods.eln.misc.getTileEntity
@@ -18,19 +18,19 @@ abstract class Node : NodeBase() {
             if (light < 0) light = 0
             if (lastLight != light) {
                 lastLight = light
-                coordinate.world().checkLightFor(EnumSkyBlock.BLOCK, coordinate.pos)
+                coordinate.world().checkLightFor(LightLayer.BLOCK, coordinate.pos)
                 needPublish = true
             }
         }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
         lastLight = nbt.getByte("lastLight").toInt()
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound) {
+    override fun writeToNBT(nbt: CompoundTag) {
         super.writeToNBT(nbt)
-        nbt.setByte("lastLight", lastLight.toByte())
+        nbt.putByte("lastLight", lastLight.toByte())
     }
 
     var oldSendedRedstone = false
@@ -47,7 +47,7 @@ abstract class Node : NodeBase() {
     }
 
     val entity: NodeBlockEntity
-        get() = coordinate.world().getTileEntity(coordinate.x, coordinate.y, coordinate.z) as NodeBlockEntity
+        get() = coordinate.world().getBlockEntity(coordinate.x, coordinate.y, coordinate.z) as NodeBlockEntity
 
     open fun isProvidingWeakPower(side: Direction?): Int {
         return 0

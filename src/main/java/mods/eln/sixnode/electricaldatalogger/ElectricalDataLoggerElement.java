@@ -16,11 +16,11 @@ import mods.eln.node.six.SixNodeElementInventory;
 import mods.eln.sim.ElectricalLoad;
 import mods.eln.sim.ThermalLoad;
 import mods.eln.sim.nbt.NbtElectricalGateInput;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.inventory.Container;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -92,7 +92,7 @@ public class ElectricalDataLoggerElement extends SixNodeElement implements IConf
     }
 
     @Override
-    public void readFromNBT(@NotNull NBTTagCompound nbt) {
+    public void readFromNBT(@NotNull CompoundTag nbt) {
         super.readFromNBT(nbt);
         byte value = nbt.getByte("front");
         front = LRDU.fromInt((value >> 0) & 0x3);
@@ -100,22 +100,22 @@ public class ElectricalDataLoggerElement extends SixNodeElement implements IConf
         logs.readFromNBT(nbt, "logs");
         pause = nbt.getBoolean("pause");
         timeToNextSample = nbt.getDouble("timeToNextSample");
-        sampleStack = nbt.getInteger("sampleStack");
-        sampleStackNbr = nbt.getInteger("sampleStackNbr");
+        sampleStack = nbt.getInt("sampleStack");
+        sampleStackNbr = nbt.getInt("sampleStackNbr");
         color = nbt.getByte("color");
     }
 
     @Override
-    public void writeToNBT(NBTTagCompound nbt) {
+    public void writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setByte("front", (byte) (front.toInt() << 0));
-        nbt.setDouble("timeToNextSample", timeToNextSample);
-        nbt.setBoolean("pause", pause);
-        nbt.setByte("color", color);
+        nbt.putByte("front", (byte) (front.toInt() << 0));
+        nbt.putDouble("timeToNextSample", timeToNextSample);
+        nbt.putBoolean("pause", pause);
+        nbt.putByte("color", color);
 
         logs.writeToNBT(nbt, "logs");
-        nbt.setInteger("sampleStack", sampleStack);
-        nbt.setInteger("sampleStackNbr", sampleStackNbr);
+        nbt.putInt("sampleStack", sampleStack);
+        nbt.putInt("sampleStackNbr", sampleStackNbr);
     }
 
     @Override
@@ -193,7 +193,7 @@ public class ElectricalDataLoggerElement extends SixNodeElement implements IConf
     }
 
     @Override
-    public void networkUnserialize(DataInputStream stream, EntityPlayerMP player) {
+    public void networkUnserialize(DataInputStream stream, ServerPlayer player) {
         super.networkUnserialize(stream);
         byte header;
         try {
@@ -266,7 +266,7 @@ public class ElectricalDataLoggerElement extends SixNodeElement implements IConf
 
     @Nullable
     @Override
-    public Container newContainer(@NotNull Direction side, @NotNull EntityPlayer player) {
+    public AbstractContainerMenu newContainer(@NotNull Direction side, @NotNull Player player) {
         return new ElectricalDataLoggerContainer(player, inventory);
     }
 
@@ -276,8 +276,8 @@ public class ElectricalDataLoggerElement extends SixNodeElement implements IConf
     }
 
     @Override
-    public boolean onBlockActivated(EntityPlayer entityPlayer, Direction side, float vx, float vy, float vz) {
-        ItemStack cur = entityPlayer.getHeldItemMainhand();
+    public boolean onBlockActivated(Player entityPlayer, Direction side, float vx, float vy, float vz) {
+        ItemStack cur = entityPlayer.getMainHandItem();
         if (cur != null) {
             GenericItemUsingDamageDescriptor desc = BrushDescriptor.getDescriptor(cur);
             if (desc != null && desc instanceof BrushDescriptor) {
@@ -294,14 +294,14 @@ public class ElectricalDataLoggerElement extends SixNodeElement implements IConf
         return onBlockActivatedRotate(entityPlayer);
     }
 
-    public void readConfigTool(NBTTagCompound compound, EntityPlayer invoker) {
-        if(compound.hasKey("min"))
+    public void readConfigTool(CompoundTag compound, Player invoker) {
+        if(compound.contains("min"))
             logs.minValue = compound.getFloat("min");
-        if(compound.hasKey("max"))
+        if(compound.contains("max"))
             logs.maxValue = compound.getFloat("max");
-        if(compound.hasKey("unit"))
+        if(compound.contains("unit"))
             logs.unitType = compound.getByte("unit");
-        if(compound.hasKey("period"))
+        if(compound.contains("period"))
             logs.samplingPeriod = compound.getFloat("period");
 
         try {
@@ -325,10 +325,10 @@ public class ElectricalDataLoggerElement extends SixNodeElement implements IConf
     }
 
     @Override
-    public void writeConfigTool(NBTTagCompound compound, EntityPlayer invoker) {
-        compound.setFloat("min", logs.minValue);
-        compound.setFloat("max", logs.maxValue);
-        compound.setByte("unit", logs.unitType);
-        compound.setFloat("period", logs.samplingPeriod);
+    public void writeConfigTool(CompoundTag compound, Player invoker) {
+        compound.putFloat("min", logs.minValue);
+        compound.putFloat("max", logs.maxValue);
+        compound.putByte("unit", logs.unitType);
+        compound.putFloat("period", logs.samplingPeriod);
     }
 }

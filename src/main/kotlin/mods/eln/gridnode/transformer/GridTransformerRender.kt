@@ -5,7 +5,7 @@ import mods.eln.misc.SlewLimiter
 import mods.eln.node.transparent.TransparentNodeDescriptor
 import mods.eln.node.transparent.TransparentNodeEntity
 import mods.eln.sound.LoopedSound
-import net.minecraft.client.audio.ISound
+import net.minecraft.client.resources.sounds.SoundInstance
 import java.io.DataInputStream
 
 class GridTransformerRender(entity: TransparentNodeEntity, descriptor: TransparentNodeDescriptor) : GridRender(entity, descriptor) {
@@ -13,7 +13,7 @@ class GridTransformerRender(entity: TransparentNodeEntity, descriptor: Transpare
     private var load = SlewLimiter(0.5f)
 
     init {
-        addLoopedSound(object : LoopedSound("eln:transformer", coordinate(), ISound.AttenuationType.LINEAR) {
+        addLoopedSound(object : LoopedSound("eln:transformer", coordinate(), SoundInstance.AttenuationType.LINEAR) {
             override fun getVolume() = Math.max(0f, (load.position - desc.minimalLoadToHum) / (1 - desc.minimalLoadToHum))
         })
     }

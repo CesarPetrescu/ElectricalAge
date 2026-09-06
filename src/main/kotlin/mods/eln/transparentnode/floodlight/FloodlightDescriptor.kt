@@ -6,10 +6,10 @@ import mods.eln.misc.*
 import mods.eln.misc.Utils.entityLivingHorizontalViewDirection
 import mods.eln.node.transparent.TransparentNodeDescriptor
 import mods.eln.wiki.Data
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import mods.eln.client.itemrender.IItemRenderer
 import org.lwjgl.opengl.GL11
 import java.util.*
@@ -42,7 +42,7 @@ class FloodlightDescriptor(val itemName: String, val obj: Obj3D, val motorized: 
         }
     }
 
-    override fun addInformation(itemStack: ItemStack, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack, entityPlayer: Player?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
 
         Collections.addAll(list, *I18N.tr(
@@ -117,7 +117,7 @@ class FloodlightDescriptor(val itemName: String, val obj: Obj3D, val motorized: 
         return false
     }
 
-    override fun getFrontFromPlace(side: Direction, entityLiving: EntityLivingBase?): Direction {
+    override fun getFrontFromPlace(side: Direction, entityLiving: LivingEntity?): Direction {
         placementSide = side.inverse
         return when (side) {
             Direction.XN -> side.inverse.down()

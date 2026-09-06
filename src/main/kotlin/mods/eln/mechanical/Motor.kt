@@ -23,8 +23,8 @@ import mods.eln.sim.process.destruct.WorldExplosion
 import mods.eln.sim.process.heater.ElectricalLoadHeatThermalLoad
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor
 import mods.eln.sound.LoopedSound
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
 import org.lwjgl.opengl.GL11
 import java.awt.Color
 import java.io.DataInputStream
@@ -98,7 +98,7 @@ class MotorDescriptor(
         voltageLevelColor = VoltageLevelColor.VeryHighVoltage
     }
 
-    override fun addInformation(stack: ItemStack, player: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(stack: ItemStack, player: Player?, list: MutableList<String>, par4: Boolean) {
         list.add(tr("Converts electricity into mechanical energy, or (badly) vice versa."))
         list.add(tr("Integrated drive: soft-starts to nominal speed."))
         list.add(tr("Nominal usage ->"))
@@ -422,7 +422,7 @@ class MotorElement(node: TransparentNode, desc_: TransparentNodeDescriptor) :
 
     override fun thermoMeterString(side: Direction): String = plotAmbientCelsius("T", thermal.temperature)
 
-    override fun onBlockActivated(player: EntityPlayer, side: Direction, vx: Float, vy: Float, vz: Float) =
+    override fun onBlockActivated(player: Player, side: Direction, vx: Float, vy: Float, vz: Float) =
         false
 
     override fun networkSerialize(stream: DataOutputStream) {

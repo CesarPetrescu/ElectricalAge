@@ -4,15 +4,15 @@ package mods.eln.node
 import mods.eln.misc.Utils.println
 import mods.eln.misc.Utils.sendMessage
 import mods.eln.misc.Coordinate
-import net.minecraft.entity.player.EntityPlayerMP
+import net.minecraft.server.level.ServerPlayer
 import mods.eln.misc.LRDUCubeMask
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level
 import mods.eln.Eln
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.item.ItemStack
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.entity.player.Player
+import net.minecraft.nbt.CompoundTag
 import mods.eln.sound.SoundCommand
 import mods.eln.GuiHandler
 import mods.eln.misc.LRDU
@@ -26,17 +26,17 @@ import kotlin.jvm.JvmOverloads
 import net.minecraft.server.MinecraftServer
 import net.minecraftforge.fml.common.FMLCommonHandler
 import mods.eln.ServerKeyHandler
-import net.minecraft.world.WorldServer
-import net.minecraft.entity.item.EntityItem
-import net.minecraft.inventory.IInventory
-import net.minecraft.init.Blocks
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.world.entity.item.ItemEntity
+import net.minecraft.world.Container
+import net.minecraft.world.level.block.Blocks
 import mods.eln.ghost.GhostBlock
 import mods.eln.misc.Direction
 import mods.eln.misc.Utils
 import mods.eln.sim.ElectricalConnection
 import mods.eln.sim.ThermalConnection
-import net.minecraft.block.Block
-import net.minecraft.entity.Entity
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.entity.Entity
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -66,9 +66,9 @@ abstract class NodeBase {
     open val blockMetadata: Int
         get() = 0
 
-    open fun networkUnserialize(stream: DataInputStream, player: EntityPlayerMP?) {}
+    open fun networkUnserialize(stream: DataInputStream, player: ServerPlayer?) {}
     fun notifyNeighbor() {
-        coordinate.world().notifyNeighborsOfStateChange(coordinate.pos, coordinate.block, false)
+        coordinate.world().updateNeighborsAt(coordinate.pos, coordinate.block, false)
     }
 
     //public abstract Block getBlock();
@@ -124,7 +124,7 @@ abstract class NodeBase {
         }
     }
 
-    fun onBlockPlacedBy(coordinate: Coordinate, front: Direction, entityLiving: EntityLivingBase?, itemStack: ItemStack?) {
+    fun onBlockPlacedBy(coordinate: Coordinate, front: Direction, entityLiving: LivingEntity?, itemStack: ItemStack?) {
         this.coordinate = coordinate
         neighborBlockRead()
         NodeManager.instance!!.addNode(this)
@@ -132,7 +132,7 @@ abstract class NodeBase {
         if (!itemStack.isNothing()) println("Node::constructor( meta = " + itemStack.itemDamage + ")")
     }
 
-    abstract fun initializeFromThat(front: Direction, entityLiving: EntityLivingBase?, itemStack: ItemStack?)
+    abstract fun initializeFromThat(front: Direction, entityLiving: LivingEntity?, itemStack: ItemStack?)
 
     fun getNeighbor(direction: Direction): NodeBase? {
         val position = IntArray(3)
@@ -151,9 +151,9 @@ abstract class NodeBase {
         println("Node::onBreakBlock()")
     }
 
-    open fun onBlockActivated(entityPlayer: EntityPlayer, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
-        if (!entityPlayer.world.isRemote && !entityPlayer.heldItemMainhand.isNothing()) {
-            val equipped = entityPlayer.heldItemMainhand
+    open fun onBlockActivated(entityPlayer: Player, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
+        if (!entityPlayer.level.isClientSide && !entityPlayer.mainHandItem.isNothing()) {
+            val equipped = entityPlayer.mainHandItem
             if (Eln.multiMeterElement.checkSameItemStack(equipped)) {
                 val str = multiMeterString(side)
                 addMeterChatMessages(entityPlayer, str)
@@ -173,27 +173,27 @@ abstract class NodeBase {
             }
             if (Eln.configCopyToolElement.checkSameItemStack(equipped)) {
                 if (!equipped.hasTagCompound()) {
-                    equipped.tagCompound = NBTTagCompound()
+                    equipped.tagCompound /* TODO(components) */ = CompoundTag()
                 }
                 val act: String
                 var snd = beepError
-                if (entityPlayer.isSneaking) {
-                    if (writeConfigTool(side, equipped.tagCompound, entityPlayer)) snd = beepDownloaded
+                if (entityPlayer.isShiftKeyDown) {
+                    if (writeConfigTool(side, equipped.tagCompound /* TODO(components) */, entityPlayer)) snd = beepDownloaded
                     act = "write"
                 } else {
-                    if (readConfigTool(side, equipped.tagCompound, entityPlayer)) {
+                    if (readConfigTool(side, equipped.tagCompound /* TODO(components) */, entityPlayer)) {
                         needPublish()
                         snd = beepUploaded
                     }
                     act = "read"
                 }
                 snd.set(
-                    entityPlayer.posX,
-                    entityPlayer.posY,
-                    entityPlayer.posZ,
-                    entityPlayer.world
+                    entityPlayer.x,
+                    entityPlayer.y,
+                    entityPlayer.z,
+                    entityPlayer.level
                 ).play()
-                println(String.format("NB.oBA: act %s data %s", act, equipped.tagCompound.toString()))
+                println(String.format("NB.oBA: act %s data %s", act, equipped.tagCompound /* TODO(components) */.toString()))
                 return true
             }
         }
@@ -204,7 +204,7 @@ abstract class NodeBase {
         return false
     }
 
-    private fun addMeterChatMessages(entityPlayer: EntityPlayer, text: String) {
+    private fun addMeterChatMessages(entityPlayer: Player, text: String) {
         text.split('\n')
             .map { it.trimEnd('\r') }
             .filter { it.isNotEmpty() }
@@ -345,17 +345,17 @@ abstract class NodeBase {
         return true
     }
 
-    open fun readFromNBT(nbt: NBTTagCompound) {
+    open fun readFromNBT(nbt: CompoundTag) {
         coordinate.readFromNBT(nbt, "c")
         neighborOpaque = nbt.getByte("NBOpaque")
         neighborWrapable = nbt.getByte("NBWrap")
         initialized = true
     }
 
-    open fun writeToNBT(nbt: NBTTagCompound) {
+    open fun writeToNBT(nbt: CompoundTag) {
         coordinate.writeToNBT(nbt, "c")
-        nbt.setByte("NBOpaque", neighborOpaque)
-        nbt.setByte("NBWrap", neighborWrapable)
+        nbt.putByte("NBOpaque", neighborOpaque)
+        nbt.putByte("NBWrap", neighborWrapable)
     }
 
     open fun multiMeterString(side: Direction): String {
@@ -366,11 +366,11 @@ abstract class NodeBase {
         return ""
     }
 
-    open fun readConfigTool(side: Direction?, tag: NBTTagCompound?, invoker: EntityPlayer?): Boolean {
+    open fun readConfigTool(side: Direction?, tag: CompoundTag?, invoker: Player?): Boolean {
         return false
     }
 
-    open fun writeConfigTool(side: Direction?, tag: NBTTagCompound?, invoker: EntityPlayer?): Boolean {
+    open fun writeConfigTool(side: Direction?, tag: CompoundTag?, invoker: Player?): Boolean {
         return false
     }
 
@@ -397,7 +397,7 @@ abstract class NodeBase {
         }
     }
 
-    fun sendPacketToClient(bos: ByteArrayOutputStream?, player: EntityPlayerMP?) {
+    fun sendPacketToClient(bos: ByteArrayOutputStream?, player: ServerPlayer?) {
         Utils.sendPacketToClient(bos!!, player!!)
     }
 
@@ -416,7 +416,7 @@ abstract class NodeBase {
         }
     }
 
-    private inline fun forEachWatchingPlayer(action: (EntityPlayerMP) -> Unit) {
+    private inline fun forEachWatchingPlayer(action: (ServerPlayer) -> Unit) {
         val server = FMLCommonHandler.instance().minecraftServerInstance ?: return
         val worldServer = server.getWorld(coordinate.dimension) ?: return
         val chunkMap = worldServer.playerChunkMap
@@ -460,7 +460,7 @@ abstract class NodeBase {
         needPublish = false
     }
 
-    fun publishToPlayer(player: EntityPlayerMP?) {
+    fun publishToPlayer(player: ServerPlayer?) {
         Utils.sendPacketToClient(publishPacket!!, player!!)
     }
 
@@ -471,16 +471,16 @@ abstract class NodeBase {
             val var7 = (coordinate.world().rand.nextFloat() * var6).toDouble() + (1.0f - var6).toDouble() * 0.5
             val var9 = (coordinate.world().rand.nextFloat() * var6).toDouble() + (1.0f - var6).toDouble() * 0.5
             val var11 = (coordinate.world().rand.nextFloat() * var6).toDouble() + (1.0f - var6).toDouble() * 0.5
-            val var13 = EntityItem(coordinate.world(), coordinate.x.toDouble() + var7, coordinate.y.toDouble() + var9, coordinate.z.toDouble() + var11, itemStack)
+            val var13 = ItemEntity(coordinate.world(), coordinate.x.toDouble() + var7, coordinate.y.toDouble() + var9, coordinate.z.toDouble() + var11, itemStack)
             var13.setPickupDelay(10)
-            coordinate.world().spawnEntity(var13)
+            coordinate.world().addFreshEntity(var13)
         }
     }
 
-    fun dropInventory(inventory: IInventory?) {
+    fun dropInventory(inventory: Container?) {
         if (inventory == null) return
-        for (idx in 0 until inventory.sizeInventory) {
-            dropItem(inventory.getStackInSlot(idx))
+        for (idx in 0 until inventory.containerSize) {
+            dropItem(inventory.getItem(idx))
         }
     }
 
@@ -517,7 +517,7 @@ abstract class NodeBase {
         const val networkSerializeTFactor = 10.0
         var teststatic = 0
         @JvmStatic
-        fun isBlockWrappable(block: Block, w: World?, x: Int, y: Int, z: Int): Boolean {
+        fun isBlockWrappable(block: Block, w: Level?, x: Int, y: Int, z: Int): Boolean {
             if (w != null && block.isReplaceable(w, BlockPos(x, y, z))) return true
             if (block === Blocks.AIR) return true
             if (block === Eln.sixNodeBlock) return true

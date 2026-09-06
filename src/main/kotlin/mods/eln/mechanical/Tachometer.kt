@@ -25,10 +25,10 @@ import mods.eln.sim.ThermalLoad
 import mods.eln.sim.nbt.NbtElectricalGateOutput
 import mods.eln.sim.nbt.NbtElectricalGateOutputProcess
 import mods.eln.sixnode.electricaldatalogger.DataLogs
-import net.minecraft.client.gui.GuiButton
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.client.gui.components.Button
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.world.entity.player.Player
+import net.minecraft.nbt.CompoundTag
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -96,16 +96,16 @@ open class TachometerElement(node: TransparentNode, desc_: TransparentNodeDescri
         return type
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
         minRads = nbt.getFloat("minRads")
         maxRads = nbt.getFloat("maxRads")
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound) {
+    override fun writeToNBT(nbt: CompoundTag) {
         super.writeToNBT(nbt)
-        nbt.setFloat("minRads", minRads)
-        nbt.setFloat("maxRads", maxRads)
+        nbt.putFloat("minRads", minRads)
+        nbt.putFloat("maxRads", maxRads)
     }
 
     override fun getWaila(): Map<String, String> {
@@ -116,18 +116,18 @@ open class TachometerElement(node: TransparentNode, desc_: TransparentNodeDescri
         return node!!.coordinate
     }
 
-    override fun readConfigTool(compound: NBTTagCompound, invoker: EntityPlayer) {
-        if(compound.hasKey("min"))
+    override fun readConfigTool(compound: CompoundTag, invoker: Player) {
+        if(compound.contains("min"))
             minRads = compound.getFloat("min")
-        if(compound.hasKey("max"))
+        if(compound.contains("max"))
             maxRads = compound.getFloat("max")
         needPublish()
     }
 
-    override fun writeConfigTool(compound: NBTTagCompound, invoker: EntityPlayer) {
-        compound.setFloat("min", minRads)
-        compound.setFloat("max", maxRads)
-        compound.setByte("unit", DataLogs.noType)
+    override fun writeConfigTool(compound: CompoundTag, invoker: Player) {
+        compound.putFloat("min", minRads)
+        compound.putFloat("max", maxRads)
+        compound.putByte("unit", DataLogs.noType)
     }
 }
 
@@ -150,11 +150,11 @@ class TachometerRender(entity: TransparentNodeEntity, desc: TransparentNodeDescr
         maxRads = stream.readFloat()
     }
 
-    override fun newGuiDraw(side: Direction, player: EntityPlayer): GuiScreen? = TachometerGui(this)
+    override fun newGuiDraw(side: Direction, player: Player): Screen? = TachometerGui(this)
 }
 
 class TachometerGui(val render: TachometerRender) : GuiScreenEln() {
-    val validate: GuiButton by lazy { newGuiButton(82, 12, 80, tr("Validate")) }
+    val validate: Button by lazy { newGuiButton(82, 12, 80, tr("Validate")) }
     val lowValue: GuiTextFieldEln by lazy { newGuiTextField(8, 24, 70) }
     val highValue: GuiTextFieldEln by lazy { newGuiTextField(8, 8, 70) }
 

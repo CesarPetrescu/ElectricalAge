@@ -1,6 +1,6 @@
 package mods.eln.gui;
 
-import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.GuiGraphics;
 
 /**
  * Checkbox item for GUI (WIP)
@@ -12,10 +12,10 @@ import net.minecraft.client.gui.Gui;
 public class GuiCheckbox extends Gui implements IGuiObject {
 
 	/*
-    static ResourceLocation reslocBitmapCheckboxOff = new ResourceLocation("eln","sprites/gui/checkbox_off.png");
-    static ResourceLocation reslocBitmapCheckboxOffSel = new ResourceLocation("eln","sprites/gui/checkbox_offsel.png");
-    static ResourceLocation reslocBitmapCheckboxOn = new ResourceLocation("eln","sprites/gui/checkbox_on.png");
-    static ResourceLocation reslocBitmapCheckboxOnSel = new ResourceLocation("eln","sprites/gui/checkbox_onsel.png");
+    static ResourceLocation reslocBitmapCheckboxOff = ResourceLocation.fromNamespaceAndPath("eln","sprites/gui/checkbox_off.png");
+    static ResourceLocation reslocBitmapCheckboxOffSel = ResourceLocation.fromNamespaceAndPath("eln","sprites/gui/checkbox_offsel.png");
+    static ResourceLocation reslocBitmapCheckboxOn = ResourceLocation.fromNamespaceAndPath("eln","sprites/gui/checkbox_on.png");
+    static ResourceLocation reslocBitmapCheckboxOnSel = ResourceLocation.fromNamespaceAndPath("eln","sprites/gui/checkbox_onsel.png");
 	*/
 
     @Override

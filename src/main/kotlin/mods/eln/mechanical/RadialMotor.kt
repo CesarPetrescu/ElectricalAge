@@ -19,9 +19,9 @@ import mods.eln.node.transparent.TransparentNodeDescriptor
 import mods.eln.node.transparent.TransparentNodeEntity
 import mods.eln.sim.IProcess
 import mods.eln.sim.nbt.NbtElectricalGateInput
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
 import org.lwjgl.opengl.GL11
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -70,7 +70,7 @@ class RadialMotorDescriptor(baseName: String, obj: Obj3D) :
     @Suppress("CanBePrimaryConstructorProperty") // If you do that, it changes the constructor and BLAMO, Crash!
     override val obj: Obj3D = obj
 
-    override fun addInformation(stack: ItemStack, player: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(stack: ItemStack, player: Player?, list: MutableList<String>, par4: Boolean) {
         list.add(tr("Converts %1$ into mechanical energy.",fluidDescription))
         list.add(tr("Nominal usage ->"))
         list.add("  "+ tr("%1$ input: %2$ mB/s",fluidDescription.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() },fluidConsumption))
@@ -132,11 +132,11 @@ class RadialMotorElement(node: TransparentNode, transparentNodeDescriptor: Trans
             }
         }
 
-        override fun readFromNBT(nbt: NBTTagCompound, str: String) {
+        override fun readFromNBT(nbt: CompoundTag, str: String) {
             rc.readFromNBT(nbt, str)
         }
 
-        override fun writeToNBT(nbt: NBTTagCompound, str: String) {
+        override fun writeToNBT(nbt: CompoundTag, str: String) {
             rc.writeToNBT(nbt, str)
         }
     }
@@ -157,13 +157,13 @@ class RadialMotorElement(node: TransparentNode, transparentNodeDescriptor: Trans
 
     override fun thermoMeterString(side: Direction): String = Utils.plotPercent(" Eff:", efficiency.toDouble()) + fluidRate.toString() + "mB/s"
 
-    override fun writeToNBT(nbt: NBTTagCompound) {
+    override fun writeToNBT(nbt: CompoundTag) {
         super.writeToNBT(nbt)
         tank.writeToNBT(nbt, "tank")
         radialMotorSlowProcess.writeToNBT(nbt, "proc")
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
         tank.readFromNBT(nbt, "tank")
         radialMotorSlowProcess.readFromNBT(nbt, "proc")

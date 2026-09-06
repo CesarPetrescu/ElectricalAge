@@ -2,7 +2,7 @@ package mods.eln.sixnode.electricalbreaker;
 
 import mods.eln.misc.INBTTReady;
 import mods.eln.sim.IProcess;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundTag;
 
 public class ElectricalBreakerCutProcess implements IProcess, INBTTReady {
     private static final double STARTUP_INRUSH_TRIP_TIME_SECONDS = 1.0;
@@ -45,12 +45,12 @@ public class ElectricalBreakerCutProcess implements IProcess, INBTTReady {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt, String str) {
+    public void readFromNBT(CompoundTag nbt, String str) {
         T = nbt.getFloat(str + "T");
     }
 
     @Override
-    public void writeToNBT(NBTTagCompound nbt, String str) {
-        nbt.setFloat(str + "T", (float) T);
+    public void writeToNBT(CompoundTag nbt, String str) {
+        nbt.putFloat(str + "T", (float) T);
     }
 }

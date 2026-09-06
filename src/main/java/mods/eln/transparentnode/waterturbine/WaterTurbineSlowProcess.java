@@ -4,9 +4,9 @@ import mods.eln.misc.INBTTReady;
 import mods.eln.misc.RcRcInterpolator;
 import mods.eln.misc.Utils;
 import mods.eln.sim.IProcess;
-import net.minecraft.block.Block;
-import net.minecraft.init.Blocks;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.nbt.CompoundTag;
 
 public class WaterTurbineSlowProcess implements IProcess, INBTTReady {
 
@@ -49,7 +49,7 @@ public class WaterTurbineSlowProcess implements IProcess, INBTTReady {
             //Utils.println("WATER : " + b + "    " + turbine.waterCoord.getMeta());
             if (block != Blocks.FLOWING_WATER && block != Blocks.WATER) return -1;
             if (blockMeta == 0) return 0;
-            time = Utils.getWorldTime(turbine.world());
+            time = Utils.getDayTime(turbine.world());
         }
 
         double timeFactor = 1 + 0.2 * Math.sin((time - 0.20) * Math.PI * 2);
@@ -58,12 +58,12 @@ public class WaterTurbineSlowProcess implements IProcess, INBTTReady {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt, String str) {
+    public void readFromNBT(CompoundTag nbt, String str) {
         filter.readFromNBT(nbt, str + "filter");
     }
 
     @Override
-    public void writeToNBT(NBTTagCompound nbt, String str) {
+    public void writeToNBT(CompoundTag nbt, String str) {
 
         filter.writeToNBT(nbt, str + "filter");
 

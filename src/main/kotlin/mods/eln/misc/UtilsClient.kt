@@ -9,26 +9,26 @@ import mods.eln.misc.Obj3D.Obj3DPart
 import mods.eln.node.six.SixNodeEntity
 import mods.eln.node.transparent.TransparentNodeEntity
 import net.minecraft.client.Minecraft
-import net.minecraft.client.entity.EntityPlayerSP
-import net.minecraft.client.gui.FontRenderer
-import net.minecraft.client.gui.GuiScreen
+import net.minecraft.client.player.LocalPlayer
+import net.minecraft.client.gui.Font
+import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.renderer.OpenGlHelper
 import net.minecraft.client.renderer.RenderHelper
-import net.minecraft.client.renderer.entity.Render
-import net.minecraft.client.renderer.RenderItem
-import net.minecraft.client.renderer.entity.RenderManager
-import net.minecraft.entity.Entity
-import net.minecraft.entity.item.EntityItem
-import net.minecraft.item.ItemStack
-import net.minecraft.network.PacketBuffer
+import net.minecraft.client.renderer.entity.EntityRenderer
+import net.minecraft.client.renderer.entity.ItemRenderer
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.item.ItemEntity
+import net.minecraft.world.item.ItemStack
+import net.minecraft.network.FriendlyByteBuf
 import net.minecraft.network.play.client.CPacketCustomPayload
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.math.MathHelper
-import net.minecraft.util.ResourceLocation
-import net.minecraft.world.EnumSkyBlock
+import net.minecraft.world.level.block.entity.BlockEntity
+import net.minecraft.util.Mth
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.level.LightLayer
 import io.netty.buffer.Unpooled
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level
 import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
 import org.lwjgl.input.Keyboard
 import org.lwjgl.opengl.GL11
@@ -39,7 +39,7 @@ import kotlin.math.sqrt
 
 object UtilsClient {
     @JvmField
-    var guiLastOpen: GuiScreen? = null
+    var guiLastOpen: Screen? = null
     var lightmapTexUnitTextureEnable = false
     @JvmStatic
     var uuid = Int.MIN_VALUE
@@ -50,25 +50,25 @@ object UtilsClient {
         private set
     val whiteTexture = ResourceLocation("eln", "sprites/cable.png")
     val portableBatteryOverlayResource = ResourceLocation("eln", "sprites/portablebatteryoverlay.png")
-    fun distanceFromClientPlayer(@Suppress("UNUSED_PARAMETER") world: World?, xCoord: Int, yCoord: Int, zCoord: Int): Float {
-        val player = Minecraft.getMinecraft().player
-        return Math.sqrt((xCoord - player.posX) * (xCoord - player.posX) + (yCoord - player.posY) * (yCoord - player.posY) + (zCoord - player.posZ) * (zCoord - player.posZ)).toFloat()
+    fun distanceFromClientPlayer(@Suppress("UNUSED_PARAMETER") world: Level?, xCoord: Int, yCoord: Int, zCoord: Int): Float {
+        val player = Minecraft.getInstance().player
+        return Math.sqrt((xCoord - player.x) * (xCoord - player.x) + (yCoord - player.y) * (yCoord - player.y) + (zCoord - player.z) * (zCoord - player.z)).toFloat()
     }
 
     @JvmStatic
     fun distanceFromClientPlayer(tileEntity: SixNodeEntity): Float {
-        return distanceFromClientPlayer(tileEntity.world, tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord)
+        return distanceFromClientPlayer(tileEntity.level, tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord)
     }
 
-    val clientPlayer: EntityPlayerSP
-        get() = Minecraft.getMinecraft().player
+    val clientPlayer: LocalPlayer
+        get() = Minecraft.getInstance().player
 
-    fun drawHaloNoLightSetup(halo: Obj3DPart?, r: Float, g: Float, b: Float, w: World, x: Int, y: Int, z: Int, bilinear: Boolean) {
+    fun drawHaloNoLightSetup(halo: Obj3DPart?, r: Float, g: Float, b: Float, w: Level, x: Int, y: Int, z: Int, bilinear: Boolean) {
         if (halo == null) return
         withBilinearFilters(halo, bilinear) {
             val light = getLight(w, x, y, z) * 19 / 15 - 4
             val e: Entity = clientPlayer
-            val d = (Math.abs(x - e.posX) + Math.abs(y - e.posY) + Math.abs(z - e.posZ)).toFloat()
+            val d = (Math.abs(x - e.x) + Math.abs(y - e.y) + Math.abs(z - e.z)).toFloat()
             GL11.glColor4f(r, g, b, 1f - light / 15f)
             halo.draw(d * 20, 1f, 0f, 0f)
             GL11.glColor4f(1f, 1f, 1f, 1f)
@@ -76,14 +76,14 @@ object UtilsClient {
     }
 
     @JvmStatic
-    fun clientOpenGui(gui: GuiScreen?) {
+    fun clientOpenGui(gui: Screen?) {
         guiLastOpen = gui
         val clientPlayer = clientPlayer
         clientPlayer.openGui(Eln.instance, GuiHandler.genericOpen, clientPlayer.entityWorld, 0, 0, 0)
     }
 
     @JvmStatic
-    fun drawHalo(halo: Obj3DPart?, r: Float, g: Float, b: Float, w: World, x: Int, y: Int, z: Int, bilinear: Boolean) {
+    fun drawHalo(halo: Obj3DPart?, r: Float, g: Float, b: Float, w: Level, x: Int, y: Int, z: Int, bilinear: Boolean) {
         disableLight()
         enableBlend()
         drawHaloNoLightSetup(halo, r, g, b, w, x, y, z, bilinear)
@@ -92,13 +92,13 @@ object UtilsClient {
     }
 
     @JvmStatic
-    fun drawHaloNoLightSetup(halo: Obj3DPart?, r: Float, g: Float, b: Float, e: TileEntity, bilinear: Boolean) {
-        drawHaloNoLightSetup(halo, r, g, b, e.world, e.xCoord, e.yCoord, e.zCoord, bilinear)
+    fun drawHaloNoLightSetup(halo: Obj3DPart?, r: Float, g: Float, b: Float, e: BlockEntity, bilinear: Boolean) {
+        drawHaloNoLightSetup(halo, r, g, b, e.level, e.xCoord, e.yCoord, e.zCoord, bilinear)
     }
 
     @JvmStatic
-    fun drawHalo(halo: Obj3DPart?, r: Float, g: Float, b: Float, e: TileEntity, bilinear: Boolean) {
-        drawHalo(halo, r, g, b, e.world, e.xCoord, e.yCoord, e.zCoord, bilinear)
+    fun drawHalo(halo: Obj3DPart?, r: Float, g: Float, b: Float, e: BlockEntity, bilinear: Boolean) {
+        drawHalo(halo, r, g, b, e.level, e.xCoord, e.yCoord, e.zCoord, bilinear)
     }
 
     @JvmStatic
@@ -135,7 +135,7 @@ object UtilsClient {
     fun drawHaloNoLightSetup(halo: Obj3DPart?, r: Float, g: Float, b: Float, e: Entity, bilinear: Boolean) {
         if (halo == null) return
         withBilinearFilters(halo, bilinear) {
-            val light = getLight(e.world, MathHelper.floor(e.posX), MathHelper.floor(e.posY), MathHelper.floor(e.posZ))
+            val light = getLight(e.level, Mth.floor(e.x), Mth.floor(e.y), Mth.floor(e.z))
             GL11.glColor4f(r, g, b, 1f - light / 15f)
             halo.draw()
             GL11.glColor4f(1f, 1f, 1f, 1f)
@@ -356,7 +356,7 @@ object UtilsClient {
 
     @JvmStatic
     fun bindTexture(resource: ResourceLocation?) {
-        Minecraft.getMinecraft().renderEngine.bindTexture(resource)
+        Minecraft.getInstance().renderEngine.bindTexture(resource)
     }
 
     @JvmStatic
@@ -392,7 +392,7 @@ object UtilsClient {
     }
 
     @JvmStatic
-    fun drawGuiBackground(ressource: ResourceLocation?, guiScreen: GuiScreen, xSize: Int, ySize: Int) {
+    fun drawGuiBackground(ressource: ResourceLocation?, guiScreen: Screen, xSize: Int, ySize: Int) {
         bindTexture(ressource)
         GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f)
         val x = (guiScreen.width - xSize) / 2
@@ -415,14 +415,14 @@ object UtilsClient {
     }
 
     @JvmStatic
-    fun drawEntityItem(entityItem: EntityItem?, x: Double, y: Double, z: Double, roty: Float, scale: Float) {
+    fun drawEntityItem(entityItem: ItemEntity?, x: Double, y: Double, z: Double, roty: Float, scale: Float) {
         if (entityItem == null) return
         entityItem.hoverStart = 0.0f
-        entityItem.rotationYaw = 0.0f
+        entityItem.yRot = 0.0f
         entityItem.motionX = 0.0
         entityItem.motionY = 0.0
         entityItem.motionZ = 0.0
-        val var10 = Minecraft.getMinecraft().renderManager.getEntityRenderObject<Entity>(entityItem)
+        val var10 = Minecraft.getInstance().renderManager.getEntityRenderObject<Entity>(entityItem)
         GL11.glPushMatrix()
         GL11.glTranslatef(x.toFloat(), y.toFloat(), z.toFloat())
         GL11.glRotatef(roty, 0f, 1f, 0f)
@@ -494,12 +494,12 @@ object UtilsClient {
         enableTexture()
     }
 
-    /** RenderItem is owned by Minecraft on 1.8+; constructing one would miss the model manager. */
-    val itemRender: RenderItem
-        get() = Minecraft.getMinecraft().renderItem
+    /** ItemRenderer is owned by Minecraft on 1.8+; constructing one would miss the model manager. */
+    val itemRender: ItemRenderer
+        get() = Minecraft.getInstance().renderItem
 
     fun mc(): Minecraft {
-        return Minecraft.getMinecraft()
+        return Minecraft.getInstance()
     }
 
     fun guiScale() {
@@ -510,8 +510,8 @@ object UtilsClient {
     fun drawItemStack(par1ItemStack: ItemStack?, x: Int, y: Int, @Suppress("UNUSED_PARAMETER") par4Str: String?, gui: Boolean) {
         // Block b = Block.getBlockFromItem(par1ItemStack.getItem());
         // b.rend
-        // ForgeHooksClient.renderInventoryItem(new RenderBlocks(),Minecraft.getMinecraft().getTextureManager(),par1ItemStack,false,0,x,y);
-        // ForgeHooksClient.renderInventoryItem(Minecraft.getMinecraft().bl, engine, item, inColor, zLevel, x, y)
+        // ForgeHooksClient.renderInventoryItem(new RenderBlocks(),Minecraft.getInstance().getTextureManager(),par1ItemStack,false,0,x,y);
+        // ForgeHooksClient.renderInventoryItem(Minecraft.getInstance().bl, engine, item, inColor, zLevel, x, y)
         val itemRenderer = itemRender
         // GL11.glDisable(3042);
         if (gui) {
@@ -519,11 +519,11 @@ object UtilsClient {
             RenderHelper.enableGUIStandardItemLighting()
         }
         // GL11.glTranslatef(0.0F, 0.0F, 32.0F);
-        // ForgeHooksClient.renderInventoryItem(new RenderBlocks(),Minecraft.getMinecraft().getTextureManager(),par1ItemStack,false,0,x,y);
+        // ForgeHooksClient.renderInventoryItem(new RenderBlocks(),Minecraft.getInstance().getTextureManager(),par1ItemStack,false,0,x,y);
         itemRenderer.zLevel = 400.0f
         // ForgeHooksClient.renderInventoryItem(renderBlocks, engine, item, inColor, zLevel, x, y)
         if (par1ItemStack.isNothing() || par1ItemStack.isEmpty) return
-        // 1.8 dropped the font/texture-manager arguments: RenderItem resolves the baked model
+        // 1.8 dropped the font/texture-manager arguments: ItemRenderer resolves the baked model
         // and the atlas itself.
         itemRenderer.renderItemAndEffectIntoGUI(par1ItemStack, x, y)
         // itemRenderer.renderItemOverlayIntoGUI(font, mc().getTextureManager(), par1ItemStack, x, y, par4Str);
@@ -537,7 +537,7 @@ object UtilsClient {
             // GL11.glPushMatrix();
             // GL
             // GL11.glScalef(0.5f, 0.5f, 0.5f);
-            Minecraft.getMinecraft().fontRenderer.drawStringWithShadow("" + par1ItemStack.count, (x + 10).toFloat(), (y + 9).toFloat(), -0x1)
+            Minecraft.getInstance().font.drawStringWithShadow("" + par1ItemStack.count, (x + 10).toFloat(), (y + 9).toFloat(), -0x1)
             // GL11.glPopMatrix();
             enableDepthTest()
         }
@@ -545,27 +545,27 @@ object UtilsClient {
 
     fun clientDistanceTo(e: Entity?): Double {
         if (e == null) return 100000000.0
-        val c: Entity = Minecraft.getMinecraft().player
-        val x = c.posX - e.posX
-        val y = c.posY - e.posY
-        val z = c.posZ - e.posZ
+        val c: Entity = Minecraft.getInstance().player
+        val x = c.x - e.x
+        val y = c.y - e.y
+        val z = c.z - e.z
         return sqrt(x * x + y * y + z * z)
     }
 
     @JvmStatic
     fun clientDistanceTo(t: TransparentNodeEntity?): Double {
         if (t == null) return 100000000.0
-        val c: Entity = Minecraft.getMinecraft().player
-        val x = c.posX - t.xCoord
-        val y = c.posY - t.yCoord
-        val z = c.posZ - t.zCoord
+        val c: Entity = Minecraft.getInstance().player
+        val x = c.x - t.xCoord
+        val y = c.y - t.yCoord
+        val z = c.z - t.zCoord
         return sqrt(x * x + y * y + z * z)
     }
 
-    fun getLight(w: World, x: Int, y: Int, z: Int): Int {
+    fun getLight(w: Level, x: Int, y: Int, z: Int): Int {
         val pos = BlockPos(x, y, z)
-        val b = w.getLightFor(EnumSkyBlock.BLOCK, pos)
-        val s = w.getLightFor(EnumSkyBlock.SKY, pos) - w.calculateSkylightSubtracted(0f)
+        val b = w.getBrightness(LightLayer.BLOCK, pos)
+        val s = w.getBrightness(LightLayer.SKY, pos) - w.calculateSkylightSubtracted(0f)
         return b.coerceAtLeast(s)
     }
 
@@ -581,9 +581,9 @@ object UtilsClient {
 
     @JvmStatic
     fun sendPacketToServer(bos: ByteArrayOutputStream) {
-        val packet = CPacketCustomPayload(Eln.channelName, PacketBuffer(Unpooled.wrappedBuffer(bos.toByteArray())))
+        val packet = CPacketCustomPayload(Eln.channelName, FriendlyByteBuf(Unpooled.wrappedBuffer(bos.toByteArray())))
         Eln.eventChannel.sendToServer(FMLProxyPacket(packet))
-        // Minecraft.getMinecraft().player.sendQueue.addToSendQueue(new FMLProxyPacket(packet));
+        // Minecraft.getInstance().player.sendQueue.addToSendQueue(new FMLProxyPacket(packet));
     }
 
     val glListsAllocated = HashSet<Int>()
@@ -648,7 +648,7 @@ object UtilsClient {
     }
 
     @JvmStatic
-    fun getWeather(world: World): Double {
+    fun getWeather(world: Level): Double {
         if (world.isThundering) return 1.0
         return if (world.isRaining) 0.5 else 0.0
     }

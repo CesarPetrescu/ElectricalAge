@@ -5,9 +5,9 @@ import mods.eln.misc.Obj3D.Obj3DPart;
 import mods.eln.node.six.SixNodeDescriptor;
 import mods.eln.wiki.Data;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -62,9 +62,9 @@ public class LampSupplyDescriptor extends SixNodeDescriptor {
         //UtilsClient.disableDepthTest();
         UtilsClient.enableBlend();
         obj.bindTexture("Glass.png");
-        float rotYaw = Minecraft.getMinecraft().player.rotationYaw / 360.f;
-        float rotPitch = Minecraft.getMinecraft().player.rotationPitch / 180.f;
-        float pos = (((float) Minecraft.getMinecraft().player.posX) + ((float) Minecraft.getMinecraft().player.posZ)) / 64.f;
+        float rotYaw = Minecraft.getInstance().player.getYRot() / 360.f;
+        float rotPitch = Minecraft.getInstance().player.getXRot() / 180.f;
+        float pos = (((float) Minecraft.getInstance().player.getX()) + ((float) Minecraft.getInstance().player.getZ())) / 64.f;
         if (window != null)
             window.draw((1f - openFactor) * windowOpenAngle, 0f, 0f, 1f, rotYaw + pos + (openFactor * 0.5f), rotPitch * 0.65f);
         UtilsClient.disableBlend();
@@ -97,7 +97,7 @@ public class LampSupplyDescriptor extends SixNodeDescriptor {
     }
 
     @Override
-    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List<String> list, boolean par4) {
+    public void addInformation(ItemStack itemStack, Player entityPlayer, List<String> list, boolean par4) {
         super.addInformation(itemStack, entityPlayer, list, par4);
         list.add(tr("Supplies power to nearby lamps."));
         list.add(tr("Nominal mains class: %1$V", Utils.plotValue(nominalVoltage)));
@@ -116,7 +116,7 @@ public class LampSupplyDescriptor extends SixNodeDescriptor {
 
     @Nullable
     @Override
-    public LRDU getFrontFromPlace(@NotNull Direction side, @NotNull EntityPlayer player) {
+    public LRDU getFrontFromPlace(@NotNull Direction side, @NotNull Player player) {
         return super.getFrontFromPlace(side, player).inverse();
     }
 }

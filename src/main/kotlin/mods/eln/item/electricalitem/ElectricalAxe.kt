@@ -4,15 +4,15 @@ import mods.eln.i18n.I18N.tr
 import mods.eln.misc.Utils
 import mods.eln.sim.IProcess
 import mods.eln.wiki.Data
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.material.Material
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.util.math.BlockPos
-import net.minecraft.block.state.IBlockState
-import net.minecraft.world.World
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.level.Level
 import java.util.*
 import kotlin.collections.HashMap
 import mods.eln.misc.getBlock
@@ -32,12 +32,12 @@ class ElectricalAxe(name: String, strengthOn: Float, strengthOff: Float,
         Data.addPortable(newItemStack())
     }
 
-    override fun addInformation(itemStack: ItemStack?, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack?, entityPlayer: Player?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         list.add(tr("Cuts down trees. Right-click to make it act like a regular axe."))
     }
 
-    override fun getDestroySpeed(stack: ItemStack, state: IBlockState): Float {
+    override fun getDestroySpeed(stack: ItemStack, state: BlockState): Float {
         val material = state.material
         return when {
             material === Material.WOOD || material === Material.PLANTS || material === Material.VINE -> getStrength(stack)
@@ -45,8 +45,8 @@ class ElectricalAxe(name: String, strengthOn: Float, strengthOff: Float,
         }
     }
 
-    override fun onItemRightClick(s: ItemStack, w: World, p: EntityPlayer): ItemStack {
-        if (!w.isRemote) {
+    override fun onItemRightClick(s: ItemStack, w: Level, p: Player): ItemStack {
+        if (!w.isClientSide) {
             setCapitation(p, s, !getCapitation(s))
         }
         return s
@@ -54,21 +54,21 @@ class ElectricalAxe(name: String, strengthOn: Float, strengthOff: Float,
 
     private fun getCapitation(stack: ItemStack): Boolean {
         val nbt = getNbt(stack)
-        if (!nbt.hasKey("capitation")) {
-            nbt.setBoolean("capitation", true)
+        if (!nbt.contains("capitation")) {
+            nbt.putBoolean("capitation", true)
         }
         return nbt.getBoolean("capitation")
     }
 
-    private fun setCapitation(p: EntityPlayer?, stack: ItemStack, capitation: Boolean) {
+    private fun setCapitation(p: Player?, stack: ItemStack, capitation: Boolean) {
         getNbt(stack).setBoolean("capitation", capitation)
         if (p != null) {
             Utils.sendMessage(p, "Set treecapitation to $capitation")
         }
     }
 
-    override fun onBlockDestroyed(stack: ItemStack, w: World, state: IBlockState, pos: BlockPos, entity: EntityLivingBase): Boolean {
-        return if (entity is EntityPlayer && getCapitation(stack)) {
+    override fun onBlockDestroyed(stack: ItemStack, w: Level, state: BlockState, pos: BlockPos, entity: LivingEntity): Boolean {
+        return if (entity is Player && getCapitation(stack)) {
             TreeCapitation.addBlockSwapper(
                 world = w,
                 player = entity,
@@ -147,14 +147,14 @@ object TreeCapitation : IProcess {
      * documentation).
      * @return The created block swapper.
      */
-    fun addBlockSwapper(world: World, player: EntityPlayer, tool: ElectricalTool, origCoords: BlockPos, leaves: Boolean, stack: ItemStack) {
+    fun addBlockSwapper(world: Level, player: Player, tool: ElectricalTool, origCoords: BlockPos, leaves: Boolean, stack: ItemStack) {
         val swapper = BlockSwapper(world, player, tool, origCoords, BLOCK_RANGE, leaves, stack)
 
         // Block swapper registration should only occur on the server
-        if (world.isRemote)
+        if (world.isClientSide)
             return
 
-        val dim = world.provider.dimension
+        val dim = world.dimension()
         blockSwappers[dim] = blockSwappers[dim]?.plus(swapper) ?: listOf(swapper)
     }
 
@@ -188,11 +188,11 @@ object TreeCapitation : IProcess {
         /**
          * The world the block swapper is doing the swapping in.
          */
-        private val world: World,
+        private val world: Level,
         /**
          * The player the swapper is swapping for.
          */
-        private val player: EntityPlayer,
+        private val player: Player,
         /**
          * The Terra Truncator which created this swapper.
          */
@@ -363,8 +363,8 @@ object TreeCapitation : IProcess {
     /**
      * The bits below, however, are from ToolCommons.java. Mostly. Maybe about half, by now.
      */
-    fun removeBlockWithDrops(player: EntityPlayer, tool: ElectricalTool, stack: ItemStack, world: World, pos: BlockPos) {
-        if (world.isRemote || !world.isBlockLoaded(pos))
+    fun removeBlockWithDrops(player: Player, tool: ElectricalTool, stack: ItemStack, world: Level, pos: BlockPos) {
+        if (world.isClientSide || !world.isBlockLoaded(pos))
             return
 
         val state = world.getBlockState(pos)
@@ -374,7 +374,7 @@ object TreeCapitation : IProcess {
             if (!block.canHarvestBlock(world, pos, player))
                 return
 
-            if (!player.capabilities.isCreativeMode) {
+            if (!player.isCreative()) {
                 val energy = tool.getEnergy(stack)
                 tool.subtractEnergyForBlockBreak(stack, state)
                 val newEnergy = tool.getEnergy(stack)
@@ -383,7 +383,7 @@ object TreeCapitation : IProcess {
                     // is captured before removedByPlayer() discards it, because harvestBlock()
                     // hands it to the block so drops that depend on it (inventories, our own
                     // node blocks) can still read it.
-                    val tileEntity = world.getTileEntity(pos)
+                    val tileEntity = world.getBlockEntity(pos)
                     block.onBlockHarvested(world, pos, state, player)
 
                     if (block.removedByPlayer(state, world, pos, player, true)) {

@@ -4,9 +4,9 @@ import mods.eln.Eln;
 import mods.eln.misc.*;
 import mods.eln.node.six.SixNodeDescriptor;
 import mods.eln.wiki.Data;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
 import mods.eln.client.itemrender.IItemRenderer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -54,15 +54,15 @@ public class ResistorDescriptor extends SixNodeDescriptor {
         voltageLevelColor = VoltageLevelColor.Neutral;
     }
 
-    public double getRsValue(IInventory inventory) {
-        ItemStack core = inventory.getStackInSlot(ResistorContainer.coreId);
+    public double getRsValue(Container inventory) {
+        ItemStack core = inventory.getItem(ResistorContainer.coreId);
 
         if (core == null) return series.getValue(0);
         return series.getValue(core.getCount());
     }
 
     @Override
-    public void setParent(net.minecraft.item.Item item, int damage) {
+    public void setParent(net.minecraft.level().item.Item item, int damage) {
         super.setParent(item, damage);
         Data.addEnergy(newItemStack());
     }
@@ -112,13 +112,13 @@ public class ResistorDescriptor extends SixNodeDescriptor {
 
     @Nullable
     @Override
-    public LRDU getFrontFromPlace(@NotNull Direction side, @NotNull EntityPlayer player) {
+    public LRDU getFrontFromPlace(@NotNull Direction side, @NotNull Player player) {
         return super.getFrontFromPlace(side, player).left();
     }
 
 
     @Override
-    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List<String> list, boolean par4) {
+    public void addInformation(ItemStack itemStack, Player entityPlayer, List<String> list, boolean par4) {
         super.addInformation(itemStack, entityPlayer, list, par4);
         list.add(tr("It's a resistor"));
     }

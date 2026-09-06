@@ -8,19 +8,19 @@ import mcp.mobius.waila.api.IWailaDataProvider
 import mcp.mobius.waila.api.SpecialChars
 import mods.eln.misc.Coordinate
 import mods.eln.misc.Direction
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.world.level.block.entity.BlockEntity
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level
 import mods.eln.misc.isNothing
 
 @Optional.Interface(iface = "mcp.mobius.waila.api.IWailaDataProvider", modid = "waila")
 class SixNodeWailaProvider : IWailaDataProvider {
     private fun getSixData(accessor: IWailaDataAccessor): SixNodeWailaData? {
         val coord = Coordinate(accessor.position.x, accessor.position.y, accessor.position.z,
-            accessor.world)
+            accessor.level)
         val side = Direction.from(accessor.side)
         var sixData: SixNodeWailaData? = null
         try {
@@ -46,12 +46,12 @@ class SixNodeWailaProvider : IWailaDataProvider {
     override fun getWailaTail(itemStack: ItemStack?, currenttip: MutableList<String>, accessor: IWailaDataAccessor?,
                               config: IWailaConfigHandler?): MutableList<String> = currenttip
 
-    override fun getNBTData(player: EntityPlayerMP?, te: TileEntity?, tag: NBTTagCompound, world: World?,
-                            pos: BlockPos?): NBTTagCompound = tag
+    override fun getNBTData(player: ServerPlayer?, te: BlockEntity?, tag: CompoundTag, world: Level?,
+                            pos: BlockPos?): CompoundTag = tag
 
     override fun getWailaHead(itemStack: ItemStack?, currenttip: MutableList<String>, accessor: IWailaDataAccessor,
                               config: IWailaConfigHandler?): MutableList<String> = if (!itemStack.isNothing()) {
-        mutableListOf("${SpecialChars.WHITE}${itemStack.displayName}")
+        mutableListOf("${SpecialChars.WHITE}${$1.hoverName}")
     } else {
         currenttip
     }

@@ -8,8 +8,8 @@ import mods.eln.misc.VoltageLevelColor;
 import mods.eln.node.transparent.TransparentNodeDescriptor;
 import mods.eln.sim.ThermalLoad;
 import mods.eln.wiki.Data;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 
@@ -49,13 +49,13 @@ public class ThermalDissipatorPassiveDescriptor extends TransparentNodeDescripto
         load.set(thermalRs, thermalRp, thermalC);
     }
 
-    public void setParent(net.minecraft.item.Item item, int damage) {
+    public void setParent(net.minecraft.level().item.Item item, int damage) {
         super.setParent(item, damage);
         Data.addThermal(newItemStack());
     }
 
     @Override
-    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List<String> list, boolean par4) {
+    public void addInformation(ItemStack itemStack, Player entityPlayer, List<String> list, boolean par4) {
         super.addInformation(itemStack, entityPlayer, list, par4);
         list.add(tr("Used to cool down turbines."));
         list.add(tr("Max. temperature: %1$°C", Utils.plotValue(warmLimit)));

@@ -22,10 +22,10 @@ import mods.eln.sim.ElectricalLoad
 import mods.eln.sim.ThermalLoad
 import mods.eln.sim.mna.component.CurrentSource
 import mods.eln.sim.nbt.NbtElectricalLoad
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
 import mods.eln.client.itemrender.IItemRenderer
 import org.lwjgl.opengl.GL11
 import java.io.ByteArrayOutputStream
@@ -41,7 +41,7 @@ class PowerSinkDescriptor(name: String, obj: Obj3D) : SixNodeDescriptor(name, Po
         main.draw()
     }
 
-    override fun addInformation(itemStack: ItemStack, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack, entityPlayer: Player?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         Collections.addAll<String>(list, *tr("Provides an ideal power sink\nwithout energy or power limitation.").split("\n").toTypedArray())
         list.add("")
@@ -68,7 +68,7 @@ class PowerSinkDescriptor(name: String, obj: Obj3D) : SixNodeDescriptor(name, Po
         }
     }
 
-    override fun canBePlacedOnSide(player: EntityPlayer?, side: Direction) = true
+    override fun canBePlacedOnSide(player: Player?, side: Direction) = true
 
     init {
         voltageLevelColor = VoltageLevelColor.Neutral
@@ -80,14 +80,14 @@ class PowerSinkElement(sixNode: SixNode, side: Direction, descriptor: SixNodeDes
     var electricalLoad = NbtElectricalLoad("electricalLoad")
     var currentSource = CurrentSource("currSrc", electricalLoad, null)
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
         currentSource.current = nbt.getDouble("current")
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound) {
+    override fun writeToNBT(nbt: CompoundTag) {
         super.writeToNBT(nbt)
-        nbt.setDouble("current", currentSource.current)
+        nbt.putDouble("current", currentSource.current)
     }
 
     override fun getElectricalLoad(lrdu: LRDU, mask: Int): ElectricalLoad {
@@ -143,7 +143,7 @@ class PowerSinkElement(sixNode: SixNode, side: Direction, descriptor: SixNodeDes
         Eln.applySmallRs(electricalLoad)
     }
 
-    override fun onBlockActivated(entityPlayer: EntityPlayer, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
+    override fun onBlockActivated(entityPlayer: Player, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
         return onBlockActivatedRotate(entityPlayer)
     }
 
@@ -151,15 +151,15 @@ class PowerSinkElement(sixNode: SixNode, side: Direction, descriptor: SixNodeDes
         return true
     }
 
-    override fun readConfigTool(compound: NBTTagCompound, invoker: EntityPlayer) {
-        if (compound.hasKey("current")) {
+    override fun readConfigTool(compound: CompoundTag, invoker: Player) {
+        if (compound.contains("current")) {
             currentSource.current = compound.getDouble("current")
             needPublish()
         }
     }
 
-    override fun writeConfigTool(compound: NBTTagCompound, invoker: EntityPlayer) {
-        compound.setDouble("current", currentSource.current)
+    override fun writeConfigTool(compound: CompoundTag, invoker: Player) {
+        compound.putDouble("current", currentSource.current)
     }
 
     init {
@@ -221,7 +221,7 @@ class PowerSinkRender(tileEntity: SixNodeEntity, side: Direction, descriptor: Si
         }
     }
 
-    override fun newGuiDraw(side: Direction, player: EntityPlayer): GuiScreen {
+    override fun newGuiDraw(side: Direction, player: Player): Screen {
         return PowerSinkGui(this)
     }
 

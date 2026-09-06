@@ -17,20 +17,20 @@ import mods.eln.sixnode.electricalcable.IUtilityCableInventory;
 import mods.eln.sixnode.electricalcable.UtilityCableDescriptor;
 import mods.eln.sixnode.electricalcable.UtilityCableItemMovingHelper;
 import mods.eln.sixnode.genericcable.GenericCableDescriptor;
-import net.minecraft.block.Block;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.Level;
 
 public class ConfigCopyToolDescriptor extends GenericItemUsingDamageDescriptor {
     public ConfigCopyToolDescriptor(String name) { super(name); }
 
     @Override
-    public boolean onItemUse(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side, float vx, float vy, float vz) {
-        if(world.isRemote) return false;
+    public boolean onItemUse(ItemStack stack, Player player, Level world, int x, int y, int z, int side, float vx, float vy, float vz) {
+        if(world.isClientSide) return false;
 
         Block block = McBridge.getBlock(world, x, y, z);
 
@@ -44,11 +44,11 @@ public class ConfigCopyToolDescriptor extends GenericItemUsingDamageDescriptor {
         return false;
     }
 
-    public static boolean readCableType(NBTTagCompound compound, IInventory inv, int slot, EntityPlayer invoker, boolean acceptSignalCable) {
+    public static boolean readCableType(CompoundTag compound, Container inv, int slot, Player invoker, boolean acceptSignalCable) {
         String name = "cable";
 
-        if (compound.hasKey(name + "Type")) {
-            int type = compound.getInteger(name + "Type");
+        if (compound.contains(name + "Type")) {
+            int type = compound.getInt(name + "Type");
             GenericItemBlockUsingDamageDescriptor desc = Eln.sixNodeItem.getDescriptor(type);
             boolean readCable = false;
 
@@ -65,16 +65,16 @@ public class ConfigCopyToolDescriptor extends GenericItemUsingDamageDescriptor {
         return false;
     }
 
-    public static boolean readCableType(NBTTagCompound compound, IInventory inv, int slot, EntityPlayer invoker) {
+    public static boolean readCableType(CompoundTag compound, Container inv, int slot, Player invoker) {
         return readCableType(compound, "cable", inv, slot, invoker);
     }
 
-    public static boolean readCableType(NBTTagCompound compound, String name, IInventory inv, int slot, EntityPlayer invoker) {
-        if (compound.hasKey(name + "Type")) {
+    public static boolean readCableType(CompoundTag compound, String name, Container inv, int slot, Player invoker) {
+        if (compound.contains(name + "Type")) {
             int amt = 1;
-            if (compound.hasKey(name + "Amt")) amt = compound.getInteger(name + "Amt");
-            int type = compound.getInteger(name + "Type");
-            ItemStack stackInSlot = inv.getStackInSlot(slot);
+            if (compound.contains(name + "Amt")) amt = compound.getInt(name + "Amt");
+            int type = compound.getInt(name + "Type");
+            ItemStack stackInSlot = inv.getItem(slot);
 
             // MOVE THE OLD ITEM OUT OF THE DESTINATION INVENTORY (INTO THE PLAYER INVENTORY)
             if (!McBridge.isNothing(stackInSlot)) {
@@ -106,7 +106,7 @@ public class ConfigCopyToolDescriptor extends GenericItemUsingDamageDescriptor {
                 if (cableDesc != null) {
                     if (cableDesc instanceof UtilityCableDescriptor) {
                         double cableLength = IUtilityCableInventory.DEFAULT_REQUIRED_LENGTH;
-                        if (compound.hasKey(name + "Length")) cableLength = compound.getDouble(name + "Length");
+                        if (compound.contains(name + "Length")) cableLength = compound.getDouble(name + "Length");
                         UtilityCableItemMovingHelper itemMover = new UtilityCableItemMovingHelper((UtilityCableDescriptor) cableDesc, cableLength);
                         itemMover.move(invoker.inventory, inv, slot, amt);
                     } else {
@@ -129,30 +129,30 @@ public class ConfigCopyToolDescriptor extends GenericItemUsingDamageDescriptor {
         } else return false;
     }
 
-    public static void writeCableType(NBTTagCompound compound, ItemStack stack) {
+    public static void writeCableType(CompoundTag compound, ItemStack stack) {
         writeCableType(compound, "cable", stack);
     }
 
-    public static void writeCableType(NBTTagCompound compound, String name, ItemStack stack) {
+    public static void writeCableType(CompoundTag compound, String name, ItemStack stack) {
         if(!McBridge.isNothing(stack)) {
             Eln.logger.info("CCT Copy: " + name + "Amt: " + stack.getCount());
-            compound.setInteger(name + "Amt", stack.getCount());
+            compound.putInt(name + "Amt", stack.getCount());
         }
         GenericItemBlockUsingDamageDescriptor desc = GenericItemBlockUsingDamageDescriptor.getDescriptor(stack);
         if(desc != null) {
             Eln.logger.info("CCT Copy: " + name + "Type: " + desc.parentItemDamage);
-            compound.setInteger(name + "Type", desc.parentItemDamage);
+            compound.putInt(name + "Type", desc.parentItemDamage);
             if (desc instanceof UtilityCableDescriptor) {
-                compound.setDouble(name + "Length", ((UtilityCableDescriptor) desc).getRemainingLengthMeters(stack));
+                compound.putDouble(name + "Length", ((UtilityCableDescriptor) desc).getRemainingLengthMeters(stack));
             }
         } else {
             Eln.logger.info("CCT Copy: " + name + "Type: -1");
-            compound.setInteger(name + "Type", -1);
+            compound.putInt(name + "Type", -1);
         }
     }
 
-    public static boolean readLampDescriptor(NBTTagCompound compound, String name, IInventory inv, int slot, EntityPlayer invoker, BoilerplateLampData[] acceptedLampTypes) {
-        if (compound.hasKey(name)) {
+    public static boolean readLampDescriptor(CompoundTag compound, String name, Container inv, int slot, Player invoker, BoilerplateLampData[] acceptedLampTypes) {
+        if (compound.contains(name)) {
             String type = compound.getString(name);
             GenericItemUsingDamageDescriptor desc = GenericItemUsingDamageDescriptor.getByName(type);
 
@@ -168,12 +168,12 @@ public class ConfigCopyToolDescriptor extends GenericItemUsingDamageDescriptor {
         return false;
     }
 
-    public static boolean readGenDescriptor(NBTTagCompound compound, String name, IInventory inv, int slot, EntityPlayer invoker) {
-        if (compound.hasKey(name)) {
+    public static boolean readGenDescriptor(CompoundTag compound, String name, Container inv, int slot, Player invoker) {
+        if (compound.contains(name)) {
             int amt = 1;
-            if (compound.hasKey(name + "Amt")) amt = compound.getInteger(name + "Amt");
+            if (compound.contains(name + "Amt")) amt = compound.getInt(name + "Amt");
             String type = compound.getString(name);
-            GenericItemUsingDamageDescriptor desc = GenericItemUsingDamageDescriptor.getDescriptor(inv.getStackInSlot(slot));
+            GenericItemUsingDamageDescriptor desc = GenericItemUsingDamageDescriptor.getDescriptor(inv.getItem(slot));
 
             // MOVE THE OLD ITEM OUT OF THE DESTINATION INVENTORY (INTO THE PLAYER INVENTORY)
             if (desc != null) {
@@ -212,29 +212,29 @@ public class ConfigCopyToolDescriptor extends GenericItemUsingDamageDescriptor {
         } else return false;
     }
 
-    public static void writeGenDescriptor(NBTTagCompound compound, String name, ItemStack stack) {
+    public static void writeGenDescriptor(CompoundTag compound, String name, ItemStack stack) {
         if(!McBridge.isNothing(stack)) {
             Eln.logger.info("CCT Copy: " + name + "Amt: " + stack.getCount());
-            compound.setInteger(name + "Amt", stack.getCount());
+            compound.putInt(name + "Amt", stack.getCount());
         }
         GenericItemUsingDamageDescriptor desc = GenericItemUsingDamageDescriptor.getDescriptor(stack);
         if(desc != null) {
             Eln.logger.info("CCT Copy: " + name + " " + desc.name);
-            compound.setString(name, desc.name);
+            compound.putString(name, desc.name);
         } else {
             Eln.logger.info("CCT Copy: " + name + " Invalid Descriptor");
-            compound.setString(name, GenericItemUsingDamageDescriptor.INVALID_NAME);
+            compound.putString(name, GenericItemUsingDamageDescriptor.INVALID_NAME);
         }
     }
 
-    public static boolean readVanillaStack(NBTTagCompound compound, String name, IInventory inv, int slot, EntityPlayer invoker) {
-        if(compound.hasKey(name)) {
+    public static boolean readVanillaStack(CompoundTag compound, String name, Container inv, int slot, Player invoker) {
+        if(compound.contains(name)) {
             int amt = 1;
-            if(compound.hasKey(name + "Amt")) {
-                amt = compound.getInteger(name + "Amt");
+            if(compound.contains(name + "Amt")) {
+                amt = compound.getInt(name + "Amt");
             }
-            int itemId = compound.getInteger(name);
-            ItemStack current = inv.getStackInSlot(slot);
+            int itemId = compound.getInt(name);
+            ItemStack current = inv.getItem(slot);
             if(current != null) {
                 (new ItemMovingHelper() {
                     @Override
@@ -266,16 +266,16 @@ public class ConfigCopyToolDescriptor extends GenericItemUsingDamageDescriptor {
         return false;
     }
 
-    public static void writeVanillaStack(NBTTagCompound compound, String name, ItemStack stack) {
+    public static void writeVanillaStack(CompoundTag compound, String name, ItemStack stack) {
         if(McBridge.isNothing(stack)) {
             Eln.logger.info("CCT Copy: " + name + "Amt: 0");
-            compound.setInteger(name, -1);
-            compound.setInteger(name + "Amt", 0);
+            compound.putInt(name, -1);
+            compound.putInt(name + "Amt", 0);
         } else {
             Eln.logger.info("CCT Copy: " + name + " " + Item.getIdFromItem(stack.getItem()));
             Eln.logger.info("CCT Copy: " + name + "Amt: " + stack.getCount());
-            compound.setInteger(name, Item.getIdFromItem(stack.getItem()));
-            compound.setInteger(name + "Amt", stack.getCount());
+            compound.putInt(name, Item.getIdFromItem(stack.getItem()));
+            compound.putInt(name + "Amt", stack.getCount());
         }
     }
 }

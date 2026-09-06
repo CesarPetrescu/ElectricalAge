@@ -22,11 +22,11 @@ import mods.eln.sixnode.currentcable.CurrentCableDescriptor;
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor;
 import mods.eln.sixnode.electricaldatalogger.DataLogs;
 import mods.eln.sixnode.thermalcable.ThermalCableDescriptor;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -78,7 +78,7 @@ public class ThermalSensorElement extends SixNodeElement implements IConfigurabl
         }
     }
 
-    public IInventory getInventory() {
+    public Container getInventory() {
         if (inventory != null)
             return inventory.getInventory();
         else
@@ -90,7 +90,7 @@ public class ThermalSensorElement extends SixNodeElement implements IConfigurabl
     }
 
     @Override
-    public void readFromNBT(@NotNull NBTTagCompound nbt) {
+    public void readFromNBT(@NotNull CompoundTag nbt) {
         super.readFromNBT(nbt);
         byte value = nbt.getByte("front");
         front = LRDU.fromInt((value >> 0) & 0x3);
@@ -100,12 +100,12 @@ public class ThermalSensorElement extends SixNodeElement implements IConfigurabl
     }
 
     @Override
-    public void writeToNBT(NBTTagCompound nbt) {
+    public void writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setByte("front", (byte) ((front.toInt() << 0)));
-        nbt.setByte("typeOfSensor", (byte) typeOfSensor);
-        nbt.setFloat("lowValue", lowValue);
-        nbt.setFloat("highValue", highValue);
+        nbt.putByte("front", (byte) ((front.toInt() << 0)));
+        nbt.putByte("typeOfSensor", (byte) typeOfSensor);
+        nbt.putFloat("lowValue", lowValue);
+        nbt.putFloat("highValue", highValue);
     }
 
     @Override
@@ -119,7 +119,7 @@ public class ThermalSensorElement extends SixNodeElement implements IConfigurabl
     @Override
     public ThermalLoad getThermalLoad(@NotNull LRDU lrdu, int mask) {
         if (!descriptor.temperatureOnly) {
-            if (getInventory().getStackInSlot(ThermalSensorContainer.cableSlotId) != null) {
+            if (getInventory().getItem(ThermalSensorContainer.cableSlotId) != null) {
                 if (front.left() == lrdu) return thermalLoad;
                 if (front.right() == lrdu) return thermalLoad;
             }
@@ -132,7 +132,7 @@ public class ThermalSensorElement extends SixNodeElement implements IConfigurabl
     @Override
     public int getConnectionMask(LRDU lrdu) {
         if (!descriptor.temperatureOnly) {
-            if (getInventory().getStackInSlot(ThermalSensorContainer.cableSlotId) != null) {
+            if (getInventory().getItem(ThermalSensorContainer.cableSlotId) != null) {
                 if (front.left() == lrdu) return NodeBase.maskThermal;
                 if (front.right() == lrdu) return NodeBase.maskThermal;
             }
@@ -185,7 +185,7 @@ public class ThermalSensorElement extends SixNodeElement implements IConfigurabl
             stream.writeByte((front.toInt() << 4) + typeOfSensor);
             stream.writeFloat(lowValue);
             stream.writeFloat(highValue);
-            Utils.serialiseItemStack(stream, getInventory().getStackInSlot(ThermalSensorContainer.cableSlotId));
+            Utils.serialiseItemStack(stream, getInventory().getItem(ThermalSensorContainer.cableSlotId));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -205,7 +205,7 @@ public class ThermalSensorElement extends SixNodeElement implements IConfigurabl
     }
 
     public void computeElectricalLoad() {
-        ItemStack cable = getInventory().getStackInSlot(ThermalSensorContainer.cableSlotId);
+        ItemStack cable = getInventory().getItem(ThermalSensorContainer.cableSlotId);
 
         SixNodeDescriptor descriptor = Eln.sixNodeItem.getDescriptor(cable);
         if (descriptor == null) return;
@@ -229,19 +229,19 @@ public class ThermalSensorElement extends SixNodeElement implements IConfigurabl
     }
 
     boolean isItemThermalCable() {
-        SixNodeDescriptor descriptor = Eln.sixNodeItem.getDescriptor(getInventory().getStackInSlot(ThermalSensorContainer.cableSlotId));
+        SixNodeDescriptor descriptor = Eln.sixNodeItem.getDescriptor(getInventory().getItem(ThermalSensorContainer.cableSlotId));
         return descriptor instanceof ThermalCableDescriptor;
     }
 
     boolean isItemElectricalCable() {
-        SixNodeDescriptor descriptor = Eln.sixNodeItem.getDescriptor(getInventory().getStackInSlot(ThermalSensorContainer.cableSlotId));
+        SixNodeDescriptor descriptor = Eln.sixNodeItem.getDescriptor(getInventory().getItem(ThermalSensorContainer.cableSlotId));
         return descriptor instanceof ElectricalCableDescriptor || descriptor instanceof CurrentCableDescriptor;
     }
 
     @Override
-    public boolean onBlockActivated(EntityPlayer entityPlayer, Direction side, float vx, float vy, float vz) {
+    public boolean onBlockActivated(Player entityPlayer, Direction side, float vx, float vy, float vz) {
         if (onBlockActivatedRotate(entityPlayer)) return true;
-        ItemStack currentItemStack = entityPlayer.getHeldItemMainhand();
+        ItemStack currentItemStack = entityPlayer.getMainHandItem();
 
         if (Eln.multiMeterElement.checkSameItemStack(currentItemStack)) {
             return false;
@@ -283,17 +283,17 @@ public class ThermalSensorElement extends SixNodeElement implements IConfigurabl
 
     @Nullable
     @Override
-    public Container newContainer(@NotNull Direction side, @NotNull EntityPlayer player) {
+    public AbstractContainerMenu newContainer(@NotNull Direction side, @NotNull Player player) {
         return new ThermalSensorContainer(player, inventory.getInventory(), descriptor.temperatureOnly);
     }
 
     @Override
-    public void readConfigTool(NBTTagCompound compound, EntityPlayer invoker) {
-        if(compound.hasKey("min"))
+    public void readConfigTool(CompoundTag compound, Player invoker) {
+        if(compound.contains("min"))
             lowValue = compound.getFloat("min");
-        if(compound.hasKey("max"))
+        if(compound.contains("max"))
             highValue = compound.getFloat("max");
-        if(compound.hasKey("unit")) {
+        if(compound.contains("unit")) {
             switch(compound.getByte("unit")) {
                 case DataLogs.powerType:
                     typeOfSensor = powerType;
@@ -308,17 +308,17 @@ public class ThermalSensorElement extends SixNodeElement implements IConfigurabl
     }
 
     @Override
-    public void writeConfigTool(NBTTagCompound compound, EntityPlayer invoker) {
-        compound.setFloat("min", lowValue);
-        compound.setFloat("max", highValue);
+    public void writeConfigTool(CompoundTag compound, Player invoker) {
+        compound.putFloat("min", lowValue);
+        compound.putFloat("max", highValue);
         switch(typeOfSensor) {
             case powerType:
-                compound.setByte("unit", DataLogs.powerType);
+                compound.putByte("unit", DataLogs.powerType);
                 break;
             case temperatureType:
-                compound.setByte("unit", DataLogs.celsiusType);
+                compound.putByte("unit", DataLogs.celsiusType);
                 break;
         }
-        ConfigCopyToolDescriptor.writeCableType(compound, getInventory().getStackInSlot(0));
+        ConfigCopyToolDescriptor.writeCableType(compound, getInventory().getItem(0));
     }
 }

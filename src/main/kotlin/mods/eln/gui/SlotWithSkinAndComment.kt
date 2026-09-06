@@ -1,11 +1,11 @@
 package mods.eln.gui
 
 import mods.eln.gui.ISlotSkin.SlotSkin
-import net.minecraft.inventory.IInventory
-import net.minecraft.inventory.Slot
+import net.minecraft.world.Container
+import net.minecraft.world.inventory.Slot
 
 open class SlotWithSkinAndComment(
-    inventory: IInventory?,
+    inventory: Container?,
     slotIndex: Int,
     xPos: Int,
     yPos: Int,

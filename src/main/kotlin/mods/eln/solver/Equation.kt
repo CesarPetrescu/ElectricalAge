@@ -3,7 +3,7 @@ package mods.eln.solver
 import mods.eln.Eln
 import mods.eln.misc.INBTTReady
 import mods.eln.sim.IProcess
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.nbt.CompoundTag
 import java.util.*
 import kotlin.math.*
 
@@ -1073,12 +1073,12 @@ class Equation : IValue, INBTTReady {
             return counter
         }
 
-        override fun readFromNBT(nbt: NBTTagCompound, str: String) {
+        override fun readFromNBT(nbt: CompoundTag, str: String) {
             counter = nbt.getDouble(str + "counter")
         }
 
-        override fun writeToNBT(nbt: NBTTagCompound, str: String) {
-            nbt.setDouble(str + "counter", counter)
+        override fun writeToNBT(nbt: CompoundTag, str: String) {
+            nbt.putDouble(str + "counter", counter)
         }
 
         override fun process(time: Double) {
@@ -1105,12 +1105,12 @@ class Equation : IValue, INBTTReady {
             return counter
         }
 
-        override fun readFromNBT(nbt: NBTTagCompound, str: String) {
+        override fun readFromNBT(nbt: CompoundTag, str: String) {
             counter = nbt.getDouble(str + "counter")
         }
 
-        override fun writeToNBT(nbt: NBTTagCompound, str: String) {
-            nbt.setDouble(str + "counter", counter)
+        override fun writeToNBT(nbt: CompoundTag, str: String) {
+            nbt.putDouble(str + "counter", counter)
         }
 
         override fun process(time: Double) {
@@ -1138,12 +1138,12 @@ class Equation : IValue, INBTTReady {
             return counter
         }
 
-        override fun readFromNBT(nbt: NBTTagCompound, str: String) {
+        override fun readFromNBT(nbt: CompoundTag, str: String) {
             counter = nbt.getDouble(str + "counter")
         }
 
-        override fun writeToNBT(nbt: NBTTagCompound, str: String) {
-            nbt.setDouble(str + "counter", counter)
+        override fun writeToNBT(nbt: CompoundTag, str: String) {
+            nbt.putDouble(str + "counter", counter)
         }
 
         override fun process(time: Double) {
@@ -1171,14 +1171,14 @@ class Equation : IValue, INBTTReady {
             return lvalue
         }
 
-        override fun readFromNBT(nbt: NBTTagCompound, str: String) {
+        override fun readFromNBT(nbt: CompoundTag, str: String) {
             old = nbt.getDouble(str + "old")
             lvalue = nbt.getDouble(str + "value")
         }
 
-        override fun writeToNBT(nbt: NBTTagCompound, str: String) {
-            nbt.setDouble(str + "old", old)
-            nbt.setDouble(str + "value", lvalue)
+        override fun writeToNBT(nbt: CompoundTag, str: String) {
+            nbt.putDouble(str + "old", old)
+            nbt.putDouble(str + "value", lvalue)
         }
 
         override fun process(time: Double) {
@@ -1211,16 +1211,16 @@ class Equation : IValue, INBTTReady {
             return value
         }
 
-        override fun readFromNBT(nbt: NBTTagCompound, str: String) {
+        override fun readFromNBT(nbt: CompoundTag, str: String) {
             iStack = nbt.getDouble(str + "iStack")
             oldError = nbt.getDouble(str + "oldError")
             dValue = nbt.getDouble(str + "dValue")
         }
 
-        override fun writeToNBT(nbt: NBTTagCompound, str: String) {
-            nbt.setDouble(str + "iStack", iStack)
-            nbt.setDouble(str + "oldError", oldError)
-            nbt.setDouble(str + "dValue", dValue)
+        override fun writeToNBT(nbt: CompoundTag, str: String) {
+            nbt.putDouble(str + "iStack", iStack)
+            nbt.putDouble(str + "oldError", oldError)
+            nbt.putDouble(str + "dValue", dValue)
         }
 
         override fun process(time: Double) {
@@ -1309,12 +1309,12 @@ class Equation : IValue, INBTTReady {
             return if (state) 1.0 else 0.0
         }
 
-        override fun readFromNBT(nbt: NBTTagCompound, str: String) {
+        override fun readFromNBT(nbt: CompoundTag, str: String) {
             state = nbt.getBoolean(str + "state")
         }
 
-        override fun writeToNBT(nbt: NBTTagCompound, str: String) {
-            nbt.setBoolean(str + "state", state)
+        override fun writeToNBT(nbt: CompoundTag, str: String) {
+            nbt.putBoolean(str + "state", state)
         }
 
         override fun setOperator(values: Array<IValue>) {
@@ -1341,12 +1341,12 @@ class Equation : IValue, INBTTReady {
             state += (input!!.getValue() - state) / tao * time
         }
 
-        override fun readFromNBT(nbt: NBTTagCompound, str: String) {
+        override fun readFromNBT(nbt: CompoundTag, str: String) {
             state = nbt.getDouble(str + "state")
         }
 
-        override fun writeToNBT(nbt: NBTTagCompound, str: String) {
-            nbt.setDouble(str + "state", state)
+        override fun writeToNBT(nbt: CompoundTag, str: String) {
+            nbt.putDouble(str + "state", state)
         }
 
         override fun setOperator(values: Array<IValue>) {
@@ -1457,7 +1457,7 @@ class Equation : IValue, INBTTReady {
         return stringList.contains(iSymbole.getName())
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound, str: String) {
+    override fun readFromNBT(nbt: CompoundTag, str: String) {
         if (!isValid) return
         var idx = 0
         for (o in nbtList) {
@@ -1466,7 +1466,7 @@ class Equation : IValue, INBTTReady {
         }
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound, str: String) {
+    override fun writeToNBT(nbt: CompoundTag, str: String) {
         if (!isValid) return
         var idx = 0
         for (o in nbtList) {

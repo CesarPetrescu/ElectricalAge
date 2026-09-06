@@ -1,6 +1,6 @@
 package mods.eln.misc;
 
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 
 public final class UtilsClient {
     public static ResourceLocation lastResource;

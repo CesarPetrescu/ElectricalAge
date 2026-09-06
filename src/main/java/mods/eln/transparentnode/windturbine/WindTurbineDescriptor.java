@@ -6,9 +6,9 @@ import mods.eln.misc.Obj3D.Obj3DPart;
 import mods.eln.node.transparent.TransparentNodeDescriptor;
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor;
 import mods.eln.wiki.Data;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import org.lwjgl.opengl.GL11;
 
 import java.util.List;
@@ -93,7 +93,7 @@ public class WindTurbineDescriptor extends TransparentNodeDescriptor {
         voltageLevelColor = VoltageLevelColor.LowVoltage;
     }
 
-    public void setParent(net.minecraft.item.Item item, int damage) {
+    public void setParent(net.minecraft.level().item.Item item, int damage) {
         super.setParent(item, damage);
         Data.addEnergy(newItemStack());
     }
@@ -122,7 +122,7 @@ public class WindTurbineDescriptor extends TransparentNodeDescriptor {
 
     @Override
     public Direction getFrontFromPlace(Direction side,
-                                       EntityLivingBase entityLiving) {
+                                       LivingEntity entityLiving) {
         return Direction.XN;
     }
 
@@ -149,7 +149,7 @@ public class WindTurbineDescriptor extends TransparentNodeDescriptor {
     }
 
     @Override
-    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer,
+    public void addInformation(ItemStack itemStack, Player entityPlayer,
                                List<String> list, boolean par4) {
         super.addInformation(itemStack, entityPlayer, list, par4);
 

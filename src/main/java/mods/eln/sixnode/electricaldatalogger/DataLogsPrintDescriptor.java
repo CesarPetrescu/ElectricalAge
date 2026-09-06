@@ -2,9 +2,9 @@ package mods.eln.sixnode.electricaldatalogger;
 
 import mods.eln.generic.GenericItemUsingDamageDescriptor;
 import mods.eln.misc.UtilsClient;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import mods.eln.client.itemrender.IItemRenderer.ItemRenderType;
 import mods.eln.client.itemrender.IItemRenderer.ItemRendererHelper;
 import org.lwjgl.opengl.GL11;
@@ -16,7 +16,7 @@ public class DataLogsPrintDescriptor extends GenericItemUsingDamageDescriptor {
     }
 
     public void initializeStack(ItemStack stack, DataLogs logs) {
-        NBTTagCompound nbt = new NBTTagCompound();
+        CompoundTag nbt = new CompoundTag();
         logs.writeToNBT(nbt, "");//.setByteArray("logs", logs.copyLog());
         stack.setTagCompound(nbt);
     }
@@ -32,11 +32,11 @@ public class DataLogsPrintDescriptor extends GenericItemUsingDamageDescriptor {
     }
 
     public final static float margin = 0.05f;
-    public final static ResourceLocation backgroundTexture = new ResourceLocation("eln", "sprites/paper.png");
+    public final static ResourceLocation backgroundTexture = ResourceLocation.fromNamespaceAndPath("eln", "sprites/paper.png");
 
     @Override
     public void renderItem(ItemRenderType type, ItemStack item, Object... data) {
-        NBTTagCompound nbt = item.getTagCompound();
+        CompoundTag nbt = item.getTagCompound();
         //byte [] logsArray = nbt.getByteArray("logs");
         //if(logsArray != null) {
 

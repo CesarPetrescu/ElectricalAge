@@ -8,7 +8,7 @@ import mods.eln.misc.Direction
 import mods.eln.node.NodeManager
 import mods.eln.node.six.SixNodeElement
 import mods.eln.node.transparent.TransparentNode
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 
 class GhostNodeWailaRequestPacketHandler : IMessageHandler<GhostNodeWailaRequestPacket, GhostNodeWailaResponsePacket> {
     override fun onMessage(message: GhostNodeWailaRequestPacket, ctx: MessageContext?): GhostNodeWailaResponsePacket {

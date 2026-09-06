@@ -1,12 +1,12 @@
 package mods.eln.sixnode.electricalbreaker;
 
 import mods.eln.misc.BasicContainer;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
 
 public class ElectricalBreakerContainer extends BasicContainer {
 
-    public ElectricalBreakerContainer(EntityPlayer player, IInventory inventory) {
-        super(player, inventory, new net.minecraft.inventory.Slot[]{});
+    public ElectricalBreakerContainer(Player player, Container inventory) {
+        super(player, inventory, new net.minecraft.level().inventory.Slot[]{});
     }
 }

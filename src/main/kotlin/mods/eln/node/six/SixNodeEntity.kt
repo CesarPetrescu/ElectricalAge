@@ -10,13 +10,13 @@ import mods.eln.misc.Utils.println
 import mods.eln.misc.Utils.updateAllLightTypes
 import mods.eln.misc.Utils.updateSkylight
 import mods.eln.node.NodeBlockEntity
-import net.minecraft.block.Block
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Blocks
-import net.minecraft.inventory.Container
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Block
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.inventory.AbstractContainerMenu
+import net.minecraft.world.phys.AABB
+import net.minecraft.world.level.Level
 import java.io.DataInputStream
 import java.io.IOException
 import mods.eln.misc.xCoord
@@ -78,7 +78,7 @@ class SixNodeEntity : NodeBlockEntity() {
             e.printStackTrace()
         }
 
-        //	world.setLightValue(EnumSkyBlock.SKY, xCoord,yCoord,zCoord,15);
+        //	world.setLightValue(LightLayer.SKY, xCoord,yCoord,zCoord,15);
         if (sixNodeCacheBlock !== sixNodeCacheBlockOld) {
             val chunk = world.getChunk(xCoord shr 4, zCoord shr 4)
             // 1.12.2: generateHeightMap() is protected; generateSkylightMap() recomputes the height map too.
@@ -105,12 +105,12 @@ class SixNodeEntity : NodeBlockEntity() {
         return elementRenderList[direction.int] != null
     }
 
-    override fun newContainer(side: Direction, player: EntityPlayer): Container? {
+    override fun newContainer(side: Direction, player: Player): AbstractContainerMenu? {
         val n = node as SixNode? ?: return null
         return n.newContainer(side, player)
     }
 
-    override fun newGuiDraw(side: Direction, player: EntityPlayer): GuiScreen? {
+    override fun newGuiDraw(side: Direction, player: Player): Screen? {
         return elementRenderList[side.int]!!.newGuiDraw(side, player)
     }
 
@@ -133,11 +133,11 @@ class SixNodeEntity : NodeBlockEntity() {
         return true
     }
 
-    override fun unoptimizedRenderBoundingBox(): AxisAlignedBB {
+    override fun unoptimizedRenderBoundingBox(): AABB {
         var bb = localRenderBoundingBox()
         for (render in elementRenderList) {
             val custom = render?.getRenderBoundingBox(this) ?: continue
-            bb = AxisAlignedBB(
+            bb = AABB(
                 minOf(bb.minX, custom.minX),
                 minOf(bb.minY, custom.minY),
                 minOf(bb.minZ, custom.minZ),
@@ -156,8 +156,8 @@ class SixNodeEntity : NodeBlockEntity() {
         super.destructor()
     }
 
-    fun getDamageValue(world: World, @Suppress("UNUSED_PARAMETER") x: Int, @Suppress("UNUSED_PARAMETER") y: Int, @Suppress("UNUSED_PARAMETER") z: Int): Int {
-        if (world.isRemote) {
+    fun getDamageValue(world: Level, @Suppress("UNUSED_PARAMETER") x: Int, @Suppress("UNUSED_PARAMETER") y: Int, @Suppress("UNUSED_PARAMETER") z: Int): Int {
+        if (world.isClientSide) {
             for (idx in 0..5) {
                 if (elementRenderList[idx] != null) {
                     return elementRenderIdList[idx].toInt()
@@ -167,8 +167,8 @@ class SixNodeEntity : NodeBlockEntity() {
         return 0
     }
 
-    fun hasVolume(@Suppress("UNUSED_PARAMETER") world: World?, @Suppress("UNUSED_PARAMETER") x: Int, @Suppress("UNUSED_PARAMETER") y: Int, @Suppress("UNUSED_PARAMETER") z: Int): Boolean {
-        return if (world!!.isRemote) {
+    fun hasVolume(@Suppress("UNUSED_PARAMETER") world: Level?, @Suppress("UNUSED_PARAMETER") x: Int, @Suppress("UNUSED_PARAMETER") y: Int, @Suppress("UNUSED_PARAMETER") z: Int): Boolean {
+        return if (world!!.isClientSide) {
             for (e in elementRenderList) {
                 if (e != null && e.sixNodeDescriptor.hasVolume()) return true
             }
@@ -195,7 +195,7 @@ class SixNodeEntity : NodeBlockEntity() {
     }
 
     override fun isProvidingWeakPower(side: Direction?): Int {
-        return if (world.isRemote) {
+        return if (world.isClientSide) {
             var max = 0
             for (r in elementRenderList) {
                 if (r == null) continue

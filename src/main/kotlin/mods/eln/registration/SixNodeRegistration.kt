@@ -75,11 +75,11 @@ import mods.eln.sixnode.wirelesssignal.rx.WirelessSignalRxDescriptor
 import mods.eln.sixnode.wirelesssignal.source.WirelessSignalSourceDescriptor
 import mods.eln.sixnode.wirelesssignal.tx.WirelessSignalTxDescriptor
 import java.util.Locale
-import net.minecraft.creativetab.CreativeTabs
+import net.minecraft.world.item.CreativeModeTab
 
 object SixNodeRegistration {
 
-    private fun <T : GenericItemBlockUsingDamageDescriptor> T.inTab(tab: CreativeTabs) = apply {
+    private fun <T : GenericItemBlockUsingDamageDescriptor> T.inTab(tab: CreativeModeTab) = apply {
         setCreativeTab(tab)
     }
 

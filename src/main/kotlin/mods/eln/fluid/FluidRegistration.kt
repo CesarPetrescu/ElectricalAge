@@ -3,8 +3,8 @@ package mods.eln.fluid
 import mods.eln.Eln.MODID
 import mods.eln.Eln.fluidBlocks
 import mods.eln.Eln.fluids
-import net.minecraft.block.Block
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.level.block.Block
+import net.minecraft.resources.ResourceLocation
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidRegistry
 

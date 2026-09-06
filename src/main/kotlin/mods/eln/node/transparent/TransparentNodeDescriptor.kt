@@ -11,13 +11,13 @@ import mods.eln.misc.Utils.entityLivingViewDirection
 import mods.eln.misc.UtilsClient.drawIcon
 import mods.eln.misc.VoltageLevelColor
 import mods.eln.node.transparent.TransparentNode.FrontType
-import net.minecraft.block.Block
-import net.minecraft.block.BlockHopper
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.item.ItemStack
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.ResourceLocation
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.HopperBlock
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.phys.AABB
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.level.Level
 import mods.eln.client.itemrender.IItemRenderer
 import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
 import mods.eln.client.itemrender.IItemRenderer.ItemRendererHelper
@@ -90,7 +90,7 @@ open class TransparentNodeDescriptor @JvmOverloads constructor(
         if (mustHaveFloor()) {
             val temp = Coordinate(coord!!)
             temp.move(Direction.YN)
-            if (!temp.blockState.isOpaqueCube && temp.block !is BlockHopper) return tr("You can't place this block at this side")
+            if (!temp.blockState.isOpaqueCube && temp.block !is HopperBlock) return tr("You can't place this block at this side")
         }
         if (mustHaveCeiling()) {
             if (!opaqueAt(Direction.YP)) return tr("You can't place this block at this side")
@@ -106,7 +106,7 @@ open class TransparentNodeDescriptor @JvmOverloads constructor(
         return if (ghostGroup != null && !ghostGroup.canBePloted(coord!!)) tr("Not enough space for this block") else null
     }
 
-    open fun getFrontFromPlace(side: Direction, entityLiving: EntityLivingBase?): Direction? {
+    open fun getFrontFromPlace(side: Direction, entityLiving: LivingEntity?): Direction? {
         var front = Direction.XN
         when (frontType) {
             FrontType.BlockSide -> front = side
@@ -131,7 +131,7 @@ open class TransparentNodeDescriptor @JvmOverloads constructor(
     open val spawnDeltaZ: Int
         get() = 0
 
-    open fun addCollisionBoxesToList(par5AxisAlignedBB: AxisAlignedBB, list: MutableList<AxisAlignedBB?>, world: World?, x: Int, y: Int, z: Int) {
+    open fun addCollisionBoxesToList(par5AxisAlignedBB: AABB, list: MutableList<AABB?>, world: Level?, x: Int, y: Int, z: Int) {
         // A full stone cube at (x, y, z); 1.12 block boxes are block-local, so offset explicitly.
         val bb = Block.FULL_BLOCK_AABB.offset(x.toDouble(), y.toDouble(), z.toDouble())
         if (par5AxisAlignedBB.intersects(bb)) list.add(bb)

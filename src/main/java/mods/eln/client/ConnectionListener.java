@@ -1,10 +1,10 @@
 package mods.eln.client;
 
-import net.minecraftforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.tick.ClientTickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Type;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
@@ -21,7 +21,7 @@ import java.io.IOException;
 public class ConnectionListener {
 
     public ConnectionListener() {
-        MinecraftForge.EVENT_BUS.register(this);
+        NeoForge.EVENT_BUS.register(this);
     }
 
     static boolean newConnection = false;
@@ -39,11 +39,11 @@ public class ConnectionListener {
     @SubscribeEvent
     public void onDisconnectedFromServerEvent(ClientDisconnectionFromServerEvent event) {
         Utils.println("Disconnected from server " + FMLCommonHandler.instance().getEffectiveSide());
-        Minecraft.getMinecraft().addScheduledTask(UtilsClient::glDeleteListsAllSafe);
+        Minecraft.getInstance().addScheduledTask(UtilsClient::glDeleteListsAllSafe);
     }
 
     @SubscribeEvent
-    public void tick(ClientTickEvent event) {
+    public void tick(ClientTickEvent.Post event) {
         if (event.type != Type.CLIENT) return;
 
         if (newConnection) {

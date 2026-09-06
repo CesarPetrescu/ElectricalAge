@@ -2,11 +2,11 @@ package mods.eln.gui;
 
 import mods.eln.gui.GuiTextFieldEln.GuiTextFieldElnObserver;
 import mods.eln.gui.IGuiObject.IGuiObjectObserver;
-import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.screens.Screen;
 
 import java.io.IOException;
 
-public abstract class GuiScreenEln extends GuiScreen implements GuiTextFieldElnObserver, IGuiObjectObserver {
+public abstract class GuiScreenEln extends Screen implements GuiTextFieldElnObserver, IGuiObjectObserver {
 
     protected GuiHelper helper;
 

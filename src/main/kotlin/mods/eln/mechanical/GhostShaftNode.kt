@@ -9,8 +9,8 @@ import mods.eln.node.GhostNode
 import mods.eln.node.NodeManager
 import mods.eln.sim.ElectricalLoad
 import mods.eln.sim.ThermalLoad
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.item.ItemStack
 
 /**
  * Ghost-backed shaft endpoint that delegates its mechanics to a real ShaftElement owner.
@@ -94,7 +94,7 @@ class GhostShaftNode(
         }
     }
 
-    override fun initializeFromThat(front: Direction, entityLiving: EntityLivingBase?, itemStack: ItemStack?) {
+    override fun initializeFromThat(front: Direction, entityLiving: LivingEntity?, itemStack: ItemStack?) {
         connectionSide = front
         shaft = ShaftNetwork(this, shaftConnectivity.iterator())
         // Carry over the owner's rads so that merging during world load does not

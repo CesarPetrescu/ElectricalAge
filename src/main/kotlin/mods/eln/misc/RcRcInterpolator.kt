@@ -1,6 +1,6 @@
 package mods.eln.misc
 
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.nbt.CompoundTag
 
 class RcRcInterpolator(tao1: Float, tao2: Float) : INBTTReady {
     var c1: Float
@@ -22,16 +22,16 @@ class RcRcInterpolator(tao1: Float, tao2: Float) : INBTTReady {
         c1 = value
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound, str: String) {
+    override fun readFromNBT(nbt: CompoundTag, str: String) {
         c1 = nbt.getFloat(str + "c1")
         c2 = nbt.getFloat(str + "c2")
         target = nbt.getFloat(str + "target")
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound, str: String) {
-        nbt.setFloat(str + "c1", c1)
-        nbt.setFloat(str + "c2", c2)
-        nbt.setFloat(str + "target", target)
+    override fun writeToNBT(nbt: CompoundTag, str: String) {
+        nbt.putFloat(str + "c1", c1)
+        nbt.putFloat(str + "c2", c2)
+        nbt.putFloat(str + "target", target)
     }
 
     init {

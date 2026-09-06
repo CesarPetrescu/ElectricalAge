@@ -2,15 +2,15 @@ package mods.eln.misc
 
 import mods.eln.gui.ISlotSkin.SlotSkin
 import mods.eln.gui.SlotWithSkin
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.inventory.Container
-import net.minecraft.inventory.IInventory
-import net.minecraft.inventory.Slot
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.entity.player.Inventory
+import net.minecraft.world.inventory.AbstractContainerMenu
+import net.minecraft.world.Container
+import net.minecraft.world.inventory.Slot
+import net.minecraft.world.item.ItemStack
 import kotlin.math.min
 
-open class BasicContainer(player: EntityPlayer, protected var inventory: IInventory, slot: Array<Slot>) : Container() {
+open class BasicContainer(player: Player, protected var inventory: Container, slot: Array<Slot>) : AbstractContainerMenu() {
     init {
         for (i in slot.indices) {
             addSlotToContainer(slot[i])
@@ -18,11 +18,11 @@ open class BasicContainer(player: EntityPlayer, protected var inventory: IInvent
         bindPlayerInventory(player.inventory)
     }
 
-    override fun canInteractWith(player: EntityPlayer): Boolean {
-        return inventory.isUsableByPlayer(player)
+    override fun stillValid(player: Player): Boolean {
+        return inventory.stillValid(player)
     }
 
-    private fun bindPlayerInventory(inventoryPlayer: InventoryPlayer?) {
+    private fun bindPlayerInventory(inventoryPlayer: Inventory?) {
         for (i in 0..2) {
             for (j in 0..8) {
                 addSlotToContainer(SlotWithSkin(inventoryPlayer, j + i * 9 + 9, j * 18, i * 18, SlotSkin.medium))
@@ -34,14 +34,14 @@ open class BasicContainer(player: EntityPlayer, protected var inventory: IInvent
     }
 
     override fun addSlotToContainer(slot: Slot): Slot {
-        return super.addSlotToContainer(slot)
+        return super.addSlot(slot)
     }
 
-    override fun transferStackInSlot(player: EntityPlayer, slotId: Int): ItemStack? {
+    override fun quickMoveStack(player: Player, slotId: Int): ItemStack? {
         val slot = inventorySlots[slotId] as Slot?
-        if (slot != null && slot.hasStack) {
+        if (slot != null && slot.hasItem) {
             val itemstack1 = slot.stack
-            val invSize = inventory.getSizeInventory()
+            val invSize = inventory.getContainerSize()
             if (slotId < invSize) {
                 mergeItemStack(itemstack1, invSize, inventorySlots.size, true)
             } else {
@@ -55,9 +55,9 @@ open class BasicContainer(player: EntityPlayer, protected var inventory: IInvent
             }
 
             if (itemstack1.count == 0) {
-                slot.putStack(null as ItemStack?)
+                slot.set(null as ItemStack?)
             } else {
-                slot.onSlotChanged()
+                slot.setChanged()
             }
         }
 
@@ -82,17 +82,17 @@ open class BasicContainer(player: EntityPlayer, protected var inventory: IInvent
                     )
                 ) {
                     val l = itemstack1.count + par1ItemStack.count
-                    val maxSize = min(slot.slotStackLimit.toDouble(), par1ItemStack.maxStackSize.toDouble())
+                    val maxSize = min(slot.maxStackSize.toDouble(), par1ItemStack.maxStackSize.toDouble())
                         .toInt()
                     if (l <= maxSize) {
                         par1ItemStack.count = 0
                         itemstack1.count = l
-                        slot.onSlotChanged()
+                        slot.setChanged()
                         flag1 = true
                     } else if (itemstack1.count < maxSize) {
                         par1ItemStack.count -= maxSize - itemstack1.count
                         itemstack1.count = maxSize
-                        slot.onSlotChanged()
+                        slot.setChanged()
                         flag1 = true
                     }
                 }
@@ -114,11 +114,11 @@ open class BasicContainer(player: EntityPlayer, protected var inventory: IInvent
                 itemstack1 = slot.stack
                 if (itemstack1.isNothing() && slot.isItemValid(par1ItemStack)) {
                     val l = par1ItemStack.count
-                    val maxSize = min(slot.slotStackLimit.toDouble(), par1ItemStack.maxStackSize.toDouble())
+                    val maxSize = min(slot.maxStackSize.toDouble(), par1ItemStack.maxStackSize.toDouble())
                         .toInt()
                     if (l <= maxSize) {
-                        slot.putStack(par1ItemStack.copy())
-                        slot.onSlotChanged()
+                        slot.set(par1ItemStack.copy())
+                        slot.setChanged()
                         par1ItemStack.count = 0
                         flag1 = true
                         break
@@ -126,8 +126,8 @@ open class BasicContainer(player: EntityPlayer, protected var inventory: IInvent
                         par1ItemStack.count -= maxSize
                         val newItemStack = par1ItemStack.copy()
                         newItemStack.count = maxSize
-                        slot.putStack(newItemStack)
-                        slot.onSlotChanged()
+                        slot.set(newItemStack)
+                        slot.setChanged()
                         flag1 = true
                         break
                     }

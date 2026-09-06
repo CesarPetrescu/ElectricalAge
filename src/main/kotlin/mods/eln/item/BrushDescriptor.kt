@@ -6,11 +6,11 @@ import mods.eln.misc.Utils
 import mods.eln.misc.UtilsClient
 import mods.eln.wiki.Data
 import net.minecraft.client.Minecraft
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.resources.ResourceLocation
 import mods.eln.client.itemrender.IItemRenderer
 import org.lwjgl.opengl.GL11
 import mods.eln.misc.isNothing
@@ -23,7 +23,7 @@ class BrushDescriptor(name: String): GenericItemUsingDamageDescriptor(name) {
      * 1.12.2 indexes the creative search tree at startup, before a player exists, so every
      * tooltip/name path has to tolerate a null client player.
      */
-    private fun isCreative() = Minecraft.getMinecraft().player?.capabilities?.isCreativeMode == true
+    private fun isCreative() = Minecraft.getInstance().player?.capabilities?.isCreativeMode == true
 
 
     override fun getName(stack: ItemStack): String {
@@ -40,22 +40,22 @@ class BrushDescriptor(name: String): GenericItemUsingDamageDescriptor(name) {
 
     fun getColor(stack: ItemStack) = stack.itemDamage and 0xF
 
-    private fun getLife(stack: ItemStack?) = if (stack.isNothing() || stack.tagCompound == null)
+    private fun getLife(stack: ItemStack?) = if (stack.isNothing() || stack.tagCompound /* TODO(components) */ == null)
         32
     else
-        stack.tagCompound!!.getInteger("life")
+        stack.tagCompound /* TODO(components) */!!.getInt("life")
 
     fun setLife(stack: ItemStack, life: Int) {
-        stack.tagCompound!!.setInteger("life", life)
+        stack.tagCompound /* TODO(components) */!!.putInt("life", life)
     }
 
-    override fun getDefaultNBT(): NBTTagCompound? {
-        val nbt = NBTTagCompound()
-        nbt.setInteger("life", 32)
+    override fun getDefaultNBT(): CompoundTag? {
+        val nbt = CompoundTag()
+        nbt.putInt("life", 32)
         return nbt
     }
 
-    override fun addInformation(itemStack: ItemStack?, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack?, entityPlayer: Player?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
 
         if (!itemStack.isNothing()) {
@@ -63,14 +63,14 @@ class BrushDescriptor(name: String): GenericItemUsingDamageDescriptor(name) {
         }
     }
 
-    fun use(stack: ItemStack, entityPlayer: EntityPlayer): Boolean {
+    fun use(stack: ItemStack, entityPlayer: Player): Boolean {
 
-        val creative = entityPlayer.capabilities.isCreativeMode
-        var life = stack.tagCompound!!.getInteger("life")
+        val creative = entityPlayer.isCreative()
+        var life = stack.tagCompound /* TODO(components) */!!.getInt("life")
         return if (creative || life != 0) {
             if (!creative) {
                 --life
-                stack.tagCompound!!.setInteger("life", life)
+                stack.tagCompound /* TODO(components) */!!.putInt("life", life)
             }
             true
         } else {

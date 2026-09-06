@@ -1,12 +1,12 @@
 package mods.eln.node
 
-import net.minecraft.block.Block
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.item.ItemBlock
-import net.minecraft.item.ItemStack
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.item.BlockItem
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.Level
 
-class NodeBlockItem(b: Block?) : ItemBlock(b) {
+class NodeBlockItem(b: Block?) : BlockItem(b) {
 
     override fun getMetadata(damageValue: Int): Int {
         return damageValue

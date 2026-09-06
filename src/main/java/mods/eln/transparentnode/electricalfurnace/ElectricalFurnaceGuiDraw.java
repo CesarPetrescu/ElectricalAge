@@ -6,10 +6,10 @@ import mods.eln.generic.GenericItemUsingDamageDescriptor;
 import mods.eln.item.HeatingCorpElement;
 import mods.eln.misc.Utils;
 import mods.eln.node.transparent.TransparentNodeElementInventory;
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
 
 import static mods.eln.i18n.I18N.tr;
 
@@ -17,12 +17,12 @@ public class ElectricalFurnaceGuiDraw extends GuiContainerEln {
 
     private TransparentNodeElementInventory inventory;
     ElectricalFurnaceRender render;
-    GuiButton buttonGrounded, autoShutDown;
+    Button buttonGrounded, autoShutDown;
     GuiVerticalTrackBarHeat vuMeterTemperature;
 
     GuiVerticalVoltageSupplyBar supplyBar;
 
-    public ElectricalFurnaceGuiDraw(EntityPlayer player, IInventory inventory, ElectricalFurnaceRender render) {
+    public ElectricalFurnaceGuiDraw(Player player, Container inventory, ElectricalFurnaceRender render) {
         super(new ElectricalFurnaceContainer(null, player, inventory));
         this.inventory = (TransparentNodeElementInventory) inventory;
         this.render = render;
@@ -90,7 +90,7 @@ public class ElectricalFurnaceGuiDraw extends GuiContainerEln {
 
         //drawString(8, 6, Utils.plotPower("Consummation", render.heatingCorpResistorP));
 
-        ItemStack stack = render.inventory.getStackInSlot(ElectricalFurnaceElement.heatingCorpSlotId);
+        ItemStack stack = render.inventory.getItem(ElectricalFurnaceElement.heatingCorpSlotId);
         if (McBridge.isNothing(stack)) {
             supplyBar.setEnabled(false);
         } else {

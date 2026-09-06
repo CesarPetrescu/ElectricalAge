@@ -4,9 +4,9 @@ import mods.eln.Eln;
 import mods.eln.entity.ReplicatorEntity;
 import mods.eln.misc.Coordinate;
 import mods.eln.misc.Utils;
-import net.minecraft.entity.boss.EntityWither;
-import net.minecraft.entity.monster.EntityEnderman;
-import net.minecraft.entity.monster.EntityMob;
+import net.minecraft.world.entity.boss.wither.WitherBoss;
+import net.minecraft.world.entity.monster.EnderMan;
+import net.minecraft.world.entity.monster.Monster;
 
 import java.util.List;
 
@@ -34,14 +34,14 @@ public class MonsterPopFreeProcess implements IProcess {
         timerCounter += time;
         if (timerCounter > timerPeriod) {
             timerCounter -= Utils.rand(1, 1.5) * timerPeriod;
-            List list = coordinate.world().getEntitiesWithinAABB(EntityMob.class, coordinate.getAxisAlignedBB(range + 8));
+            List list = coordinate.world().getEntitiesOfClass(Monster.class, coordinate.getAxisAlignedBB(range + 8));
 
             for (Object o : list) {
-                EntityMob mob = (EntityMob) o;
+                Monster mob = (Monster) o;
                 if (oldList == null || !oldList.contains(o)) {
                     if (coordinate.distanceTo(mob) < range) {
-                        if (!(o instanceof ReplicatorEntity) && !(o instanceof EntityWither) && !(o instanceof EntityEnderman)) {
-                            mob.setDead();
+                        if (!(o instanceof ReplicatorEntity) && !(o instanceof WitherBoss) && !(o instanceof EnderMan)) {
+                            mob.discard();
                             Utils.println("MonsterPopFreeProcess : Dead");
                         }
                     }

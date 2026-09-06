@@ -23,8 +23,8 @@ import mods.eln.sim.mna.component.VoltageSource;
 import mods.eln.sim.nbt.NbtElectricalLoad;
 import mods.eln.sixnode.electricalcable.UtilityCableDescriptor;
 import mods.eln.sixnode.electricalcable.UtilityCableElement;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -61,7 +61,7 @@ public class ElectricalSourceElement extends SixNodeElement implements IConfigur
     }
 
     @Override
-    public void readFromNBT(@NotNull NBTTagCompound nbt) {
+    public void readFromNBT(@NotNull CompoundTag nbt) {
         super.readFromNBT(nbt);
         setConfiguredVoltage(nbt.getDouble("voltage"));
     }
@@ -71,9 +71,9 @@ public class ElectricalSourceElement extends SixNodeElement implements IConfigur
     }
 
     @Override
-    public void writeToNBT(NBTTagCompound nbt) {
+    public void writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setDouble("voltage", voltageSource.getVoltage());
+        nbt.putDouble("voltage", voltageSource.getVoltage());
     }
 
     @Override
@@ -150,7 +150,7 @@ public class ElectricalSourceElement extends SixNodeElement implements IConfigur
     }
 
     @Override
-    public boolean onBlockActivated(EntityPlayer entityPlayer, Direction side, float vx, float vy, float vz) {
+    public boolean onBlockActivated(Player entityPlayer, Direction side, float vx, float vy, float vz) {
         return onBlockActivatedRotate(entityPlayer);
     }
 
@@ -175,16 +175,16 @@ public class ElectricalSourceElement extends SixNodeElement implements IConfigur
     }
 
     @Override
-    public void readConfigTool(NBTTagCompound compound, EntityPlayer invoker) {
-        if(compound.hasKey("voltage")) {
+    public void readConfigTool(CompoundTag compound, Player invoker) {
+        if(compound.contains("voltage")) {
             setConfiguredVoltage(compound.getDouble("voltage"));
             needPublish();
         }
     }
 
     @Override
-    public void writeConfigTool(NBTTagCompound compound, EntityPlayer invoker) {
-        compound.setDouble("voltage", voltageSource.getVoltage());
+    public void writeConfigTool(CompoundTag compound, Player invoker) {
+        compound.putDouble("voltage", voltageSource.getVoltage());
     }
 
     @Override
@@ -338,11 +338,11 @@ public class ElectricalSourceElement extends SixNodeElement implements IConfigur
         Direction worldDirection = side.applyLRDU(lrdu);
         Coordinate neighborCoordinate = base.moved(worldDirection);
         if (!neighborCoordinate.getBlockExist()) return null;
-        if (!(McBridge.getTileEntity(neighborCoordinate.world(), neighborCoordinate.x, neighborCoordinate.y, neighborCoordinate.z) instanceof NodeBlockEntity)) {
+        if (!(McBridge.getBlockEntity(neighborCoordinate.world(), neighborCoordinate.x, neighborCoordinate.y, neighborCoordinate.z) instanceof NodeBlockEntity)) {
             return null;
         }
 
-        Node node = ((NodeBlockEntity) McBridge.getTileEntity(neighborCoordinate.world(), neighborCoordinate.x, neighborCoordinate.y, neighborCoordinate.z)).getNode();
+        Node node = ((NodeBlockEntity) McBridge.getBlockEntity(neighborCoordinate.world(), neighborCoordinate.x, neighborCoordinate.y, neighborCoordinate.z)).getNode();
         if (!(node instanceof SixNode)) return null;
 
         return ((SixNode) node).getElement(worldDirection.getInverse());

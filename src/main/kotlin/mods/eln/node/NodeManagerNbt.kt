@@ -1,18 +1,18 @@
 package mods.eln.node
 
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.world.storage.WorldSavedData
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.world.level.saveddata.SavedData
 
-class NodeManagerNbt(par1Str: String?) : WorldSavedData(par1Str) {
+class NodeManagerNbt(par1Str: String?) : SavedData(par1Str) {
     override fun isDirty(): Boolean {
         return true
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         NodeManager.instance!!.loadFromNbt(nbt)
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
+    override fun writeToNBT(nbt: CompoundTag): CompoundTag {
         //NodeManager.instance.saveToNbt(nbt, Integer.MIN_VALUE);
         return nbt
     }

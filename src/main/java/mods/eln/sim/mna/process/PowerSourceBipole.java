@@ -6,7 +6,7 @@ import mods.eln.sim.mna.component.VoltageSource;
 import mods.eln.sim.mna.misc.IRootSystemPreStepProcess;
 import mods.eln.sim.mna.misc.MnaConst;
 import mods.eln.sim.mna.state.State;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundTag;
 
 public class PowerSourceBipole implements IRootSystemPreStepProcess, INBTTReady {
 
@@ -76,16 +76,16 @@ public class PowerSourceBipole implements IRootSystemPreStepProcess, INBTTReady 
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt, String str) {
+    public void readFromNBT(CompoundTag nbt, String str) {
         setPower(nbt.getDouble(str + "P"));
         setMaximumVoltage(nbt.getDouble(str + "Umax"));
         setMaximumCurrent(nbt.getDouble(str + "Imax"));
     }
 
     @Override
-    public void writeToNBT(NBTTagCompound nbt, String str) {
-        nbt.setDouble(str + "P", getPower());
-        nbt.setDouble(str + "Umax", maximumVoltage);
-        nbt.setDouble(str + "Imax", maximumCurrent);
+    public void writeToNBT(CompoundTag nbt, String str) {
+        nbt.putDouble(str + "P", getPower());
+        nbt.putDouble(str + "Umax", maximumVoltage);
+        nbt.putDouble(str + "Imax", maximumCurrent);
     }
 }

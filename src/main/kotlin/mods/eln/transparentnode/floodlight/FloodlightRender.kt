@@ -3,9 +3,9 @@ package mods.eln.transparentnode.floodlight
 import mods.eln.misc.*
 import mods.eln.misc.HybridNodeDirection.*
 import mods.eln.node.transparent.*
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
 import org.lwjgl.opengl.GL11
 import java.io.DataInputStream
 import java.io.IOException
@@ -48,7 +48,7 @@ class FloodlightRender(tileEntity: TransparentNodeEntity, transparentNodeDescrip
         descriptor.draw(swivelAngle, headAngle, lamp1Stack, lamp2Stack, powered)
     }
 
-    override fun newGuiDraw(side: Direction, player: EntityPlayer): GuiScreen {
+    override fun newGuiDraw(side: Direction, player: Player): Screen {
         return FloodlightGui(player, this)
     }
 

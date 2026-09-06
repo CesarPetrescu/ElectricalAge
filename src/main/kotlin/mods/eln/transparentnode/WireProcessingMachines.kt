@@ -33,13 +33,13 @@ import mods.eln.sim.mna.misc.MnaConst
 import mods.eln.sim.nbt.NbtElectricalLoad
 import mods.eln.sixnode.electricalcable.UtilityCableDescriptor
 import mods.eln.sixnode.electricalcable.UtilityCableMaterial
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.Container
-import net.minecraft.inventory.IInventory
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumParticleTypes
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.inventory.AbstractContainerMenu
+import net.minecraft.world.Container
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.core.particles.ParticleTypes
 import net.minecraftforge.oredict.OreDictionary
 import org.lwjgl.opengl.GL11
 import java.io.DataInputStream
@@ -184,11 +184,11 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
 
     override fun hasGui() = true
 
-    override fun newContainer(side: Direction, player: EntityPlayer): Container {
+    override fun newContainer(side: Direction, player: Player): AbstractContainerMenu {
         return WireMachineContainer(this.node, player, inventory, machineDescriptor.kind)
     }
 
-    override fun inventoryChange(inventory: IInventory?) {
+    override fun inventoryChange(inventory: Container?) {
         needPublish()
     }
 
@@ -221,26 +221,26 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
         }
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
-        selectedOption = nbt.getInteger("selectedOption")
-        targetLengthMeters = nbt.getInteger("targetLengthMeters").coerceAtLeast(1)
+        selectedOption = nbt.getInt("selectedOption")
+        targetLengthMeters = nbt.getInt("targetLengthMeters").coerceAtLeast(1)
         progressMeters = nbt.getDouble("progressMeters")
         progressTargetMeters = nbt.getDouble("progressTargetMeters")
         loadedMassKg = nbt.getDouble("loadedMassKg")
         insulationMetersBuffer = nbt.getDouble("insulationMetersBuffer")
-        loadedMaterial = nbt.getInteger("loadedMaterial").takeIf { it >= 0 }?.let { UtilityCableMaterial.values()[it] }
+        loadedMaterial = nbt.getInt("loadedMaterial").takeIf { it >= 0 }?.let { UtilityCableMaterial.values()[it] }
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound) {
+    override fun writeToNBT(nbt: CompoundTag) {
         super.writeToNBT(nbt)
-        nbt.setInteger("selectedOption", selectedOption)
-        nbt.setInteger("targetLengthMeters", targetLengthMeters)
-        nbt.setDouble("progressMeters", progressMeters)
-        nbt.setDouble("progressTargetMeters", progressTargetMeters)
-        nbt.setDouble("loadedMassKg", loadedMassKg)
-        nbt.setDouble("insulationMetersBuffer", insulationMetersBuffer)
-        nbt.setInteger("loadedMaterial", loadedMaterial?.ordinal ?: -1)
+        nbt.putInt("selectedOption", selectedOption)
+        nbt.putInt("targetLengthMeters", targetLengthMeters)
+        nbt.putDouble("progressMeters", progressMeters)
+        nbt.putDouble("progressTargetMeters", progressTargetMeters)
+        nbt.putDouble("loadedMassKg", loadedMassKg)
+        nbt.putDouble("insulationMetersBuffer", insulationMetersBuffer)
+        nbt.putInt("loadedMaterial", loadedMaterial?.ordinal ?: -1)
     }
 
     private fun currentOptions(): List<WireMachineOption> {
@@ -276,7 +276,7 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
     }
 
     private fun insulatorSelectedDescriptor(): UtilityCableDescriptor? {
-        val input = inventory.getStackInSlot(0).takeUnless { it.isEmpty } ?: return null
+        val input = inventory.getItem(0).takeUnless { it.isEmpty } ?: return null
         val inputWire = input.asUtilityCableDescriptor()
         if (inputWire != null) {
             if (inputWire.insulated || inputWire.conductorCount != 1) return null
@@ -300,7 +300,7 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
     }
 
     private fun insulatorTargetLengthMeters(): Double {
-        val input = inventory.getStackInSlot(0).takeUnless { it.isEmpty } ?: return 0.0
+        val input = inventory.getItem(0).takeUnless { it.isEmpty } ?: return 0.0
         val inputWire = input.asUtilityCableDescriptor()
         if (inputWire != null) return inputWire.getRemainingLengthMeters(input)
         val bundle = Eln.instance.woundWireBundleDescriptor
@@ -311,7 +311,7 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
     }
 
     private fun combinerInputs(): List<ItemStack> {
-        return (0 until 5).mapNotNull { inventory.getStackInSlot(it) }
+        return (0 until 5).mapNotNull { inventory.getItem(it) }
     }
 
     private fun combinerOptions(): List<WireMachineOption> {
@@ -390,7 +390,7 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
     }
 
     private fun prepareRoller(option: UtilityCableDescriptor?, targetLength: Double): Boolean {
-        val outputSlot = inventory.getStackInSlot(3)
+        val outputSlot = inventory.getItem(3)
         if (outputSlot != null) return false
         val descriptor = option ?: return false
         if (!descriptor.checkSameItemStack(descriptor.newItemStack(1)) || descriptor.conductorCount != 1 || descriptor.insulated) return false
@@ -405,15 +405,15 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
     private fun finishRoller(descriptor: UtilityCableDescriptor, targetLength: Double) {
         val stack = descriptor.newItemStack(1)
         descriptor.setRemainingLengthMeters(stack, targetLength)
-        inventory.setInventorySlotContents(3, stack)
+        inventory.setItem(3, stack)
         loadedMassKg = (loadedMassKg - requiredKgForLength(descriptor, targetLength)).coerceAtLeast(0.0)
         if (loadedMassKg <= 1.0e-6) loadedMaterial = null
-        inventory.markDirty()
+        inventory.setChanged()
     }
 
     private fun prepareInsulator(option: UtilityCableDescriptor?, targetLength: Double): Boolean {
-        val input = inventory.getStackInSlot(0).takeUnless { it.isEmpty } ?: return false
-        val output = inventory.getStackInSlot(2)
+        val input = inventory.getItem(0).takeUnless { it.isEmpty } ?: return false
+        val output = inventory.getItem(2)
         if (output != null) return false
         val descriptor = option ?: return false
         if (targetLength <= 0.0) return false
@@ -438,17 +438,17 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
     }
 
     private fun finishInsulator(descriptor: UtilityCableDescriptor, targetLength: Double) {
-        val input = inventory.getStackInSlot(0).takeUnless { it.isEmpty } ?: return
+        val input = inventory.getItem(0).takeUnless { it.isEmpty } ?: return
         val output = descriptor.newItemStack(1)
         descriptor.setRemainingLengthMeters(output, targetLength)
-        inventory.setInventorySlotContents(2, output)
+        inventory.setItem(2, output)
         insulationMetersBuffer = (insulationMetersBuffer - targetLength).coerceAtLeast(0.0)
 
         val inputWire = input.asUtilityCableDescriptor()
         if (inputWire != null) {
             val remaining = inputWire.getRemainingLengthMeters(input) - targetLength
             if (remaining <= 0.0) {
-                inventory.setInventorySlotContents(0, ItemStack.EMPTY)
+                inventory.setItem(0, ItemStack.EMPTY)
             } else {
                 inputWire.setRemainingLengthMeters(input, remaining)
             }
@@ -457,20 +457,20 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
             if (bundle != null && bundle.checkSameItemStack(input)) {
                 val remaining = bundle.getLengthMeters(input) - targetLength
                 if (remaining <= 0.0) {
-                    inventory.setInventorySlotContents(0, ItemStack.EMPTY)
+                    inventory.setItem(0, ItemStack.EMPTY)
                 } else {
                     bundle.setLengthMeters(input, remaining)
                 }
             }
         }
-        inventory.markDirty()
+        inventory.setChanged()
     }
 
     private fun prepareCombiner(option: UtilityCableDescriptor?, targetLength: Double): Boolean {
         val descriptor = option ?: return false
         if (targetLength <= 0.0) return false
         if (!descriptor.insulated || descriptor.conductorCount <= 1) return false
-        if (!inventory.getStackInSlot(5).isNothing()) return false
+        if (!inventory.getItem(5).isNothing()) return false
 
         val inputs = combinerInputs()
         if (inputs.size != descriptor.conductorCount) return false
@@ -486,11 +486,11 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
     private fun finishCombiner(descriptor: UtilityCableDescriptor, targetLength: Double) {
         val bundleDescriptor = Eln.instance.woundWireBundleDescriptor ?: return
         for (slot in 0 until 5) {
-            val stack = inventory.getStackInSlot(slot).takeUnless { it.isEmpty } ?: continue
+            val stack = inventory.getItem(slot).takeUnless { it.isEmpty } ?: continue
             val cable = stack.asUtilityCableDescriptor() ?: continue
             val remaining = cable.getRemainingLengthMeters(stack) - targetLength
             if (remaining <= 0.0) {
-                inventory.setInventorySlotContents(slot, ItemStack.EMPTY)
+                inventory.setItem(slot, ItemStack.EMPTY)
             } else {
                 cable.setRemainingLengthMeters(stack, remaining)
             }
@@ -503,8 +503,8 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
             descriptor.totalConductorAreaMm2 / descriptor.conductorCount,
             targetLength
         )
-        inventory.setInventorySlotContents(5, bundle)
-        inventory.markDirty()
+        inventory.setItem(5, bundle)
+        inventory.setChanged()
     }
 
     private fun requiredKgForLength(descriptor: UtilityCableDescriptor, targetLength: Double): Double {
@@ -513,30 +513,30 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
     }
 
     private fun absorbMetalInput() {
-        val input = inventory.getStackInSlot(0).takeUnless { it.isEmpty } ?: return
+        val input = inventory.getItem(0).takeUnless { it.isEmpty } ?: return
         val material = input.detectIngotMaterial() ?: return
         if (loadedMaterial != null && loadedMaterial != material) return
         loadedMaterial = material
         loadedMassKg += input.count.toDouble()
-        inventory.setInventorySlotContents(0, ItemStack.EMPTY)
-        inventory.markDirty()
+        inventory.setItem(0, ItemStack.EMPTY)
+        inventory.setChanged()
     }
 
     private fun pendingInputMaterial(): UtilityCableMaterial? {
-        return inventory.getStackInSlot(0)?.detectIngotMaterial()
+        return inventory.getItem(0)?.detectIngotMaterial()
     }
 
     private fun absorbInsulationInput() {
-        val input = inventory.getStackInSlot(1).takeUnless { it.isEmpty } ?: return
+        val input = inventory.getItem(1).takeUnless { it.isEmpty } ?: return
         if (!input.matchesOre("itemRubber")) return
         insulationMetersBuffer += input.count * 32.0
-        inventory.setInventorySlotContents(1, ItemStack.EMPTY)
-        inventory.markDirty()
+        inventory.setItem(1, ItemStack.EMPTY)
+        inventory.setChanged()
     }
 
     private fun hasRollerWheels(): Boolean {
-        val left = inventory.getStackInSlot(1)
-        val right = inventory.getStackInSlot(2)
+        val left = inventory.getItem(1)
+        val right = inventory.getItem(2)
         return left?.itemDescriptorAs<RollerWheelDescriptor>() != null && right?.itemDescriptorAs<RollerWheelDescriptor>() != null
     }
 
@@ -596,7 +596,7 @@ class WireMachineRender(entity: TransparentNodeEntity, descriptor: TransparentNo
         insulationMetersBuffer = stream.readFloat()
     }
 
-    override fun newGuiDraw(side: Direction, player: EntityPlayer): GuiScreen {
+    override fun newGuiDraw(side: Direction, player: Player): Screen {
         return WireMachineGui(player, inventory, this)
     }
 
@@ -624,7 +624,7 @@ class WireMachineRender(entity: TransparentNodeEntity, descriptor: TransparentNo
                     .distinctBy { it.sizeLabel }
                     .map { WireMachineOption("${it.sizeLabel} (${it.metricSizeLabel} mm2)", null) }
             }
-            WireMachineKind.INSULATOR -> inventory.getStackInSlot(0)?.let { input ->
+            WireMachineKind.INSULATOR -> inventory.getItem(0)?.let { input ->
                 val inputWire = Eln.sixNodeItem.getDescriptor(input) as? UtilityCableDescriptor
                 val descriptor = when {
                     inputWire != null -> UtilityCableDescriptor.allDescriptors()
@@ -649,7 +649,7 @@ class WireMachineRender(entity: TransparentNodeEntity, descriptor: TransparentNo
                 descriptor?.let { listOf(WireMachineOption(it.name, it)) } ?: emptyList()
             } ?: emptyList()
             WireMachineKind.COMBINER -> {
-                val inputs = (0 until 5).mapNotNull { inventory.getStackInSlot(it) }
+                val inputs = (0 until 5).mapNotNull { inventory.getItem(it) }
                 if (inputs.size < 2) {
                     emptyList()
                 } else {
@@ -713,8 +713,8 @@ class WireMachineRender(entity: TransparentNodeEntity, descriptor: TransparentNo
 
     private fun emitInsulatorSmoke() {
         if (!running) return
-        val world = tileEntity.world ?: return
-        if (!world.isRemote) return
+        val world = tileEntity.level ?: return
+        if (!world.isClientSide) return
         if (world.rand.nextFloat() > 0.08f) return
         val baseX = tileEntity.xCoord + 0.5
         val baseY = tileEntity.yCoord + 0.68
@@ -722,11 +722,11 @@ class WireMachineRender(entity: TransparentNodeEntity, descriptor: TransparentNo
         val dx = (world.rand.nextDouble() - 0.5) * 0.18
         val dz = (world.rand.nextDouble() - 0.5) * 0.18
         val dy = world.rand.nextDouble() * 0.05
-        world.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, baseX + dx, baseY + dy, baseZ + dz, 0.0, 0.015, 0.0)
+        world.spawnParticle(ParticleTypes.SMOKE_NORMAL, baseX + dx, baseY + dy, baseZ + dz, 0.0, 0.015, 0.0)
     }
 }
 
-class WireMachineGui(player: EntityPlayer, inventory: IInventory, private val render: WireMachineRender) :
+class WireMachineGui(player: Player, inventory: Container, private val render: WireMachineRender) :
     GuiContainerEln(WireMachineContainer(null, player, inventory, render.transparentNodeDescriptor.let { it as WireMachineDescriptor }.kind)) {
 
     private val descriptor get() = render.transparentNodeDescriptor as WireMachineDescriptor
@@ -795,8 +795,8 @@ class WireMachineGui(player: EntityPlayer, inventory: IInventory, private val re
 
 class WireMachineContainer(
     override val node: NodeBase?,
-    player: EntityPlayer,
-    inventory: IInventory,
+    player: Player,
+    inventory: Container,
     kind: WireMachineKind
 ) : BasicContainer(player, inventory, kind.slots(inventory)), INodeContainer {
     override val refreshRateDivider = 1
@@ -813,7 +813,7 @@ private fun WireMachineKind.slotCount(): Int = when (this) {
     WireMachineKind.COMBINER -> 6
 }
 
-private fun WireMachineKind.slots(inventory: IInventory): Array<net.minecraft.inventory.Slot> = when (this) {
+private fun WireMachineKind.slots(inventory: Container): Array<net.minecraft.level.inventory.Slot> = when (this) {
     WireMachineKind.ROLLER -> arrayOf(
         SlotWithSkinAndComment(inventory, 0, 8, 18, SlotSkin.medium, arrayOf(tr("Metal Ingot Input"))),
         SlotWithSkinAndComment(inventory, 1, 30, 18, SlotSkin.medium, arrayOf(tr("Left Roller Wheel"))),

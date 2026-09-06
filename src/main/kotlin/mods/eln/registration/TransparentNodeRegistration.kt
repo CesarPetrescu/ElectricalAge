@@ -51,9 +51,9 @@ import mods.eln.transparentnode.turbine.TurbineDescriptor
 import mods.eln.transparentnode.turret.TurretDescriptor
 import mods.eln.transparentnode.waterturbine.WaterTurbineDescriptor
 import mods.eln.transparentnode.windturbine.WindTurbineDescriptor
-import net.minecraft.init.Blocks
-import net.minecraft.item.ItemStack
-import net.minecraft.util.math.Vec3d
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.phys.Vec3
 import kotlin.math.pow
 
 object TransparentNodeRegistration {
@@ -1532,7 +1532,7 @@ object TransparentNodeRegistration {
                 40,
                 51200.0
             ).powerDistribution()
-            descriptor.renderOffset = Vec3d(0.0, -0.1, 0.0)
+            descriptor.renderOffset = Vec3(0.0, -0.1, 0.0)
             val g = GhostGroup()
             g.addElement(0, 1, 0)
             g.addElement(0, 2, 0)

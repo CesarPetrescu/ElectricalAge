@@ -6,9 +6,9 @@ import mods.eln.misc.Obj3D.Obj3DPart
 import mods.eln.misc.Utils.setGlColorFromDye
 import mods.eln.node.six.SixNodeDescriptor
 import mods.eln.wiki.Data
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
 import mods.eln.client.itemrender.IItemRenderer.ItemRendererHelper
 import org.lwjgl.opengl.GL11
@@ -80,7 +80,7 @@ class PowerSocketDescriptor(subID: Int, name: String, obj: Obj3D) :
 
     override fun addInformation(
         itemStack: ItemStack?,
-        entityPlayer: EntityPlayer?,
+        entityPlayer: Player?,
         list: MutableList<String>?,
         par4: Boolean
     ) {
@@ -98,7 +98,7 @@ class PowerSocketDescriptor(subID: Int, name: String, obj: Obj3D) :
         return RealisticEnum.UNREALISTIC
     }
 
-    override fun getFrontFromPlace(side: Direction, player: EntityPlayer): LRDU? {
+    override fun getFrontFromPlace(side: Direction, player: Player): LRDU? {
         return LRDU.Down
     }
 }

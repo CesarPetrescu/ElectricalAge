@@ -1,18 +1,18 @@
 package mods.eln.railroad
 
 import mods.eln.generic.GenericItemUsingDamageDescriptor
-import net.minecraft.block.BlockRailBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.world.World
+import net.minecraft.world.level.block.BaseRailBlock
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.Level
 import mods.eln.misc.getBlockState
 import mods.eln.misc.isNothing
 
 class ElectricMinecartItem(name: String) : GenericItemUsingDamageDescriptor(name) {
     override fun onItemUse(
         stack: ItemStack?,
-        player: EntityPlayer?,
-        world: World?,
+        player: Player?,
+        world: Level?,
         x: Int,
         y: Int,
         z: Int,
@@ -22,8 +22,8 @@ class ElectricMinecartItem(name: String) : GenericItemUsingDamageDescriptor(name
         vz: Float
     ): Boolean {
         if (world == null || stack.isNothing()) return false
-        return if (BlockRailBase.isRailBlock(world.getBlockState(x, y, z))) {
-            if (!world.isRemote) {
+        return if (BaseRailBlock.isRailBlock(world.getBlockState(x, y, z))) {
+            if (!world.isClientSide) {
                 val minecart = EntityElectricMinecart(
                     world,
                     (x.toFloat() + 0.5f).toDouble(),
@@ -31,9 +31,9 @@ class ElectricMinecartItem(name: String) : GenericItemUsingDamageDescriptor(name
                     (z.toFloat() + 0.5f).toDouble()
                 )
                 if (stack.hasDisplayName()) {
-                    minecart.customNameTag = stack.displayName
+                    minecart.customNameTag = $1.hoverName
                 }
-                world.spawnEntity(minecart)
+                world.addFreshEntity(minecart)
             }
             --stack.count
             true

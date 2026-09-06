@@ -2,7 +2,7 @@ package mods.eln.sim.mna.component
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.nbt.CompoundTag
 
 class VoltageSourceNbtTest {
     @Test
@@ -11,7 +11,7 @@ class VoltageSourceNbtTest {
         source.voltage = 3.5
         source.currentState.state = -0.25
 
-        val nbt = NBTTagCompound()
+        val nbt = CompoundTag()
         source.writeToNBT(nbt, "pfx")
 
         val other = VoltageSource("v")

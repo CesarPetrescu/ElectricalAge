@@ -1,17 +1,17 @@
 package mods.eln.eventhandlers
 
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.neoforged.bus.api.SubscribeEvent
+import net.neoforged.api.distmarker.Dist
+import net.neoforged.api.distmarker.OnlyIn
 import mods.eln.Eln
 import mods.eln.packets.AchievePacket
 import mods.eln.wiki.Root
-import net.minecraftforge.client.event.GuiOpenEvent
+import net.neoforged.neoforge.client.event.ScreenEvent.Opening
 
 class ElnForgeEventsHandler {
     @SubscribeEvent
-    @SideOnly(Side.CLIENT)
-    fun openGuide(event: GuiOpenEvent) {
+    @OnlyIn(Dist.CLIENT)
+    fun openGuide(event: Opening) {
         if (event.gui is Root) {
             Eln.elnNetwork.sendToServer(openWikiPacket)
         }

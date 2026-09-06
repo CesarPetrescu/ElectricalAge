@@ -12,9 +12,9 @@ import mods.eln.sim.ElectricalLoad
 import mods.eln.sim.IProcess
 import mods.eln.sim.ThermalLoad
 import mods.eln.sim.nbt.NbtElectricalGateInput
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
 import org.lwjgl.opengl.GL11
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -31,7 +31,7 @@ class NixieTubeDescriptor(val name: String, val obj: Obj3D) : TransparentNodeDes
         voltageLevelColor = VoltageLevelColor.Neutral
     }
 
-    override fun addInformation(itemStack: ItemStack?, entityPlayer: EntityPlayer?, list: MutableList<String>?, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack?, entityPlayer: Player?, list: MutableList<String>?, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         list?.add(tr("Displays a single glowing digit."))
     }
@@ -73,7 +73,7 @@ class NixieTubeDescriptor(val name: String, val obj: Obj3D) : TransparentNodeDes
         UtilsClient.disableBlend()
     }
 
-    override fun getFrontFromPlace(side: Direction, entityLiving: EntityLivingBase?): Direction {
+    override fun getFrontFromPlace(side: Direction, entityLiving: LivingEntity?): Direction {
         return super.getFrontFromPlace(side, entityLiving)!!.inverse
     }
 }
@@ -159,7 +159,7 @@ class NixieTubeElement(node: TransparentNode, _descriptor: TransparentNodeDescri
         Utils.plotVolt("N:", digitIn.signalVoltage) + " " +
             Utils.plotVolt("B:", blankIn.signalVoltage) + " " +
             Utils.plotVolt("D:", dotsIn.signalVoltage)
-    override fun onBlockActivated(player: EntityPlayer, side: Direction, vx: Float, vy: Float, vz: Float): Boolean = false
+    override fun onBlockActivated(player: Player, side: Direction, vx: Float, vy: Float, vz: Float): Boolean = false
 
     override fun getWaila(): MutableMap<String, String> {
         var info = HashMap<String, String>()

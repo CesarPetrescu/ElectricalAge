@@ -13,12 +13,12 @@ import mods.eln.sim.TimeRemover
 import mods.eln.sim.mna.component.Resistor
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor
 import mods.eln.misc.LRDU
-import net.minecraft.entity.ai.EntityAIBase
-import net.minecraft.util.DamageSource
+import net.minecraft.world.entity.ai.goal.Goal
+import net.minecraft.world.damagesource.DamageSource
 import java.util.Random
 import kotlin.math.pow
 
-class ReplicatorCableAI(private val entity: ReplicatorEntity) : EntityAIBase(), ITimeRemoverObserver {
+class ReplicatorCableAI(private val entity: ReplicatorEntity) : Goal(), ITimeRemoverObserver {
     var cableCoordinate: Coordinate? = null
     private val rand = Random()
     private val lookingPerUpdate = 20
@@ -101,7 +101,7 @@ class ReplicatorCableAI(private val entity: ReplicatorEntity) : EntityAIBase(), 
             val voltage = load.voltage
             val nextResistance = (voltage / Eln.LVU).pow(-0.3) * voltage * voltage / 50.0
             if (resistorLoad.resistance < 0.8 * nextResistance) {
-                entity.attackEntityFrom(DamageSource.MAGIC, 5.0f)
+                entity.hurt(DamageSource.MAGIC, 5.0f)
             } else {
                 entity.eatElectricity(resistorLoad.power * 0.05)
             }

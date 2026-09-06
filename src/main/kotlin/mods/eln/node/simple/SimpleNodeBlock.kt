@@ -5,17 +5,17 @@ import mods.eln.misc.Direction.Companion.fromFacing
 import mods.eln.misc.Direction.Companion.fromIntMinecraftSide
 import mods.eln.misc.Utils.entityLivingViewDirection
 import mods.eln.misc.Utils.isRemote
-import net.minecraft.block.Block
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.EnumHand
-import net.minecraft.util.EnumFacing
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.Block
+import net.minecraft.core.BlockPos
+import net.minecraft.world.InteractionHand
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.block.BlockContainer
 import net.minecraft.block.material.Material
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.world.World
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.entity.player.Player
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.level.Level
 import mods.eln.misc.getTileEntity
 
 abstract class SimpleNodeBlock protected constructor(material: Material?) : BlockContainer(material) {
@@ -30,59 +30,59 @@ abstract class SimpleNodeBlock protected constructor(material: Material?) : Bloc
         return this
     }
 
-    fun getFrontForPlacement(e: EntityLivingBase?): Direction {
+    fun getFrontForPlacement(e: LivingEntity?): Direction {
         return entityLivingViewDirection(e!!).inverse
     }
 
     abstract fun newNode(): SimpleNode?
 
-    fun getNode(world: World, x: Int, y: Int, z: Int): SimpleNode? {
-        val entity = world.getTileEntity(x, y, z) as SimpleNodeEntity?
+    fun getNode(world: Level, x: Int, y: Int, z: Int): SimpleNode? {
+        val entity = world.getBlockEntity(x, y, z) as SimpleNodeEntity?
         return entity?.node
     }
 
-    fun getEntity(world: World, x: Int, y: Int, z: Int): SimpleNodeEntity {
-        return world.getTileEntity(x, y, z) as SimpleNodeEntity
+    fun getEntity(world: Level, x: Int, y: Int, z: Int): SimpleNodeEntity {
+        return world.getBlockEntity(x, y, z) as SimpleNodeEntity
     }
 
-    override fun removedByPlayer(state: IBlockState, world: World, pos: BlockPos, entityPlayer: EntityPlayer, willHarvest: Boolean): Boolean {
-        if (!world.isRemote) {
+    override fun removedByPlayer(state: BlockState, world: Level, pos: BlockPos, entityPlayer: Player, willHarvest: Boolean): Boolean {
+        if (!world.isClientSide) {
             val node = getNode(world, pos.x, pos.y, pos.z)
             if (node != null) {
-                node.removedByPlayer = entityPlayer as EntityPlayerMP
+                node.removedByPlayer = entityPlayer as ServerPlayer
             }
         }
         return super.removedByPlayer(state, world, pos, entityPlayer, willHarvest)
     }
 
     // server
-    override fun onBlockAdded(world: World, pos: BlockPos, state: IBlockState) {
-        if (!world.isRemote) {
-            val entity = world.getTileEntity(pos) as SimpleNodeEntity
+    override fun onBlockAdded(world: Level, pos: BlockPos, state: BlockState) {
+        if (!world.isClientSide) {
+            val entity = world.getBlockEntity(pos) as SimpleNodeEntity
             entity.onBlockAdded()
         }
     }
 
     // server
-    override fun breakBlock(world: World, pos: BlockPos, state: IBlockState) {
-        val entity = world.getTileEntity(pos) as SimpleNodeEntity
+    override fun breakBlock(world: Level, pos: BlockPos, state: BlockState) {
+        val entity = world.getBlockEntity(pos) as SimpleNodeEntity
         entity.onBreakBlock()
         super.breakBlock(world, pos, state)
     }
 
-    override fun neighborChanged(state: IBlockState, world: World, pos: BlockPos, b: Block, fromPos: BlockPos) {
+    override fun neighborChanged(state: BlockState, world: Level, pos: BlockPos, b: Block, fromPos: BlockPos) {
         if (!isRemote(world)) {
-            val entity = world.getTileEntity(pos) as SimpleNodeEntity
+            val entity = world.getBlockEntity(pos) as SimpleNodeEntity
             entity.onNeighborBlockChange()
         }
     }
 
     // client server
     override fun onBlockActivated(
-        world: World, pos: BlockPos, state: IBlockState, entityPlayer: EntityPlayer,
-        hand: EnumHand, side: EnumFacing, vx: Float, vy: Float, vz: Float
+        world: Level, pos: BlockPos, state: BlockState, entityPlayer: Player,
+        hand: InteractionHand, side: EnumFacing, vx: Float, vy: Float, vz: Float
     ): Boolean {
-        val entity = world.getTileEntity(pos) as SimpleNodeEntity
+        val entity = world.getBlockEntity(pos) as SimpleNodeEntity
         return entity.onBlockActivated(entityPlayer, fromFacing(side), vx, vy, vz)
     }
 }

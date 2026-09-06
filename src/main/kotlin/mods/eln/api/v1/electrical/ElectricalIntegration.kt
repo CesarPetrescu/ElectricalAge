@@ -23,9 +23,9 @@ import mods.eln.sim.nbt.NbtElectricalLoad
 import mods.eln.sim.process.destruct.IDestructible
 import mods.eln.sim.process.destruct.ResistorPowerWatchdog
 import mods.eln.sim.process.destruct.VoltageStateWatchDog
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
 import java.util.Locale
 
 /**
@@ -367,11 +367,11 @@ object ElectricalIntegration {
          * Persist this load state to NBT.
          */
         @JvmOverloads
-        fun writeNbt(tag: NBTTagCompound, prefix: String = name) {
+        fun writeNbt(tag: CompoundTag, prefix: String = name) {
             delegate.writeToNBT(tag, prefix)
         }
 
-        fun writeToNbt(tag: NBTTagCompound, prefix: String = name) {
+        fun writeToNbt(tag: CompoundTag, prefix: String = name) {
             writeNbt(tag, prefix)
         }
 
@@ -379,11 +379,11 @@ object ElectricalIntegration {
          * Restore this load state from NBT.
          */
         @JvmOverloads
-        fun readNbt(tag: NBTTagCompound, prefix: String = name) {
+        fun readNbt(tag: CompoundTag, prefix: String = name) {
             delegate.readFromNBT(tag, prefix)
         }
 
-        fun readFromNbt(tag: NBTTagCompound, prefix: String = name) {
+        fun readFromNbt(tag: CompoundTag, prefix: String = name) {
             readNbt(tag, prefix)
         }
     }
@@ -424,24 +424,24 @@ object ElectricalIntegration {
         fun normalized(channel: SignalBusChannel): Double = getChannel(channel).normalized
 
         @JvmOverloads
-        fun writeNbt(tag: NBTTagCompound, prefix: String = name) {
+        fun writeNbt(tag: CompoundTag, prefix: String = name) {
             SignalBusChannel.values().forEach { channel ->
                 getChannel(channel).writeNbt(tag, "$prefix.${channel.name.lowercase(Locale.ROOT)}")
             }
         }
 
-        fun writeToNbt(tag: NBTTagCompound, prefix: String = name) {
+        fun writeToNbt(tag: CompoundTag, prefix: String = name) {
             writeNbt(tag, prefix)
         }
 
         @JvmOverloads
-        fun readNbt(tag: NBTTagCompound, prefix: String = name) {
+        fun readNbt(tag: CompoundTag, prefix: String = name) {
             SignalBusChannel.values().forEach { channel ->
                 getChannel(channel).readNbt(tag, "$prefix.${channel.name.lowercase(Locale.ROOT)}")
             }
         }
 
-        fun readFromNbt(tag: NBTTagCompound, prefix: String = name) {
+        fun readFromNbt(tag: CompoundTag, prefix: String = name) {
             readNbt(tag, prefix)
         }
     }
@@ -760,20 +760,20 @@ object ElectricalIntegration {
         /**
          * Persist this node endpoint reference to NBT.
          */
-        fun writeNbt(tag: NBTTagCompound, key: String = "nodeLoad") {
-            tag.setInteger("$key.dimension", dimension)
-            tag.setInteger("$key.x", x)
-            tag.setInteger("$key.y", y)
-            tag.setInteger("$key.z", z)
-            tag.setByte("$key.side", side.id.toByte())
-            tag.setByte("$key.port", port.id.toByte())
-            tag.setInteger("$key.mask", mask)
+        fun writeNbt(tag: CompoundTag, key: String = "nodeLoad") {
+            tag.putInt("$key.dimension", dimension)
+            tag.putInt("$key.x", x)
+            tag.putInt("$key.y", y)
+            tag.putInt("$key.z", z)
+            tag.putByte("$key.side", side.id.toByte())
+            tag.putByte("$key.port", port.id.toByte())
+            tag.putInt("$key.mask", mask)
         }
 
         /**
          * Persist this node endpoint reference to NBT.
          */
-        fun writeToNbt(tag: NBTTagCompound, key: String = "nodeLoad") {
+        fun writeToNbt(tag: CompoundTag, key: String = "nodeLoad") {
             writeNbt(tag, key)
         }
 
@@ -782,31 +782,31 @@ object ElectricalIntegration {
              * Read a node endpoint reference from NBT.
              */
             @JvmOverloads
-            fun readNbt(tag: NBTTagCompound, key: String = "nodeLoad"): NodeLoadRef {
-                val (dimension, x, y, z) = if (tag.hasKey("$key.dimension")) {
+            fun readNbt(tag: CompoundTag, key: String = "nodeLoad"): NodeLoadRef {
+                val (dimension, x, y, z) = if (tag.contains("$key.dimension")) {
                     listOf(
-                        tag.getInteger("$key.dimension"),
-                        tag.getInteger("$key.x"),
-                        tag.getInteger("$key.y"),
-                        tag.getInteger("$key.z")
+                        tag.getInt("$key.dimension"),
+                        tag.getInt("$key.x"),
+                        tag.getInt("$key.y"),
+                        tag.getInt("$key.z")
                     )
                 } else {
                     val coordinate = Coordinate().apply { readFromNBT(tag, key + "Coord") }
                     listOf(coordinate.dimension, coordinate.x, coordinate.y, coordinate.z)
                 }
-                val side = if (tag.hasKey("$key.side")) {
+                val side = if (tag.contains("$key.side")) {
                     BlockFace.fromId(tag.getByte("$key.side").toInt())
                 } else {
                     throw IllegalStateException("Missing '$key.side' when reading NodeLoadRef")
                 }
-                val port = if (tag.hasKey("$key.port")) {
+                val port = if (tag.contains("$key.port")) {
                     NodePort.fromId(tag.getByte("$key.port").toInt())
-                } else if (tag.hasKey("$key.lrdu")) {
+                } else if (tag.contains("$key.lrdu")) {
                     NodePort.fromId(tag.getByte("$key.lrdu").toInt())
                 } else {
                     throw IllegalStateException("Missing '$key.port' when reading NodeLoadRef")
                 }
-                val mask = if (tag.hasKey("$key.mask")) tag.getInteger("$key.mask") else ElectricalMasks.ALL
+                val mask = if (tag.contains("$key.mask")) tag.getInt("$key.mask") else ElectricalMasks.ALL
                 return NodeLoadRef(dimension, x, y, z, side, port, mask)
             }
 
@@ -814,7 +814,7 @@ object ElectricalIntegration {
              * Read a node endpoint reference from NBT.
              */
             @JvmOverloads
-            fun readFromNbt(tag: NBTTagCompound, key: String = "nodeLoad"): NodeLoadRef {
+            fun readFromNbt(tag: CompoundTag, key: String = "nodeLoad"): NodeLoadRef {
                 return readNbt(tag, key)
             }
         }
@@ -831,10 +831,10 @@ object ElectricalIntegration {
         /**
          * Serialize this endpoint reference to NBT.
          */
-        fun writeNbt(tag: NBTTagCompound, key: String = "endpoint") {
-            tag.setInteger("$key.kind", kind)
+        fun writeNbt(tag: CompoundTag, key: String = "endpoint") {
+            tag.putInt("$key.kind", kind)
             when (kind) {
-                loadRefKindLocal -> tag.setString("$key.loadName", loadName)
+                loadRefKindLocal -> tag.putString("$key.loadName", loadName)
                 loadRefKindNode -> nodeLoadRef!!.writeNbt(tag, "$key.node")
             }
         }
@@ -842,7 +842,7 @@ object ElectricalIntegration {
         /**
          * Serialize this endpoint reference to NBT.
          */
-        fun writeToNbt(tag: NBTTagCompound, key: String = "endpoint") {
+        fun writeToNbt(tag: CompoundTag, key: String = "endpoint") {
             writeNbt(tag, key)
         }
 
@@ -851,8 +851,8 @@ object ElectricalIntegration {
              * Read a serialized endpoint reference from NBT.
              */
             @JvmOverloads
-            fun readNbt(tag: NBTTagCompound, key: String = "endpoint"): ElectricalLoadRef {
-                val kind = tag.getInteger("$key.kind")
+            fun readNbt(tag: CompoundTag, key: String = "endpoint"): ElectricalLoadRef {
+                val kind = tag.getInt("$key.kind")
                 return when (kind) {
                     loadRefKindLocal -> ElectricalLoadRef(kind, tag.getString("$key.loadName"), null)
                     loadRefKindNode -> ElectricalLoadRef(kind, null, NodeLoadRef.readNbt(tag, "$key.node"))
@@ -864,7 +864,7 @@ object ElectricalIntegration {
              * Read a serialized endpoint reference from NBT.
              */
             @JvmOverloads
-            fun readFromNbt(tag: NBTTagCompound, key: String = "endpoint"): ElectricalLoadRef {
+            fun readFromNbt(tag: CompoundTag, key: String = "endpoint"): ElectricalLoadRef {
                 return readNbt(tag, key)
             }
         }
@@ -880,7 +880,7 @@ object ElectricalIntegration {
         /**
          * Serialize this persisted connection snapshot to NBT.
          */
-        fun writeNbt(tag: NBTTagCompound, key: String = "connection") {
+        fun writeNbt(tag: CompoundTag, key: String = "connection") {
             endpointA.writeNbt(tag, "$key.a")
             endpointB.writeNbt(tag, "$key.b")
         }
@@ -888,7 +888,7 @@ object ElectricalIntegration {
         /**
          * Serialize this persisted connection snapshot to NBT.
          */
-        fun writeToNbt(tag: NBTTagCompound, key: String = "connection") {
+        fun writeToNbt(tag: CompoundTag, key: String = "connection") {
             writeNbt(tag, key)
         }
 
@@ -897,7 +897,7 @@ object ElectricalIntegration {
              * Read a persisted connection snapshot from NBT.
              */
             @JvmOverloads
-            fun readNbt(tag: NBTTagCompound, key: String = "connection"): NodeConnectionState {
+            fun readNbt(tag: CompoundTag, key: String = "connection"): NodeConnectionState {
                 return NodeConnectionState(
                     ElectricalLoadRef.readNbt(tag, "$key.a"),
                     ElectricalLoadRef.readNbt(tag, "$key.b")
@@ -908,7 +908,7 @@ object ElectricalIntegration {
              * Read a persisted connection snapshot from NBT.
              */
             @JvmOverloads
-            fun readFromNbt(tag: NBTTagCompound, key: String = "connection"): NodeConnectionState {
+            fun readFromNbt(tag: CompoundTag, key: String = "connection"): NodeConnectionState {
                 return readNbt(tag, key)
             }
         }
@@ -1000,14 +1000,14 @@ object ElectricalIntegration {
         }
 
         @JvmOverloads
-        fun writeNbt(tag: NBTTagCompound, key: String = "resistor") {
-            tag.setDouble("$key.resistance", delegate.resistance)
+        fun writeNbt(tag: CompoundTag, key: String = "resistor") {
+            tag.putDouble("$key.resistance", delegate.resistance)
         }
 
         /**
          * Serialize this resistor state to NBT.
          */
-        fun writeToNbt(tag: NBTTagCompound, key: String = "resistor") {
+        fun writeToNbt(tag: CompoundTag, key: String = "resistor") {
             writeNbt(tag, key)
         }
 
@@ -1015,14 +1015,14 @@ object ElectricalIntegration {
          * Restore resistor state from NBT.
          */
         @JvmOverloads
-        fun readNbt(tag: NBTTagCompound, key: String = "resistor") {
+        fun readNbt(tag: CompoundTag, key: String = "resistor") {
             delegate.setResistance(tag.getDouble("$key.resistance"))
         }
 
         /**
          * Restore resistor state from NBT.
          */
-        fun readFromNbt(tag: NBTTagCompound, key: String = "resistor") {
+        fun readFromNbt(tag: CompoundTag, key: String = "resistor") {
             readNbt(tag, key)
         }
     }
@@ -1060,14 +1060,14 @@ object ElectricalIntegration {
         }
 
         @JvmOverloads
-        fun writeNbt(tag: NBTTagCompound, key: String = "nodeResistor") {
-            tag.setDouble("$key.resistance", delegate.resistance)
+        fun writeNbt(tag: CompoundTag, key: String = "nodeResistor") {
+            tag.putDouble("$key.resistance", delegate.resistance)
         }
 
         /**
          * Serialize this node-side resistor state to NBT.
          */
-        fun writeToNbt(tag: NBTTagCompound, key: String = "nodeResistor") {
+        fun writeToNbt(tag: CompoundTag, key: String = "nodeResistor") {
             writeNbt(tag, key)
         }
 
@@ -1075,14 +1075,14 @@ object ElectricalIntegration {
          * Restore node-side resistor state from NBT.
          */
         @JvmOverloads
-        fun readNbt(tag: NBTTagCompound, key: String = "nodeResistor") {
+        fun readNbt(tag: CompoundTag, key: String = "nodeResistor") {
             delegate.setResistance(tag.getDouble("$key.resistance"))
         }
 
         /**
          * Restore node-side resistor state from NBT.
          */
-        fun readFromNbt(tag: NBTTagCompound, key: String = "nodeResistor") {
+        fun readFromNbt(tag: CompoundTag, key: String = "nodeResistor") {
             readNbt(tag, key)
         }
     }
@@ -1123,20 +1123,20 @@ object ElectricalIntegration {
         }
 
         @JvmOverloads
-        fun writeNbt(tag: NBTTagCompound, key: String = "voltageSource") {
-            tag.setDouble("$key.voltage", delegate.voltage)
+        fun writeNbt(tag: CompoundTag, key: String = "voltageSource") {
+            tag.putDouble("$key.voltage", delegate.voltage)
         }
 
-        fun writeToNbt(tag: NBTTagCompound, key: String = "voltageSource") {
+        fun writeToNbt(tag: CompoundTag, key: String = "voltageSource") {
             writeNbt(tag, key)
         }
 
         @JvmOverloads
-        fun readNbt(tag: NBTTagCompound, key: String = "voltageSource") {
+        fun readNbt(tag: CompoundTag, key: String = "voltageSource") {
             delegate.setVoltage(tag.getDouble("$key.voltage"))
         }
 
-        fun readFromNbt(tag: NBTTagCompound, key: String = "voltageSource") {
+        fun readFromNbt(tag: CompoundTag, key: String = "voltageSource") {
             readNbt(tag, key)
         }
     }
@@ -2026,7 +2026,7 @@ object ElectricalIntegration {
             onBlockPlacedBy(hostCoordinate, front, null, null)
         }
 
-        override fun initializeFromThat(front: Direction, entityLiving: EntityLivingBase?, itemStack: ItemStack?) {
+        override fun initializeFromThat(front: Direction, entityLiving: LivingEntity?, itemStack: ItemStack?) {
             connect()
         }
 

@@ -1,7 +1,7 @@
 package mods.eln.eventhandlers
 
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import net.minecraftforge.fml.common.gameevent.PlayerEvent.ItemCraftedEvent
+import net.neoforged.bus.api.SubscribeEvent
+import net.neoforged.neoforge.event.entity.player.PlayerEvent.ItemCraftedEvent
 import mods.eln.Eln
 import mods.eln.packets.AchievePacket
 

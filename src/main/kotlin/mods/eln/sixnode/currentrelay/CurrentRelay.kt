@@ -31,11 +31,11 @@ import mods.eln.sim.process.heater.ElectricalLoadHeatThermalLoad
 import mods.eln.sixnode.currentcable.CurrentCableDescriptor
 import mods.eln.sixnode.electricalrelay.ElectricalRelayElement
 import mods.eln.sound.SoundCommand
-import net.minecraft.client.gui.GuiButton
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.client.gui.components.Button
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
 import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
 import mods.eln.client.itemrender.IItemRenderer.ItemRendererHelper
 import org.lwjgl.opengl.GL11
@@ -92,7 +92,7 @@ class CurrentRelayDescriptor(
         cable.applyTo(load)
     }
 
-    override fun addInformation(itemStack: ItemStack?, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack?, entityPlayer: Player?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         list.add(tr("Deprecated legacy relay. Prefer relays that follow the AWG/mm cable system."))
         list.addAll(
@@ -138,7 +138,7 @@ class CurrentRelayDescriptor(
         enableCulling()
     }
 
-    override fun getFrontFromPlace(side: Direction, player: EntityPlayer): LRDU {
+    override fun getFrontFromPlace(side: Direction, player: Player): LRDU {
         return super.getFrontFromPlace(side, player)!!.left()
     }
 }
@@ -207,7 +207,7 @@ class CurrentRelayElement(sixNode: SixNode, side: Direction, descriptor: SixNode
         return true
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
         val value = nbt.getByte("front")
         front = fromInt(value.toInt() shr 0 and 0x3)
@@ -215,11 +215,11 @@ class CurrentRelayElement(sixNode: SixNode, side: Direction, descriptor: SixNode
         defaultOutput = nbt.getBoolean("defaultOutput")
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound) {
+    override fun writeToNBT(nbt: CompoundTag) {
         super.writeToNBT(nbt)
-        nbt.setByte("front", (front.toInt() shl 0).toByte())
-        nbt.setBoolean("switchState", switchState)
-        nbt.setBoolean("defaultOutput", defaultOutput)
+        nbt.putByte("front", (front.toInt() shl 0).toByte())
+        nbt.putBoolean("switchState", switchState)
+        nbt.putBoolean("defaultOutput", defaultOutput)
     }
 
     override fun getElectricalLoad(lrdu: LRDU, mask: Int): ElectricalLoad? {
@@ -319,14 +319,14 @@ class CurrentRelayElement(sixNode: SixNode, side: Direction, descriptor: SixNode
         return true
     }
 
-    override fun readConfigTool(compound: NBTTagCompound, invoker: EntityPlayer?) {
-        if (compound.hasKey("nc")) {
+    override fun readConfigTool(compound: CompoundTag, invoker: Player?) {
+        if (compound.contains("nc")) {
             defaultOutput = compound.getBoolean("nc")
         }
     }
 
-    override fun writeConfigTool(compound: NBTTagCompound, invoker: EntityPlayer?) {
-        compound.setBoolean("nc", defaultOutput)
+    override fun writeConfigTool(compound: CompoundTag, invoker: Player?) {
+        compound.putBoolean("nc", defaultOutput)
     }
 }
 
@@ -338,7 +338,7 @@ class CurrentRelayGateProcess(val element: CurrentRelayElement, name: String?, g
 }
 
 class CurrentRelayGui(val render: CurrentRelayRender): GuiScreenEln() {
-    private lateinit var toggleDefaultOutput: GuiButton
+    private lateinit var toggleDefaultOutput: Button
 
     override fun initGui() {
         super.initGui()
@@ -403,7 +403,7 @@ class CurrentRelayRender(override var tileEntity: SixNodeEntity, side: Direction
         clientSend(ElectricalRelayElement.toogleOutputDefaultId.toInt())
     }
 
-    override fun newGuiDraw(side: Direction, player: EntityPlayer): GuiScreen {
+    override fun newGuiDraw(side: Direction, player: Player): Screen {
         return CurrentRelayGui(this)
     }
 

@@ -5,10 +5,10 @@ import mods.eln.misc.VoltageLevelColor;
 import mods.eln.node.six.SixNodeDescriptor;
 import mods.eln.sixnode.electricalgatesource.ElectricalGateSourceRenderObj;
 import mods.eln.wiki.Data;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.lwjgl.opengl.GL11;
 
 import java.util.Collections;
@@ -34,7 +34,7 @@ public class WirelessSignalSourceDescriptor extends SixNodeDescriptor {
     }
 
     @Override
-    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List<String> list, boolean par4) {
+    public void addInformation(ItemStack itemStack, Player entityPlayer, List<String> list, boolean par4) {
         super.addInformation(itemStack, entityPlayer, list, par4);
         if (autoReset) {
             Collections.addAll(list, tr("Acts like a\npush button.").split("\n"));
@@ -43,7 +43,7 @@ public class WirelessSignalSourceDescriptor extends SixNodeDescriptor {
         }
     }
 
-    void draw(float factor, float distance, TileEntity e) {
+    void draw(float factor, float distance, BlockEntity e) {
         render.draw(factor, distance, e);
     }
 

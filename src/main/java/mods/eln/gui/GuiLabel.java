@@ -1,19 +1,19 @@
 package mods.eln.gui;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 
 public class GuiLabel extends Gui implements IGuiObject {
 
     private String text;
     int color;
-    FontRenderer font;
+    Font font;
     int xPos, yPos;
 
     public GuiLabel(int x, int y, String text) {
         this.text = text;
-        font = Minecraft.getMinecraft().fontRenderer;
+        font = Minecraft.getInstance().font;
         color = 0x00FFFFFF;
         xPos = x;
         yPos = y;

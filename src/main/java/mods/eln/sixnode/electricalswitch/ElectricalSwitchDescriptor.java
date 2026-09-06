@@ -10,10 +10,10 @@ import mods.eln.sim.ElectricalLoad;
 import mods.eln.sim.ThermalLoadInitializer;
 import mods.eln.sim.mna.component.Resistor;
 import mods.eln.wiki.Data;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
@@ -151,7 +151,7 @@ public class ElectricalSwitchDescriptor extends SixNodeDescriptor {
         }
     }
 
-    public void draw(float on, float distance, TileEntity e) {
+    public void draw(float on, float distance, BlockEntity e) {
         switch (objType) {
             case Button:
                 if (main != null) main.draw();
@@ -214,7 +214,7 @@ public class ElectricalSwitchDescriptor extends SixNodeDescriptor {
     }
 
     @Override
-    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List<String> list, boolean par4) {
+    public void addInformation(ItemStack itemStack, Player entityPlayer, List<String> list, boolean par4) {
         super.addInformation(itemStack, entityPlayer, list, par4);
         Collections.addAll(list, tr("Can break an electrical circuit\ninterrupting the current.").split("\n"));
         list.add(tr("Voltage rating: %1$V", Utils.plotValue(nominalVoltage)));
@@ -226,7 +226,7 @@ public class ElectricalSwitchDescriptor extends SixNodeDescriptor {
 
     @Nullable
     @Override
-    public LRDU getFrontFromPlace(@NotNull Direction side, @NotNull EntityPlayer player) {
+    public LRDU getFrontFromPlace(@NotNull Direction side, @NotNull Player player) {
         if (signalSwitch) {
             return super.getFrontFromPlace(side, player);
         } else {

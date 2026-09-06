@@ -7,22 +7,22 @@ import mods.eln.item.MachineBoosterDescriptor;
 import mods.eln.misc.BasicContainer;
 import mods.eln.node.INodeContainer;
 import mods.eln.node.NodeBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.Slot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
+import net.minecraft.world.inventory.Slot;
 
 import static mods.eln.i18n.I18N.tr;
 
 public class ElectricalMachineContainer extends BasicContainer implements INodeContainer {
     private NodeBase node = null;
 
-    public ElectricalMachineContainer(NodeBase node, EntityPlayer player, IInventory inventory,
+    public ElectricalMachineContainer(NodeBase node, Player player, Container inventory,
                                       ElectricalMachineDescriptor descriptor) {
         super(player, inventory, getSlot(inventory, descriptor));
         this.node = node;
     }
 
-    private static Slot[] getSlot(IInventory inventory, ElectricalMachineDescriptor descriptor) {
+    private static Slot[] getSlot(Container inventory, ElectricalMachineDescriptor descriptor) {
         Slot[] slots = new Slot[2 + descriptor.outStackCount];
         for (int idx = 0; idx < descriptor.outStackCount; idx++) {
             slots[idx] = new SlotWithSkin(inventory, idx, 130 - 32 + idx * 18, 12, SlotSkin.medium);

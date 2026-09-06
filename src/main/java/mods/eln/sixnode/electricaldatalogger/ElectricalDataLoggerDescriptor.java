@@ -6,9 +6,9 @@ import mods.eln.misc.Obj3D.Obj3DPart;
 import mods.eln.node.six.SixNodeDescriptor;
 import mods.eln.wiki.Data;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
@@ -99,9 +99,9 @@ public class ElectricalDataLoggerDescriptor extends SixNodeDescriptor {
         //Glass (reflections)
         UtilsClient.enableBlend();
         obj.bindTexture("Reflection.png");
-        float rotYaw = Minecraft.getMinecraft().player.rotationYaw / 360.f;
-        float rotPitch = Minecraft.getMinecraft().player.rotationPitch / 180.f;
-        float pos = (((float) Minecraft.getMinecraft().player.posX) - ((float) (objPosMX * 2)) + ((float) Minecraft.getMinecraft().player.posZ) - ((float) (objPosMZ * 2))) / 24.f;
+        float rotYaw = Minecraft.getInstance().player.getYRot() / 360.f;
+        float rotPitch = Minecraft.getInstance().player.getXRot() / 180.f;
+        float pos = (((float) Minecraft.getInstance().player.getX()) - ((float) (objPosMX * 2)) + ((float) Minecraft.getInstance().player.getZ()) - ((float) (objPosMZ * 2))) / 24.f;
         GL11.glColor4f(1, 1, 1, reflc);
         reflection.draw(rotYaw + pos, rotPitch * 0.857f);
         UtilsClient.disableBlend();
@@ -170,7 +170,7 @@ public class ElectricalDataLoggerDescriptor extends SixNodeDescriptor {
     }
 
     @Override
-    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List<String> list, boolean par4) {
+    public void addInformation(ItemStack itemStack, Player entityPlayer, List<String> list, boolean par4) {
         super.addInformation(itemStack, entityPlayer, list, par4);
         Collections.addAll(list, tr("Measures the voltage of an\nelectrical signal and plots\nthe data in real time.").split("\n"));
         list.add(tr("It can store up to 256 points."));
@@ -178,7 +178,7 @@ public class ElectricalDataLoggerDescriptor extends SixNodeDescriptor {
 
     @Nullable
     @Override
-    public LRDU getFrontFromPlace(@NotNull Direction side, @NotNull EntityPlayer player) {
+    public LRDU getFrontFromPlace(@NotNull Direction side, @NotNull Player player) {
         LRDU front = super.getFrontFromPlace(side, player);
         if (onFloor) {
             return front.inverse();

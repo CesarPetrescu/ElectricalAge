@@ -5,7 +5,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext
 import mods.eln.misc.Utils
 import mods.eln.node.NodeManager
 import mods.eln.node.six.SixNode
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 
 class SixNodeWailaRequestPacketHandler : IMessageHandler<SixNodeWailaRequestPacket, SixNodeWailaResponsePacket> {
     override fun onMessage(message: SixNodeWailaRequestPacket, ctx: MessageContext?): SixNodeWailaResponsePacket {

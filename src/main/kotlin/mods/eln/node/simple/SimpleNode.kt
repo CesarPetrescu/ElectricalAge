@@ -12,16 +12,16 @@ import mods.eln.sim.ThermalConnection
 import mods.eln.sim.mna.component.Component
 import mods.eln.sim.mna.state.State
 import mods.eln.sim.nbt.NbtThermalLoad
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
 import java.io.DataOutputStream
 import java.io.IOException
 import java.util.*
 
 abstract class SimpleNode : NodeBase() {
-    var removedByPlayer: EntityPlayerMP? = null
+    var removedByPlayer: ServerPlayer? = null
 
     open var descriptorKey: String? = ""
 
@@ -40,7 +40,7 @@ abstract class SimpleNode : NodeBase() {
         return false
     }
 
-    override fun initializeFromThat(front: Direction, entityLiving: EntityLivingBase?, itemStack: ItemStack?) {
+    override fun initializeFromThat(front: Direction, entityLiving: LivingEntity?, itemStack: ItemStack?) {
         this.front = front
         initialize()
     }
@@ -99,7 +99,7 @@ abstract class SimpleNode : NodeBase() {
         Eln.simulator.removeAllThermalSlowProcess(thermalSlowProcessList)
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
         front = readFromNBT(nbt, "SNfront")
         descriptorKey = nbt.getString("SNdescriptorKey")
@@ -124,10 +124,10 @@ abstract class SimpleNode : NodeBase() {
         }
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound) {
+    override fun writeToNBT(nbt: CompoundTag) {
         super.writeToNBT(nbt)
         front!!.writeToNBT(nbt, "SNfront")
-        nbt.setString("SNdescriptorKey", if (descriptorKey == null) "" else descriptorKey)
+        nbt.putString("SNdescriptorKey", if (descriptorKey == null) "" else descriptorKey)
         for (electricalLoad in electricalLoadList) {
             if (electricalLoad is INBTTReady) (electricalLoad as INBTTReady).writeToNBT(nbt, "")
         }

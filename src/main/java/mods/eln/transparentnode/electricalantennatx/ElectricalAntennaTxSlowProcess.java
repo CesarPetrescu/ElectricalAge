@@ -8,10 +8,10 @@ import mods.eln.node.NodeManager;
 import mods.eln.node.transparent.TransparentNode;
 import mods.eln.sim.IProcess;
 import mods.eln.transparentnode.electricalantennarx.ElectricalAntennaRxElement;
-import net.minecraft.block.Block;
-import net.minecraft.entity.Entity;
-import net.minecraft.init.Blocks;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.Level;
 
 import java.util.List;
 
@@ -29,7 +29,7 @@ public class ElectricalAntennaTxSlowProcess implements IProcess {
     @Override
     public void process(double time) {
         //if(element.rxCoord == null)
-        World world = element.node.coordinate.world();
+        Level world = element.node.coordinate.world();
 
         if (timeCounter <= 0.0) {
             timeCounter = periode;
@@ -87,8 +87,8 @@ public class ElectricalAntennaTxSlowProcess implements IProcess {
             } else {
                 element.powerEfficency = 1 - (element.descriptor.electricalPowerRatioLostOffset + element.descriptor.electricalPowerRatioLostPerBlock * distance);
 
-                if (world.getWorldInfo().isRaining()) element.powerEfficency *= 0.707;
-                if (world.getWorldInfo().isThundering()) element.powerEfficency *= 0.707;
+                if (world.getLevelData().isRaining()) element.powerEfficency *= 0.707;
+                if (world.getLevelData().isThundering()) element.powerEfficency *= 0.707;
 
                 element.rxCoord = node.coordinate;
                 element.rxElement = (ElectricalAntennaRxElement) node.element;

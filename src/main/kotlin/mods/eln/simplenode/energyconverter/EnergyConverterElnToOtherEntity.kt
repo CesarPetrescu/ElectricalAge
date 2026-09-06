@@ -2,8 +2,8 @@ package mods.eln.simplenode.energyconverter
 
 import net.minecraftforge.fml.common.Optional
 import net.minecraftforge.fml.common.Optional.InterfaceList
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.neoforged.api.distmarker.Dist
+import net.neoforged.api.distmarker.OnlyIn
 import ic2.api.energy.tile.IEnergyAcceptor
 import ic2.api.energy.tile.IEnergySource
 import li.cil.oc.api.network.Environment
@@ -12,14 +12,14 @@ import li.cil.oc.api.network.Node
 import mods.eln.Other
 import mods.eln.misc.Direction
 import mods.eln.node.simple.SimpleNodeEntity
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.world.entity.player.Player
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.core.Direction as EnumFacing
 import net.minecraft.util.ITickable
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.energy.CapabilityEnergy
-import net.minecraftforge.energy.IEnergyStorage
+import net.neoforged.neoforge.energy.IEnergyStorage
 import java.io.DataInputStream
 import java.io.IOException
 
@@ -34,8 +34,8 @@ class EnergyConverterElnToOtherEntity : SimpleNodeEntity("ElnToOther"), ITickabl
     var addedToEnet = false
     var ic2tier = 1
 
-    @SideOnly(Side.CLIENT)
-    override fun newGuiDraw(side: Direction, player: EntityPlayer): GuiScreen {
+    @OnlyIn(Dist.CLIENT)
+    override fun newGuiDraw(side: Direction, player: Player): Screen {
         return EnergyConverterElnToOtherGui(this)
     }
 
@@ -53,14 +53,14 @@ class EnergyConverterElnToOtherEntity : SimpleNodeEntity("ElnToOther"), ITickabl
     // ********************IC2********************
     @Optional.Method(modid = Other.modIdIc2)
     override fun emitsEnergyTo(receiver: IEnergyAcceptor, direction: EnumFacing): Boolean {
-        if (world.isRemote) return false
+        if (world.isClientSide) return false
         node ?: return false
         return true
     }
 
     @Optional.Method(modid = Other.modIdIc2)
     override fun getOfferedEnergy(): Double {
-        if (world.isRemote) return 0.0
+        if (world.isClientSide) return 0.0
         if (node == null) return 0.0
         val node = node as EnergyConverterElnToOtherNode
         return node.availableEnergyInModUnitsWithLimit(IC2Tiers.values().first { it.tier == node.ic2tier }.euPerTick.toDouble(), Other.getWattsToEu())
@@ -68,7 +68,7 @@ class EnergyConverterElnToOtherEntity : SimpleNodeEntity("ElnToOther"), ITickabl
 
     @Optional.Method(modid = Other.modIdIc2)
     override fun drawEnergy(amount: Double) {
-        if (world.isRemote) return
+        if (world.isClientSide) return
         if (node == null) return
         val node = node as EnergyConverterElnToOtherNode
         node.drawEnergy(amount, Other.getWattsToEu())
@@ -108,14 +108,14 @@ class EnergyConverterElnToOtherEntity : SimpleNodeEntity("ElnToOther"), ITickabl
      * @Override
 	 * 
 	 * @Optional.Method(modid = Other.modIdOc) public Node
-	 * sidedNode(EnumFacing side) { if(world.isRemote){ if(front.back()
+	 * sidedNode(EnumFacing side) { if(world.isClientSide){ if(front.back()
 	 * == Direction.from(side)) return node(); return null; }else{
 	 * if(getNode().getFront().back() == Direction.from(side)) return node();
 	 * return null; } }
 	 * 
 	 * @Override
 	 * 
-	 * @SideOnly(Side.CLIENT)
+	 * @OnlyIn(Dist.CLIENT)
 	 * 
 	 * @Optional.Method(modid = Other.modIdOc) public boolean
 	 * canConnect(EnumFacing side) { if(front == null) return false;
@@ -126,7 +126,7 @@ class EnergyConverterElnToOtherEntity : SimpleNodeEntity("ElnToOther"), ITickabl
         override fun receiveEnergy(maxReceive: Int, simulate: Boolean): Int = 0
 
         override fun extractEnergy(maxExtract: Int, simulate: Boolean): Int {
-            if (world.isRemote) return 0
+            if (world.isClientSide) return 0
             if (node == null) return 0
             val node = node as EnergyConverterElnToOtherNode
             val extract = Math.max(0, Math.min(maxExtract, node.availableEnergyInModUnits(Other.getWattsToRf()).toInt()))
@@ -144,7 +144,7 @@ class EnergyConverterElnToOtherEntity : SimpleNodeEntity("ElnToOther"), ITickabl
     }
 
     private fun canConnectEnergy(): Boolean {
-        if (world?.isRemote != false) return false
+        if (world?.isClientSide != false) return false
         if (node == null) return false
         return true
     }
@@ -185,12 +185,12 @@ class EnergyConverterElnToOtherEntity : SimpleNodeEntity("ElnToOther"), ITickabl
         if (Other.ocLoaded) getOc().onChunkUnload()
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
         if (Other.ocLoaded) getOc().readFromNBT(nbt)
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
+    override fun writeToNBT(nbt: CompoundTag): CompoundTag {
         super.writeToNBT(nbt)
         if (Other.ocLoaded) getOc().writeToNBT(nbt)
         return nbt

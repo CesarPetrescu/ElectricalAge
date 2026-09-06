@@ -10,8 +10,8 @@ import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor
 import mods.eln.sixnode.electricalcable.UtilityCableDescriptor
 import mods.eln.sim.IProcess
 import mods.eln.sim.nbt.NbtThermalLoad
-import net.minecraft.inventory.IInventory
-import net.minecraft.item.ItemStack
+import net.minecraft.world.Container
+import net.minecraft.world.item.ItemStack
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.sqrt
@@ -186,7 +186,7 @@ internal fun dcDcWindingMeltCurrent(stack: ItemStack?): Double {
 
 internal class DcDcWindingThermalProcess(
     private val owner: TransparentNodeElement,
-    private val inventory: IInventory,
+    private val inventory: Container,
     private val thermalLoad: NbtThermalLoad,
     private val slot: Int,
     private val current: () -> Double,
@@ -260,20 +260,20 @@ internal class DcDcWindingThermalProcess(
     }
 
     private fun meltInsertedWire(utility: UtilityCableDescriptor) {
-        val stack = inventory.getStackInSlot(slot).takeUnless { it.isEmpty } ?: return
+        val stack = inventory.getItem(slot).takeUnless { it.isEmpty } ?: return
         val melted = utility.meltedDescriptor ?: return
         val replacement = melted.newItemStack(1)
         melted.setRemainingLengthMeters(replacement, utility.getRemainingLengthMeters(stack))
-        inventory.setInventorySlotContents(slot, replacement)
-        inventory.markDirty()
+        inventory.setItem(slot, replacement)
+        inventory.setChanged()
         Utils.println("${owner.javaClass.simpleName} $label winding melted at ${owner.node?.coordinate}")
         onMelted()
         owner.needPublish()
     }
 }
 
-internal fun meltDcDcWindingIfOverCurrent(inventory: IInventory, slot: Int, current: Double): Boolean {
-    val stack = inventory.getStackInSlot(slot).takeUnless { it.isEmpty } ?: return false
+internal fun meltDcDcWindingIfOverCurrent(inventory: Container, slot: Int, current: Double): Boolean {
+    val stack = inventory.getItem(slot).takeUnless { it.isEmpty } ?: return false
     val descriptor = dcDcWinding(stack)?.descriptor as? UtilityCableDescriptor ?: return false
     val limit = dcDcWindingMeltCurrent(stack)
     if (abs(current) <= limit) return false
@@ -281,8 +281,8 @@ internal fun meltDcDcWindingIfOverCurrent(inventory: IInventory, slot: Int, curr
     val melted = descriptor.meltedDescriptor ?: return false
     val replacement = melted.newItemStack(1)
     melted.setRemainingLengthMeters(replacement, descriptor.getRemainingLengthMeters(stack))
-    inventory.setInventorySlotContents(slot, replacement)
-    inventory.markDirty()
+    inventory.setItem(slot, replacement)
+    inventory.setChanged()
     return true
 }
 
@@ -292,7 +292,7 @@ internal fun dcDcRenderedWindingCount(stack: ItemStack?): Int {
 }
 
 internal class DcDcWindingSlot(
-    inventory: IInventory,
+    inventory: Container,
     slot: Int,
     x: Int,
     y: Int,

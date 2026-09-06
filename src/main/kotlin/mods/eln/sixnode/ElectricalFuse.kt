@@ -13,11 +13,11 @@ import mods.eln.sim.ThermalLoad
 import mods.eln.sim.mna.component.Resistor
 import mods.eln.sim.nbt.NbtElectricalLoad
 import mods.eln.wiki.Data
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.entity.player.Player
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
 import mods.eln.client.itemrender.IItemRenderer
 import org.lwjgl.opengl.GL11
 import java.io.DataInputStream
@@ -72,14 +72,14 @@ class ElectricalFuseHolderDescriptor(name: String, obj: Obj3D) :
         }
     }
 
-    override fun addInformation(itemStack: ItemStack?, entityPlayer: EntityPlayer?, list: MutableList<String>?, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack?, entityPlayer: Player?, list: MutableList<String>?, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         if (list != null) {
             tr("Protects electrical components.\nFuse melts if current exceeds the\nfuse limit").split("\n").forEach { list.add(it) }
         }
     }
 
-    override fun getFrontFromPlace(side: Direction, player: EntityPlayer) =
+    override fun getFrontFromPlace(side: Direction, player: Player) =
         super.getFrontFromPlace(side, player)!!.inverse()
 }
 
@@ -123,11 +123,11 @@ class ElectricalFuseHolderElement(sixNode: SixNode, side: Direction, descriptor:
         electricalProcessList.add(fuseProcess)
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
         front = LRDU.readFromNBT(nbt, "front")
 
-        val fuseCompound = nbt.getTag("fuse") as? NBTTagCompound
+        val fuseCompound = nbt.getTag("fuse") as? CompoundTag
         if (fuseCompound != null) {
             val fuseStack = ItemStack(fuseCompound)
             if (!fuseStack.isNothing()) {
@@ -138,17 +138,17 @@ class ElectricalFuseHolderElement(sixNode: SixNode, side: Direction, descriptor:
         T = nbt.getDouble("T")
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound) {
+    override fun writeToNBT(nbt: CompoundTag) {
         super.writeToNBT(nbt)
         front.writeToNBT(nbt, "front")
 
         if (installedFuse != null) {
-            val fuseCompaound = NBTTagCompound()
+            val fuseCompaound = CompoundTag()
             installedFuse!!.newItemStack().writeToNBT(fuseCompaound)
-            nbt.setTag("fuse", fuseCompaound)
+            nbt.put("fuse", fuseCompaound)
         }
 
-        nbt.setDouble("T", T)
+        nbt.putDouble("T", T)
     }
 
     override fun getElectricalLoad(lrdu: LRDU, mask: Int): ElectricalLoad? = when (lrdu) {
@@ -199,16 +199,16 @@ class ElectricalFuseHolderElement(sixNode: SixNode, side: Direction, descriptor:
         refreshSwitchResistor()
     }
 
-    override fun onBlockActivated(entityPlayer: EntityPlayer, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
+    override fun onBlockActivated(entityPlayer: Player, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
         if (onBlockActivatedRotate(entityPlayer)) return true
 
         var takenOutFuse: ElectricalFuseDescriptor? = null
-        val itemStack = entityPlayer.heldItemMainhand
+        val itemStack = entityPlayer.mainHandItem
         val fuseDescriptor = itemStack?.let { GenericItemUsingDamageDescriptor.getDescriptor(it) } as? ElectricalFuseDescriptor
         if (!itemStack.isNothing()) {
             if (fuseDescriptor != null && itemStack.count > 0) {
                 // The player puts in a new lead fuse.
-                if (!(Eln.config.getBooleanOrElse("gameplay.qol.creativeNoConsumeInsertedItems", false) && entityPlayer is EntityPlayerMP && Utils.isCreative(entityPlayer))) itemStack.count--
+                if (!(Eln.config.getBooleanOrElse("gameplay.qol.creativeNoConsumeInsertedItems", false) && entityPlayer is ServerPlayer && Utils.isCreative(entityPlayer))) itemStack.count--
                 takenOutFuse = installedFuse
                 installedFuse = fuseDescriptor
             }

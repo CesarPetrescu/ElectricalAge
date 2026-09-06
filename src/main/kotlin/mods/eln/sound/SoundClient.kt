@@ -6,10 +6,10 @@ import mods.eln.misc.Utils.TraceRayWeightOpaque
 import mods.eln.misc.Utils.println
 import mods.eln.misc.Utils.traceRay
 import net.minecraft.client.Minecraft
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.SoundCategory
-import net.minecraft.util.SoundEvent
+import net.minecraft.world.entity.player.Player
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.sounds.SoundSource
+import net.minecraft.sounds.SoundEvent
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -17,9 +17,9 @@ object SoundClient {
     fun play(p: SoundCommand) {
         ClientProxy.soundClientEventListener.currentUuid = p.uuid
 
-        val player: EntityPlayer = Minecraft.getMinecraft().player
-        if (p.world!!.provider.dimension != player.dimension) return
-        val distance = sqrt((p.x - player.posX).pow(2.0) + (p.y - player.posY).pow(2.0) + (p.z - player.posZ).pow(2.0))
+        val player: Player = Minecraft.getInstance().player
+        if (p.level!!.dimension() != player.dimension) return
+        val distance = sqrt((p.x - player.x).pow(2.0) + (p.y - player.y).pow(2.0) + (p.z - player.z).pow(2.0))
         if (distance >= p.rangeMax) return
         var distanceFactor = 1f
         if (distance > p.rangeNominal) {
@@ -27,10 +27,10 @@ object SoundClient {
         }
 
         val blockFactor = traceRay(
-            p.world!!,
-            player.posX,
-            player.posY,
-            player.posZ,
+            p.level!!,
+            player.x,
+            player.y,
+            player.z,
             p.x,
             p.y,
             p.z,
@@ -45,12 +45,12 @@ object SoundClient {
             p.volume *= distanceFactor
             if (p.volume <= 0) return
 
-            p.world!!.playSound(
-                player.posX + 2 * (p.x - player.posX) / distance,
-                player.posY + 2 * (p.y - player.posY) / distance,
-                player.posZ + 2 * (p.z - player.posZ) / distance,
+            p.level!!.playSound(
+                player.x + 2 * (p.x - player.x) / distance,
+                player.y + 2 * (p.y - player.y) / distance,
+                player.z + 2 * (p.z - player.z) / distance,
                 soundEvent(p.track!!),
-                SoundCategory.BLOCKS,
+                SoundSource.BLOCKS,
                 p.volume,
                 p.pitch,
                 false
@@ -62,12 +62,12 @@ object SoundClient {
 
                 bandVolume -= (((trackCount - 1 - idx) / (trackCount - 1f) + 0.2) * blockFactor).toFloat()
                 println(bandVolume)
-                p.world!!.playSound(
-                    player.posX + 2 * (p.x - player.posX) / distance,
-                    player.posY + 2 * (p.y - player.posY) / distance,
-                    player.posZ + 2 * (p.z - player.posZ) / distance,
+                p.level!!.playSound(
+                    player.x + 2 * (p.x - player.x) / distance,
+                    player.y + 2 * (p.y - player.y) / distance,
+                    player.z + 2 * (p.z - player.z) / distance,
                     soundEvent(p.track + "_" + idx + "x"),
-                    SoundCategory.BLOCKS,
+                    SoundSource.BLOCKS,
                     bandVolume,
                     p.pitch,
                     false

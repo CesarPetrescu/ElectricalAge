@@ -5,7 +5,7 @@ import mods.eln.generic.GenericItemUsingDamageDescriptor;
 import mods.eln.item.ThermalIsolatorElement;
 import mods.eln.node.transparent.TransparentNodeElementInventory;
 import mods.eln.sim.IProcess;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
 
 public class ElectricalFurnaceProcess implements IProcess {
@@ -28,7 +28,7 @@ public class ElectricalFurnaceProcess implements IProcess {
 
     @Override
     public void process(double time) {
-        ItemStack itemStack = inventory.getStackInSlot(furnace.thermalIsolatorSlotId);
+        ItemStack itemStack = inventory.getItem(furnace.thermalIsolatorSlotId);
 
         if (McBridge.isNothing(itemStack)) {
             furnace.descriptor.refreshTo(furnace.thermalLoad, 1);
@@ -38,7 +38,7 @@ public class ElectricalFurnaceProcess implements IProcess {
             furnace.descriptor.refreshTo(furnace.thermalLoad, element == null ? 1 : element.getConductionFactor());
         }
 
-        ItemStack itemStackIn = inventory.getStackInSlot(ElectricalFurnaceElement.inSlotId);
+        ItemStack itemStackIn = inventory.getItem(ElectricalFurnaceElement.inSlotId);
         if (itemStackInOld != itemStackIn || (!smeltCan()) || !smeltInProcess) {
             smeltInit();
             itemStackInOld = itemStackIn;
@@ -90,20 +90,20 @@ public class ElectricalFurnaceProcess implements IProcess {
      * Returns true if the furnace can smelt an item, i.e. has a source item, destination stack isn't full, etc.
      */
     private boolean smeltCan() {
-        if (McBridge.isNothing(inventory.getStackInSlot(ElectricalFurnaceElement.inSlotId))) {
+        if (McBridge.isNothing(inventory.getItem(ElectricalFurnaceElement.inSlotId))) {
             return false;
         } else {
             ItemStack var1 = getSmeltResult();
             if (var1 == null) return false;
-            if (McBridge.isNothing(inventory.getStackInSlot(ElectricalFurnaceElement.outSlotId))) return true;
-            if (!inventory.getStackInSlot(ElectricalFurnaceElement.outSlotId).isItemEqual(var1)) return false;
-            int result = inventory.getStackInSlot(ElectricalFurnaceElement.outSlotId).getCount() + var1.getCount();
-            return (result <= inventory.getInventoryStackLimit() && result <= var1.getMaxStackSize());
+            if (McBridge.isNothing(inventory.getItem(ElectricalFurnaceElement.outSlotId))) return true;
+            if (!inventory.getItem(ElectricalFurnaceElement.outSlotId).isItemEqual(var1)) return false;
+            int result = inventory.getItem(ElectricalFurnaceElement.outSlotId).getCount() + var1.getCount();
+            return (result <= inventory.getMaxStackSize() && result <= var1.getMaxStackSize());
         }
     }
 
     public ItemStack getSmeltResult() {
-        return FurnaceRecipes.instance().getSmeltingResult(inventory.getStackInSlot(ElectricalFurnaceElement.inSlotId));
+        return FurnaceRecipes.instance().getSmeltingResult(inventory.getItem(ElectricalFurnaceElement.inSlotId));
     }
 
     /**
@@ -113,14 +113,14 @@ public class ElectricalFurnaceProcess implements IProcess {
         if (smeltCan()) {
             ItemStack var1 = getSmeltResult();
 
-            if (McBridge.isNothing(inventory.getStackInSlot(ElectricalFurnaceElement.outSlotId))) {
-                inventory.setInventorySlotContents(ElectricalFurnaceElement.outSlotId, var1.copy());
-            } else if (inventory.getStackInSlot(ElectricalFurnaceElement.outSlotId).isItemEqual(var1)) {
-                inventory.decrStackSize(ElectricalFurnaceElement.outSlotId, -var1.getCount());
+            if (McBridge.isNothing(inventory.getItem(ElectricalFurnaceElement.outSlotId))) {
+                inventory.setItem(ElectricalFurnaceElement.outSlotId, var1.copy());
+            } else if (inventory.getItem(ElectricalFurnaceElement.outSlotId).isItemEqual(var1)) {
+                inventory.removeItem(ElectricalFurnaceElement.outSlotId, -var1.getCount());
             }
 
-            inventory.decrStackSize(ElectricalFurnaceElement.inSlotId, 1);
-            inventory.markDirty();
+            inventory.removeItem(ElectricalFurnaceElement.inSlotId, 1);
+            inventory.setChanged();
         }
     }
 

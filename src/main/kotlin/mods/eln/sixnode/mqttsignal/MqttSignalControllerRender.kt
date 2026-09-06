@@ -14,8 +14,8 @@ import mods.eln.node.six.SixNodeElementRender
 import mods.eln.node.six.SixNodeEntity
 import mods.eln.mqtt.SignalPort
 import mods.eln.mqtt.SignalPortMode
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.world.entity.player.Player
 import org.lwjgl.opengl.GL11
 import java.io.DataInputStream
 import java.io.IOException
@@ -106,7 +106,7 @@ class MqttSignalControllerRender(
             }
             ledTimer = 0f
         }
-        if (!Utils.isPlayerAround(tileEntity.world, coord.getAxisAlignedBB(0))) {
+        if (!Utils.isPlayerAround(tileEntity.level, coord.getAxisAlignedBB(0))) {
             interpolator.target = 0f
         } else {
             interpolator.target = 1f
@@ -118,7 +118,7 @@ class MqttSignalControllerRender(
         return Eln.instance.signalCableDescriptor.render
     }
 
-    override fun newGuiDraw(side: Direction, player: EntityPlayer): GuiScreen {
+    override fun newGuiDraw(side: Direction, player: Player): Screen {
         return MqttSignalControllerGui(player, controllerInventory, this)
     }
 

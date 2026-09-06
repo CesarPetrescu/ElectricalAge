@@ -9,19 +9,19 @@ import mods.eln.misc.Direction.Companion.fromIntMinecraftSide
 import mods.eln.misc.LRDU
 import mods.eln.misc.Utils.sendMessage
 import mods.eln.sixnode.electricalcable.UtilityCableDescriptor
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.client.Minecraft
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.init.Blocks
-import net.minecraft.item.ItemStack
-import net.minecraft.block.state.IBlockState
-import net.minecraft.util.EnumActionResult
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.SoundCategory
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.entity.player.Player
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.InteractionResult
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand
+import net.minecraft.sounds.SoundSource
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level
 import mods.eln.client.itemrender.IItemRenderer
 import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
 import mods.eln.client.itemrender.IItemRenderer.ItemRendererHelper
@@ -35,9 +35,9 @@ import mods.eln.misc.getBlockState
 import mods.eln.misc.isReplaceable
 
 class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b), IItemRenderer {
-    private fun shouldConsumeUtilityCableLength(player: EntityPlayer): Boolean {
+    private fun shouldConsumeUtilityCableLength(player: Player): Boolean {
         val creativeFreeLength = Eln.config.getBooleanOrElse("gameplay.cables.creativeFreeLength", true)
-        return !(creativeFreeLength && player is EntityPlayerMP && mods.eln.misc.Utils.isCreative(player))
+        return !(creativeFreeLength && player is ServerPlayer && mods.eln.misc.Utils.isCreative(player))
     }
 
     override fun getMetadata(damageValue: Int): Int {
@@ -48,18 +48,18 @@ class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b
      * Callback for item usage. If the item does something special on right clicking, he will have one of those. Return True if something happen and false if it don't. This is for ITEMS, not BLOCKS
      */
     override fun onItemUse(
-        player: EntityPlayer, world: World, posIn: BlockPos, hand: EnumHand,
+        player: Player, world: Level, posIn: BlockPos, hand: InteractionHand,
         facing: EnumFacing, hitX: Float, hitY: Float, hitZ: Float
-    ): EnumActionResult = onItemUse(player.getHeldItem(hand), player, world, posIn, hand, facing, hitX, hitY, hitZ)
+    ): InteractionResult = onItemUse(player.getItemInHand(hand), player, world, posIn, hand, facing, hitX, hitY, hitZ)
 
     /**
      * 1.7.10 passed the stack in; 1.12.2 reads it from the hand. Programmatic placement (the Falstad
      * importer) still needs to place a stack that is not in anyone's hand, so the body takes it explicitly.
      */
     fun onItemUse(
-        stack: ItemStack, player: EntityPlayer, world: World, posIn: BlockPos, hand: EnumHand,
+        stack: ItemStack, player: Player, world: Level, posIn: BlockPos, hand: InteractionHand,
         facing: EnumFacing, hitX: Float, hitY: Float, hitZ: Float
-    ): EnumActionResult {
+    ): InteractionResult {
         var pos = posIn
         var side = facing
         val state = world.getBlockState(pos)
@@ -73,20 +73,20 @@ class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b
         ) {
             pos = pos.offset(facing)
         }
-        if (stack.isEmpty) return EnumActionResult.FAIL
+        if (stack.isEmpty) return InteractionResult.FAIL
         val descriptor = getDescriptor(stack)
         if (descriptor is UtilityCableDescriptor && !descriptor.hasLengthForPlacement(stack)) {
             sendMessage(player, "Not enough wire length remaining to place another segment")
-            return EnumActionResult.FAIL
+            return InteractionResult.FAIL
         }
-        if (!player.canPlayerEdit(pos, side, stack)) return EnumActionResult.FAIL
-        if (pos.y == 255 && this.block.defaultState.material.isSolid) return EnumActionResult.FAIL
+        if (!player.canPlayerEdit(pos, side, stack)) return InteractionResult.FAIL
+        if (pos.y == 255 && this.block.defaultState.material.isSolid) return InteractionResult.FAIL
         val meta = getMetadata(stack.metadata)
         val newState = this.block.getStateForPlacement(world, pos, side, hitX, hitY, hitZ, meta, player, hand)
         if (placeBlockAt(stack, player, world, pos, side, hitX, hitY, hitZ, newState)) {
             val sound = this.block.getSoundType(newState, world, pos, player)
             world.playSound(
-                null, pos, sound.placeSound, SoundCategory.BLOCKS,
+                null, pos, sound.placeSound, SoundSource.BLOCKS,
                 (sound.volume + 1.0f) / 2.0f, sound.pitch * 0.8f
             )
             if (descriptor is UtilityCableDescriptor) {
@@ -100,14 +100,14 @@ class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b
                 stack.shrink(1)
             }
         }
-        return EnumActionResult.SUCCESS
+        return InteractionResult.SUCCESS
     }
 
     /**
      * Returns true if the given ItemBlock can be placed on the given side of the given block position.
      */
     override fun canPlaceBlockOnSide(
-        world: World, pos: BlockPos, side: EnumFacing, player: EntityPlayer, stack: ItemStack
+        world: Level, pos: BlockPos, side: EnumFacing, player: Player, stack: ItemStack
     ): Boolean {
         if (!isStackValidToPlace(stack)) return false
         val vect = intArrayOf(pos.x, pos.y, pos.z)
@@ -128,10 +128,10 @@ class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b
     }
 
     override fun placeBlockAt(
-        stack: ItemStack, player: EntityPlayer, world: World, pos: BlockPos,
-        side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float, newState: IBlockState
+        stack: ItemStack, player: Player, world: Level, pos: BlockPos,
+        side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float, newState: BlockState
     ): Boolean {
-        if (world.isRemote) return false
+        if (world.isClientSide) return false
         if (!isStackValidToPlace(stack)) return false
         val x = pos.x; val y = pos.y; val z = pos.z
         val metadata = this.block.getMetaFromState(newState)
@@ -158,7 +158,7 @@ class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b
                 return true
             }
         } else if (blockOld === block) {
-            val sixNode = (world.getTileEntity(x, y, z) as SixNodeEntity).node as SixNode?
+            val sixNode = (world.getBlockEntity(x, y, z) as SixNodeEntity).node as SixNode?
             if (sixNode == null) {
                 world.setBlockToAir(x, y, z)
                 return false
@@ -169,7 +169,7 @@ class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b
                 return true
             }
         } else {
-            val sixNode = (world.getTileEntity(x, y, z) as SixNodeEntity).node as SixNode?
+            val sixNode = (world.getBlockEntity(x, y, z) as SixNodeEntity).node as SixNode?
             if (sixNode == null) {
                 world.setBlockToAir(x, y, z)
                 return false
@@ -197,7 +197,7 @@ class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b
 
     override fun renderItem(type: ItemRenderType, item: ItemStack, vararg data: Any) {
         if (!isStackValidToPlace(item)) return
-        Minecraft.getMinecraft().profiler.startSection("SixNodeItem")
+        Minecraft.getInstance().profiler.startSection("SixNodeItem")
         if (shouldUseRenderHelperEln(type, item, null)) {
             when (type) {
                 ItemRenderType.ENTITY -> GL11.glRotatef(90f, 0f, 0f, 1f)
@@ -226,7 +226,7 @@ class SixNodeItem(b: Block?) : GenericItemBlockUsingDamage<SixNodeDescriptor?>(b
         if (descriptor != null) {
             descriptor.renderItem(type, item, *data)
         }
-        Minecraft.getMinecraft().profiler.endSection()
+        Minecraft.getInstance().profiler.endSection()
     }
 
     init {

@@ -3,7 +3,7 @@ package mods.eln.sixnode.electricalsource;
 import mods.eln.TestLogConfigKt;
 import mods.eln.misc.Direction;
 import mods.eln.node.six.SixNode;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundTag;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -17,8 +17,8 @@ public class ElectricalSourceElementTest {
             Direction.ZP,
             new ElectricalSourceDescriptor("Test Voltage Source", null, false)
         );
-        NBTTagCompound nbt = new NBTTagCompound();
-        nbt.setDouble("voltage", 240.0);
+        CompoundTag nbt = new CompoundTag();
+        nbt.putDouble("voltage", 240.0);
 
         source.readFromNBT(nbt);
 

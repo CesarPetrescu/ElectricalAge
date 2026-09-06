@@ -28,7 +28,7 @@ import mods.eln.sixnode.wirelesssignal.aggregator.BiggerAggregator
 import mods.eln.sixnode.wirelesssignal.aggregator.IWirelessSignalAggregator
 import mods.eln.sixnode.wirelesssignal.aggregator.SmallerAggregator
 import mods.eln.sixnode.wirelesssignal.tx.WirelessSignalTxElement
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.nbt.CompoundTag
 
 @Optional.Interface(iface = "dan200.computercraft.api.peripheral.IPeripheral", modid = Other.modIdCc)
 class ComputerProbeNode : SimpleNode(), IPeripheral {
@@ -343,20 +343,20 @@ class ComputerProbeNode : SimpleNode(), IPeripheral {
         return this === other
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound) {
+    override fun writeToNBT(nbt: CompoundTag) {
         super.writeToNBT(nbt)
-        nbt.setInteger("wirelessTxCount", wirelessTxMap.size)
+        nbt.putInt("wirelessTxCount", wirelessTxMap.size)
         var idx = 0
         for (tx in wirelessTxMap.values) {
-            nbt.setString("wirelessTx" + idx + "channel", tx.channelName)
-            nbt.setDouble("wirelessTx" + idx + "value", tx.signalValue)
+            nbt.putString("wirelessTx" + idx + "channel", tx.channelName)
+            nbt.putDouble("wirelessTx" + idx + "value", tx.signalValue)
             idx++
         }
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
-        val wirelessTxCount = nbt.getInteger("wirelessTxCount")
+        val wirelessTxCount = nbt.getInt("wirelessTxCount")
         for (idx in 0 until wirelessTxCount) {
             val tx = WirelessTx()
             tx.channelName = nbt.getString("wirelessTx" + idx + "channel")

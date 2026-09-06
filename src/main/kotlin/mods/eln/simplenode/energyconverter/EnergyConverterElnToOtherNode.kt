@@ -10,8 +10,8 @@ import mods.eln.sim.ThermalLoad
 import mods.eln.sim.mna.misc.MnaConst
 import mods.eln.sim.nbt.NbtElectricalLoad
 import mods.eln.sim.nbt.NbtResistor
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.nbt.CompoundTag
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
@@ -106,22 +106,22 @@ class EnergyConverterElnToOtherNode : SimpleNode() {
         return min(availableEnergyInModUnits(conversionRatio), maximumModUnits * conversionRatio) / conversionRatio
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound) {
+    override fun writeToNBT(nbt: CompoundTag) {
         super.writeToNBT(nbt)
-        nbt.setDouble("energyBuffer", energyBuffer)
-        nbt.setDouble("selectedOhms", selectedOhms)
-        nbt.setInteger("ic2tier", ic2tier)
+        nbt.putDouble("energyBuffer", energyBuffer)
+        nbt.putDouble("selectedOhms", selectedOhms)
+        nbt.putInt("ic2tier", ic2tier)
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
         energyBuffer = nbt.getDouble("energyBuffer")
-        selectedOhms = if (nbt.hasKey("selectedOhms")) {
+        selectedOhms = if (nbt.contains("selectedOhms")) {
             nbt.getDouble("selectedOhms")
         } else {
             MnaConst.highImpedance
         }
-        ic2tier = nbt.getInteger("ic2tier")
+        ic2tier = nbt.getInt("ic2tier")
     }
 
     override fun hasGui(side: Direction): Boolean {
@@ -138,7 +138,7 @@ class EnergyConverterElnToOtherNode : SimpleNode() {
         }
     }
 
-    override fun networkUnserialize(stream: DataInputStream, player: EntityPlayerMP?) {
+    override fun networkUnserialize(stream: DataInputStream, player: ServerPlayer?) {
         try {
             when (stream.readByte()) {
                 NetworkType.SET_OHMS.id -> {

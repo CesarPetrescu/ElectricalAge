@@ -8,12 +8,12 @@ import mods.eln.gui.IGuiObject
 import mods.eln.i18n.I18N.tr
 import mods.eln.mqtt.SignalPort
 import mods.eln.mqtt.SignalPortMode
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.IInventory
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.Container
 
 class MqttSignalControllerGui(
-    player: EntityPlayer,
-    inventory: IInventory,
+    player: Player,
+    inventory: Container,
     private val render: MqttSignalControllerRender
 ) : GuiContainerEln(MqttSignalControllerContainer(player, inventory)) {
 

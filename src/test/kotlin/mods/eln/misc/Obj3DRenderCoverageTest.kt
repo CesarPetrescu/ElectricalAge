@@ -1,7 +1,7 @@
 package mods.eln.misc
 
 import mods.eln.disableLog4jJmx
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.ResourceLocation
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull

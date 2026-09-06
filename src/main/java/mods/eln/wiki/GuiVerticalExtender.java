@@ -5,8 +5,8 @@ import mods.eln.gui.GuiVerticalTrackBar;
 import mods.eln.gui.IGuiObject;
 import mods.eln.gui.IGuiObject.IGuiObjectObserver;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Gui;
-import net.minecraft.item.ItemStack;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.world.item.ItemStack;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
@@ -17,8 +17,8 @@ public class GuiVerticalExtender extends Gui implements IGuiObject, IGuiObjectOb
     int offX, offY;
 
     public GuiVerticalExtender(int x, int y, int w, int h, GuiHelper helper) {
-        this.posX = x;
-        this.posY = y;
+        this.getX() = x;
+        this.getY() = y;
         this.h = h;
         this.w = w;
         this.offX = x;
@@ -100,8 +100,8 @@ public class GuiVerticalExtender extends Gui implements IGuiObject, IGuiObjectOb
         x -= getxOffset();
         y -= getYOffset();
         GL11.glPushMatrix();
-        int displayWidth = Minecraft.getMinecraft().displayWidth;
-        int displayHeight = Minecraft.getMinecraft().displayHeight;
+        int displayWidth = Minecraft.getInstance().displayWidth;
+        int displayHeight = Minecraft.getInstance().displayHeight;
         float ratioY = ((float) displayHeight) / this.helper.screen.height;
         float ratioX = ((float) displayWidth) / this.helper.screen.width;
         float ratio = Math.max(ratioY, ratioX);
@@ -128,8 +128,8 @@ public class GuiVerticalExtender extends Gui implements IGuiObject, IGuiObjectOb
         x -= getxOffset();
         y -= getYOffset();
         GL11.glPushMatrix();
-        int displayWidth = Minecraft.getMinecraft().displayWidth;
-        int displayHeight = Minecraft.getMinecraft().displayHeight;
+        int displayWidth = Minecraft.getInstance().displayWidth;
+        int displayHeight = Minecraft.getInstance().displayHeight;
         float ratioY = ((float) displayHeight) / this.helper.screen.height;
         float ratioX = ((float) displayWidth) / this.helper.screen.width;
         float ratio = Math.max(ratioY, ratioX);

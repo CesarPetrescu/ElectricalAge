@@ -2,10 +2,10 @@ package mods.eln.sixnode.lampsocket
 
 import mods.eln.gui.*
 import mods.eln.i18n.I18N
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.entity.player.Player
 import mods.eln.misc.isNothing
 
-class LampSocketGui(player: EntityPlayer, val render: LampSocketRender) :
+class LampSocketGui(player: Player, val render: LampSocketRender) :
     GuiContainerEln(LampSocketContainer(player, render.inventory, render.descriptor)) {
 
     companion object {
@@ -61,8 +61,8 @@ class LampSocketGui(player: EntityPlayer, val render: LampSocketRender) :
             buttonGrounded.visible = false
             buttonPowerSource.displayString = I18N.tr("Powered by lamp supply")
 
-            val lampStack = render.inventory.getStackInSlot(LampSocketContainer.LAMP_SLOT_ID)
-            val cableStack = render.inventory.getStackInSlot(LampSocketContainer.CABLE_SLOT_ID)
+            val lampStack = render.inventory.getItem(LampSocketContainer.LAMP_SLOT_ID)
+            val cableStack = render.inventory.getItem(LampSocketContainer.CABLE_SLOT_ID)
 
             when {
                 cableStack.isNothing() -> textboxLampSupplyChannel.setComment(1, "§4" + I18N.tr("Cable slot empty"))

@@ -6,12 +6,12 @@ import mods.eln.misc.Direction
 import mods.eln.node.NodeManager
 import mods.eln.node.six.SixNode
 import mods.eln.node.transparent.TransparentNode
-import net.minecraft.block.BlockDoor
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.level.block.DoorBlock
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.nbt.CompoundTag
 import net.minecraft.server.MinecraftServer
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level
 import net.minecraftforge.fml.common.FMLCommonHandler
 import java.util.ArrayDeque
 import java.util.HashMap
@@ -112,11 +112,11 @@ object RoomThermalManager {
         pendingImmediateScanDimensions.remove(dimension)
     }
 
-    fun onBlockChanged(world: World, x: Int, y: Int, z: Int) {
-        if (world.isRemote) return
+    fun onBlockChanged(world: Level, x: Int, y: Int, z: Int) {
+        if (world.isClientSide) return
 
         val changed = CellPos(x, y, z)
-        val dim = world.provider.dimension
+        val dim = world.dimension()
 
         val touchedRoomIds = HashSet<RoomId>()
         collectRoomIdsAtOrAdjacent(dim, changed, touchedRoomIds)
@@ -132,7 +132,7 @@ object RoomThermalManager {
         pendingImmediateScanDimensions.add(dim)
     }
 
-    fun getRoomVolumeAt(world: World, x: Int, y: Int, z: Int): Int? {
+    fun getRoomVolumeAt(world: Level, x: Int, y: Int, z: Int): Int? {
         return getRoomAt(world, x, y, z)?.volumeBlocks
     }
 
@@ -144,8 +144,8 @@ object RoomThermalManager {
         val airHeatCapacityJoulesPerCelsius: Double
     )
 
-    fun getRoomAt(world: World, x: Int, y: Int, z: Int): RoomLookup? {
-        val dim = world.provider.dimension
+    fun getRoomAt(world: Level, x: Int, y: Int, z: Int): RoomLookup? {
+        val dim = world.dimension()
         val roomId = roomByInteriorCellByDimension[dim]?.get(CellPos(x, y, z)) ?: return null
         val room = roomsById[roomId] ?: return null
         return RoomLookup(
@@ -219,43 +219,43 @@ object RoomThermalManager {
         }
     }
 
-    fun writeToNbt(nbt: NBTTagCompound, dimension: Int) {
-        val root = NBTTagCompound()
-        root.setInteger(NBT_VERSION, ROOM_NBT_VERSION)
+    fun writeToNbt(nbt: CompoundTag, dimension: Int) {
+        val root = CompoundTag()
+        root.putInt(NBT_VERSION, ROOM_NBT_VERSION)
 
         val dimRooms = roomsById.values.filter { it.dimension == dimension }
-        root.setInteger(NBT_COUNT, dimRooms.size)
+        root.putInt(NBT_COUNT, dimRooms.size)
 
         for ((index, room) in dimRooms.withIndex()) {
-            val roomTag = NBTTagCompound()
-            roomTag.setString(NBT_ID, room.id.signature)
-            roomTag.setInteger(NBT_DIM, room.dimension)
-            roomTag.setDouble(NBT_TEMPERATURE, room.temperatureCelsius)
-            roomTag.setLong(NBT_LAST_SEEN, room.lastSeenTick)
-            roomTag.setInteger(NBT_INTERIOR_COUNT, room.interiorCellCount)
-            roomTag.setTag(NBT_BOUNDS, boundsToNbt(room.bounds))
-            roomTag.setIntArray(NBT_INTERIOR_CELLS, encodeCells(room.interiorCells))
-            roomTag.setIntArray(NBT_THERMAL_NODES, encodeCells(room.thermalNodeAnchors))
-            root.setTag("$NBT_ROOM_PREFIX$index", roomTag)
+            val roomTag = CompoundTag()
+            roomTag.putString(NBT_ID, room.id.signature)
+            roomTag.putInt(NBT_DIM, room.dimension)
+            roomTag.putDouble(NBT_TEMPERATURE, room.temperatureCelsius)
+            roomTag.putLong(NBT_LAST_SEEN, room.lastSeenTick)
+            roomTag.putInt(NBT_INTERIOR_COUNT, room.interiorCellCount)
+            roomTag.put(NBT_BOUNDS, boundsToNbt(room.bounds))
+            roomTag.putIntArray(NBT_INTERIOR_CELLS, encodeCells(room.interiorCells))
+            roomTag.putIntArray(NBT_THERMAL_NODES, encodeCells(room.thermalNodeAnchors))
+            root.put("$NBT_ROOM_PREFIX$index", roomTag)
         }
 
-        nbt.setTag(NBT_ROOT, root)
+        nbt.put(NBT_ROOT, root)
     }
 
-    fun readFromNbt(nbt: NBTTagCompound, dimension: Int) {
+    fun readFromNbt(nbt: CompoundTag, dimension: Int) {
         unloadDimension(dimension)
-        if (!nbt.hasKey(NBT_ROOT)) return
+        if (!nbt.contains(NBT_ROOT)) return
 
-        val root = nbt.getCompoundTag(NBT_ROOT)
-        val version = root.getInteger(NBT_VERSION)
+        val root = nbt.getCompound(NBT_ROOT)
+        val version = root.getInt(NBT_VERSION)
         if (version != ROOM_NBT_VERSION) {
             Eln.logger.warn("[room-thermal] Ignoring rooms in dim {} due to unsupported NBT version {}", dimension, version)
             return
         }
 
-        val count = root.getInteger(NBT_COUNT)
+        val count = root.getInt(NBT_COUNT)
         for (index in 0 until count) {
-            val roomTag = root.getCompoundTag("$NBT_ROOM_PREFIX$index")
+            val roomTag = root.getCompound("$NBT_ROOM_PREFIX$index")
             if (roomTag.isEmpty) continue
 
             val room = readRoomFromNbt(roomTag, dimension) ?: continue
@@ -268,18 +268,18 @@ object RoomThermalManager {
 
     private fun scanPlayersForRooms(server: MinecraftServer, dimensionFilter: Set<Int>?) {
         val players = server.playerList.players
-            .mapNotNull { it as? EntityPlayerMP }
+            .mapNotNull { it as? ServerPlayer }
 
         if (players.isEmpty()) return
 
         val thermalNodeCoordsByDimension = collectThermalNodeCoordinatesByDimension()
 
         for (player in players) {
-            val world = player.world ?: continue
-            if (world.isRemote) continue
-            if (dimensionFilter != null && !dimensionFilter.contains(world.provider.dimension)) continue
+            val world = player.level ?: continue
+            if (world.isClientSide) continue
+            if (dimensionFilter != null && !dimensionFilter.contains(world.dimension())) continue
 
-            val thermalNodes = thermalNodeCoordsByDimension[world.provider.dimension] ?: continue
+            val thermalNodes = thermalNodeCoordsByDimension[world.dimension()] ?: continue
             if (thermalNodes.isEmpty()) continue
 
             val seed = findPlayerAirSeed(player) ?: continue
@@ -315,11 +315,11 @@ object RoomThermalManager {
         }
     }
 
-    private fun findPlayerAirSeed(player: EntityPlayerMP): CellPos? {
-        val world = player.world ?: return null
-        val baseX = floor(player.posX).toInt()
-        val baseY = floor(player.posY).toInt()
-        val baseZ = floor(player.posZ).toInt()
+    private fun findPlayerAirSeed(player: ServerPlayer): CellPos? {
+        val world = player.level ?: return null
+        val baseX = floor(player.x).toInt()
+        val baseY = floor(player.y).toInt()
+        val baseZ = floor(player.z).toInt()
 
         for (radius in 0..PLAYER_AIR_SEED_SEARCH_RADIUS) {
             for (dx in -radius..radius) {
@@ -334,7 +334,7 @@ object RoomThermalManager {
                         if (!isValidY(y)) continue
                         if (!world.isBlockLoaded(x, y, z)) continue
 
-                        if (world.isAirBlock(x, y, z)) {
+                        if (world.isEmptyBlock(x, y, z)) {
                             return CellPos(x, y, z)
                         }
                     }
@@ -345,7 +345,7 @@ object RoomThermalManager {
         return null
     }
 
-    private fun findEnclosedRoom(world: World, seed: CellPos): RoomCandidate? {
+    private fun findEnclosedRoom(world: Level, seed: CellPos): RoomCandidate? {
         if (!isAir(world, seed)) return null
 
         val queue = ArrayDeque<CellPos>()
@@ -403,7 +403,7 @@ object RoomThermalManager {
         )
 
         return RoomCandidate(
-            dimension = world.provider.dimension,
+            dimension = world.dimension(),
             interiorCells = visited,
             bounds = bounds
         )
@@ -496,12 +496,12 @@ object RoomThermalManager {
 
         val server = FMLCommonHandler.instance().getMinecraftServerInstance() ?: return
         val world = server.getWorld(room.dimension) ?: return
-        if (world.isRemote) return
+        if (world.isClientSide) return
 
         room.openDoorCount = countOpenBoundaryDoors(world, room.interiorCells)
     }
 
-    private fun countOpenBoundaryDoors(world: World, interiorCells: Set<CellPos>): Int {
+    private fun countOpenBoundaryDoors(world: Level, interiorCells: Set<CellPos>): Int {
         var openDoors = 0
         val seenDoorBottomCells = HashSet<CellPos>()
 
@@ -516,7 +516,7 @@ object RoomThermalManager {
                 if (!world.isBlockLoaded(neighbor.x, neighbor.y, neighbor.z)) continue
 
                 val block = world.getBlock(neighbor.x, neighbor.y, neighbor.z)
-                if (block !is BlockDoor) continue
+                if (block !is DoorBlock) continue
 
                 val bottomCell = toDoorBottomCell(world, neighbor) ?: continue
                 if (!seenDoorBottomCells.add(bottomCell)) continue
@@ -527,23 +527,23 @@ object RoomThermalManager {
         return openDoors
     }
 
-    private fun toDoorBottomCell(world: World, cell: CellPos): CellPos? {
+    private fun toDoorBottomCell(world: Level, cell: CellPos): CellPos? {
         if (!world.isBlockLoaded(cell.x, cell.y, cell.z)) return null
         val state = world.getBlockState(cell.x, cell.y, cell.z)
-        if (state.propertyKeys.contains(BlockDoor.HALF) && state.getValue(BlockDoor.HALF) == BlockDoor.EnumDoorHalf.LOWER) return cell
+        if (state.propertyKeys.contains(DoorBlock.HALF) && state.getValue(DoorBlock.HALF) == DoorBlock.EnumDoorHalf.LOWER) return cell
         if (cell.y <= 0) return null
         val bottom = CellPos(cell.x, cell.y - 1, cell.z)
         if (!world.isBlockLoaded(bottom.x, bottom.y, bottom.z)) return null
         val bottomBlock = world.getBlock(bottom.x, bottom.y, bottom.z)
-        return if (bottomBlock is BlockDoor) bottom else null
+        return if (bottomBlock is DoorBlock) bottom else null
     }
 
-    private fun isDoorOpen(world: World, doorBottomCell: CellPos): Boolean {
+    private fun isDoorOpen(world: Level, doorBottomCell: CellPos): Boolean {
         if (!world.isBlockLoaded(doorBottomCell.x, doorBottomCell.y, doorBottomCell.z)) return false
         val state = world.getBlockState(doorBottomCell.x, doorBottomCell.y, doorBottomCell.z)
-        if (state.block !is BlockDoor) return false
+        if (state.block !is DoorBlock) return false
         // The open flag only lives on the lower half's state in 1.12.2.
-        return state.propertyKeys.contains(BlockDoor.OPEN) && state.getValue(BlockDoor.OPEN)
+        return state.propertyKeys.contains(DoorBlock.OPEN) && state.getValue(DoorBlock.OPEN)
     }
 
     private fun createRoomId(candidate: RoomCandidate): RoomId {
@@ -571,8 +571,8 @@ object RoomThermalManager {
         return value
     }
 
-    private fun isAir(world: World, cell: CellPos): Boolean {
-        return world.isAirBlock(cell.x, cell.y, cell.z)
+    private fun isAir(world: Level, cell: CellPos): Boolean {
+        return world.isEmptyBlock(cell.x, cell.y, cell.z)
     }
 
     private fun isValidY(y: Int): Boolean = y in 0..255
@@ -697,8 +697,8 @@ object RoomThermalManager {
         }
     }
 
-    private fun boundsToNbt(bounds: RoomBounds): NBTTagCompound {
-        return NBTTagCompound().apply {
+    private fun boundsToNbt(bounds: RoomBounds): CompoundTag {
+        return CompoundTag().apply {
             setInteger(NBT_MIN_X, bounds.minX)
             setInteger(NBT_MIN_Y, bounds.minY)
             setInteger(NBT_MIN_Z, bounds.minZ)
@@ -708,14 +708,14 @@ object RoomThermalManager {
         }
     }
 
-    private fun boundsFromNbt(tag: NBTTagCompound): RoomBounds {
+    private fun boundsFromNbt(tag: CompoundTag): RoomBounds {
         return RoomBounds(
-            minX = tag.getInteger(NBT_MIN_X),
-            minY = tag.getInteger(NBT_MIN_Y),
-            minZ = tag.getInteger(NBT_MIN_Z),
-            maxX = tag.getInteger(NBT_MAX_X),
-            maxY = tag.getInteger(NBT_MAX_Y),
-            maxZ = tag.getInteger(NBT_MAX_Z)
+            minX = tag.getInt(NBT_MIN_X),
+            minY = tag.getInt(NBT_MIN_Y),
+            minZ = tag.getInt(NBT_MIN_Z),
+            maxX = tag.getInt(NBT_MAX_X),
+            maxY = tag.getInt(NBT_MAX_Y),
+            maxZ = tag.getInt(NBT_MAX_Z)
         )
     }
 
@@ -741,11 +741,11 @@ object RoomThermalManager {
         return out
     }
 
-    private fun readRoomFromNbt(roomTag: NBTTagCompound, expectedDimension: Int): SimulatedRoom? {
-        val roomDimension = roomTag.getInteger(NBT_DIM)
+    private fun readRoomFromNbt(roomTag: CompoundTag, expectedDimension: Int): SimulatedRoom? {
+        val roomDimension = roomTag.getInt(NBT_DIM)
         if (roomDimension != expectedDimension) return null
 
-        val boundsTag = roomTag.getCompoundTag(NBT_BOUNDS)
+        val boundsTag = roomTag.getCompound(NBT_BOUNDS)
         if (boundsTag.isEmpty) return null
 
         val bounds = boundsFromNbt(boundsTag)
@@ -767,12 +767,12 @@ object RoomThermalManager {
             id = roomId,
             dimension = roomDimension,
             bounds = bounds,
-            interiorCellCount = roomTag.getInteger(NBT_INTERIOR_COUNT).takeIf { it > 0 } ?: interiorCells.size,
+            interiorCellCount = roomTag.getInt(NBT_INTERIOR_COUNT).takeIf { it > 0 } ?: interiorCells.size,
             thermalNodeAnchors = thermalNodes,
             temperatureCelsius = roomTag.getDouble(NBT_TEMPERATURE),
             lastSeenTick = tickCounter,
             interiorCells = interiorCells,
-            airHeatCapacityJoulesPerCelsius = (roomTag.getInteger(NBT_INTERIOR_COUNT).takeIf { it > 0 } ?: interiorCells.size) * AIR_HEAT_CAPACITY_J_PER_BLOCK_C,
+            airHeatCapacityJoulesPerCelsius = (roomTag.getInt(NBT_INTERIOR_COUNT).takeIf { it > 0 } ?: interiorCells.size) * AIR_HEAT_CAPACITY_J_PER_BLOCK_C,
             openDoorCount = 0,
             lastDoorScanTick = Long.MIN_VALUE
         )

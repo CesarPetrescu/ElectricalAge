@@ -15,12 +15,12 @@ import mods.eln.generic.GenericItemBlockUsingDamageDescriptor
 import mods.eln.misc.Utils
 import mods.eln.sixnode.electricalcable.UtilityCableDescriptor
 import net.minecraft.client.Minecraft
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.Container
-import net.minecraft.inventory.InventoryBasic
-import net.minecraft.inventory.Slot
-import net.minecraft.item.ItemStack
-import net.minecraft.world.World
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.inventory.AbstractContainerMenu
+import net.minecraft.world.SimpleContainer
+import net.minecraft.world.inventory.Slot
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.Level
 import kotlin.math.min
 import mods.eln.misc.isNothing
 
@@ -31,20 +31,20 @@ private const val WIRE_SNIPS_PLAYER_INVENTORY_START = 1
 private const val WIRE_SNIPS_PLAYER_INVENTORY_END = WIRE_SNIPS_PLAYER_INVENTORY_START + 36
 
 class WireSnipsDescriptor(name: String) : GenericItemUsingDamageDescriptor(name, "wiresnips") {
-    override fun addInformation(itemStack: ItemStack?, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack?, entityPlayer: Player?, list: MutableList<String>, par4: Boolean) {
         list.add(tr("Right click to cut utility wire in your inventory"))
     }
 
-    override fun onItemRightClick(s: ItemStack, w: World, p: EntityPlayer): ItemStack {
-        if (!w.isRemote) {
+    override fun onItemRightClick(s: ItemStack, w: Level, p: Player): ItemStack {
+        if (!w.isClientSide) {
             p.openGui(Eln.instance, GuiHandler.wireSnipsOpen, w, 0, 0, 0)
         }
         return s
     }
 }
 
-class WireSnipsContainer(private val player: EntityPlayer) : Container() {
-    private val inputInventory = InventoryBasic("wireSnips", false, 1)
+class WireSnipsContainer(private val player: Player) : AbstractContainerMenu() {
+    private val inputInventory = SimpleContainer("wireSnips", false, 1)
 
     init {
         addSlotToContainer(object : SlotWithSkin(inputInventory, WIRE_SNIPS_INPUT_SLOT_INDEX, 8, 32, SlotSkin.medium) {
@@ -64,7 +64,7 @@ class WireSnipsContainer(private val player: EntityPlayer) : Container() {
         }
     }
 
-    fun selectedWireStack(): ItemStack? = inputInventory.getStackInSlot(WIRE_SNIPS_INPUT_SLOT_INDEX)
+    fun selectedWireStack(): ItemStack? = inputInventory.getItem(WIRE_SNIPS_INPUT_SLOT_INDEX)
 
     fun selectedWireDescriptor(): UtilityCableDescriptor? {
         val stack = selectedWireStack() ?: return null
@@ -76,14 +76,14 @@ class WireSnipsContainer(private val player: EntityPlayer) : Container() {
         return WIRE_SNIPS_CUT_ACTION_BASE + WIRE_SNIPS_INPUT_SLOT_INDEX * WIRE_SNIPS_CUT_ACTION_SLOT_SCALE + clampedMeters
     }
 
-    override fun enchantItem(player: EntityPlayer, action: Int): Boolean {
+    override fun enchantItem(player: Player, action: Int): Boolean {
         if (action < WIRE_SNIPS_CUT_ACTION_BASE) return false
         val encoded = action - WIRE_SNIPS_CUT_ACTION_BASE
         val slot = encoded / WIRE_SNIPS_CUT_ACTION_SLOT_SCALE
         val targetLength = (encoded % WIRE_SNIPS_CUT_ACTION_SLOT_SCALE).toDouble()
         if (slot != WIRE_SNIPS_INPUT_SLOT_INDEX || targetLength <= 0.0) return false
 
-        val stack = inputInventory.getStackInSlot(WIRE_SNIPS_INPUT_SLOT_INDEX).takeUnless { it.isEmpty } ?: return false
+        val stack = inputInventory.getItem(WIRE_SNIPS_INPUT_SLOT_INDEX).takeUnless { it.isEmpty } ?: return false
         val descriptor = UtilityCableDescriptor.allDescriptors().firstOrNull { it.checkSameItemStack(stack) } ?: return false
         val available = descriptor.getRemainingLengthMeters(stack)
         if (targetLength >= available) return false
@@ -91,24 +91,24 @@ class WireSnipsContainer(private val player: EntityPlayer) : Container() {
         val cutStack = descriptor.newItemStack(1)
         descriptor.setRemainingLengthMeters(cutStack, targetLength)
         descriptor.setRemainingLengthMeters(stack, available - targetLength)
-        inputInventory.markDirty()
-        player.inventory.markDirty()
+        inputInventory.setChanged()
+        player.inventory.setChanged()
 
         if (!player.inventory.addItemStackToInventory(cutStack)) {
             player.dropItem(cutStack, false)
         }
         if (descriptor.getRemainingLengthMeters(stack) <= 0.0) {
-            inputInventory.setInventorySlotContents(WIRE_SNIPS_INPUT_SLOT_INDEX, ItemStack.EMPTY)
+            inputInventory.setItem(WIRE_SNIPS_INPUT_SLOT_INDEX, ItemStack.EMPTY)
         }
         detectAndSendChanges()
         return true
     }
 
-    override fun canInteractWith(player: EntityPlayer): Boolean = true
+    override fun stillValid(player: Player): Boolean = true
 
-    override fun transferStackInSlot(player: EntityPlayer, slotId: Int): ItemStack? {
+    override fun quickMoveStack(player: Player, slotId: Int): ItemStack? {
         val slot = inventorySlots[slotId] as? Slot ?: return null
-        if (!slot.hasStack) return null
+        if (!slot.hasItem) return null
 
         val stack = slot.stack
         val original = stack.copy()
@@ -120,28 +120,28 @@ class WireSnipsContainer(private val player: EntityPlayer) : Container() {
                 return null
             }
             val inputSlot = inventorySlots[WIRE_SNIPS_INPUT_SLOT_INDEX] as Slot
-            if (inputSlot.hasStack) {
+            if (inputSlot.hasItem) {
                 return null
             }
-            val moved = min(stack.count, inputSlot.slotStackLimit)
+            val moved = min(stack.count, inputSlot.maxStackSize)
             val movedStack = stack.copy()
             movedStack.count = moved
-            inputSlot.putStack(movedStack)
+            inputSlot.set(movedStack)
             stack.count -= moved
         }
 
         if (stack.count <= 0) {
-            slot.putStack(null)
+            slot.set(null)
         } else {
-            slot.onSlotChanged()
+            slot.setChanged()
         }
         return original
     }
 
-    override fun onContainerClosed(player: EntityPlayer) {
-        super.onContainerClosed(player)
-        val stack = inputInventory.getStackInSlot(WIRE_SNIPS_INPUT_SLOT_INDEX).takeUnless { it.isEmpty } ?: return
-        inputInventory.setInventorySlotContents(WIRE_SNIPS_INPUT_SLOT_INDEX, ItemStack.EMPTY)
+    override fun removed(player: Player) {
+        super.removed(player)
+        val stack = inputInventory.getItem(WIRE_SNIPS_INPUT_SLOT_INDEX).takeUnless { it.isEmpty } ?: return
+        inputInventory.setItem(WIRE_SNIPS_INPUT_SLOT_INDEX, ItemStack.EMPTY)
         if (!player.inventory.addItemStackToInventory(stack)) {
             player.dropItem(stack, false)
         }
@@ -156,7 +156,7 @@ class WireSnipsContainer(private val player: EntityPlayer) : Container() {
     }
 }
 
-class WireSnipsGui(player: EntityPlayer) : GuiContainerEln(WireSnipsContainer(player)) {
+class WireSnipsGui(player: Player) : GuiContainerEln(WireSnipsContainer(player)) {
     private val snipsContainer: WireSnipsContainer
         get() = inventorySlots as WireSnipsContainer
 
@@ -180,7 +180,7 @@ class WireSnipsGui(player: EntityPlayer) : GuiContainerEln(WireSnipsContainer(pl
         when (obj) {
             cutButton -> {
                 val length = lengthField.text.toDoubleOrNull() ?: return
-                Minecraft.getMinecraft().playerController.sendEnchantPacket(snipsContainer.windowId, snipsContainer.encodeCutAction(length))
+                Minecraft.getInstance().playerController.sendEnchantPacket(snipsContainer.windowId, snipsContainer.encodeCutAction(length))
             }
         }
     }
@@ -206,7 +206,7 @@ class WireSnipsGui(player: EntityPlayer) : GuiContainerEln(WireSnipsContainer(pl
             drawString(8, 104, tr("Input must be a utility wire"))
             return
         }
-        drawString(8, 104, stack.displayName)
+        drawString(8, 104, $1.hoverName)
         drawString(8, 116, tr("Remaining: %1$ m", Utils.plotValue(descriptor.getRemainingLengthMeters(stack))))
     }
 }

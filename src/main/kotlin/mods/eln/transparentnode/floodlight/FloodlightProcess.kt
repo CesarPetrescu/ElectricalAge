@@ -8,8 +8,8 @@ import mods.eln.misc.HybridNodeDirection
 import mods.eln.misc.HybridNodeDirection.*
 import mods.eln.misc.Utils.getItemObject
 import mods.eln.sim.IProcess
-import net.minecraft.item.ItemStack
-import net.minecraft.util.math.Vec3d
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.phys.Vec3
 import kotlin.math.*
 import mods.eln.misc.xCoord
 import mods.eln.misc.yCoord
@@ -40,8 +40,8 @@ class FloodlightProcess(val element: FloodlightElement) : IProcess {
         val lampLightValues = mutableListOf<Int>()
         val lampLightRanges = mutableListOf<Int>()
 
-        lampStacks.add(element.inventory.getStackInSlot(FloodlightContainer.LAMP_SLOT_1_ID))
-        lampStacks.add(element.inventory.getStackInSlot(FloodlightContainer.LAMP_SLOT_2_ID))
+        lampStacks.add(element.inventory.getItem(FloodlightContainer.LAMP_SLOT_1_ID))
+        lampStacks.add(element.inventory.getItem(FloodlightContainer.LAMP_SLOT_2_ID))
 
         for ((idx, lampStack) in lampStacks.withIndex()) {
             if (!lampStack.isNothing()) {
@@ -74,8 +74,8 @@ class FloodlightProcess(val element: FloodlightElement) : IProcess {
 
                     if (lampLife <= 0.0) {
                         lampLightValues[idx] = BoilerplateLampData.MIN_LIGHT_VALUE
-                        element.inventory.setInventorySlotContents(idx, ItemStack.EMPTY)
-                        element.inventory.markDirty()
+                        element.inventory.setItem(idx, ItemStack.EMPTY)
+                        element.inventory.setChanged()
                     }
                 }
             } else {
@@ -105,7 +105,7 @@ class FloodlightProcess(val element: FloodlightElement) : IProcess {
      * The logic and math are very complex, and it is easy to break everything if you don't know what you are doing!
      */
     private fun placeSpots(lightValue: Int, lightRange: Int) {
-        val rotationVectors = mutableListOf<Pair<Vec3d, Double>>()
+        val rotationVectors = mutableListOf<Pair<Vec3, Double>>()
         val fractionTable = mutableListOf<Double>()
 
         val rotationAxis = element.rotationAxis
@@ -149,7 +149,7 @@ class FloodlightProcess(val element: FloodlightElement) : IProcess {
             val origin = element.node!!.coordinate.toVec3()
             val lbCoordinate = Coordinate(origin, element.node!!.coordinate.dimension)
 
-            // Vec3d is immutable on 1.12, and this walks a ray one step per block, so the
+            // Vec3 is immutable on 1.12, and this walks a ray one step per block, so the
             // position is carried in three doubles rather than reallocating a vector per step.
             var lightX = origin.x
             var lightY = origin.y
@@ -220,19 +220,19 @@ class FloodlightProcess(val element: FloodlightElement) : IProcess {
         return Pair(toDegrees(hAdj), toDegrees(kAdj))
     }
 
-    private fun getRawRotationVector(horzAngle: Double, vertAngle: Double): Vec3d {
+    private fun getRawRotationVector(horzAngle: Double, vertAngle: Double): Vec3 {
         val horzSin = sin(toRadians(horzAngle))
         val horzCos = cos(toRadians(horzAngle))
 
         val vertSin = sin(toRadians(vertAngle))
         val vertCos = cos(toRadians(vertAngle))
 
-        return Vec3d(vertCos * horzSin, vertSin, vertCos * horzCos)
+        return Vec3(vertCos * horzSin, vertSin, vertCos * horzCos)
     }
 
-    private fun createRotationVector(horzAngle: Double, vertAngle: Double, axis: HybridNodeDirection, facing: HybridNodeDirection): Vec3d {
+    private fun createRotationVector(horzAngle: Double, vertAngle: Double, axis: HybridNodeDirection, facing: HybridNodeDirection): Vec3 {
         val oldV = getRawRotationVector(horzAngle, vertAngle)
-        // Vec3d is immutable on 1.12: the rotated components are accumulated and the vector is
+        // Vec3 is immutable on 1.12: the rotated components are accumulated and the vector is
         // built once, at the end.
         var nx = 0.0
         var ny = 0.0
@@ -385,7 +385,7 @@ class FloodlightProcess(val element: FloodlightElement) : IProcess {
             }
         }
 
-        return Vec3d(nx, ny, nz)
+        return Vec3(nx, ny, nz)
     }
 
 }

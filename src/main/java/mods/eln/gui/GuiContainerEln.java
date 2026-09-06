@@ -4,25 +4,25 @@ import mods.eln.gui.GuiTextFieldEln.GuiTextFieldElnObserver;
 import mods.eln.gui.IGuiObject.IGuiObjectObserver;
 import mods.eln.gui.ISlotSkin.SlotSkin;
 import mods.eln.misc.UtilsClient;
-import net.minecraft.client.gui.inventory.GuiContainer;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.Slot;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.resources.ResourceLocation;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
-public abstract class GuiContainerEln extends GuiContainer implements IGuiObjectObserver, GuiTextFieldElnObserver {
+public abstract class GuiContainerEln extends AbstractContainerScreen implements IGuiObjectObserver, GuiTextFieldElnObserver {
 
     public GuiHelperContainer helper;
 
     protected abstract GuiHelperContainer newHelper();
 
-    static final ResourceLocation slotSkin = new ResourceLocation("textures/gui/container/furnace.png");
+    static final ResourceLocation slotSkin = ResourceLocation.parse($1);
 
-    public GuiContainerEln(Container par1Container) {
+    public GuiContainerEln(AbstractContainerMenu par1Container) {
         super(par1Container);
     }
 
@@ -43,13 +43,13 @@ public abstract class GuiContainerEln extends GuiContainer implements IGuiObject
     }
 
     void apply(GuiHelperContainer helper) {
-        for (int idx = inventorySlots.inventorySlots.size() - 36; idx < inventorySlots.inventorySlots.size(); idx++) {
-            Slot s = (Slot) inventorySlots.inventorySlots.get(idx);
-            s.xPos = (idx - (inventorySlots.inventorySlots.size() - 36)) % 9 * 18;
-            s.yPos = (idx - (inventorySlots.inventorySlots.size() - 36)) / 9 * 18;
-            if (idx >= inventorySlots.inventorySlots.size() - 9) {
+        for (int idx = inventorySlots.slots.size() - 36; idx < inventorySlots.slots.size(); idx++) {
+            Slot s = (Slot) inventorySlots.slots.get(idx);
+            s.xPos = (idx - (inventorySlots.slots.size() - 36)) % 9 * 18;
+            s.yPos = (idx - (inventorySlots.slots.size() - 36)) / 9 * 18;
+            if (idx >= inventorySlots.slots.size() - 9) {
                 s.yPos = 58;
-                s.xPos = (idx - (inventorySlots.inventorySlots.size() - 9)) * 18;
+                s.xPos = (idx - (inventorySlots.slots.size() - 9)) * 18;
             }
             s.xPos += helper.xInv;
             s.yPos += helper.yInv;
@@ -150,7 +150,7 @@ public abstract class GuiContainerEln extends GuiContainer implements IGuiObject
         UtilsClient.bindTexture(slotSkin);
         GL11.glColor4f(1f, 1f, 1f, 1f);
 
-        for (Object o : inventorySlots.inventorySlots) {
+        for (Object o : inventorySlots.slots) {
             Slot slot = (Slot) o;
             SlotSkin skin = SlotSkin.none;
 
@@ -175,9 +175,9 @@ public abstract class GuiContainerEln extends GuiContainer implements IGuiObject
         ArrayList<String> list = new ArrayList<String>();
         GL11.glColor4f(1f, 1f, 1f, 1f);
 
-        for (Object o : inventorySlots.inventorySlots) {
+        for (Object o : inventorySlots.slots) {
             Slot slot = (Slot) o;
-            if (slot.getHasStack() == false
+            if (slot.hasItem() == false
                 && mx - guiLeft >= slot.xPos && my - guiTop >= slot.yPos
                 && mx - guiLeft < slot.xPos + 17 && my - guiTop < slot.yPos + 17) {
                 list.clear();
@@ -188,7 +188,7 @@ public abstract class GuiContainerEln extends GuiContainer implements IGuiObject
                     int x, y;
                     int strWidth = 0;
                     for (String str : list) {
-                        int size = fontRenderer.getStringWidth(str);
+                        int size = fontRenderer.width(str);
                         if (size > strWidth) strWidth = size;
                     }
 

@@ -18,10 +18,10 @@ import mods.eln.sixnode.wirelesssignal.aggregator.BiggerAggregator;
 import mods.eln.sixnode.wirelesssignal.aggregator.IWirelessSignalAggregator;
 import mods.eln.sixnode.wirelesssignal.aggregator.SmallerAggregator;
 import mods.eln.sixnode.wirelesssignal.aggregator.ToogleAggregator;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
-import net.minecraft.nbt.NBTTagString;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.DataInputStream;
@@ -116,20 +116,20 @@ public class WirelessSignalRxElement extends SixNodeElement implements IConfigur
     }
 
     @Override
-    public void writeToNBT(NBTTagCompound nbt) {
+    public void writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setString("channel", channel);
-        nbt.setBoolean("connection", connection);
-        nbt.setInteger("selectedAggregator", selectedAggregator);
+        nbt.putString("channel", channel);
+        nbt.putBoolean("connection", connection);
+        nbt.putInt("selectedAggregator", selectedAggregator);
         toogleAggregator.writeToNBT(nbt, "toogleAggregator");
     }
 
     @Override
-    public void readFromNBT(@NotNull NBTTagCompound nbt) {
+    public void readFromNBT(@NotNull CompoundTag nbt) {
         super.readFromNBT(nbt);
         channel = nbt.getString("channel");
         connection = nbt.getBoolean("connection");
-        selectedAggregator = nbt.getInteger("selectedAggregator");
+        selectedAggregator = nbt.getInt("selectedAggregator");
         toogleAggregator.readFromNBT(nbt, "toogleAggregator");
     }
 
@@ -184,9 +184,9 @@ public class WirelessSignalRxElement extends SixNodeElement implements IConfigur
     }
 
     @Override
-    public void readConfigTool(NBTTagCompound compound, EntityPlayer invoker) {
-        if(compound.hasKey("wirelessChannels")) {
-            String newChannel = compound.getTagList("wirelessChannels", 8).getStringTagAt(0);
+    public void readConfigTool(CompoundTag compound, Player invoker) {
+        if(compound.contains("wirelessChannels")) {
+            String newChannel = compound.getList("wirelessChannels", 8).getStringTagAt(0);
             if(newChannel != null && newChannel != "") {
                 channel = newChannel;
                 needPublish();
@@ -195,10 +195,10 @@ public class WirelessSignalRxElement extends SixNodeElement implements IConfigur
     }
 
     @Override
-    public void writeConfigTool(NBTTagCompound compound, EntityPlayer invoker) {
-        NBTTagList list = new NBTTagList();
-        list.appendTag(new NBTTagString(channel));
-        compound.setTag("wirelessChannels", list);
+    public void writeConfigTool(CompoundTag compound, Player invoker) {
+        ListTag list = new ListTag();
+        list.appendTag(new StringTag(channel));
+        compound.put("wirelessChannels", list);
     }
 
     //	HashMap<String, ArrayList<IWirelessSignalTx>> wirelessTxInRange = new HashMap<String, ArrayList<IWirelessSignalTx>>();

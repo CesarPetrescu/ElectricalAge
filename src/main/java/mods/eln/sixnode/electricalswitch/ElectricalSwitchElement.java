@@ -21,9 +21,9 @@ import mods.eln.sim.process.destruct.ResistorCurrentWatchdog;
 import mods.eln.sim.process.destruct.VoltageStateWatchDog;
 import mods.eln.sim.process.destruct.WorldExplosion;
 import mods.eln.sound.SoundCommand;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -78,7 +78,7 @@ public class ElectricalSwitchElement extends SixNodeElement {
     }
 
     @Override
-    public void readFromNBT(@NotNull NBTTagCompound nbt) {
+    public void readFromNBT(@NotNull CompoundTag nbt) {
         super.readFromNBT(nbt);
         byte value = nbt.getByte("front");
         front = LRDU.fromInt((value >> 0) & 0x3);
@@ -86,10 +86,10 @@ public class ElectricalSwitchElement extends SixNodeElement {
     }
 
     @Override
-    public void writeToNBT(NBTTagCompound nbt) {
+    public void writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setByte("front", (byte) (front.toInt() << 0));
-        nbt.setBoolean("switchState", switchState);
+        nbt.putByte("front", (byte) (front.toInt() << 0));
+        nbt.putBoolean("switchState", switchState);
     }
 
     @Override
@@ -179,17 +179,17 @@ public class ElectricalSwitchElement extends SixNodeElement {
     }
 
     @Override
-    public boolean onBlockActivated(EntityPlayer entityPlayer, Direction side, float vx, float vy, float vz) {
+    public boolean onBlockActivated(Player entityPlayer, Direction side, float vx, float vy, float vz) {
         if (onBlockActivatedRotate(entityPlayer)) return true;
-        ItemStack currentItemStack = entityPlayer.getHeldItemMainhand();
+        ItemStack currentItemStack = entityPlayer.getMainHandItem();
 
-        if (Eln.multiMeterElement.checkSameItemStack(entityPlayer.getHeldItemMainhand())) {
+        if (Eln.multiMeterElement.checkSameItemStack(entityPlayer.getMainHandItem())) {
             return false;
         }
-        if (Eln.thermometerElement.checkSameItemStack(entityPlayer.getHeldItemMainhand())) {
+        if (Eln.thermometerElement.checkSameItemStack(entityPlayer.getMainHandItem())) {
             return false;
         }
-        if (Eln.allMeterElement.checkSameItemStack(entityPlayer.getHeldItemMainhand())) {
+        if (Eln.allMeterElement.checkSameItemStack(entityPlayer.getMainHandItem())) {
             return false;
         } else {
             setSwitchState(!switchState);

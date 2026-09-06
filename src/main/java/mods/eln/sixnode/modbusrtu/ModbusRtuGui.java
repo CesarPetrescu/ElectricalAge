@@ -3,7 +3,7 @@ package mods.eln.sixnode.modbusrtu;
 import mods.eln.gui.*;
 import mods.eln.gui.IGuiObject.IGuiObjectObserver;
 import mods.eln.wiki.GuiVerticalExtender;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.world.entity.player.Player;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -29,7 +29,7 @@ public class ModbusRtuGui extends GuiScreenEln {
 
     GuiHelper helper;
 
-    public ModbusRtuGui(EntityPlayer player, ModbusRtuRender render) {
+    public ModbusRtuGui(Player player, ModbusRtuRender render) {
         this.render = render;
     }
 

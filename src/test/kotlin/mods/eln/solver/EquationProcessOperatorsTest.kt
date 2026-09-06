@@ -1,6 +1,6 @@
 package mods.eln.solver
 
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.nbt.CompoundTag
 import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -22,7 +22,7 @@ class EquationProcessOperatorsTest {
         ramp.process(1.0)
         assertEquals(0.0, ramp.getValue())
 
-        val nbt = NBTTagCompound()
+        val nbt = CompoundTag()
         ramp.writeToNBT(nbt, "t")
         val other = Equation.Ramp()
         other.setOperator(arrayOf(Constant(2.0)))
@@ -60,7 +60,7 @@ class EquationProcessOperatorsTest {
         integrator.process(1.0)
         assertEquals(0.5, integrator.getValue())
 
-        val nbt = NBTTagCompound()
+        val nbt = CompoundTag()
         integrator.writeToNBT(nbt, "i")
         val other = Equation.IntegratorMinMax()
         other.setOperator(arrayOf(probe, min, max))
@@ -79,7 +79,7 @@ class EquationProcessOperatorsTest {
         derivator.process(2.0)
         assertEquals(1.0, derivator.getValue())
 
-        val nbt = NBTTagCompound()
+        val nbt = CompoundTag()
         derivator.writeToNBT(nbt, "d")
         val other = Equation.Derivator()
         other.setOperator(arrayOf(probe))
@@ -98,7 +98,7 @@ class EquationProcessOperatorsTest {
         assertTrue(rc.getValue() > 0.0)
         assertTrue(rc.getValue() < 1.0)
 
-        val nbt = NBTTagCompound()
+        val nbt = CompoundTag()
         rc.writeToNBT(nbt, "rc")
         val other = Equation.RC()
         other.setOperator(arrayOf(tao, input))
@@ -118,7 +118,7 @@ class EquationProcessOperatorsTest {
         reset.current = 1.0
         assertEquals(0.0, rs.getValue())
 
-        val nbt = NBTTagCompound()
+        val nbt = CompoundTag()
         rs.writeToNBT(nbt, "rs")
         val other = Equation.Rs()
         other.setOperator(arrayOf(reset, set))
@@ -141,7 +141,7 @@ class EquationProcessOperatorsTest {
         assertTrue(value >= 0.0)
         assertTrue(pid.iStack <= 1.0)
 
-        val nbt = NBTTagCompound()
+        val nbt = CompoundTag()
         pid.writeToNBT(nbt, "pid")
         val other = Equation.Pid()
         other.setOperator(arrayOf(target, hit, p, i, d))

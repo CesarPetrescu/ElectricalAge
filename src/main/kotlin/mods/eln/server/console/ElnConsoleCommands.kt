@@ -28,7 +28,7 @@ import mods.eln.server.console.ElnConsoleCommands.Companion.boolToStr
 import mods.eln.server.console.ElnConsoleCommands.Companion.cprint
 import mods.eln.server.console.ElnConsoleCommands.Companion.getArgBool
 import net.minecraft.command.ICommandSender
-import net.minecraft.entity.player.EntityPlayerMP
+import net.minecraft.server.level.ServerPlayer
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileWriter
@@ -57,7 +57,7 @@ private data class ZoneBounds(
     val maxZ: Int
 )
 
-private fun parseZoneBounds(ics: EntityPlayerMP, args: List<String>, commandName: String): ZoneBounds? {
+private fun parseZoneBounds(ics: ServerPlayer, args: List<String>, commandName: String): ZoneBounds? {
     if (args.size == 1) {
         val radius = args[0].toIntOrNull()
         if (radius == null || radius < 0) {
@@ -353,7 +353,7 @@ class ElnZoneDumpCommand : IConsoleCommand {
     override val name = "zonedump"
 
     override fun runCommand(ics: ICommandSender, args: List<String>) {
-        if (ics !is EntityPlayerMP) {
+        if (ics !is ServerPlayer) {
             cprint(ics, "${FC.BRIGHT_RED}This command can only be run by a player.", indent = 1)
             return
         }
@@ -365,8 +365,8 @@ class ElnZoneDumpCommand : IConsoleCommand {
         val minZ = bounds.minZ
         val maxZ = bounds.maxZ
 
-        val world = ics.world
-        val dim = world.provider.dimension
+        val world = ics.level
+        val dim = world.dimension()
         val rangeDescription = "($minX,$minY,$minZ) -> ($maxX,$maxY,$maxZ) in dim $dim"
 
         val nodeManager = NodeManager.instance
@@ -437,7 +437,7 @@ class ElnZoneDumpCommand : IConsoleCommand {
                 for (z in minZ..maxZ) {
                     val block = world.getBlock(x, y, z)
                     val meta = world.getBlockMetadata(x, y, z)
-                    val tile = world.getTileEntity(x, y, z)
+                    val tile = world.getBlockEntity(x, y, z)
                     builder.append("  ($x,$y,$z): ${block.translationKey} meta=$meta tile=${tile?.javaClass?.simpleName}\n")
                     val coord = Coordinate(x, y, z, dim)
                     if ((block == Eln.sixNodeBlock || block == Eln.transparentNodeBlock) && !coordToNode.containsKey(coord)) {
@@ -596,7 +596,7 @@ class ElnZoneCleanCommand : IConsoleCommand {
     override val name = "zoneclean"
 
     override fun runCommand(ics: ICommandSender, args: List<String>) {
-        if (ics !is EntityPlayerMP) {
+        if (ics !is ServerPlayer) {
             cprint(ics, "${FC.BRIGHT_RED}This command can only be run by a player.", indent = 1)
             return
         }
@@ -608,8 +608,8 @@ class ElnZoneCleanCommand : IConsoleCommand {
         val minZ = bounds.minZ
         val maxZ = bounds.maxZ
 
-        val world = ics.world
-        val dim = world.provider.dimension
+        val world = ics.level
+        val dim = world.dimension()
         val nodeManager = NodeManager.instance
         val nodes = nodeManager?.nodeList ?: emptyList()
         val nodesToProcess = nodes.filter {
@@ -686,7 +686,7 @@ class ElnZoneRemoveCommand : IConsoleCommand {
     override val name = "zoneremove"
 
     override fun runCommand(ics: ICommandSender, args: List<String>) {
-        if (ics !is EntityPlayerMP) {
+        if (ics !is ServerPlayer) {
             cprint(ics, "${FC.BRIGHT_RED}This command can only be run by a player.", indent = 1)
             return
         }
@@ -698,8 +698,8 @@ class ElnZoneRemoveCommand : IConsoleCommand {
         val minZ = bounds.minZ
         val maxZ = bounds.maxZ
 
-        val world = ics.world
-        val dim = world.provider.dimension
+        val world = ics.level
+        val dim = world.dimension()
         val nodeManager = NodeManager.instance
         if (nodeManager == null) {
             cprint(ics, "${FC.BRIGHT_RED}Node manager unavailable, cannot run zoneremove.", indent = 1)
@@ -791,12 +791,12 @@ class ElnZoneDestroyCommand : IConsoleCommand {
     override val name = "zonedestroy"
 
     override fun runCommand(ics: ICommandSender, args: List<String>) {
-        if (ics !is EntityPlayerMP) {
+        if (ics !is ServerPlayer) {
             cprint(ics, "${FC.BRIGHT_RED}This command can only be run by a player.", indent = 1)
             return
         }
         val bounds = parseZoneBounds(ics, args, name) ?: return
-        val world = ics.world
+        val world = ics.level
         val nodeManager = NodeManager.instance
         if (nodeManager == null) {
             cprint(ics, "${FC.BRIGHT_RED}Node manager unavailable, cannot run zonedestroy.", indent = 1)
@@ -833,7 +833,7 @@ class ElnStopShaftCommand : IConsoleCommand {
     override val name = "stop-shaft"
 
     override fun runCommand(ics: ICommandSender, args: List<String>) {
-        if (ics !is EntityPlayerMP) {
+        if (ics !is ServerPlayer) {
             cprint(ics, "${FC.BRIGHT_RED}This command can only be run by a player.", indent = 1)
             return
         }
@@ -850,8 +850,8 @@ class ElnStopShaftCommand : IConsoleCommand {
             return
         }
 
-        val world = ics.world
-        val dim = world.provider.dimension
+        val world = ics.level
+        val dim = world.dimension()
         var bestDistanceSq = Double.MAX_VALUE
         var bestShaftElement: ShaftElement? = null
 
@@ -908,7 +908,7 @@ class ElnResetAmbientTempsCommand : IConsoleCommand {
     override val name = "resetAmbientTemps"
 
     override fun runCommand(ics: ICommandSender, args: List<String>) {
-        if (ics !is EntityPlayerMP) {
+        if (ics !is ServerPlayer) {
             cprint(ics, "${FC.BRIGHT_RED}This command can only be run by a player.", indent = 1)
             return
         }
@@ -930,7 +930,7 @@ class ElnResetAmbientTempsCommand : IConsoleCommand {
         }
 
         val rangeSq = range.toDouble() * range.toDouble()
-        val dim = ics.world.provider.dimension
+        val dim = ics.level.dimension()
         var devicesTouched = 0
         var thermalLoadsReset = 0
         var minAmbientC = Double.POSITIVE_INFINITY

@@ -20,11 +20,11 @@ import mods.eln.sim.mna.component.Resistor;
 import mods.eln.sim.nbt.NbtElectricalLoad;
 import mods.eln.sim.process.destruct.VoltageStateWatchDog;
 import mods.eln.sim.process.destruct.WorldExplosion;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -64,7 +64,7 @@ public class BatteryChargerElement extends SixNodeElement {
     byte charged, presence;
 
     @Override
-    public IInventory getInventory() {
+    public Container getInventory() {
         if (inventory != null)
             return inventory.getInventory();
         else
@@ -73,7 +73,7 @@ public class BatteryChargerElement extends SixNodeElement {
 
     @Nullable
     @Override
-    public Container newContainer(@NotNull Direction side, @NotNull EntityPlayer player) {
+    public AbstractContainerMenu newContainer(@NotNull Direction side, @NotNull Player player) {
         return new BatteryChargerContainer(player, inventory.getInventory());
     }
 
@@ -143,23 +143,23 @@ public class BatteryChargerElement extends SixNodeElement {
     }
 
     @Override
-    public boolean onBlockActivated(EntityPlayer entityPlayer, Direction side, float vx, float vy, float vz) {
+    public boolean onBlockActivated(Player entityPlayer, Direction side, float vx, float vy, float vz) {
         if (onBlockActivatedRotate(entityPlayer)) {
             return true;
         } else {
-            return inventory.take(entityPlayer.getHeldItemMainhand(), this, false, true);
+            return inventory.take(entityPlayer.getMainHandItem(), this, false, true);
         }
     }
 
     @Override
-    public void writeToNBT(NBTTagCompound nbt) {
+    public void writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setBoolean("powerOn", powerOn);
-        nbt.setDouble("energyCounter", slowProcess.energyCounter);
+        nbt.putBoolean("powerOn", powerOn);
+        nbt.putDouble("energyCounter", slowProcess.energyCounter);
     }
 
     @Override
-    public void readFromNBT(@NotNull NBTTagCompound nbt) {
+    public void readFromNBT(@NotNull CompoundTag nbt) {
         super.readFromNBT(nbt);
         powerOn = nbt.getBoolean("powerOn");
         slowProcess.energyCounter = nbt.getDouble("energyCounter");
@@ -192,10 +192,10 @@ public class BatteryChargerElement extends SixNodeElement {
         try {
             stream.writeBoolean(powerOn);
             stream.writeFloat((float) powerLoad.getVoltage());
-            Utils.serialiseItemStack(stream, getInventory().getStackInSlot(0));
-            Utils.serialiseItemStack(stream, getInventory().getStackInSlot(1));
-            Utils.serialiseItemStack(stream, getInventory().getStackInSlot(2));
-            Utils.serialiseItemStack(stream, getInventory().getStackInSlot(3));
+            Utils.serialiseItemStack(stream, getInventory().getItem(0));
+            Utils.serialiseItemStack(stream, getInventory().getItem(1));
+            Utils.serialiseItemStack(stream, getInventory().getItem(2));
+            Utils.serialiseItemStack(stream, getInventory().getItem(3));
 
             stream.writeByte(charged);
             stream.writeByte(presence);
@@ -221,7 +221,7 @@ public class BatteryChargerElement extends SixNodeElement {
             if (!powerOn) {
                 descriptor.setRp(powerResistor, false);
             } else {
-                ItemStack booster = (getInventory().getStackInSlot(BatteryChargerContainer.boosterSlotId));
+                ItemStack booster = (getInventory().getItem(BatteryChargerContainer.boosterSlotId));
                 double boost = 1.0;
                 double eff = 1.0;
                 if (booster != null) {
@@ -232,7 +232,7 @@ public class BatteryChargerElement extends SixNodeElement {
                 energyCounter += powerResistor.getPower() * time * eff;
 
                 for (int idx = 0; idx < 4; idx++) {
-                    ItemStack stack = getInventory().getStackInSlot(idx);
+                    ItemStack stack = getInventory().getItem(idx);
                     Object o = Utils.getItemObject(stack);
                     if (o instanceof IItemEnergyBattery) {
                         IItemEnergyBattery b = (IItemEnergyBattery) o;
@@ -251,7 +251,7 @@ public class BatteryChargerElement extends SixNodeElement {
                 }
             }
             for (int idx = 0; idx < 4; idx++) {
-                ItemStack stack = getInventory().getStackInSlot(idx);
+                ItemStack stack = getInventory().getItem(idx);
                 Object o = Utils.getItemObject(stack);
                 if (o instanceof IItemEnergyBattery) {
                     IItemEnergyBattery b = (IItemEnergyBattery) o;

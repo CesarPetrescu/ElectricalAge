@@ -24,11 +24,11 @@ import mods.eln.sixnode.currentcable.CurrentCableDescriptor;
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor;
 import mods.eln.sixnode.electricaldatalogger.DataLogs;
 import mods.eln.sixnode.genericcable.GenericCableDescriptor;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -106,7 +106,7 @@ public class ElectricalSensorElement extends SixNodeElement implements IConfigur
         }
     }
 
-    public IInventory getInventory() {
+    public Container getInventory() {
         if (inventory != null)
             return inventory.getInventory();
         else
@@ -118,7 +118,7 @@ public class ElectricalSensorElement extends SixNodeElement implements IConfigur
     }
 
     @Override
-    public void readFromNBT(@NotNull NBTTagCompound nbt) {
+    public void readFromNBT(@NotNull CompoundTag nbt) {
         super.readFromNBT(nbt);
         byte value = nbt.getByte("front");
         front = LRDU.fromInt((value >> 0) & 0x3);
@@ -129,13 +129,13 @@ public class ElectricalSensorElement extends SixNodeElement implements IConfigur
     }
 
     @Override
-    public void writeToNBT(NBTTagCompound nbt) {
+    public void writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setByte("front", (byte) (front.toInt() << 0));
-        nbt.setByte("typeOfSensor", (byte) typeOfSensor);
-        nbt.setFloat("lowValue", lowValue);
-        nbt.setFloat("highValue", highValue);
-        nbt.setByte("dirType", dirType);
+        nbt.putByte("front", (byte) (front.toInt() << 0));
+        nbt.putByte("typeOfSensor", (byte) typeOfSensor);
+        nbt.putFloat("lowValue", lowValue);
+        nbt.putFloat("highValue", highValue);
+        nbt.putByte("dirType", dirType);
     }
 
     @Override
@@ -159,7 +159,7 @@ public class ElectricalSensorElement extends SixNodeElement implements IConfigur
 
     @Override
     public int getConnectionMask(LRDU lrdu) {
-        boolean cable = getInventory().getStackInSlot(ElectricalSensorContainer.cableSlotId) != null;
+        boolean cable = getInventory().getItem(ElectricalSensorContainer.cableSlotId) != null;
         if (!descriptor.voltageOnly) {
             if (front.left() == lrdu && cable) return NodeBase.maskElectricalAll;
             if (front.right() == lrdu && cable) return NodeBase.maskElectricalAll;
@@ -216,7 +216,7 @@ public class ElectricalSensorElement extends SixNodeElement implements IConfigur
             stream.writeFloat(lowValue);
             stream.writeFloat(highValue);
             stream.writeByte(dirType);
-            Utils.serialiseItemStack(stream, getInventory().getStackInSlot(ElectricalSensorContainer.cableSlotId));
+            Utils.serialiseItemStack(stream, getInventory().getItem(ElectricalSensorContainer.cableSlotId));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -239,7 +239,7 @@ public class ElectricalSensorElement extends SixNodeElement implements IConfigur
     public void computeElectricalLoad() {
         //if (!descriptor.voltageOnly)
         {
-            ItemStack cable = getInventory().getStackInSlot(ElectricalSensorContainer.cableSlotId);
+            ItemStack cable = getInventory().getItem(ElectricalSensorContainer.cableSlotId);
             SixNodeDescriptor descriptor = Eln.sixNodeItem.getDescriptor(cable);
             GenericCableDescriptor cableDescriptor = descriptor instanceof GenericCableDescriptor ?
                 (GenericCableDescriptor) descriptor : null;
@@ -257,9 +257,9 @@ public class ElectricalSensorElement extends SixNodeElement implements IConfigur
     }
 
     @Override
-    public boolean onBlockActivated(EntityPlayer entityPlayer, Direction side, float vx, float vy, float vz) {
+    public boolean onBlockActivated(Player entityPlayer, Direction side, float vx, float vy, float vz) {
         if (onBlockActivatedRotate(entityPlayer)) return true;
-        return inventory.take(entityPlayer.getHeldItemMainhand(), this, false, true);
+        return inventory.take(entityPlayer.getMainHandItem(), this, false, true);
     }
 
     @Override
@@ -297,18 +297,18 @@ public class ElectricalSensorElement extends SixNodeElement implements IConfigur
 
     @Nullable
     @Override
-    public Container newContainer(@NotNull Direction side, @NotNull EntityPlayer player) {
+    public AbstractContainerMenu newContainer(@NotNull Direction side, @NotNull Player player) {
         return new ElectricalSensorContainer(player, inventory.getInventory(), descriptor);
     }
 
     @Override
-    public void readConfigTool(NBTTagCompound compound, EntityPlayer invoker) {
-        if(compound.hasKey("min"))
+    public void readConfigTool(CompoundTag compound, Player invoker) {
+        if(compound.contains("min"))
             lowValue = compound.getFloat("min");
-        if(compound.hasKey("max"))
+        if(compound.contains("max"))
             highValue = compound.getFloat("max");
         if (lowValue == highValue) highValue += 0.0001;
-        if(compound.hasKey("unit")) {
+        if(compound.contains("unit")) {
             switch (compound.getByte("unit")) {
                 case DataLogs.powerType:
                     typeOfSensor = powerType;
@@ -322,28 +322,28 @@ public class ElectricalSensorElement extends SixNodeElement implements IConfigur
             }
         }
         typeOfSensor = sanitizeSensorType(typeOfSensor);
-        if(compound.hasKey("dir") && !descriptor.voltageOnly)
+        if(compound.contains("dir") && !descriptor.voltageOnly)
             dirType = compound.getByte("dir");
         ConfigCopyToolDescriptor.readCableType(compound, getInventory(), 0, invoker);
         reconnect();
     }
 
     @Override
-    public void writeConfigTool(NBTTagCompound compound, EntityPlayer invoker) {
-        compound.setFloat("min", lowValue);
-        compound.setFloat("max", highValue);
+    public void writeConfigTool(CompoundTag compound, Player invoker) {
+        compound.putFloat("min", lowValue);
+        compound.putFloat("max", highValue);
         switch(typeOfSensor) {
             case powerType:
-                compound.setByte("unit", DataLogs.powerType);
+                compound.putByte("unit", DataLogs.powerType);
                 break;
             case currantType:
-                compound.setByte("unit", DataLogs.currentType);
+                compound.putByte("unit", DataLogs.currentType);
                 break;
             case voltageType:
-                compound.setByte("unit", DataLogs.voltageType);
+                compound.putByte("unit", DataLogs.voltageType);
                 break;
         }
-        compound.setByte("dir", dirType);
-        ConfigCopyToolDescriptor.writeCableType(compound, getInventory().getStackInSlot(0));
+        compound.putByte("dir", dirType);
+        ConfigCopyToolDescriptor.writeCableType(compound, getInventory().getItem(0));
     }
 }

@@ -5,7 +5,7 @@ import mods.eln.misc.*;
 import mods.eln.misc.Obj3D.Obj3DPart;
 import mods.eln.sim.ThermalLoadInitializer;
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor;
-import net.minecraft.entity.item.EntityItem;
+import net.minecraft.world.entity.item.ItemEntity;
 import org.lwjgl.opengl.GL11;
 
 public class MaceratorDescriptor extends ElectricalMachineDescriptor {
@@ -36,7 +36,7 @@ public class MaceratorDescriptor extends ElectricalMachineDescriptor {
     }
 
     @Override
-    void draw(ElectricalMachineRender render, Object handleO, EntityItem inEntity, EntityItem outEntity,
+    void draw(ElectricalMachineRender render, Object handleO, ItemEntity inEntity, ItemEntity outEntity,
               float powerFactor, float processState) {
         MaceratorDescriptorHandle handle = (MaceratorDescriptorHandle) handleO;
 
@@ -51,8 +51,8 @@ public class MaceratorDescriptor extends ElectricalMachineDescriptor {
     }
 
     @Override
-    void refresh(float deltaT, ElectricalMachineRender render, Object handleO, EntityItem inEntity,
-                 EntityItem outEntity, float powerFactor, float processState) {
+    void refresh(float deltaT, ElectricalMachineRender render, Object handleO, ItemEntity inEntity,
+                 ItemEntity outEntity, float powerFactor, float processState) {
         MaceratorDescriptorHandle handle = (MaceratorDescriptorHandle) handleO;
 
         handle.interpolator.setTarget(powerFactor);

@@ -5,7 +5,7 @@ import mods.eln.misc.Obj3D
 import mods.eln.node.transparent.TransparentNodeDescriptor
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor
 import mods.eln.sound.SoundCommand
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import mods.eln.client.itemrender.IItemRenderer
 
 class GridTransformerDescriptor(name: String, obj: Obj3D, cableTexture: String, cableDescriptor: ElectricalCableDescriptor) : GridDescriptor(name, obj, GridTransformerElement::class.java, GridTransformerRender::class.java, cableTexture, cableDescriptor, 12) {

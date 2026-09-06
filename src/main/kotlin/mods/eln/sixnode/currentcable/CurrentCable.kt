@@ -34,9 +34,9 @@ import mods.eln.sim.process.destruct.WorldExplosion
 import mods.eln.sim.process.heater.ElectricalLoadHeatThermalLoad
 import mods.eln.sixnode.genericcable.GenericCableDescriptor
 import net.minecraft.client.Minecraft
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
 import org.lwjgl.opengl.GL11
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -103,7 +103,7 @@ class CurrentCableDescriptor(
         thermalLoad.Rp = thermalRp
     }
 
-    override fun addInformation(itemStack: ItemStack, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack, entityPlayer: Player?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         list.add(tr("Deprecated legacy cable. Prefer AWG/mm utility cables for new builds."))
         list.add(tr("Nominal Ratings:"))
@@ -163,16 +163,16 @@ open class CurrentCableElement(sixNode: SixNode?, side: Direction?, descriptor: 
             .setDestroys(WorldExplosion(this).cableExplosion())
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
         val b = nbt.getByte("color")
         color = b.toInt() and 0xF
         colorCare = b.toInt() shr 4 and 1
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound) {
+    override fun writeToNBT(nbt: CompoundTag) {
         super.writeToNBT(nbt)
-        nbt.setByte("color", (color + (colorCare shl 4)).toByte())
+        nbt.putByte("color", (color + (colorCare shl 4)).toByte())
     }
 
     override fun getElectricalLoad(lrdu: LRDU, mask: Int): ElectricalLoad? {
@@ -227,13 +227,13 @@ open class CurrentCableElement(sixNode: SixNode?, side: Direction?, descriptor: 
     }
 
     override fun onBlockActivated(
-        entityPlayer: EntityPlayer,
+        entityPlayer: Player,
         side: Direction,
         vx: Float,
         vy: Float,
         vz: Float
     ): Boolean {
-        val currentItemStack = entityPlayer.heldItemMainhand
+        val currentItemStack = entityPlayer.mainHandItem
         if (isPlayerUsingWrench(entityPlayer)) {
             colorCare = colorCare xor 1
             sendMessage(entityPlayer, "Wire color care $colorCare")
@@ -268,12 +268,12 @@ class CurrentCableRender(tileEntity: SixNodeEntity?, side: Direction?, descripto
     }
 
     override fun draw() {
-        Minecraft.getMinecraft().profiler.startSection("ECable")
+        Minecraft.getInstance().profiler.startSection("ECable")
         setGlColorFromDye(color, 1.0f)
         bindTexture(descriptor.render.cableTexture)
         glListCall()
         GL11.glColor3f(1f, 1f, 1f)
-        Minecraft.getMinecraft().profiler.endSection()
+        Minecraft.getInstance().profiler.endSection()
     }
 
     override fun glListDraw() {

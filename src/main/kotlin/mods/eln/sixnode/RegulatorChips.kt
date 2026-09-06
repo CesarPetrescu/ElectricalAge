@@ -22,9 +22,9 @@ import mods.eln.sim.mna.component.Resistor
 import mods.eln.sim.mna.component.VoltageSource
 import mods.eln.sim.nbt.NbtElectricalLoad
 import mods.eln.wiki.Data
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import mods.eln.client.itemrender.IItemRenderer
 import org.lwjgl.opengl.GL11
 import kotlin.math.abs
@@ -98,7 +98,7 @@ class RegulatorChipDescriptor(
         }
     }
 
-    override fun getFrontFromPlace(side: Direction, player: EntityPlayer): LRDU? =
+    override fun getFrontFromPlace(side: Direction, player: Player): LRDU? =
         super.getFrontFromPlace(side, player)!!.left()
 
     override fun setParent(item: Item?, damage: Int) {
@@ -108,7 +108,7 @@ class RegulatorChipDescriptor(
 
     override fun addInformation(
         itemStack: ItemStack?,
-        entityPlayer: EntityPlayer?,
+        entityPlayer: Player?,
         list: MutableList<String>?,
         par4: Boolean
     ) {

@@ -24,8 +24,8 @@ import mods.eln.sim.process.destruct.VoltageStateWatchDog;
 import mods.eln.sim.process.destruct.WorldExplosion;
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor;
 import mods.eln.sound.SoundCommand;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -96,7 +96,7 @@ public class ElectricalRelayElement extends SixNodeElement implements IConfigura
     }
 
     @Override
-    public void readFromNBT(@NotNull NBTTagCompound nbt) {
+    public void readFromNBT(@NotNull CompoundTag nbt) {
         super.readFromNBT(nbt);
         byte value = nbt.getByte("front");
         front = LRDU.fromInt((value >> 0) & 0x3);
@@ -105,11 +105,11 @@ public class ElectricalRelayElement extends SixNodeElement implements IConfigura
     }
 
     @Override
-    public void writeToNBT(NBTTagCompound nbt) {
+    public void writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setByte("front", (byte) (front.toInt() << 0));
-        nbt.setBoolean("switchState", switchState);
-        nbt.setBoolean("defaultOutput", defaultOutput);
+        nbt.putByte("front", (byte) (front.toInt() << 0));
+        nbt.putBoolean("switchState", switchState);
+        nbt.putBoolean("defaultOutput", defaultOutput);
     }
 
     @Override
@@ -227,15 +227,15 @@ public class ElectricalRelayElement extends SixNodeElement implements IConfigura
     }
 
     @Override
-    public void readConfigTool(NBTTagCompound compound, EntityPlayer invoker) {
-        if(compound.hasKey("nc")) {
+    public void readConfigTool(CompoundTag compound, Player invoker) {
+        if(compound.contains("nc")) {
             defaultOutput = compound.getBoolean("nc");
             needPublish();
         }
     }
 
     @Override
-    public void writeConfigTool(NBTTagCompound compound, EntityPlayer invoker) {
-        compound.setBoolean("nc", defaultOutput);
+    public void writeConfigTool(CompoundTag compound, Player invoker) {
+        compound.putBoolean("nc", defaultOutput);
     }
 }

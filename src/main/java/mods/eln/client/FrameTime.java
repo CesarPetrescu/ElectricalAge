@@ -1,15 +1,15 @@
 package mods.eln.client;
 
-import net.minecraftforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
-import net.minecraftforge.fml.common.gameevent.TickEvent.RenderTickEvent;
+import net.neoforged.neoforge.client.event.RenderFrameEvent;
 import mods.eln.misc.Utils;
 import mods.eln.node.NodeBlockEntity;
 import net.minecraft.client.Minecraft;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 
 import java.util.Iterator;
 
@@ -18,7 +18,7 @@ public class FrameTime {
 
     public FrameTime() {
         instance = this;
-        MinecraftForge.EVENT_BUS.register(this);
+        NeoForge.EVENT_BUS.register(this);
     }
 
     public void init() {
@@ -45,7 +45,7 @@ public class FrameTime {
     boolean boot = true;
 
     @SubscribeEvent
-    public void tick(RenderTickEvent event) {
+    public void tick(RenderFrameEvent.Post event) {
         if (event.phase != Phase.START) return;
 
         long nanoTime = System.nanoTime();
@@ -58,13 +58,13 @@ public class FrameTime {
         }
         oldNanoTime = nanoTime;
         Iterator<NodeBlockEntity> i = NodeBlockEntity.clientList.iterator();
-        World w = Minecraft.getMinecraft().world;
+        Level w = Minecraft.getInstance().level();
 
         if (!Utils.isGameInPause()) {
             float deltaTcaped = getNotCaped2();
             while (i.hasNext()) {
                 NodeBlockEntity e = i.next();
-                if (e.getWorld() != w) {
+                if (e.getLevel() != w) {
                     i.remove();
                     continue;
                 }

@@ -1,12 +1,12 @@
 package mods.eln.gui;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.GuiTextField;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.components.EditBox;
 
 import java.util.ArrayList;
 
-public class GuiTextFieldEln extends GuiTextField implements IGuiObject {
+public class GuiTextFieldEln extends EditBox implements IGuiObject {
 
     int xPos, yPos, width, height;
     GuiTextFieldElnObserver observer;
@@ -16,11 +16,11 @@ public class GuiTextFieldEln extends GuiTextField implements IGuiObject {
 
     IGuiObjectObserver iGuiObjectObserver;
 
-    public GuiTextFieldEln(FontRenderer par1FontRenderer, int x, int y, int w, int h, GuiHelper helper) {
+    public GuiTextFieldEln(Font par1FontRenderer, int x, int y, int w, int h, GuiHelper helper) {
         this(par1FontRenderer, x, y, w, h, helper, 150);
     }
 
-    public GuiTextFieldEln(FontRenderer par1FontRenderer, int x, int y, int w, int h, GuiHelper helper, int maxLength) {
+    public GuiTextFieldEln(Font par1FontRenderer, int x, int y, int w, int h, GuiHelper helper, int maxLength) {
         super(0, par1FontRenderer, x, y, w, h);
         setTextColor(-1);
         setDisabledTextColour(-1);
@@ -33,7 +33,7 @@ public class GuiTextFieldEln extends GuiTextField implements IGuiObject {
         this.helper = helper;
     }
 
-    public GuiTextFieldEln(FontRenderer par1FontRenderer, int x, int y, int w, GuiHelper helper) {
+    public GuiTextFieldEln(Font par1FontRenderer, int x, int y, int w, GuiHelper helper) {
         this(par1FontRenderer, x, y, w, 12, helper);
     }
 
@@ -131,7 +131,7 @@ public class GuiTextFieldEln extends GuiTextField implements IGuiObject {
     @Override
     public void idraw2(int x, int y) {
         if (!isFocused() && getVisible() && x >= xPos && y >= yPos && x < xPos + width && y < yPos + height)
-            helper.drawHoveringText(comment, x, y, Minecraft.getMinecraft().fontRenderer);
+            helper.drawHoveringText(comment, x, y, Minecraft.getInstance().font);
 
     }
 

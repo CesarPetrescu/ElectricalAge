@@ -5,7 +5,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import mods.eln.sim.mna.misc.MnaConst
 import mods.eln.sim.mna.state.VoltageState
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.nbt.CompoundTag
 
 class ResistorSwitchNbtEdgeTest {
     @Test
@@ -15,9 +15,9 @@ class ResistorSwitchNbtEdgeTest {
         val sw = ResistorSwitch("sw", a, b)
         sw.setOffResistance(50.0)
 
-        val nbt = NBTTagCompound()
-        nbt.setDouble("pfxswR", 0.0)
-        nbt.setBoolean("pfxswState", true)
+        val nbt = CompoundTag()
+        nbt.putDouble("pfxswR", 0.0)
+        nbt.putBoolean("pfxswState", true)
         sw.readFromNBT(nbt, "pfx")
 
         assertEquals(50.0, sw.resistance)

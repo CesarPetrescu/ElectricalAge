@@ -1,7 +1,7 @@
 package mods.eln.misc;
 
 import mods.eln.Eln;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
@@ -26,7 +26,7 @@ public class Obj3D {
     private String dirPath;
 
     public void bindTexture(String texFilename) {
-        ResourceLocation textureResource = new ResourceLocation("eln", "model/" + dirPath + "/" + texFilename);
+        ResourceLocation textureResource = ResourceLocation.fromNamespaceAndPath("eln", "model/" + dirPath + "/" + texFilename);
         UtilsClient.bindTexture(textureResource);
     }
 
@@ -244,21 +244,21 @@ public class Obj3D {
         public void draw() {
             if (locked) return;
 
-            //	Minecraft.getMinecraft().profiler.startSection("OBJ");
+            //	Minecraft.getInstance().profiler.startSection("OBJ");
             for (FaceGroup fg : faceGroup) {
                 fg.draw();
             }
-            //	Minecraft.getMinecraft().profiler.endSection();
+            //	Minecraft.getInstance().profiler.endSection();
         }
 
         public void draw(float texOffsetX, float texOffsetY) {
             if (locked) return;
 
-            //	Minecraft.getMinecraft().profiler.startSection("OBJ");
+            //	Minecraft.getInstance().profiler.startSection("OBJ");
             for (FaceGroup fg : faceGroup) {
                 fg.drawVertex(texOffsetX, texOffsetY);
             }
-            //	Minecraft.getMinecraft().profiler.endSection();
+            //	Minecraft.getInstance().profiler.endSection();
         }
 
         // Returns the bounding box of the vertices we'd draw.
@@ -357,7 +357,7 @@ public class Obj3D {
     }
 
     public ResourceLocation getModelResourceLocation(String name) {
-        return new ResourceLocation("eln", "model/" + dirPath + "/" + name);
+        return ResourceLocation.fromNamespaceAndPath("eln", "model/" + dirPath + "/" + name);
     }
 
     /**

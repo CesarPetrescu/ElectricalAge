@@ -3,10 +3,10 @@ package mods.eln.server.console
 import mods.eln.misc.FC
 import net.minecraft.command.ICommand
 import net.minecraft.command.ICommandSender
-import net.minecraft.util.text.event.ClickEvent
+import net.minecraft.network.chat.ClickEvent
 import net.minecraft.server.MinecraftServer
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.text.TextComponentString
+import net.minecraft.core.BlockPos
+import net.minecraft.network.chat.Component
 
 val ElnConsoleCommandList = mutableListOf<IConsoleCommand>()
 
@@ -47,12 +47,12 @@ class ElnConsoleCommands: ICommand {
     companion object {
         fun cprint(ics: ICommandSender, text: String, indent: Int = 0) {
             printIndented(text, indent).forEach {
-                ics.sendMessage(TextComponentString(it))
+                ics.sendMessage(Component.literal(it))
             }
         }
 
         fun cprint(ics: ICommandSender, text: String, url: String) {
-            val msg = TextComponentString(FC.BRIGHT_GREY + text)
+            val msg = Component.literal(FC.BRIGHT_GREY + text)
             msg.style.setClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, url))
             ics.sendMessage(msg)
         }
@@ -142,7 +142,7 @@ class ElnConsoleCommands: ICommand {
         val player = ics.entityWorld.getPlayerEntityByName(ics.name)
         val console = player == null
         if (!console) {
-            creative = player.capabilities.isCreativeMode
+            creative = player.isCreative()
             singlePlayer = server.isSinglePlayer
                 isOperator = server.playerList.oppedPlayers.getEntry(player.gameProfile) != null
         }

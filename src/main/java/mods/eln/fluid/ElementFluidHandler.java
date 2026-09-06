@@ -1,8 +1,8 @@
 package mods.eln.fluid;
 
 import mods.eln.misc.INBTTReady;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.Direction;
 import net.minecraftforge.fluids.*;
 
 /**
@@ -39,7 +39,7 @@ public class ElementFluidHandler implements ISidedFluidHandler, INBTTReady {
     }
 
     @Override
-    public int fill(EnumFacing from, FluidStack resource, boolean doFill) {
+    public int fill(Direction from, FluidStack resource, boolean doFill) {
         if (tank.getFluidAmount() > 0) {
             // No change in type of fluid.
             return tank.fill(resource, doFill);
@@ -61,7 +61,7 @@ public class ElementFluidHandler implements ISidedFluidHandler, INBTTReady {
     }
 
     @Override
-    public FluidStack drain(EnumFacing from, FluidStack resource, boolean doDrain) {
+    public FluidStack drain(Direction from, FluidStack resource, boolean doDrain) {
         if (resource.isFluidEqual(tank.getFluid()))
             return tank.drain(resource.amount, doDrain);
         else
@@ -69,12 +69,12 @@ public class ElementFluidHandler implements ISidedFluidHandler, INBTTReady {
     }
 
     @Override
-    public FluidStack drain(EnumFacing from, int maxDrain, boolean doDrain) {
+    public FluidStack drain(Direction from, int maxDrain, boolean doDrain) {
         return tank.drain(maxDrain, doDrain);
     }
 
     @Override
-    public boolean canFill(EnumFacing from, Fluid fluid) {
+    public boolean canFill(Direction from, Fluid fluid) {
         if (tank.getFluidAmount() > 0) {
             return tank.getFluid().getFluid() == fluid;
         } else {
@@ -88,26 +88,26 @@ public class ElementFluidHandler implements ISidedFluidHandler, INBTTReady {
     }
 
     @Override
-    public boolean canDrain(EnumFacing from, Fluid fluid) {
+    public boolean canDrain(Direction from, Fluid fluid) {
         return true;
     }
 
     @Override
-    public FluidTankInfo[] getTankInfo(EnumFacing from) {
+    public FluidTankInfo[] getTankInfo(Direction from) {
         return new FluidTankInfo[]{tank.getInfo()};
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt, String str) {
-        tank.readFromNBT(nbt.getCompoundTag(str + "tank"));
+    public void readFromNBT(CompoundTag nbt, String str) {
+        tank.readFromNBT(nbt.getCompound(str + "tank"));
         fluid_heat_mb = nbt.getFloat(str + "fhm");
     }
 
     @Override
-    public void writeToNBT(NBTTagCompound nbt, String str) {
-        NBTTagCompound t = new NBTTagCompound();
+    public void writeToNBT(CompoundTag nbt, String str) {
+        CompoundTag t = new CompoundTag();
         tank.writeToNBT(t);
-        nbt.setTag(str + "tank", t);
-        nbt.setFloat(str + "fhm", fluid_heat_mb);
+        nbt.put(str + "tank", t);
+        nbt.putFloat(str + "fhm", fluid_heat_mb);
     }
 }

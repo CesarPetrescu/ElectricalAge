@@ -10,12 +10,12 @@ import mods.eln.misc.Coordinate;
 import mods.eln.misc.Utils;
 import mods.eln.sim.process.destruct.WorldExplosion;
 import mods.eln.sound.SoundCommand;
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.DamageSource;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.damagesource.DamageSource;
 
 import java.util.List;
 import java.util.Random;
@@ -154,7 +154,7 @@ public class TurretSlowProcess extends StateMachine {
             lastScanWasBefore = 0;
 
             Class<?> filterClass = null;
-            ItemStack filterStack = element.getInventory().getStackInSlot(TurretContainer.filterId);
+            ItemStack filterStack = element.getInventory().getItem(TurretContainer.filterId);
             if (!McBridge.isNothing(filterStack)) {
                 GenericItemUsingDamageDescriptor gen = EntitySensorFilterDescriptor.getDescriptor(filterStack);
                 if (gen != null && gen instanceof EntitySensorFilterDescriptor) {
@@ -164,13 +164,13 @@ public class TurretSlowProcess extends StateMachine {
             }
 
             Coordinate coord = element.coordinate();
-            AxisAlignedBB bb = coord.getAxisAlignedBB((int) element.getDescriptor().getProperties().detectionDistance);
-            // World#getEntitiesWithinAABB is raw in 1.7.10, but this query asks specifically for EntityLivingBase.
+            AABB bb = coord.getAxisAlignedBB((int) element.getDescriptor().getProperties().detectionDistance);
+            // World#getEntitiesWithinAABB is raw in 1.7.10, but this query asks specifically for LivingEntity.
             @SuppressWarnings("unchecked")
-            List<EntityLivingBase> list = coord.world().getEntitiesWithinAABB(EntityLivingBase.class, bb);
-            for (EntityLivingBase entity : list) {
-                double dx = (entity.posX - coord.x - 0.5);
-                double dz = (entity.posZ - coord.z - 0.5);
+            List<LivingEntity> list = coord.world().getEntitiesOfClass(LivingEntity.class, bb);
+            for (LivingEntity entity : list) {
+                double dx = (entity.getX() - coord.x - 0.5);
+                double dz = (entity.getZ() - coord.z - 0.5);
                 double entityAngle = -Math.toDegrees(Math.atan2(dz, dx));
                 switch (element.front) {
                     case XN:
@@ -202,10 +202,10 @@ public class TurretSlowProcess extends StateMachine {
                         if (filterClass == null || !filterClass.isAssignableFrom(entity.getClass())) return null;
                     }
 
-                    List<IBlockState> blockList = Utils.traceRay(coord.world(), coord.x + 0.5, coord.y + 0.5, coord.z + 0.5,
-                        entity.posX, entity.posY + entity.getEyeHeight(), entity.posZ);
+                    List<BlockState> blockList = Utils.traceRay(coord.world(), coord.x + 0.5, coord.y + 0.5, coord.z + 0.5,
+                        entity.getX(), entity.getY() + entity.getEyeHeight(), entity.getZ());
                     boolean visible = true;
-                    for (IBlockState b : blockList)
+                    for (BlockState b : blockList)
                         if (b.isOpaqueCube()) {
                             visible = false;
                             break;
@@ -232,11 +232,11 @@ public class TurretSlowProcess extends StateMachine {
     }
 
     private class AimingState implements State {
-        public AimingState(EntityLivingBase target) {
+        public AimingState(LivingEntity target) {
             this.target = target;
         }
 
-        private final EntityLivingBase target;
+        private final LivingEntity target;
 
         @Override
         public void enter() {
@@ -250,7 +250,7 @@ public class TurretSlowProcess extends StateMachine {
             if (target.getHealth()<=0) return new SeekingState();
 
             Class<?> filterClass = null;
-            ItemStack filterStack = element.getInventory().getStackInSlot(TurretContainer.filterId);
+            ItemStack filterStack = element.getInventory().getItem(TurretContainer.filterId);
             if (!McBridge.isNothing(filterStack)) {
                 GenericItemUsingDamageDescriptor gen = EntitySensorFilterDescriptor.getDescriptor(filterStack);
                 if (gen != null && gen instanceof EntitySensorFilterDescriptor) {
@@ -266,9 +266,9 @@ public class TurretSlowProcess extends StateMachine {
 
             Coordinate coord = element.coordinate();
 
-            double dx = (float) (target.posX - coord.x - 0.5);
-            double dy = (float) (target.posY + target.getEyeHeight() - coord.y - 0.75);
-            double dz = (float) (target.posZ - coord.z - 0.5);
+            double dx = (float) (target.getX() - coord.x - 0.5);
+            double dy = (float) (target.getY() + target.getEyeHeight() - coord.y - 0.75);
+            double dz = (float) (target.getZ() - coord.z - 0.5);
             double entityAngle = -Math.toDegrees(Math.atan2(dz, dx));
             switch (element.front) {
                 case XN:
@@ -298,13 +298,13 @@ public class TurretSlowProcess extends StateMachine {
             element.setTurretAngle((float) entityAngle);
             element.setGunElevation((float) -entityAngle2);
 
-            if (Math.abs(target.posX - coord.x) > element.getDescriptor().getProperties().aimDistance ||
-                Math.abs(target.posZ - coord.z) > element.getDescriptor().getProperties().aimDistance)
+            if (Math.abs(target.getX() - coord.x) > element.getDescriptor().getProperties().aimDistance ||
+                Math.abs(target.getZ() - coord.z) > element.getDescriptor().getProperties().aimDistance)
                 return new SeekingState();
 
-            List<IBlockState> blockList = Utils.traceRay(coord.world(), coord.x + 0.5, coord.y + 0.5, coord.z + 0.5,
-                target.posX, target.posY + target.getEyeHeight(), target.posZ);
-            for (IBlockState b : blockList)
+            List<BlockState> blockList = Utils.traceRay(coord.world(), coord.x + 0.5, coord.y + 0.5, coord.z + 0.5,
+                target.getX(), target.getY() + target.getEyeHeight(), target.getZ());
+            for (BlockState b : blockList)
                 if (b.isOpaqueCube())
                     return new SeekingState();
 
@@ -321,17 +321,17 @@ public class TurretSlowProcess extends StateMachine {
     }
 
     class ShootState implements State {
-        public ShootState(EntityLivingBase target) {
+        public ShootState(LivingEntity target) {
             this.target = target;
         }
 
-        private final EntityLivingBase target;
+        private final LivingEntity target;
 
         @Override
         public void enter() {
             if (target != null) {
                 target.hurtResistantTime = 0;
-                target.attackEntityFrom(new DamageSource("Unknown"), 5);
+                target.hurt(new DamageSource("Unknown"), 5);
                 element.shoot();
                 element.play(new SoundCommand("eln:lasergun"));
             }

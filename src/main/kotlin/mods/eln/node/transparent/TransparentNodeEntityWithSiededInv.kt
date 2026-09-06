@@ -5,7 +5,7 @@ package mods.eln.node.transparent
 /*
 class TransparentNodeEntityWithSiededInv : TransparentNodeEntity(), ISidedInventory {
     override fun getSidedInventory(): ISidedInventory {
-        if (world.isRemote) {
+        if (world.isClientSide) {
             if (elementRender == null) return instance
             val i = elementRender!!.inventory
             if (i != null && i is ISidedInventory) {
@@ -23,24 +23,24 @@ class TransparentNodeEntityWithSiededInv : TransparentNodeEntity(), ISidedInvent
         return instance
     }
 
-    override fun getSizeInventory(): Int {
-        return sidedInventory.sizeInventory
+    override fun getContainerSize(): Int {
+        return sidedInventory.containerSize
     }
 
-    override fun getStackInSlot(var1: Int): ItemStack {
-        return sidedInventory.getStackInSlot(var1)
+    override fun getItem(var1: Int): ItemStack {
+        return sidedInventory.getItem(var1)
     }
 
-    override fun decrStackSize(var1: Int, var2: Int): ItemStack {
-        return sidedInventory.decrStackSize(var1, var2)
+    override fun removeItem(var1: Int, var2: Int): ItemStack {
+        return sidedInventory.removeItem(var1, var2)
     }
 
     override fun getStackInSlotOnClosing(var1: Int): ItemStack {
         return sidedInventory.getStackInSlotOnClosing(var1)
     }
 
-    override fun setInventorySlotContents(var1: Int, var2: ItemStack) {
-        sidedInventory.setInventorySlotContents(var1, var2)
+    override fun setItem(var1: Int, var2: ItemStack) {
+        sidedInventory.setItem(var1, var2)
     }
 
     override fun getInventoryName(): String {
@@ -51,36 +51,36 @@ class TransparentNodeEntityWithSiededInv : TransparentNodeEntity(), ISidedInvent
         return sidedInventory.hasCustomInventoryName()
     }
 
-    override fun getInventoryStackLimit(): Int {
-        return sidedInventory.inventoryStackLimit
+    override fun getMaxStackSize(): Int {
+        return sidedInventory.maxStackSize
     }
 
-    override fun isUsableByPlayer(var1: EntityPlayer): Boolean {
-        return sidedInventory.isUsableByPlayer(var1)
+    override fun stillValid(var1: EntityPlayer): Boolean {
+        return sidedInventory.stillValid(var1)
     }
 
-    override fun openInventory() {
-        sidedInventory.openInventory()
+    override fun startOpen() {
+        sidedInventory.startOpen()
     }
 
-    override fun closeInventory() {
-        sidedInventory.closeInventory()
+    override fun stopOpen() {
+        sidedInventory.stopOpen()
     }
 
-    override fun isItemValidForSlot(var1: Int, var2: ItemStack): Boolean {
-        return sidedInventory.isItemValidForSlot(var1, var2)
+    override fun canPlaceItem(var1: Int, var2: ItemStack): Boolean {
+        return sidedInventory.canPlaceItem(var1, var2)
     }
 
     override fun getAccessibleSlotsFromSide(var1: Int): IntArray {
         return sidedInventory.getAccessibleSlotsFromSide(var1)
     }
 
-    override fun canInsertItem(var1: Int, var2: ItemStack, var3: Int): Boolean {
-        return sidedInventory.canInsertItem(var1, var2, var3)
+    override fun canPlaceItemThroughFace(var1: Int, var2: ItemStack, var3: Int): Boolean {
+        return sidedInventory.canPlaceItemThroughFace(var1, var2, var3)
     }
 
-    override fun canExtractItem(var1: Int, var2: ItemStack, var3: Int): Boolean {
-        return sidedInventory.canExtractItem(var1, var2, var3)
+    override fun canTakeItemThroughFace(var1: Int, var2: ItemStack, var3: Int): Boolean {
+        return sidedInventory.canTakeItemThroughFace(var1, var2, var3)
     }
 }
  */

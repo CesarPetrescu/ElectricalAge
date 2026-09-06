@@ -12,11 +12,11 @@ import mods.eln.node.six.SixNodeDescriptor;
 import mods.eln.sixnode.genericcable.GenericCableDescriptor;
 import mods.eln.wiki.Data;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
@@ -117,12 +117,12 @@ public class ElectricalBreakerDescriptor extends SixNodeDescriptor {
     private void renderCurrentLimitOverlay() {
         if (!Double.isFinite(currentLimit)) return;
 
-        FontRenderer font = Minecraft.getMinecraft().fontRenderer;
+        Font font = Minecraft.getInstance().font;
         String overlay = currentLimit == Math.rint(currentLimit)
             ? Integer.toString((int) currentLimit)
             : Double.toString(currentLimit);
         float scale = 0.5f;
-        float scaledWidth = font.getStringWidth(overlay) * scale;
+        float scaledWidth = font.width(overlay) * scale;
         int x = (int) ((16f - scaledWidth) / scale);
         int y = 2;
 
@@ -145,7 +145,7 @@ public class ElectricalBreakerDescriptor extends SixNodeDescriptor {
     }
 
     @Override
-    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List<String> list, boolean par4) {
+    public void addInformation(ItemStack itemStack, Player entityPlayer, List<String> list, boolean par4) {
         super.addInformation(itemStack, entityPlayer, list, par4);
         Collections.addAll(list, (tr("Protects electrical components\nOpens contact if:\n  - Voltage exceeds a certain level\n  - Current exceeds the cable limit").split("\n")));
         if (Double.isFinite(currentLimit)) {
@@ -155,7 +155,7 @@ public class ElectricalBreakerDescriptor extends SixNodeDescriptor {
 
     @Nullable
     @Override
-    public LRDU getFrontFromPlace(@NotNull Direction side, @NotNull EntityPlayer player) {
+    public LRDU getFrontFromPlace(@NotNull Direction side, @NotNull Player player) {
         return super.getFrontFromPlace(side, player).inverse();
     }
 }

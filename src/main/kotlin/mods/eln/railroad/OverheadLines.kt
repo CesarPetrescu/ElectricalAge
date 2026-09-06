@@ -170,7 +170,7 @@ class OverheadLinesRender(tileEntity: TransparentNodeEntity, transparentNodeDesc
 
     private fun hasBlockAnySideNotBottom(): Boolean {
         return boundedSides.any {
-            tileEntity.world.getBlockState(it.x, it.y, it.z).isOpaqueCube
+            tileEntity.level.getBlockState(it.x, it.y, it.z).isOpaqueCube
         }
     }
 

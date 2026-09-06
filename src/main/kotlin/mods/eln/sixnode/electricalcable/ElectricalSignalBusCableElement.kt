@@ -12,7 +12,7 @@ import mods.eln.node.six.SixNodeDescriptor
 import mods.eln.sim.ElectricalConnection
 import mods.eln.sim.ElectricalLoad
 import mods.eln.sim.nbt.NbtElectricalLoad
-import net.minecraft.util.text.TextFormatting
+import net.minecraft.ChatFormatting
 import java.util.*
 
 class ElectricalSignalBusCableElement(sixNode: SixNode?, side: Direction?, descriptor: SixNodeDescriptor?) : ElectricalCableElement(sixNode, side, descriptor) {
@@ -82,22 +82,22 @@ class ElectricalSignalBusCableElement(sixNode: SixNode?, side: Direction?, descr
 
     companion object {
         var wool_to_chat = arrayOf(
-            TextFormatting.WHITE,
-            TextFormatting.GOLD,
-            TextFormatting.LIGHT_PURPLE,
-            TextFormatting.BLUE,
-            TextFormatting.YELLOW,
-            TextFormatting.GREEN,
-            TextFormatting.RED,
-            TextFormatting.DARK_GRAY,
-            TextFormatting.GRAY,
-            TextFormatting.DARK_AQUA,
-            TextFormatting.DARK_PURPLE,
-            TextFormatting.DARK_BLUE,
-            TextFormatting.AQUA,  // FIXME: supposed to be brown
-            TextFormatting.DARK_GREEN,
-            TextFormatting.DARK_RED,
-            TextFormatting.BLACK)
+            ChatFormatting.WHITE,
+            ChatFormatting.GOLD,
+            ChatFormatting.LIGHT_PURPLE,
+            ChatFormatting.BLUE,
+            ChatFormatting.YELLOW,
+            ChatFormatting.GREEN,
+            ChatFormatting.RED,
+            ChatFormatting.DARK_GRAY,
+            ChatFormatting.GRAY,
+            ChatFormatting.DARK_AQUA,
+            ChatFormatting.DARK_PURPLE,
+            ChatFormatting.DARK_BLUE,
+            ChatFormatting.AQUA,  // FIXME: supposed to be brown
+            ChatFormatting.DARK_GREEN,
+            ChatFormatting.DARK_RED,
+            ChatFormatting.BLACK)
     }
 
     init {

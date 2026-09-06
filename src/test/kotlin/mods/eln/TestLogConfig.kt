@@ -1,6 +1,6 @@
 package mods.eln
 
-import net.minecraft.init.Bootstrap
+import net.minecraft.server.Bootstrap
 
 internal fun disableLog4jJmx() {
     System.setProperty("log4j2.disable.jmx", "true")

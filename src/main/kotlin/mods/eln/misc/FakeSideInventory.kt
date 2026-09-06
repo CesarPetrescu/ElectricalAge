@@ -1,32 +1,31 @@
 package mods.eln.misc
 
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.ISidedInventory
-import net.minecraft.item.ItemStack
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.text.ITextComponent
-import net.minecraft.util.text.TextComponentString
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.WorldlyContainer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.Direction
+import net.minecraft.network.chat.Component
 
-class FakeSideInventory : ISidedInventory {
-    override fun getSizeInventory(): Int {
+class FakeSideInventory : WorldlyContainer {
+    override fun getContainerSize(): Int {
         return 0
     }
 
     override fun isEmpty(): Boolean = true
 
-    override fun getStackInSlot(var1: Int): ItemStack {
+    override fun getItem(var1: Int): ItemStack {
         return ItemStack.EMPTY
     }
 
-    override fun decrStackSize(var1: Int, var2: Int): ItemStack {
+    override fun removeItem(var1: Int, var2: Int): ItemStack {
         return ItemStack.EMPTY
     }
 
-    override fun removeStackFromSlot(var1: Int): ItemStack {
+    override fun removeItemNoUpdate(var1: Int): ItemStack {
         return ItemStack.EMPTY
     }
 
-    override fun setInventorySlotContents(var1: Int, var2: ItemStack) {}
+    override fun setItem(var1: Int, var2: ItemStack) {}
     override fun getName(): String {
         return "FakeSideInventory"
     }
@@ -35,20 +34,20 @@ class FakeSideInventory : ISidedInventory {
         return false
     }
 
-    override fun getDisplayName(): ITextComponent = TextComponentString(name)
+    override fun getDisplayName(): Component = Component.literal(name)
 
-    override fun getInventoryStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 0
     }
 
-    override fun markDirty() {}
-    override fun isUsableByPlayer(var1: EntityPlayer): Boolean {
+    override fun setChanged() {}
+    override fun stillValid(var1: Player): Boolean {
         return false
     }
 
-    override fun openInventory(player: EntityPlayer) {}
-    override fun closeInventory(player: EntityPlayer) {}
-    override fun isItemValidForSlot(var1: Int, var2: ItemStack): Boolean {
+    override fun startOpen(player: Player) {}
+    override fun stopOpen(player: Player) {}
+    override fun canPlaceItem(var1: Int, var2: ItemStack): Boolean {
         return false
     }
 
@@ -57,15 +56,15 @@ class FakeSideInventory : ISidedInventory {
     override fun getFieldCount(): Int = 0
     override fun clear() {}
 
-    override fun getSlotsForFace(side: EnumFacing): IntArray {
+    override fun getSlotsForFace(side: Direction): IntArray {
         return intArrayOf()
     }
 
-    override fun canInsertItem(index: Int, stack: ItemStack, direction: EnumFacing?): Boolean {
+    override fun canPlaceItemThroughFace(index: Int, stack: ItemStack, direction: Direction?): Boolean {
         return false
     }
 
-    override fun canExtractItem(index: Int, stack: ItemStack, direction: EnumFacing): Boolean {
+    override fun canTakeItemThroughFace(index: Int, stack: ItemStack, direction: Direction): Boolean {
         return false
     }
 

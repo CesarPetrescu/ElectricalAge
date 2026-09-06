@@ -15,7 +15,7 @@ import mods.eln.sim.mna.SubSystemDebugSnapshot
 import mods.eln.sim.mna.state.State
 import mods.eln.sim.mna.state.VoltageState
 import mods.eln.sim.mna.state.VoltageStateLineReady
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.nbt.CompoundTag
 
 private const val EPS = 1e-9
 
@@ -400,7 +400,7 @@ class ResistorSwitchTest {
         @Suppress("UsePropertyAccessSyntax")
         sw.setState(true)
 
-        val nbt = NBTTagCompound()
+        val nbt = CompoundTag()
         sw.writeToNBT(nbt, "pfx")
 
         val other = ResistorSwitch("sw", a, b)

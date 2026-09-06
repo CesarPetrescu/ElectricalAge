@@ -10,8 +10,8 @@ import mods.eln.node.six.SixNodeDescriptor
 import mods.eln.node.six.SixNodeElementInventory
 import mods.eln.node.six.SixNodeElementRender
 import mods.eln.node.six.SixNodeEntity
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.world.entity.player.Player
 import org.lwjgl.opengl.GL11
 import java.io.DataInputStream
 import java.io.IOException
@@ -48,7 +48,7 @@ class PowerSocketRender(tileEntity: SixNodeEntity?, side: Direction?, descriptor
         return Eln.instance.lowCurrentCableRender
     }
 
-    override fun newGuiDraw(side: Direction, player: EntityPlayer): GuiScreen {
+    override fun newGuiDraw(side: Direction, player: Player): Screen {
         return PowerSocketGui(this, player, inventory)
     }
 

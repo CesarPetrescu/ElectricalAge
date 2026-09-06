@@ -7,10 +7,10 @@ import mods.eln.misc.Utils
 import mods.eln.misc.VoltageLevelColor
 import mods.eln.sim.mna.component.Resistor
 import mods.eln.wiki.Data
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
 import kotlin.math.abs
 import kotlin.math.pow
 import mods.eln.misc.isNothing
@@ -29,20 +29,20 @@ class LampDescriptor(name: String, iconName: String, val lampData: SpecificLampD
     }
 
     fun getLifeInTag(stack: ItemStack): Double {
-        if (!stack.hasTagCompound()) stack.tagCompound = getDefaultNBT()
+        if (!stack.hasTagCompound()) stack.tagCompound /* TODO(components) */ = getDefaultNBT()
 
-        return if (stack.tagCompound!!.hasKey("life")) stack.tagCompound!!.getDouble("life")
+        return if (stack.tagCompound /* TODO(components) */!!.contains("life")) stack.tagCompound /* TODO(components) */!!.getDouble("life")
         else 24.0 // default 24 hours
     }
 
     fun setLifeInTag(stack: ItemStack, life: Double) {
-        if (!stack.hasTagCompound()) stack.tagCompound = getDefaultNBT()
-        stack.tagCompound!!.setDouble("life", life)
+        if (!stack.hasTagCompound()) stack.tagCompound /* TODO(components) */ = getDefaultNBT()
+        stack.tagCompound /* TODO(components) */!!.putDouble("life", life)
     }
 
-    override fun getDefaultNBT(): NBTTagCompound {
-        val tag = NBTTagCompound()
-        tag.setDouble("life", lampData.technology.nominalLifeInHours)
+    override fun getDefaultNBT(): CompoundTag {
+        val tag = CompoundTag()
+        tag.putDouble("life", lampData.technology.nominalLifeInHours)
         return tag
     }
 
@@ -92,7 +92,7 @@ class LampDescriptor(name: String, iconName: String, val lampData: SpecificLampD
         }
     }
 
-    override fun addInformation(itemStack: ItemStack?, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack?, entityPlayer: Player?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
 
         list.add(I18N.tr($$"Nominal voltage: %1$V", Utils.plotValue(lampData.nominalU)))
@@ -110,7 +110,7 @@ class LampDescriptor(name: String, iconName: String, val lampData: SpecificLampD
     }
 
     private fun getLampCondition(itemStack: ItemStack): String {
-        return if (!itemStack.hasTagCompound() || !itemStack.tagCompound!!.hasKey("life")) {
+        return if (!itemStack.hasTagCompound() || !itemStack.tagCompound /* TODO(components) */!!.contains("life")) {
             I18N.tr("New")
         } else {
             val lampLife = getLifeInTag(itemStack)

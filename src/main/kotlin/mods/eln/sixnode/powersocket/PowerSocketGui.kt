@@ -5,13 +5,13 @@ import mods.eln.gui.GuiScreenEln
 import mods.eln.gui.GuiTextFieldEln
 import mods.eln.gui.IGuiObject
 import mods.eln.i18n.I18N.tr
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.IInventory
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.Container
 
 class PowerSocketGui(
     private val render: PowerSocketRender,
-    @Suppress("UNUSED_PARAMETER") player: EntityPlayer?,
-    @Suppress("UNUSED_PARAMETER") inventory: IInventory?
+    @Suppress("UNUSED_PARAMETER") player: Player?,
+    @Suppress("UNUSED_PARAMETER") inventory: Container?
 ) :
     GuiScreenEln() {
 

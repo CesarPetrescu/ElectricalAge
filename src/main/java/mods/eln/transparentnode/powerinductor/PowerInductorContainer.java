@@ -6,9 +6,9 @@ import mods.eln.gui.ISlotSkin.SlotSkin;
 import mods.eln.item.CopperCableDescriptor;
 import mods.eln.item.FerromagneticCoreDescriptor;
 import mods.eln.misc.BasicContainer;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.Slot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
+import net.minecraft.world.inventory.Slot;
 
 import static mods.eln.i18n.I18N.tr;
 
@@ -18,7 +18,7 @@ public class PowerInductorContainer extends BasicContainer {
     static final int cableId = 0;
     static final int coreId = 1;
 
-    public PowerInductorContainer(EntityPlayer player, IInventory inventory) {
+    public PowerInductorContainer(Player player, Container inventory) {
         super(player, inventory, new Slot[]{
             new GenericItemUsingDamageSlot(inventory, cableId, 132, 8, 19, CopperCableDescriptor.class,
                 SlotSkin.medium,

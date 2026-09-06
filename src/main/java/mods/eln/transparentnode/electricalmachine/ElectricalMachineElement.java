@@ -24,11 +24,11 @@ import mods.eln.sim.mna.component.Resistor;
 import mods.eln.sim.nbt.NbtElectricalLoad;
 import mods.eln.sim.process.destruct.VoltageStateWatchDog;
 import mods.eln.sim.process.destruct.WorldExplosion;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -82,7 +82,7 @@ public class ElectricalMachineElement extends TransparentNodeElement implements 
     }
 
     @Override
-    public IInventory getInventory() {
+    public Container getInventory() {
         return inventory;
     }
 
@@ -93,7 +93,7 @@ public class ElectricalMachineElement extends TransparentNodeElement implements 
 
     @Nullable
     @Override
-    public Container newContainer(@NotNull Direction side, @NotNull EntityPlayer player) {
+    public AbstractContainerMenu newContainer(@NotNull Direction side, @NotNull Player player) {
         return new ElectricalMachineContainer(this.node, player, inventory, descriptor);
     }
 
@@ -134,7 +134,7 @@ public class ElectricalMachineElement extends TransparentNodeElement implements 
     }
 
     @Override
-    public void inventoryChange(IInventory inventory) {
+    public void inventoryChange(Container inventory) {
         super.inventoryChange(inventory);
         setPhysicalValue();
         needPublish();
@@ -144,7 +144,7 @@ public class ElectricalMachineElement extends TransparentNodeElement implements 
         ItemStack stack;
 
         int boosterCount = 0;
-        stack = getInventory().getStackInSlot(boosterSlotId);
+        stack = getInventory().getItem(boosterSlotId);
         if (!McBridge.isNothing(stack)) {
             boosterCount = stack.getCount();
         }
@@ -157,8 +157,8 @@ public class ElectricalMachineElement extends TransparentNodeElement implements 
     }
 
     @Override
-    public boolean onBlockActivated(EntityPlayer player, Direction side, float vx, float vy, float vz) {
-        return booterAccepter.take(player.getHeldItemMainhand(), this, false, true);
+    public boolean onBlockActivated(Player player, Direction side, float vx, float vy, float vz) {
+        return booterAccepter.take(player.getMainHandItem(), this, false, true);
     }
 
     public void networkSerialize(java.io.DataOutputStream stream) {
@@ -168,8 +168,8 @@ public class ElectricalMachineElement extends TransparentNodeElement implements 
         if (fPower > 1.9) fPower = 1.9;
         try {
             stream.writeByte((int) (fPower * 64));
-            serialiseItemStack(stream, inventory.getStackInSlot(inSlotId));
-            serialiseItemStack(stream, inventory.getStackInSlot(outSlotId));
+            serialiseItemStack(stream, inventory.getItem(inSlotId));
+            serialiseItemStack(stream, inventory.getItem(outSlotId));
             stream.writeFloat((float) slowRefreshProcess.processState());
             stream.writeFloat((float) slowRefreshProcess.processStatePerSecond());
             node.lrduCubeMask.getTranslate(front.down()).serialize(stream);
@@ -180,13 +180,13 @@ public class ElectricalMachineElement extends TransparentNodeElement implements 
     }
 
     @Override
-    public void writeToNBT(NBTTagCompound nbt) {
+    public void writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setBoolean("powerOn", powerOn);
+        nbt.putBoolean("powerOn", powerOn);
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt) {
+    public void readFromNBT(CompoundTag nbt) {
         super.readFromNBT(nbt);
         powerOn = nbt.getBoolean("powerOn");
     }
@@ -211,7 +211,7 @@ public class ElectricalMachineElement extends TransparentNodeElement implements 
     }
 
     @Override
-    public void readConfigTool(NBTTagCompound compound, EntityPlayer invoker) {
+    public void readConfigTool(CompoundTag compound, Player invoker) {
         if(ConfigCopyToolDescriptor.readGenDescriptor(compound, "booster", inventory, descriptor.outStackCount + 1, invoker)) {
             inventoryChange(inventory);
             needPublish();
@@ -219,7 +219,7 @@ public class ElectricalMachineElement extends TransparentNodeElement implements 
     }
 
     @Override
-    public void writeConfigTool(NBTTagCompound compound, EntityPlayer invoker) {
-        ConfigCopyToolDescriptor.writeGenDescriptor(compound, "booster", inventory.getStackInSlot(descriptor.outStackCount + 1));
+    public void writeConfigTool(CompoundTag compound, Player invoker) {
+        ConfigCopyToolDescriptor.writeGenDescriptor(compound, "booster", inventory.getItem(descriptor.outStackCount + 1));
     }
 }

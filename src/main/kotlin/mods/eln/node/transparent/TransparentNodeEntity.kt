@@ -1,7 +1,7 @@
 package mods.eln.node.transparent
 
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.neoforged.api.distmarker.Dist
+import net.neoforged.api.distmarker.OnlyIn
 import mods.eln.Eln
 import mods.eln.cable.CableRenderDescriptor
 import mods.eln.misc.Coordinate
@@ -9,17 +9,17 @@ import mods.eln.misc.Direction
 import mods.eln.misc.FakeSideInventory.Companion.instance
 import mods.eln.misc.LRDU
 import mods.eln.node.NodeBlockEntity
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Blocks
-import net.minecraft.inventory.Container
-import net.minecraft.inventory.ISidedInventory
-import net.minecraft.item.ItemStack
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.text.ITextComponent
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.inventory.AbstractContainerMenu
+import net.minecraft.world.WorldlyContainer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.network.chat.Component
+import net.minecraft.world.phys.AABB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -29,7 +29,7 @@ import mods.eln.misc.xCoord
 import mods.eln.misc.yCoord
 import mods.eln.misc.zCoord
 
-open class TransparentNodeEntity : NodeBlockEntity(), ISidedInventory {
+open class TransparentNodeEntity : NodeBlockEntity(), WorldlyContainer {
     var elementRender: TransparentNodeElementRender? = null
     var elementRenderId: Short = 0
 
@@ -69,12 +69,12 @@ open class TransparentNodeEntity : NodeBlockEntity(), ISidedInventory {
         }
     }
 
-    override fun newContainer(side: Direction, player: EntityPlayer): Container? {
+    override fun newContainer(side: Direction, player: Player): AbstractContainerMenu? {
         val n = node as TransparentNode? ?: return null
         return n.newContainer(side, player)
     }
 
-    override fun newGuiDraw(side: Direction, player: EntityPlayer): GuiScreen? {
+    override fun newGuiDraw(side: Direction, player: Player): Screen? {
         return elementRender!!.newGuiDraw(side, player)
     }
 
@@ -95,13 +95,13 @@ open class TransparentNodeEntity : NodeBlockEntity(), ISidedInventory {
         return if (elementRender == null) super.cameraDrawOptimisation() else elementRender!!.cameraDrawOptimisation()
     }
 
-    @SideOnly(Side.CLIENT)
-    override fun unoptimizedRenderBoundingBox(): AxisAlignedBB {
+    @OnlyIn(Dist.CLIENT)
+    override fun unoptimizedRenderBoundingBox(): AABB {
         return if (elementRender == null) super.unoptimizedRenderBoundingBox() else elementRender!!.unoptimizedRenderBoundingBox()
     }
 
-    @Suppress("UNUSED_PARAMETER") fun getDamageValue(world: World, x: Int, y: Int, z: Int): Int {
-        return if (world.isRemote) {
+    @Suppress("UNUSED_PARAMETER") fun getDamageValue(world: Level, x: Int, y: Int, z: Int): Int {
+        return if (world.isClientSide) {
             elementRenderId.toInt()
         } else 0
     }
@@ -110,8 +110,8 @@ open class TransparentNodeEntity : NodeBlockEntity(), ISidedInventory {
         if (elementRender != null) elementRender!!.notifyNeighborSpawn()
     }
 
-    fun addCollisionBoxesToList(par5AxisAlignedBB: AxisAlignedBB, list: MutableList<AxisAlignedBB?>, blockCoord: Coordinate?) {
-        val desc = if (world.isRemote) {
+    fun addCollisionBoxesToList(par5AxisAlignedBB: AABB, list: MutableList<AABB?>, blockCoord: Coordinate?) {
+        val desc = if (world.isClientSide) {
             if (elementRender == null) null else elementRender!!.transparentNodeDescriptor
         } else {
             val node = node as TransparentNode?
@@ -161,19 +161,19 @@ open class TransparentNodeEntity : NodeBlockEntity(), ISidedInventory {
         return 0
     }
 
-    open val sidedInventory: ISidedInventory
+    open val sidedInventory: WorldlyContainer
         get() {
-            if (world.isRemote) {
+            if (world.isClientSide) {
                 if (elementRender == null) return instance
                 val i = elementRender!!.inventory
-                if (i != null && i is ISidedInventory) {
+                if (i != null && i is WorldlyContainer) {
                     return i
                 }
             } else {
                 val node = node
                 if (node != null && node is TransparentNode) {
                     val i = node.getInventory(null)
-                    if (i != null && i is ISidedInventory) {
+                    if (i != null && i is WorldlyContainer) {
                         return i
                     }
                 }
@@ -181,26 +181,26 @@ open class TransparentNodeEntity : NodeBlockEntity(), ISidedInventory {
             return instance
         }
 
-    override fun getSizeInventory(): Int {
-        return sidedInventory.sizeInventory
+    override fun getContainerSize(): Int {
+        return sidedInventory.containerSize
     }
 
-    override fun getStackInSlot(var1: Int): ItemStack {
-        return sidedInventory.getStackInSlot(var1)
+    override fun getItem(var1: Int): ItemStack {
+        return sidedInventory.getItem(var1)
     }
 
     override fun isEmpty(): Boolean = sidedInventory.isEmpty
 
-    override fun decrStackSize(var1: Int, var2: Int): ItemStack {
-        return sidedInventory.decrStackSize(var1, var2)
+    override fun removeItem(var1: Int, var2: Int): ItemStack {
+        return sidedInventory.removeItem(var1, var2)
     }
 
-    override fun removeStackFromSlot(var1: Int): ItemStack {
-        return sidedInventory.removeStackFromSlot(var1)
+    override fun removeItemNoUpdate(var1: Int): ItemStack {
+        return sidedInventory.removeItemNoUpdate(var1)
     }
 
-    override fun setInventorySlotContents(var1: Int, var2: ItemStack) {
-        sidedInventory.setInventorySlotContents(var1, var2)
+    override fun setItem(var1: Int, var2: ItemStack) {
+        sidedInventory.setItem(var1, var2)
     }
 
     override fun clear() = sidedInventory.clear()
@@ -213,34 +213,34 @@ open class TransparentNodeEntity : NodeBlockEntity(), ISidedInventory {
 
     override fun hasCustomName(): Boolean = sidedInventory.hasCustomName()
 
-    override fun getDisplayName(): ITextComponent = sidedInventory.displayName
+    override fun getDisplayName(): Component = sidedInventory.displayName
 
-    override fun getInventoryStackLimit(): Int {
-        return sidedInventory.inventoryStackLimit
+    override fun getMaxStackSize(): Int {
+        return sidedInventory.maxStackSize
     }
 
-    override fun isUsableByPlayer(var1: EntityPlayer): Boolean {
-        return sidedInventory.isUsableByPlayer(var1)
+    override fun stillValid(var1: Player): Boolean {
+        return sidedInventory.stillValid(var1)
     }
 
-    override fun openInventory(player: EntityPlayer) {
-        sidedInventory.openInventory(player)
+    override fun startOpen(player: Player) {
+        sidedInventory.startOpen(player)
     }
 
-    override fun closeInventory(player: EntityPlayer) {
-        sidedInventory.closeInventory(player)
+    override fun stopOpen(player: Player) {
+        sidedInventory.stopOpen(player)
     }
 
-    override fun isItemValidForSlot(var1: Int, var2: ItemStack): Boolean {
-        return sidedInventory.isItemValidForSlot(var1, var2)
+    override fun canPlaceItem(var1: Int, var2: ItemStack): Boolean {
+        return sidedInventory.canPlaceItem(var1, var2)
     }
 
     override fun getSlotsForFace(side: EnumFacing): IntArray =
         sidedInventory.getSlotsForFace(side)
 
-    override fun canInsertItem(slot: Int, stack: ItemStack, side: EnumFacing): Boolean =
-        sidedInventory.canInsertItem(slot, stack, side)
+    override fun canPlaceItemThroughFace(slot: Int, stack: ItemStack, side: EnumFacing): Boolean =
+        sidedInventory.canPlaceItemThroughFace(slot, stack, side)
 
-    override fun canExtractItem(slot: Int, stack: ItemStack, side: EnumFacing): Boolean =
-        sidedInventory.canExtractItem(slot, stack, side)
+    override fun canTakeItemThroughFace(slot: Int, stack: ItemStack, side: EnumFacing): Boolean =
+        sidedInventory.canTakeItemThroughFace(slot, stack, side)
 }

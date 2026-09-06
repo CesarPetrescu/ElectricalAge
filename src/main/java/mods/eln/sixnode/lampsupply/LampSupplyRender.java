@@ -10,9 +10,9 @@ import mods.eln.node.six.SixNodeElementInventory;
 import mods.eln.node.six.SixNodeElementRender;
 import mods.eln.node.six.SixNodeEntity;
 import mods.eln.sixnode.genericcable.GenericCableDescriptor;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -62,7 +62,7 @@ public class LampSupplyRender extends SixNodeElementRender {
 
     @Override
     public void refresh(float deltaT) {
-        if (!Utils.isPlayerAround(getTileEntity().getWorld(), coord.getAxisAlignedBB(0)))
+        if (!Utils.isPlayerAround(getTileEntity().getLevel(), coord.getAxisAlignedBB(0)))
             interpolator.setTarget(0f);
         else
             interpolator.setTarget(1f);
@@ -78,7 +78,7 @@ public class LampSupplyRender extends SixNodeElementRender {
 
     @Nullable
     @Override
-    public GuiScreen newGuiDraw(@NotNull Direction side, @NotNull EntityPlayer player) {
+    public Screen newGuiDraw(@NotNull Direction side, @NotNull Player player) {
         return new LampSupplyGui(this, player, inventory);
     }
 

@@ -7,30 +7,30 @@ import mods.eln.misc.Direction.Companion.fromIntMinecraftSide
 import mods.eln.misc.Utils.sendMessage
 import mods.eln.misc.Utils.nullCheck
 import mods.eln.node.NodeBlock
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.client.Minecraft
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.world.World
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.Level
 import mods.eln.client.itemrender.IItemRenderer
 import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
 import mods.eln.client.itemrender.IItemRenderer.ItemRendererHelper
-import net.minecraft.block.state.IBlockState
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.BlockPos
 import org.lwjgl.opengl.GL11
 import mods.eln.misc.setBlock
 
 class TransparentNodeItem(b: Block?) : GenericItemBlockUsingDamage<TransparentNodeDescriptor?>(b), IItemRenderer {
     override fun placeBlockAt(
-        stack: ItemStack, player: EntityPlayer, world: World, pos: BlockPos,
-        side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float, newState: IBlockState
+        stack: ItemStack, player: Player, world: Level, pos: BlockPos,
+        side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float, newState: BlockState
     ): Boolean {
         var x = pos.x
         var y = pos.y
         var z = pos.z
         val metadata = this.block.getMetaFromState(newState)
-        if (world.isRemote) return false
+        if (world.isClientSide) return false
         val descriptor = getDescriptor(stack)
         val direction = fromIntMinecraftSide(side.index)!!.inverse
         val front = descriptor!!.getFrontFromPlace(direction, player)
@@ -72,7 +72,7 @@ class TransparentNodeItem(b: Block?) : GenericItemBlockUsingDamage<TransparentNo
     }
 
     override fun renderItem(type: ItemRenderType, item: ItemStack, vararg data: Any) {
-        Minecraft.getMinecraft().profiler.startSection("TransparentNodeItem")
+        Minecraft.getInstance().profiler.startSection("TransparentNodeItem")
         if (shouldUseRenderHelperEln(type, item, null)) {
             when (type) {
                 ItemRenderType.ENTITY -> GL11.glTranslatef(0.00f, 0.3f, 0.0f)
@@ -89,7 +89,7 @@ class TransparentNodeItem(b: Block?) : GenericItemBlockUsingDamage<TransparentNo
         if (descriptor != null) {
             descriptor.renderItem(type, item, *data)
         }
-        Minecraft.getMinecraft().profiler.endSection()
+        Minecraft.getInstance().profiler.endSection()
     }
 
     init {

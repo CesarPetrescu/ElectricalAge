@@ -1,11 +1,11 @@
 package mods.eln.sim;
 
-import net.minecraftforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
-import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import mods.eln.Eln;
 import mods.eln.environment.RoomThermalManager;
 import mods.eln.item.lampitem.LampLists;
@@ -77,7 +77,7 @@ public class Simulator /* ,IPacketHandler */ {
         this.electricalInterSystemOverSampling = electricalInterSystemOverSampling;
         this.thermalPeriod = thermalPeriod;
 
-        MinecraftForge.EVENT_BUS.register(this);
+        NeoForge.EVENT_BUS.register(this);
 
         mna = new RootSystem(electricalPeriod, electricalInterSystemOverSampling);
 
@@ -356,7 +356,7 @@ public class Simulator /* ,IPacketHandler */ {
     public boolean pleaseCrash = false;
 
     @SubscribeEvent
-    public void tick(ServerTickEvent event) {
+    public void tick(ServerTickEvent.Post event) {
         if (event.phase != Phase.START) return;
         if (pleaseCrash) throw new StackOverflowError();
         long stackStart;

@@ -31,10 +31,10 @@ import mods.eln.sim.process.destruct.BipoleVoltageWatchdog
 import mods.eln.sim.process.destruct.ThermalLoadWatchDog
 import mods.eln.sim.process.destruct.WorldExplosion
 import mods.eln.sim.process.heater.ResistorHeatThermalLoad
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
 import mods.eln.client.itemrender.IItemRenderer
 import org.lwjgl.opengl.GL11
 import java.io.ByteArrayOutputStream
@@ -62,9 +62,9 @@ abstract class CreativePassiveDescriptor(
     protected val resistorCore = obj.getPart("ResistorCore")
     protected val resistorCables = obj.getPart("CapacitorCables")
 
-    override fun canBePlacedOnSide(player: EntityPlayer?, side: Direction) = true
+    override fun canBePlacedOnSide(player: Player?, side: Direction) = true
 
-    override fun getFrontFromPlace(side: Direction, player: EntityPlayer): LRDU {
+    override fun getFrontFromPlace(side: Direction, player: Player): LRDU {
         return super.getFrontFromPlace(side, player)!!.left()
     }
 
@@ -95,7 +95,7 @@ class CreativePowerResistorDescriptor(name: String, obj: Obj3D) :
         }
     }
 
-    override fun addInformation(itemStack: ItemStack, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack, entityPlayer: Player?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         Collections.addAll(list, *tr("Creative resistor with direct value entry.").split("\n").toTypedArray())
     }
@@ -135,14 +135,14 @@ class CreativePowerResistorElement(sixNode: SixNode, side: Direction, descriptor
         resistor.resistance = resistance.coerceAtLeast(1.0e-9)
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
         resistance = nbt.getDouble("resistance")
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound) {
+    override fun writeToNBT(nbt: CompoundTag) {
         super.writeToNBT(nbt)
-        nbt.setDouble("resistance", resistance)
+        nbt.putDouble("resistance", resistance)
     }
 
     override fun getElectricalLoad(lrdu: LRDU, mask: Int): ElectricalLoad? {
@@ -185,20 +185,20 @@ class CreativePowerResistorElement(sixNode: SixNode, side: Direction, descriptor
 
     override fun hasGui() = true
 
-    override fun onBlockActivated(entityPlayer: EntityPlayer, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
+    override fun onBlockActivated(entityPlayer: Player, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
         return onBlockActivatedRotate(entityPlayer)
     }
 
-    override fun readConfigTool(compound: NBTTagCompound, invoker: EntityPlayer) {
-        if (compound.hasKey("resistance")) {
+    override fun readConfigTool(compound: CompoundTag, invoker: Player) {
+        if (compound.contains("resistance")) {
             resistance = compound.getDouble("resistance")
             applyResistance()
             needPublish()
         }
     }
 
-    override fun writeConfigTool(compound: NBTTagCompound, invoker: EntityPlayer) {
-        compound.setDouble("resistance", resistance)
+    override fun writeConfigTool(compound: CompoundTag, invoker: Player) {
+        compound.putDouble("resistance", resistance)
     }
 
     init {
@@ -227,7 +227,7 @@ class CreativePowerResistorRender(tileEntity: SixNodeEntity, side: Direction, de
         resistance = stream.readDouble()
     }
 
-    override fun newGuiDraw(side: Direction, player: EntityPlayer): GuiScreen = CreativePassiveValueGui(
+    override fun newGuiDraw(side: Direction, player: Player): Screen = CreativePassiveValueGui(
         this,
         tr("Creative Power Resistor"),
         tr("Resistance"),
@@ -255,7 +255,7 @@ class CreativePowerCapacitorDescriptor(name: String, obj: Obj3D) :
         }
     }
 
-    override fun addInformation(itemStack: ItemStack, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack, entityPlayer: Player?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         Collections.addAll(list, *tr("Creative capacitor with direct value entry.").split("\n").toTypedArray())
     }
@@ -286,14 +286,14 @@ class CreativePowerCapacitorElement(sixNode: SixNode, side: Direction, descripto
         applyCapacitance()
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
         capacitance = nbt.getDouble("capacitance")
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound) {
+    override fun writeToNBT(nbt: CompoundTag) {
         super.writeToNBT(nbt)
-        nbt.setDouble("capacitance", capacitance)
+        nbt.putDouble("capacitance", capacitance)
     }
 
     override fun getElectricalLoad(lrdu: LRDU, mask: Int): ElectricalLoad? {
@@ -331,20 +331,20 @@ class CreativePowerCapacitorElement(sixNode: SixNode, side: Direction, descripto
 
     override fun hasGui() = true
 
-    override fun onBlockActivated(entityPlayer: EntityPlayer, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
+    override fun onBlockActivated(entityPlayer: Player, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
         return onBlockActivatedRotate(entityPlayer)
     }
 
-    override fun readConfigTool(compound: NBTTagCompound, invoker: EntityPlayer) {
-        if (compound.hasKey("capacitance")) {
+    override fun readConfigTool(compound: CompoundTag, invoker: Player) {
+        if (compound.contains("capacitance")) {
             capacitance = compound.getDouble("capacitance")
             applyCapacitance()
             needPublish()
         }
     }
 
-    override fun writeConfigTool(compound: NBTTagCompound, invoker: EntityPlayer) {
-        compound.setDouble("capacitance", capacitance)
+    override fun writeConfigTool(compound: CompoundTag, invoker: Player) {
+        compound.putDouble("capacitance", capacitance)
     }
 
     init {
@@ -372,7 +372,7 @@ class CreativePowerCapacitorRender(tileEntity: SixNodeEntity, side: Direction, d
         capacitance = stream.readDouble()
     }
 
-    override fun newGuiDraw(side: Direction, player: EntityPlayer): GuiScreen = CreativePassiveValueGui(
+    override fun newGuiDraw(side: Direction, player: Player): Screen = CreativePassiveValueGui(
         this,
         tr("Creative Power Capacitor"),
         tr("Capacitance"),
@@ -403,7 +403,7 @@ class CreativePowerInductorDescriptor(name: String, obj: Obj3D) :
         }
     }
 
-    override fun addInformation(itemStack: ItemStack, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack, entityPlayer: Player?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         Collections.addAll(list, *tr("Creative inductor with direct value entry.").split("\n").toTypedArray())
     }
@@ -434,14 +434,14 @@ class CreativePowerInductorElement(sixNode: SixNode, side: Direction, descriptor
         applyInductance()
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
         inductance = nbt.getDouble("inductance")
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound) {
+    override fun writeToNBT(nbt: CompoundTag) {
         super.writeToNBT(nbt)
-        nbt.setDouble("inductance", inductance)
+        nbt.putDouble("inductance", inductance)
     }
 
     override fun getElectricalLoad(lrdu: LRDU, mask: Int): ElectricalLoad? {
@@ -479,20 +479,20 @@ class CreativePowerInductorElement(sixNode: SixNode, side: Direction, descriptor
 
     override fun hasGui() = true
 
-    override fun onBlockActivated(entityPlayer: EntityPlayer, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
+    override fun onBlockActivated(entityPlayer: Player, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
         return onBlockActivatedRotate(entityPlayer)
     }
 
-    override fun readConfigTool(compound: NBTTagCompound, invoker: EntityPlayer) {
-        if (compound.hasKey("inductance")) {
+    override fun readConfigTool(compound: CompoundTag, invoker: Player) {
+        if (compound.contains("inductance")) {
             inductance = compound.getDouble("inductance")
             applyInductance()
             needPublish()
         }
     }
 
-    override fun writeConfigTool(compound: NBTTagCompound, invoker: EntityPlayer) {
-        compound.setDouble("inductance", inductance)
+    override fun writeConfigTool(compound: CompoundTag, invoker: Player) {
+        compound.putDouble("inductance", inductance)
     }
 
     init {
@@ -518,7 +518,7 @@ class CreativePowerInductorRender(tileEntity: SixNodeEntity, side: Direction, de
         inductance = stream.readDouble()
     }
 
-    override fun newGuiDraw(side: Direction, player: EntityPlayer): GuiScreen = CreativePassiveValueGui(
+    override fun newGuiDraw(side: Direction, player: Player): Screen = CreativePassiveValueGui(
         this,
         tr("Creative Power Inductor"),
         tr("Inductance"),

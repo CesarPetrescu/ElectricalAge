@@ -1,10 +1,10 @@
 package mods.eln.gui;
 
-import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.screens.Screen;
 
 public class HelperStdContainerBig extends GuiHelperContainer {
 
-    public HelperStdContainerBig(GuiScreen screen) {
+    public HelperStdContainerBig(Screen screen) {
         super(screen, 176, 214, 8, 84 + 214 - 166, "stdcontainerbig.png");
     }
 

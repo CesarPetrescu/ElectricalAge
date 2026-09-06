@@ -10,11 +10,11 @@ import mods.eln.node.transparent.TransparentNodeElement
 import mods.eln.sim.ElectricalLoad
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor
 import mods.eln.sixnode.electricalcable.UtilityCableDescriptor
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.math.Vec3d
+import net.minecraft.world.entity.player.Player
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.world.phys.Vec3
 import org.apache.commons.lang3.tuple.Pair
 
 import java.io.DataOutputStream
@@ -36,15 +36,15 @@ abstract class GridElement(transparentNode: TransparentNode, descriptor: Transpa
         this.desc = descriptor as GridDescriptor
     }
 
-    private fun shouldConsumeUtilityCableLength(player: EntityPlayer): Boolean {
+    private fun shouldConsumeUtilityCableLength(player: Player): Boolean {
         val creativeFreeLength = Eln.config.getBooleanOrElse("gameplay.cables.creativeFreeLength", true)
-        return !(creativeFreeLength && player is EntityPlayerMP && Utils.isCreative(player))
+        return !(creativeFreeLength && player is ServerPlayer && Utils.isCreative(player))
     }
 
     /* Connect one GridNode to another. */
-    override fun onBlockActivated(player: EntityPlayer, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
+    override fun onBlockActivated(player: Player, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
         // Check if user is holding an appropriate tool.
-        val stack = player.heldItemMainhand
+        val stack = player.mainHandItem
         val itemDesc = GenericItemBlockUsingDamageDescriptor.getDescriptor(stack)
         if (itemDesc is ElectricalCableDescriptor) {
             return onTryGridConnect(player, stack, itemDesc, side)
@@ -53,7 +53,7 @@ abstract class GridElement(transparentNode: TransparentNode, descriptor: Transpa
         return false
     }
 
-    private fun onTryGridConnect(entityPlayer: EntityPlayer, stack: ItemStack, cable: ElectricalCableDescriptor, side: Direction): Boolean {
+    private fun onTryGridConnect(entityPlayer: Player, stack: ItemStack, cable: ElectricalCableDescriptor, side: Direction): Boolean {
         // First node, or second node?
         val uuid = entityPlayer.persistentID
         val p = pending[uuid]
@@ -82,7 +82,7 @@ abstract class GridElement(transparentNode: TransparentNode, descriptor: Transpa
             val consumeLength = shouldConsumeUtilityCableLength(entityPlayer)
             val availableLength = if (cable is UtilityCableDescriptor && consumeLength) cable.getRemainingLengthMeters(stack).toInt() else stackSize
 
-            if (availableLength < cableLength && !Utils.isCreative(entityPlayer as EntityPlayerMP)) {
+            if (availableLength < cableLength && !Utils.isCreative(entityPlayer as ServerPlayer)) {
                 Utils.sendMessage(entityPlayer, tr("You need %1$ m of cable", cableLength))
             } else if (distance > range) {
                 Utils.sendMessage(entityPlayer, tr("Cannot connect, range %1$ and limit %2$ blocks", Math.ceil(distance).toInt(), range))
@@ -104,9 +104,9 @@ abstract class GridElement(transparentNode: TransparentNode, descriptor: Transpa
                         if (cable.getRemainingLengthMeters(stack) <= 0.0) {
                             stack.count -= 1
                         }
-                        entityPlayer.inventory.markDirty()
+                        entityPlayer.inventory.setChanged()
                     } else if (cable !is UtilityCableDescriptor) {
-                        if (!(Eln.config.getBooleanOrElse("gameplay.qol.creativeNoConsumeInsertedItems", false) && entityPlayer is EntityPlayerMP && Utils.isCreative(entityPlayer))) entityPlayer.removeMultipleItems(stack, cableLength)
+                        if (!(Eln.config.getBooleanOrElse("gameplay.qol.creativeNoConsumeInsertedItems", false) && entityPlayer is ServerPlayer && Utils.isCreative(entityPlayer))) entityPlayer.removeMultipleItems(stack, cableLength)
                     }
                 } catch (e: UserError) {
                     Utils.sendMessage(entityPlayer, e.message)
@@ -156,7 +156,7 @@ abstract class GridElement(transparentNode: TransparentNode, descriptor: Transpa
         }
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound) {
+    override fun writeToNBT(nbt: CompoundTag) {
         super.writeToNBT(nbt)
 
         val gridLinks = Utils.newNbtTagCompund(nbt, "gridLinks")
@@ -165,11 +165,11 @@ abstract class GridElement(transparentNode: TransparentNode, descriptor: Transpa
         }
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
 
         assert(gridLinkList.isEmpty())
-        val gridLinks = nbt.getCompoundTag("gridLinks")
+        val gridLinks = nbt.getCompound("gridLinks")
         var i: Int? = 0
         while (true) {
             val linkTag = gridLinks.getCompoundTag(i!!.toString())
@@ -248,8 +248,8 @@ abstract class GridElement(transparentNode: TransparentNode, descriptor: Transpa
             // Check for which ones it's this one.
             val ourLinks = gridLinkList.filter { it.a == coordinate()/* && link.connected*/ }
             // The renderer needs to know, for each catenary:
-            // - Vec3d of the starting point.
-            // - Vec3d of the end point.
+            // - Vec3 of the starting point.
+            // - Vec3 of the end point.
             // There's a finite number of starting points, and a potentially unlimited number of endpoints...
             // But until we get protocol buffers or something, simple remains good.
             // So we'll just send pairs, even if there's some duplication.
@@ -276,20 +276,20 @@ abstract class GridElement(transparentNode: TransparentNode, descriptor: Transpa
 
     }
 
-    protected open fun getCablePoint(side: Direction, i: Int): Vec3d {
+    protected open fun getCablePoint(side: Direction, i: Int): Vec3 {
         if (i >= 2) throw AssertionError("Invalid cable point index")
         val part = (if (i == 0) desc.plus else desc.gnd)[0]
         val bb = part.boundingBox()
         return bb.centre()
     }
 
-    protected open fun getRenderCablePoint(side: Direction, i: Int): Vec3d =
+    protected open fun getRenderCablePoint(side: Direction, i: Int): Vec3 =
         getCablePoint(side, i).add(
             desc.renderOffset.xCoord, desc.renderOffset.yCoord, desc.renderOffset.zCoord
         )
 
     @Throws(IOException::class)
-    private fun writeVec(stream: DataOutputStream, sp: Vec3d) {
+    private fun writeVec(stream: DataOutputStream, sp: Vec3) {
         stream.writeFloat(sp.xCoord.toFloat())
         stream.writeFloat(sp.yCoord.toFloat())
         stream.writeFloat(sp.zCoord.toFloat())

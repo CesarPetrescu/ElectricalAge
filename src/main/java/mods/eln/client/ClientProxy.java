@@ -13,13 +13,13 @@ import mods.eln.node.transparent.TransparentNodeEntity;
 import mods.eln.node.transparent.TransparentNodeRender;
 import mods.eln.sixnode.tutorialsign.TutorialSignOverlay;
 import mods.eln.sound.SoundClientEventListener;
-import net.minecraft.client.model.ModelSilverfish;
+import net.minecraft.client.model.SilverfishModel;
 import com.google.common.collect.ImmutableMap;
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
-import net.minecraft.item.Item;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.world.item.Item;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.model.ModelLoader;
-import net.minecraftforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 import paulscode.sound.SoundSystemConfig;
 
 import java.util.Map;
@@ -34,7 +34,7 @@ public class ClientProxy extends CommonProxy {
         // 1.8+: renderers are created per RenderManager through a factory, and the RenderManager
         // consumes the factory map between preInit and init - so this cannot live in registerRenderers.
         RenderingRegistry.registerEntityRenderingHandler(ReplicatorEntity.class,
-                manager -> new ReplicatorRender(manager, new ModelSilverfish(), 0.3f));
+                manager -> new ReplicatorRender(manager, new SilverfishModel(), 0.3f));
 
         // 1.8+: an item's inventory model is looked up by an explicit ModelResourceLocation per
         // metadata. Only the ore item has real per-meta block models; the descriptor-driven items
@@ -48,7 +48,7 @@ public class ClientProxy extends CommonProxy {
         if (ore == null) return;
         for (Map.Entry<Integer, String> e : ORE_MODELS.entrySet()) {
             ModelLoader.setCustomModelResourceLocation(ore, e.getKey(),
-                    new ModelResourceLocation(new ResourceLocation(Eln.MODID, "ore_" + e.getValue()), "inventory"));
+                    new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(Eln.MODID, "ore_" + e.getValue()), "inventory"));
         }
     }
 
@@ -67,13 +67,13 @@ public class ClientProxy extends CommonProxy {
         // bodies, bound through Item.setTileEntityItemStackRenderer + a builtin/generated model.
 
         Eln.clientKeyHandler = new ClientKeyHandler();
-        MinecraftForge.EVENT_BUS.register(Eln.clientKeyHandler);
-        MinecraftForge.EVENT_BUS.register(new TutorialSignOverlay());
+        NeoForge.EVENT_BUS.register(Eln.clientKeyHandler);
+        NeoForge.EVENT_BUS.register(new TutorialSignOverlay());
         uuidManager = new UuidManager();
         soundClientEventListener = new SoundClientEventListener(uuidManager);
 
         if (Eln.config.getBooleanOrElse("updates.versionCheck.enabled", true))
-            MinecraftForge.EVENT_BUS.register(VersionCheckerHandler.getInstance());
+            NeoForge.EVENT_BUS.register(VersionCheckerHandler.getInstance());
 
         new FrameTime();
         new ConnectionListener();

@@ -7,12 +7,12 @@ import mods.eln.i18n.I18N.tr
 import mods.eln.misc.Utils.sendMessage
 import mods.eln.misc.UtilsClient
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiButton
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.item.ItemStack
-import net.minecraft.world.World
+import net.minecraft.client.gui.components.Button
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.world.entity.player.Player
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.Level
 import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
 import java.nio.charset.StandardCharsets
@@ -20,32 +20,32 @@ import java.nio.charset.StandardCharsets
 private const val MAX_FALSTAD_IMPORT_BYTES = 32000
 
 class FalstadImportToolDescriptor(name: String) : GenericItemUsingDamageDescriptor(name, "configcopytool") {
-    override fun onItemRightClick(s: ItemStack, w: World, p: EntityPlayer): ItemStack {
-        if (w.isRemote) {
-            Minecraft.getMinecraft().displayGuiScreen(FalstadImportGui())
+    override fun onItemRightClick(s: ItemStack, w: Level, p: Player): ItemStack {
+        if (w.isClientSide) {
+            Minecraft.getInstance().setScreen(FalstadImportGui())
         }
         return s
     }
 
-    override fun addInformation(itemStack: ItemStack?, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack?, entityPlayer: Player?, list: MutableList<String>, par4: Boolean) {
         list.add(tr("Right click to import a Falstad netlist from the clipboard."))
         list.add(tr("Places a simplified ELN build on flat ground near the player."))
     }
 }
 
-class FalstadImportGui : GuiScreen() {
+class FalstadImportGui : Screen() {
     override fun initGui() {
         super.initGui()
         buttonList.clear()
-        buttonList.add(GuiButton(0, width / 2 - 70, height / 2 - 10, 140, 20, tr("Paste Clipboard")))
-        buttonList.add(GuiButton(1, width / 2 - 70, height / 2 + 16, 140, 20, tr("Cancel")))
+        buttonList.add(Button(0, width / 2 - 70, height / 2 - 10, 140, 20, tr("Paste Clipboard")))
+        buttonList.add(Button(1, width / 2 - 70, height / 2 + 16, 140, 20, tr("Cancel")))
     }
 
-    override fun actionPerformed(button: GuiButton) {
+    override fun actionPerformed(button: Button) {
         when (button.id) {
             0 -> {
                 val clipboard = getClipboardString().orEmpty().trim()
-                val player = Minecraft.getMinecraft().player
+                val player = Minecraft.getInstance().player
                 if (clipboard.isEmpty()) {
                     if (player != null) sendMessage(player, tr("Falstad import: clipboard is empty."))
                     return
@@ -76,9 +76,9 @@ class FalstadImportGui : GuiScreen() {
                 stream.writeInt(bytes.size)
                 stream.write(bytes)
                 UtilsClient.sendPacketToServer(bos)
-                mc.displayGuiScreen(null)
+                mc.setScreen(null)
             }
-            else -> mc.displayGuiScreen(null)
+            else -> mc.setScreen(null)
         }
     }
 
@@ -93,7 +93,7 @@ class FalstadImportGui : GuiScreen() {
 }
 
 object FalstadImportPacketHandler {
-    fun handle(player: EntityPlayerMP, bytes: ByteArray) {
+    fun handle(player: ServerPlayer, bytes: ByteArray) {
         FalstadImporter.importFromClipboardAsync(player, String(bytes, StandardCharsets.UTF_8))
     }
 }

@@ -1,8 +1,8 @@
 package mods.eln.sixnode.mqttsignal
 
 import mods.eln.misc.BasicContainer
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.IInventory
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.Container
 
-class MqttSignalControllerContainer(player: EntityPlayer, inventory: IInventory) :
+class MqttSignalControllerContainer(player: Player, inventory: Container) :
     BasicContainer(player, inventory, emptyArray())

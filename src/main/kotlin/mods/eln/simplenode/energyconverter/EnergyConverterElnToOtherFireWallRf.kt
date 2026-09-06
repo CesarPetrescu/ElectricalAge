@@ -3,7 +3,7 @@ package mods.eln.simplenode.energyconverter
 import mods.eln.Other
 import mods.eln.misc.Direction
 import net.minecraftforge.energy.CapabilityEnergy
-import net.minecraftforge.energy.IEnergyStorage
+import net.neoforged.neoforge.energy.IEnergyStorage
 
 /**
  * Pushes energy into neighbouring Forge Energy receivers (the 1.12.2 successor of the cofh RF API).
@@ -11,7 +11,7 @@ import net.minecraftforge.energy.IEnergyStorage
 object EnergyConverterElnToOtherFireWallRf {
 
     fun updateEntity(e: EnergyConverterElnToOtherEntity) {
-        if (e.world.isRemote) return
+        if (e.level.isClientSide) return
         if (e.node == null) return
         val node = e.node as EnergyConverterElnToOtherNode
 

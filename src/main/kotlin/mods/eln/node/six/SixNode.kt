@@ -23,15 +23,15 @@ import mods.eln.sim.ThermalConnection
 import mods.eln.sim.ThermalLoad
 import mods.eln.sixnode.lampsocket.LampSocketDescriptor
 import mods.eln.sixnode.lampsocket.LampSocketElement
-import net.minecraft.block.Block
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.init.Blocks
-import net.minecraft.inventory.Container
-import net.minecraft.inventory.IInventory
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.entity.player.Player
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.inventory.AbstractContainerMenu
+import net.minecraft.world.Container
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
@@ -76,14 +76,14 @@ class SixNode : Node() {
         return value
     }
 
-    fun createSubBlock(itemStack: ItemStack, direction: Direction, player: EntityPlayer?): Boolean {
+    fun createSubBlock(itemStack: ItemStack, direction: Direction, player: Player?): Boolean {
         val descriptor = Eln.sixNodeItem.getDescriptor(itemStack)
         if (sideElementList[direction.int] != null) return false
         try {
             sideElementIdList[direction.int] = itemStack.itemDamage //Je sais c'est moche !
             sideElementList[direction.int] = descriptor!!.ElementClass.getConstructor(SixNode::class.java, Direction::class.java, SixNodeDescriptor::class.java).newInstance(this, direction, descriptor) as SixNodeElement
             if (descriptor is LampSocketDescriptor) {
-                LampSocketElement.placingPlayerIsCreative = player is EntityPlayerMP && isCreative(player)
+                LampSocketElement.placingPlayerIsCreative = player is ServerPlayer && isCreative(player)
             }
             sideElementIdList[direction.int] = 0
             disconnect()
@@ -110,7 +110,7 @@ class SixNode : Node() {
         return false
     }
 
-    fun playerAskToBreakSubBlock(entityPlayer: EntityPlayerMP?, direction: Direction): Boolean {
+    fun playerAskToBreakSubBlock(entityPlayer: ServerPlayer?, direction: Direction): Boolean {
         if (sideElementList[direction.int] == null) return deleteSubBlock(entityPlayer, direction)
         return if (sideElementList[direction.int]!!.playerAskToBreak()) {
             deleteSubBlock(entityPlayer, direction)
@@ -119,7 +119,7 @@ class SixNode : Node() {
         }
     }
 
-    fun deleteSubBlock(entityPlayer: EntityPlayerMP?, direction: Direction): Boolean {
+    fun deleteSubBlock(entityPlayer: ServerPlayer?, direction: Direction): Boolean {
         if (sideElementList[direction.int] == null) return false
         println("deleteSubBlock  $direction")
         disconnect()
@@ -141,9 +141,9 @@ class SixNode : Node() {
             return false
         }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
-        super.readFromNBT(nbt.getCompoundTag("node"))
-        sixNodeCacheBlock = Block.getBlockById(nbt.getInteger("cacheBlockId"))
+    override fun readFromNBT(nbt: CompoundTag) {
+        super.readFromNBT(nbt.getCompound("node"))
+        sixNodeCacheBlock = Block.getBlockById(nbt.getInt("cacheBlockId"))
         sixNodeCacheBlockMeta = nbt.getByte("cacheBlockMeta")
         var idx: Int
         idx = 0
@@ -157,7 +157,7 @@ class SixNode : Node() {
                     val descriptor = Eln.sixNodeItem.getDescriptor(sideElementId.toInt())
                     sideElementIdList[idx] = sideElementId.toInt()
                     sideElementList[idx] = descriptor!!.ElementClass.getConstructor(SixNode::class.java, Direction::class.java, SixNodeDescriptor::class.java).newInstance(this, fromInt(idx), descriptor) as SixNodeElement
-                    sideElementList[idx]!!.readFromNBT(nbt.getCompoundTag("ED$idx"))
+                    sideElementList[idx]!!.readFromNBT(nbt.getCompound("ED$idx"))
                     sideElementList[idx]!!.initialize()
                 } catch (e: InstantiationException) {
                     e.printStackTrace()
@@ -182,22 +182,22 @@ class SixNode : Node() {
         return false
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound) {
+    override fun writeToNBT(nbt: CompoundTag) {
         var idx = 0
-        nbt.setInteger("cacheBlockId", Block.getIdFromBlock(sixNodeCacheBlock))
-        nbt.setByte("cacheBlockMeta", sixNodeCacheBlockMeta)
+        nbt.putInt("cacheBlockId", Block.getIdFromBlock(sixNodeCacheBlock))
+        nbt.putByte("cacheBlockMeta", sixNodeCacheBlockMeta)
         for (sideElement in sideElementList) {
             if (sideElement == null) {
-                nbt.setShort("EID$idx", 0.toShort())
+                nbt.putShort("EID$idx", 0.toShort())
             } else {
-                nbt.setShort("EID$idx", sideElementIdList[idx].toShort())
+                nbt.putShort("EID$idx", sideElementIdList[idx].toShort())
                 sideElement.writeToNBT(newNbtTagCompund(nbt, "ED$idx"))
             }
             idx++
         }
-        val nodeNbt = NBTTagCompound()
+        val nodeNbt = CompoundTag()
         super.writeToNBT(nodeNbt)
-        nbt.setTag("node", nodeNbt)
+        nbt.put("node", nodeNbt)
     }
 
     fun getSideEnable(direction: Direction): Boolean {
@@ -245,7 +245,7 @@ class SixNode : Node() {
         return element.thermoMeterString()
     }
 
-    override fun readConfigTool(side: Direction?, tag: NBTTagCompound?, invoker: EntityPlayer?): Boolean {
+    override fun readConfigTool(side: Direction?, tag: CompoundTag?, invoker: Player?): Boolean {
         val element = sideElementList[side!!.int]
         if (element is IConfigurable) {
             (element as IConfigurable).readConfigTool(tag, invoker)
@@ -254,7 +254,7 @@ class SixNode : Node() {
         return false
     }
 
-    override fun writeConfigTool(side: Direction?, tag: NBTTagCompound?, invoker: EntityPlayer?): Boolean {
+    override fun writeConfigTool(side: Direction?, tag: CompoundTag?, invoker: Player?): Boolean {
         val element = sideElementList[side!!.int]
         if (element is IConfigurable) {
             (element as IConfigurable).writeConfigTool(tag, invoker)
@@ -294,7 +294,7 @@ class SixNode : Node() {
         }
     }
 
-    override fun initializeFromThat(front: Direction, entityLiving: EntityLivingBase?,
+    override fun initializeFromThat(front: Direction, entityLiving: LivingEntity?,
                                     itemStack: ItemStack?) {
         neighborBlockRead()
     }
@@ -426,11 +426,11 @@ class SixNode : Node() {
         lrduElementMask[elementSide, elementSide.getLRDUGoingTo(side)!!] = false
     }
 
-    override fun onBlockActivated(entityPlayer: EntityPlayer, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
+    override fun onBlockActivated(entityPlayer: Player, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
         return if (sixNodeCacheBlock !== Blocks.AIR) {
             false
         } else {
-            val stack = entityPlayer.heldItemMainhand
+            val stack = entityPlayer.mainHandItem
             var b = Blocks.AIR
             if (!stack.isNothing()) b = Block.getBlockFromItem(stack.item)
             var isWrenchReplacingBlock = false
@@ -447,7 +447,7 @@ class SixNode : Node() {
 
             if (isWrenchReplacingBlock) {
                 needPublish = true
-                if (!isCreative((entityPlayer as EntityPlayerMP))) entityPlayer.inventory.decrStackSize(entityPlayer.inventory.currentItem, 1)
+                if (!isCreative((entityPlayer as ServerPlayer))) entityPlayer.inventory.removeItem(entityPlayer.inventory.currentItem, 1)
 
                 run {
                     val chunk = coordinate.world().getChunk(coordinate.x shr 4, coordinate.z shr 4)
@@ -468,11 +468,11 @@ class SixNode : Node() {
         return if (sideElementList[side.int] == null) false else sideElementList[side.int]!!.hasGui()
     }
 
-    fun getInventory(side: Direction): IInventory? {
+    fun getInventory(side: Direction): Container? {
         return if (sideElementList[side.int] == null) null else sideElementList[side.int]!!.inventory
     }
 
-    fun newContainer(side: Direction, player: EntityPlayer): Container? {
+    fun newContainer(side: Direction, player: Player): AbstractContainerMenu? {
         return if (sideElementList[side.int] == null) null else sideElementList[side.int]!!.newContainer(side, player)
     }
 
@@ -490,7 +490,7 @@ class SixNode : Node() {
         lightValue = light
     }
 
-    override fun networkUnserialize(stream: DataInputStream, player: EntityPlayerMP?) {
+    override fun networkUnserialize(stream: DataInputStream, player: ServerPlayer?) {
         super.networkUnserialize(stream, player)
         val side: Direction?
         try {

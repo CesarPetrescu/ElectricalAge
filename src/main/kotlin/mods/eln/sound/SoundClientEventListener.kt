@@ -1,18 +1,18 @@
 package mods.eln.sound
 
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.neoforged.bus.api.SubscribeEvent
 import mods.eln.client.UuidManager
-import net.minecraft.client.audio.ISound
-import net.minecraft.client.audio.SoundManager
-import net.minecraftforge.client.event.sound.PlaySoundSourceEvent
-import net.minecraftforge.common.MinecraftForge
+import net.minecraft.client.resources.sounds.SoundInstance
+import net.minecraft.client.sounds.SoundManager
+import net.neoforged.neoforge.client.event.sound.PlaySoundSourceEvent
+import net.neoforged.neoforge.common.NeoForge
 
 class SoundClientEventListener(var uuidManager: UuidManager) {
     @JvmField
     var currentUuid: ArrayList<Int>? = null
 
     init {
-        MinecraftForge.EVENT_BUS.register(this)
+        NeoForge.EVENT_BUS.register(this)
     }
 
     @SubscribeEvent
@@ -23,7 +23,7 @@ class SoundClientEventListener(var uuidManager: UuidManager) {
     }
 
     internal class KillSound {
-        var sound: ISound? = null
+        var sound: SoundInstance? = null
         var sm: SoundManager? = null
 
         fun kill() {

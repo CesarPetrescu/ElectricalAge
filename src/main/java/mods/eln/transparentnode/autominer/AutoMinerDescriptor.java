@@ -6,10 +6,10 @@ import mods.eln.node.transparent.TransparentNodeDescriptor;
 import mods.eln.sim.ElectricalLoad;
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor;
 import mods.eln.wiki.Data;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import org.lwjgl.opengl.GL11;
 
 import java.util.Collections;
@@ -115,7 +115,7 @@ public class AutoMinerDescriptor extends TransparentNodeDescriptor {
     }
 
     @Override
-    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List<String> list, boolean par4) {
+    public void addInformation(ItemStack itemStack, Player entityPlayer, List<String> list, boolean par4) {
         super.addInformation(itemStack, entityPlayer, list, par4);
         Collections.addAll(list, tr("Excavates on a small radius.\nExtracts ore on a bigger radius:\n10 blocks radius after 10 blocks depth.").split("\n"));
         list.add(tr("Nominal voltage: %1$V", Utils.plotValue(nominalVoltage)));
@@ -177,7 +177,7 @@ public class AutoMinerDescriptor extends TransparentNodeDescriptor {
         return type != ItemRenderType.INVENTORY;
     }
 
-    public Coordinate[] getPowerCoordonate(World w) {
+    public Coordinate[] getPowerCoordonate(Level w) {
         Coordinate[] temp = new Coordinate[powerCoord.length];
         for (int idx = 0; idx < temp.length; idx++) {
             temp[idx] = new Coordinate(powerCoord[idx]);

@@ -15,11 +15,11 @@ import mods.eln.sim.ThermalLoad;
 import mods.eln.sim.nbt.NbtThermalLoad;
 import mods.eln.sim.process.destruct.ThermalLoadWatchDog;
 import mods.eln.sim.process.destruct.WorldExplosion;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -91,14 +91,14 @@ public class ThermalDissipatorPassiveElement extends TransparentNodeElement {
     }
 
     @Override
-    public boolean onBlockActivated(EntityPlayer player, Direction side,
+    public boolean onBlockActivated(Player player, Direction side,
                                     float vx, float vy, float vz) {
-        ItemStack stack = player.getHeldItemMainhand();
+        ItemStack stack = player.getMainHandItem();
         if (McBridge.isNothing(stack)) return false;
         if (stack.getItem() == Items.WATER_BUCKET) {
             thermalLoad.temperatureCelsius *= 0.5;
 
-            player.inventory.setInventorySlotContents(player.inventory.currentItem, new ItemStack(Items.BUCKET));
+            player.inventory.setItem(player.inventory.currentItem, new ItemStack(Items.BUCKET));
             return true;
         }
         if (stack.getItem() == Item.getItemFromBlock(Blocks.ICE)) {
@@ -106,7 +106,7 @@ public class ThermalDissipatorPassiveElement extends TransparentNodeElement {
             if (stack.getCount() != 0)
                 stack.shrink(1);
             else
-                player.inventory.setInventorySlotContents(player.inventory.currentItem, ItemStack.EMPTY);
+                player.inventory.setItem(player.inventory.currentItem, ItemStack.EMPTY);
             return true;
         }
         return false;

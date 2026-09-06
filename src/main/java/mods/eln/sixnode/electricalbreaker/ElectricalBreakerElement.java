@@ -24,9 +24,9 @@ import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor;
 import mods.eln.sixnode.electricalcable.UtilityCableDescriptor;
 import mods.eln.sixnode.electricalcable.UtilityCableElement;
 import mods.eln.sound.SoundCommand;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Container;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -35,7 +35,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 public class ElectricalBreakerElement extends SixNodeElement {
     private static final String BREAKER_CLOSE_SOUND = "eln:circuit_breaker_close";
@@ -109,7 +109,7 @@ public class ElectricalBreakerElement extends SixNodeElement {
     }
 
     @Override
-    public void readFromNBT(@NotNull NBTTagCompound nbt) {
+    public void readFromNBT(@NotNull CompoundTag nbt) {
         super.readFromNBT(nbt);
         byte value = nbt.getByte("front");
         front = LRDU.fromInt((value >> 0) & 0x3);
@@ -120,12 +120,12 @@ public class ElectricalBreakerElement extends SixNodeElement {
     }
 
     @Override
-    public void writeToNBT(NBTTagCompound nbt) {
+    public void writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setByte("front", (byte) (front.toInt() << 0));
-        nbt.setBoolean("switchState", switchState);
-        nbt.setFloat("voltageMax", voltageMax);
-        nbt.setFloat("voltageMin", voltageMin);
+        nbt.putByte("front", (byte) (front.toInt() << 0));
+        nbt.putBoolean("switchState", switchState);
+        nbt.putFloat("voltageMax", voltageMax);
+        nbt.putFloat("voltageMin", voltageMin);
     }
 
     @Override
@@ -278,7 +278,7 @@ public class ElectricalBreakerElement extends SixNodeElement {
 
         Direction worldDirection = side.applyLRDU(lrdu);
         Coordinate neighborCoordinate = base.moved(worldDirection);
-        TileEntity tileEntity = McBridge.getTileEntity(neighborCoordinate.world(), neighborCoordinate.x, neighborCoordinate.y, neighborCoordinate.z);
+        BlockEntity tileEntity = McBridge.getBlockEntity(neighborCoordinate.world(), neighborCoordinate.x, neighborCoordinate.y, neighborCoordinate.z);
         if (!(tileEntity instanceof NodeBlockEntity)) return null;
 
         Node node = ((NodeBlockEntity) tileEntity).getNode();
@@ -460,7 +460,7 @@ public class ElectricalBreakerElement extends SixNodeElement {
 
     @Nullable
     @Override
-    public Container newContainer(@NotNull Direction side, @NotNull EntityPlayer player) {
+    public AbstractContainerMenu newContainer(@NotNull Direction side, @NotNull Player player) {
         return new ElectricalBreakerContainer(player, inventory);
     }
 }

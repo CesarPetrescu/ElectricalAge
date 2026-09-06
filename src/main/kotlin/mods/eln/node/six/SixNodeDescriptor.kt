@@ -10,9 +10,9 @@ import mods.eln.misc.Utils.sendMessage
 import mods.eln.misc.Utils.entityLivingHorizontalViewDirection
 import mods.eln.misc.UtilsClient.drawIcon
 import mods.eln.misc.VoltageLevelColor
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
+import net.minecraft.resources.ResourceLocation
 import mods.eln.client.itemrender.IItemRenderer
 import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
 import mods.eln.client.itemrender.IItemRenderer.ItemRendererHelper
@@ -58,11 +58,11 @@ open class SixNodeDescriptor : GenericItemBlockUsingDamageDescriptor, IItemRende
         return false
     }
 
-    open fun canBePlacedOnSide(player: EntityPlayer?, c: Coordinate?, side: Direction): Boolean {
+    open fun canBePlacedOnSide(player: Player?, c: Coordinate?, side: Direction): Boolean {
         return canBePlacedOnSide(player, side)
     }
 
-    open fun canBePlacedOnSide(player: EntityPlayer?, side: Direction): Boolean {
+    open fun canBePlacedOnSide(player: Player?, side: Direction): Boolean {
         if (placeDirection != null) {
             for (d in placeDirection!!) {
                 if (d === side) return true
@@ -111,7 +111,7 @@ open class SixNodeDescriptor : GenericItemBlockUsingDamageDescriptor, IItemRende
         return if (ghostGroup != null && !ghostGroup.canBePloted(coord!!)) tr("Not enough space for this block") else null
     }
 
-    open fun getFrontFromPlace(side: Direction, player: EntityPlayer): LRDU? {
+    open fun getFrontFromPlace(side: Direction, player: Player): LRDU? {
         return when (side) {
             Direction.YN, Direction.YP -> {
                 val viewDirection = entityLivingHorizontalViewDirection(player)

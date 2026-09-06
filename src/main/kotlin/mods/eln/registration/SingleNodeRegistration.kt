@@ -17,7 +17,7 @@ import mods.eln.simplenode.energyconverter.EnergyConverterElnToOtherDescriptor
 import mods.eln.simplenode.energyconverter.EnergyConverterElnToOtherEntity
 import mods.eln.simplenode.energyconverter.EnergyConverterElnToOtherNode
 import mods.eln.simplenode.energyconverter.EnergyConverterElnToOtherNode.Companion.nodeUuidStatic
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.level.block.entity.BlockEntity
 
 object SingleNodeRegistration {
 

@@ -17,12 +17,12 @@ import mods.eln.sim.nbt.NbtElectricalGateOutput
 import mods.eln.sim.nbt.NbtElectricalGateOutputProcess
 import mods.eln.sixnode.AnalogFunction
 import mods.eln.wiki.Data
-import net.minecraft.client.gui.GuiButton
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.client.gui.components.Button
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
 import mods.eln.client.itemrender.IItemRenderer
 import org.lwjgl.opengl.GL11
 import java.io.ByteArrayOutputStream
@@ -76,7 +76,7 @@ open class LogicGateDescriptor(name: String, obj: Obj3D?, functionName: String, 
         }
     }
 
-    override fun getFrontFromPlace(side: Direction, player: EntityPlayer): LRDU? =
+    override fun getFrontFromPlace(side: Direction, player: Player): LRDU? =
         super.getFrontFromPlace(side, player)!!.left()
 
     override fun setParent(item: Item?, damage: Int) {
@@ -84,7 +84,7 @@ open class LogicGateDescriptor(name: String, obj: Obj3D?, functionName: String, 
         Data.addSignal(newItemStack())
     }
 
-    override fun addInformation(itemStack: ItemStack?, entityPlayer: EntityPlayer?, list: MutableList<String>?, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack?, entityPlayer: Player?, list: MutableList<String>?, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         if (list != null) {
             function.infos.split("\n").forEach { list.add(it) }
@@ -158,12 +158,12 @@ open class LogicGateElement(node: SixNode, side: Direction, sixNodeDescriptor: S
         inputPins.map { if (it != null && it.connectedComponents.count() > 0) it.normalized else null }.toTypedArray(),
         outputPin.voltage / Eln.SVU)
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
         function.readFromNBT(nbt, "function")
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound) {
+    override fun writeToNBT(nbt: CompoundTag) {
         super.writeToNBT(nbt)
         function.writeToNBT(nbt, "function")
     }
@@ -214,8 +214,8 @@ abstract class LogicFunction : INBTTReady {
         Pair(tr("Output"), output.toDigitalString())
     )
 
-    override fun readFromNBT(nbt: NBTTagCompound, str: String) {}
-    override fun writeToNBT(nbt: NBTTagCompound, str: String) {}
+    override fun readFromNBT(nbt: CompoundTag, str: String) {}
+    override fun writeToNBT(nbt: CompoundTag, str: String) {}
 }
 
 class Not : LogicFunction() {
@@ -293,12 +293,12 @@ class SchmittTrigger : LogicFunction() {
         return state
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound, str: String) {
+    override fun readFromNBT(nbt: CompoundTag, str: String) {
         state = nbt.getBoolean(str + "state")
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound, str: String) {
-        nbt.setBoolean(str + "state", state)
+    override fun writeToNBT(nbt: CompoundTag, str: String) {
+        nbt.putBoolean(str + "state", state)
     }
 }
 
@@ -329,14 +329,14 @@ class Oscillator : LogicFunction() {
         Pair(tr("Output"), output.toDigitalString())
     )
 
-    override fun readFromNBT(nbt: NBTTagCompound, str: String) {
+    override fun readFromNBT(nbt: CompoundTag, str: String) {
         ramp = nbt.getDouble(str + "ramp")
         state = nbt.getBoolean(str + "state")
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound, str: String) {
-        nbt.setDouble(str + "ramp", ramp)
-        nbt.setBoolean(str + "state", state)
+    override fun writeToNBT(nbt: CompoundTag, str: String) {
+        nbt.putDouble(str + "ramp", ramp)
+        nbt.putBoolean(str + "state", state)
     }
 }
 
@@ -363,14 +363,14 @@ abstract class TriggeredLogicFunction(private val triggerIndex: Int) : LogicFunc
     open fun onRisingEdge(inputs: List<Boolean?>, state: Boolean): Boolean = state
     open fun onFallingEdge(inputs: List<Boolean?>, state: Boolean): Boolean = state
 
-    override fun readFromNBT(nbt: NBTTagCompound, str: String) {
+    override fun readFromNBT(nbt: CompoundTag, str: String) {
         trigger = nbt.getBoolean(str + "trigger")
         state = nbt.getBoolean(str + "state")
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound, str: String) {
-        nbt.setBoolean(str + "trigger", trigger)
-        nbt.setBoolean(str + "state", state)
+    override fun writeToNBT(nbt: CompoundTag, str: String) {
+        nbt.putBoolean(str + "trigger", trigger)
+        nbt.putBoolean(str + "state", state)
     }
 }
 
@@ -439,7 +439,7 @@ class PalRender(entity: SixNodeEntity, side: Direction, descriptor: SixNodeDescr
     LogicGateRender(entity, side, descriptor) {
     val truthTable = Array(8, { false })
 
-    override fun newGuiDraw(side: Direction, player: EntityPlayer): GuiScreen? {
+    override fun newGuiDraw(side: Direction, player: Player): Screen? {
         return PalGui(this)
     }
 
@@ -456,7 +456,7 @@ class PalRender(entity: SixNodeEntity, side: Direction, descriptor: SixNodeDescr
 }
 
 class PalGui(val render: PalRender) : GuiScreenEln() {
-    val buttons = arrayOfNulls<GuiButton>(8)
+    val buttons = arrayOfNulls<Button>(8)
 
     override fun initGui() {
         super.initGui()
@@ -481,7 +481,7 @@ class PalGui(val render: PalRender) : GuiScreenEln() {
             render.preparePacketForServer(stream)
 
             stream.writeByte(PalElement.TruthTablePositionClickedEvent)
-            stream.writeInt(buttons.indexOf(sender as GuiButton))
+            stream.writeInt(buttons.indexOf(sender as Button))
 
             render.sendPacketToServer(bos)
         } catch (e: IOException) {
@@ -516,11 +516,11 @@ class Pal : LogicFunction() {
             (inputs[2] ?: false) * 2 +
             ((inputs[2] ?: false) xor (inputs[1] ?: false)) * 1]
 
-    override fun readFromNBT(nbt: NBTTagCompound, str: String) {
-        truthTable.fromInt(nbt.getInteger(str + "truthTable"))
+    override fun readFromNBT(nbt: CompoundTag, str: String) {
+        truthTable.fromInt(nbt.getInt(str + "truthTable"))
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound, str: String) {
-        nbt.setInteger(str + "truthTable", truthTable.toInt())
+    override fun writeToNBT(nbt: CompoundTag, str: String) {
+        nbt.putInt(str + "truthTable", truthTable.toInt())
     }
 }

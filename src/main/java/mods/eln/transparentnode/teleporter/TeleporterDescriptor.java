@@ -7,11 +7,11 @@ import mods.eln.misc.Obj3D.Obj3DPart;
 import mods.eln.node.transparent.TransparentNodeDescriptor;
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor;
 import mods.eln.wiki.Data;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.level.Level;
 
 import java.util.List;
 
@@ -74,7 +74,7 @@ public class TeleporterDescriptor extends TransparentNodeDescriptor {
     }
 
     @Override
-    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List<String> list, boolean par4) {
+    public void addInformation(ItemStack itemStack, Player entityPlayer, List<String> list, boolean par4) {
         super.addInformation(itemStack, entityPlayer, list, par4);
         list.add(I18N.tr("It's experimental!"));
     }
@@ -84,12 +84,12 @@ public class TeleporterDescriptor extends TransparentNodeDescriptor {
     int areaH;
     public Coordinate areaCoordinate, lightCoordinate;
 
-    public AxisAlignedBB getBB(Coordinate c, Direction front) {
+    public AABB getBB(Coordinate c, Direction front) {
         Coordinate temp = new Coordinate(areaCoordinate);
         temp.setDimension(c.dimension);
         temp.applyTransformation(front, c);
 
-        AxisAlignedBB bb = new AxisAlignedBB(temp.x, temp.y, temp.z, temp.x + 1, temp.y + areaH, temp.z + 1);
+        AABB bb = new AABB(temp.x, temp.y, temp.z, temp.x + 1, temp.y + areaH, temp.z + 1);
         return bb;
     }
 
@@ -121,7 +121,7 @@ public class TeleporterDescriptor extends TransparentNodeDescriptor {
 
     Coordinate[] powerCoordinate;
 
-    public Coordinate[] getPowerCoordonate(World w) {
+    public Coordinate[] getPowerCoordonate(Level w) {
         Coordinate[] temp = new Coordinate[powerCoordinate.length];
         for (int idx = 0; idx < temp.length; idx++) {
             temp[idx] = new Coordinate(powerCoordinate[idx]);

@@ -1,8 +1,8 @@
 @file:Suppress("NAME_SHADOWING")
 package mods.eln.node.transparent
 
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.neoforged.api.distmarker.Dist
+import net.neoforged.api.distmarker.OnlyIn
 import mods.eln.cable.CableRender
 import mods.eln.cable.CableRenderDescriptor
 import mods.eln.cable.CableRenderType
@@ -18,11 +18,11 @@ import mods.eln.misc.UtilsClient
 import mods.eln.sound.LoopedSound
 import mods.eln.sound.LoopedSoundManager
 import mods.eln.sound.SoundCommand
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.entity.item.EntityItem
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.IInventory
-import net.minecraft.util.math.AxisAlignedBB
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.world.entity.item.ItemEntity
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.Container
+import net.minecraft.world.phys.AABB
 import org.lwjgl.opengl.GL11
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
@@ -37,11 +37,11 @@ abstract class TransparentNodeElementRender(var tileEntity: TransparentNodeEntit
     var front: Direction? = null
     var grounded = false
     @Throws(IOException::class)
-    protected fun unserializeItemStackToEntityItem(stream: DataInputStream?, old: EntityItem?): EntityItem? {
+    protected fun unserializeItemStackToEntityItem(stream: DataInputStream?, old: ItemEntity?): ItemEntity? {
         return unserializeItemStackToEntityItem(stream!!, old, tileEntity)
     }
 
-    fun drawEntityItem(entityItem: EntityItem?, x: Double, y: Double, z: Double, roty: Float, scale: Float) {
+    fun drawEntityItem(entityItem: ItemEntity?, x: Double, y: Double, z: Double, roty: Float, scale: Float) {
         UtilsClient.drawEntityItem(entityItem, x, y, z, roty, scale)
     }
 
@@ -61,11 +61,11 @@ abstract class TransparentNodeElementRender(var tileEntity: TransparentNodeEntit
         }
     }
 
-    open fun newGuiDraw(side: Direction, player: EntityPlayer): GuiScreen? {
+    open fun newGuiDraw(side: Direction, player: Player): Screen? {
         return null
     }
 
-    open val inventory: IInventory?
+    open val inventory: Container?
         get() = null
 
     fun preparePacketForServer(stream: DataOutputStream?) {
@@ -161,8 +161,8 @@ abstract class TransparentNodeElementRender(var tileEntity: TransparentNodeEntit
         return true
     }
 
-    open fun unoptimizedRenderBoundingBox(): AxisAlignedBB {
-        val base = AxisAlignedBB(
+    open fun unoptimizedRenderBoundingBox(): AABB {
+        val base = AABB(
             (tileEntity.xCoord - 1).toDouble(),
             (tileEntity.yCoord - 1).toDouble(),
             (tileEntity.zCoord - 1).toDouble(),
@@ -171,9 +171,9 @@ abstract class TransparentNodeElementRender(var tileEntity: TransparentNodeEntit
             (tileEntity.zCoord + 1).toDouble()
         )
 
-        var merged: AxisAlignedBB = base
+        var merged: AABB = base
 
-        val collisionQuery = AxisAlignedBB(
+        val collisionQuery = AABB(
             (tileEntity.xCoord - 64).toDouble(),
             (tileEntity.yCoord - 64).toDouble(),
             (tileEntity.zCoord - 64).toDouble(),
@@ -181,11 +181,11 @@ abstract class TransparentNodeElementRender(var tileEntity: TransparentNodeEntit
             (tileEntity.yCoord + 64).toDouble(),
             (tileEntity.zCoord + 64).toDouble()
         )
-        val collisionBoxes = mutableListOf<AxisAlignedBB?>()
+        val collisionBoxes = mutableListOf<AABB?>()
         transparentNodeDescriptor.addCollisionBoxesToList(
             collisionQuery,
             collisionBoxes,
-            tileEntity.world,
+            tileEntity.level,
             tileEntity.xCoord,
             tileEntity.yCoord,
             tileEntity.zCoord
@@ -202,7 +202,7 @@ abstract class TransparentNodeElementRender(var tileEntity: TransparentNodeEntit
                 val x = tileEntity.xCoord + element.x
                 val y = tileEntity.yCoord + element.y
                 val z = tileEntity.zCoord + element.z
-                val blockBox = AxisAlignedBB(
+                val blockBox = AABB(
                     x.toDouble(),
                     y.toDouble(),
                     z.toDouble(),
@@ -250,7 +250,7 @@ abstract class TransparentNodeElementRender(var tileEntity: TransparentNodeEntit
     open fun notifyNeighborSpawn() {}
     open fun serverPacketUnserialize(stream: DataInputStream?) {}
     protected fun coordinate(): Coordinate {
-        return Coordinate(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord, tileEntity.world)
+        return Coordinate(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord, tileEntity.level)
     }
 
     private var uuid = 0
@@ -272,7 +272,7 @@ abstract class TransparentNodeElementRender(var tileEntity: TransparentNodeEntit
     }
 
     private val loopedSoundManager = LoopedSoundManager()
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     protected fun addLoopedSound(loopedSound: LoopedSound?) {
         loopedSoundManager.add(loopedSound)
     }

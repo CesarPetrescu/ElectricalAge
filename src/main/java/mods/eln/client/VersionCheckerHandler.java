@@ -1,20 +1,20 @@
 package mods.eln.client;
 
-import net.minecraftforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.tick.ClientTickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import mods.eln.Eln;
 import mods.eln.misc.FC;
 import mods.eln.misc.Version;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.network.chat.Component;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
@@ -23,7 +23,7 @@ import java.net.URL;
 /**
  * Check the current mod version with the last stable version when the map is loaded
  * by the client.<br>
- * Singleton class. Uses the {@link ClientTickEvent} and must be registered by
+ * Singleton class. Uses the {@link ClientTickEvent.Post} and must be registered by
  * the caller on the {@link FMLCommonHandler} bus.
  *
  * @author metc
@@ -45,12 +45,12 @@ public class VersionCheckerHandler {
     }
 
     @SubscribeEvent
-    public void tick(ClientTickEvent event) {
+    public void tick(ClientTickEvent.Post event) {
         if (!ready || event.phase == Phase.START)
             return;
 
         final Minecraft m = FMLClientHandler.instance().getClient();
-        final WorldClient world = m.world;
+        final ClientLevel world = m.level();
 
         if (m == null || world == null)
             return;
@@ -60,14 +60,14 @@ public class VersionCheckerHandler {
 
         // Print the current version when the client start a map
         if (Eln.config.getBooleanOrElse("updates.versionCheck.enabled", true)) {
-            //m.player.sendMessage(new TextComponentString(Version.printColor()));
+            //m.player.sendMessage(Component.$1(Version.printColor()));
             System.out.println(Version.printColor());
             String elnVers = "Electrical Age";
-            m.player.sendMessage(new TextComponentString(elnVers));
-            m.player.sendMessage(new TextComponentString(versionMsg));
+            m.player.sendMessage(Component.$1(elnVers));
+            m.player.sendMessage(Component.$1(versionMsg));
         }
 
-        MinecraftForge.EVENT_BUS.unregister(this);
+        NeoForge.EVENT_BUS.unregister(this);
         ready = false;
     }
 

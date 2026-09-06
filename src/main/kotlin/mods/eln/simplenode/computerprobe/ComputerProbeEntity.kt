@@ -11,7 +11,7 @@ import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
 import mods.eln.Other
 import mods.eln.node.simple.SimpleNodeEntity
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.nbt.CompoundTag
 import net.minecraft.util.ITickable
 
 @Optional.Interface(iface = "li.cil.oc.api.network.Environment", modid = Other.modIdOc)
@@ -33,7 +33,7 @@ class ComputerProbeEntity : SimpleNodeEntity(ComputerProbeNode.getNodeUuidStatic
 
     // 1.12.2: only ITickable tile entities tick; there is no TileEntity.updateEntity() to chain to.
     override fun update() {
-        if (world.isRemote || !Other.ocLoaded) return
+        if (world.isClientSide || !Other.ocLoaded) return
         val node = ensureOpenComputersNode() ?: return
         if (!addedToNetwork || node.network() == null) {
             addedToNetwork = true
@@ -60,31 +60,31 @@ class ComputerProbeEntity : SimpleNodeEntity(ComputerProbeNode.getNodeUuidStatic
 
     override fun invalidate() {
         super.invalidate()
-        if (!world.isRemote && Other.ocLoaded) {
+        if (!world.isClientSide && Other.ocLoaded) {
             ocNode?.remove()
         }
     }
 
     override fun onChunkUnload() {
         super.onChunkUnload()
-        if (!world.isRemote && Other.ocLoaded) {
+        if (!world.isClientSide && Other.ocLoaded) {
             ocNode?.remove()
         }
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
         if (Other.ocLoaded) {
-            ensureOpenComputersNode()?.load(nbt.getCompoundTag("oc:node"))
+            ensureOpenComputersNode()?.load(nbt.getCompound("oc:node"))
         }
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
+    override fun writeToNBT(nbt: CompoundTag): CompoundTag {
         super.writeToNBT(nbt)
         if (Other.ocLoaded) {
-            val nodeNbt = NBTTagCompound()
+            val nodeNbt = CompoundTag()
             ocNode?.save(nodeNbt)
-            nbt.setTag("oc:node", nodeNbt)
+            nbt.put("oc:node", nodeNbt)
         }
         return nbt
     }

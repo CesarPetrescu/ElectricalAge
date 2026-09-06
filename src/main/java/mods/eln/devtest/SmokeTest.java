@@ -7,19 +7,18 @@ import mods.eln.node.NodeBase;
 import mods.eln.node.NodeManager;
 import mods.eln.node.six.SixNode;
 import mods.eln.node.six.SixNodeElement;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.WorldServer;
-import net.minecraftforge.common.util.FakePlayer;
-import net.minecraftforge.common.util.FakePlayerFactory;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.neoforged.neoforge.common.util.FakePlayer;
+import net.neoforged.neoforge.common.util.FakePlayerFactory;
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 /**
@@ -53,13 +52,13 @@ public final class SmokeTest {
     public static void registerIfRequested() {
         String mode = System.getProperty("eln.smokeTest");
         if (mode == null) return;
-        net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(new SmokeTest(mode));
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.register(new SmokeTest(mode));
         Eln.logger.info("{} armed, mode={}", PREFIX, mode);
     }
 
     @SubscribeEvent
-    public void onTick(TickEvent.ServerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
+    public void onTick(ServerTickEvent.Post event) {
+        if (event.phase != true /* NeoForge: Post event */) return;
         ticks++;
         // 20 ticks of settling before touching the world, then let the simulator run before reading.
         if (ticks == 20) {
@@ -79,13 +78,13 @@ public final class SmokeTest {
         }
     }
 
-    private WorldServer world() {
+    private ServerLevel world() {
         return FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(0);
     }
 
     private void place() {
-        WorldServer world = world();
-        FakePlayer player = FakePlayerFactory.getMinecraft(world);
+        ServerLevel world = world();
+        FakePlayer player = FakePlayerFactory.getInstance(world);
 
         // A known-good floor: two stone blocks with air above them.
         for (int dx = 0; dx <= 4; dx++) {
@@ -109,7 +108,7 @@ public final class SmokeTest {
             Eln.logger.error("{} FAIL no source element after placement", PREFIX);
             return;
         }
-        NBTTagCompound cfg = new NBTTagCompound();
+        CompoundTag cfg = new CompoundTag();
         cfg.setDouble("voltage", 50.0);
         if (source instanceof mods.eln.item.IConfigurable) {
             ((mods.eln.item.IConfigurable) source).readConfigTool(cfg, player);
@@ -117,7 +116,7 @@ public final class SmokeTest {
         Eln.logger.info("{} placed source and cable, source set to 50 V", PREFIX);
     }
 
-    private void placeSixNode(WorldServer world, FakePlayer player, String descriptorName, int x, int z) {
+    private void placeSixNode(ServerLevel world, FakePlayer player, String descriptorName, int x, int z) {
         placeSixNode(world, player, descriptorName, x, z, 0.0f);
     }
 
@@ -125,25 +124,25 @@ public final class SmokeTest {
      * A two-terminal element wires through front.left()/front.right(), and the front comes from the
      * placing player's look direction - so the yaw decides which way the terminals face.
      */
-    private void placeSixNode(WorldServer world, FakePlayer player, String descriptorName, int x, int z, float yaw) {
-        player.rotationYaw = yaw;
+    private void placeSixNode(ServerLevel world, FakePlayer player, String descriptorName, int x, int z, float yaw) {
+        player.getYRot() = yaw;
         player.rotationYawHead = yaw;
         ItemStack stack = Eln.findItemStack(descriptorName, 1);
         if (stack == null || stack.isEmpty()) {
             Eln.logger.error("{} FAIL no item stack named '{}'", PREFIX, descriptorName);
             return;
         }
-        player.setHeldItem(EnumHand.MAIN_HAND, stack.copy());
+        player.setItemInHand(InteractionHand.MAIN_HAND, stack.copy());
         // Right-click the top face of the stone: the six node lands on the block above, YN face.
-        EnumActionResult result = Eln.sixNodeItem.onItemUse(
-            stack, player, world, new BlockPos(x, GROUND, z), EnumHand.MAIN_HAND,
-            EnumFacing.UP, 0.5f, 1.0f, 0.5f);
-        IBlockState placed = world.getBlockState(new BlockPos(x, GROUND + 1, z));
+        InteractionResult result = Eln.sixNodeItem.onItemUse(
+            stack, player, world, new BlockPos(x, GROUND, z), InteractionHand.MAIN_HAND,
+            net.minecraft.core.Direction.UP, 0.5f, 1.0f, 0.5f);
+        BlockState placed = world.getBlockState(new BlockPos(x, GROUND + 1, z));
         Eln.logger.info("{} place '{}' at ({},{},{}) -> {} block={}",
             PREFIX, descriptorName, x, GROUND + 1, z, result, placed.getBlock().getRegistryName());
     }
 
-    private void orient(WorldServer world, int x, int z, mods.eln.misc.LRDU front) {
+    private void orient(ServerLevel world, int x, int z, mods.eln.misc.LRDU front) {
         SixNodeElement element = element(world, x, z);
         if (element == null) return;
         element.front = front;
@@ -152,7 +151,7 @@ public final class SmokeTest {
         Eln.logger.info("{} oriented ({},{},{}) front={}", PREFIX, x, GROUND + 1, z, front);
     }
 
-    private SixNodeElement element(WorldServer world, int x, int z) {
+    private SixNodeElement element(ServerLevel world, int x, int z) {
         NodeBase node = NodeManager.instance.getNodeFromCoordonate(
             new Coordinate(x, GROUND + 1, z, world));
         if (!(node instanceof SixNode)) return null;
@@ -160,7 +159,7 @@ public final class SmokeTest {
     }
 
     private void verify() {
-        WorldServer world = world();
+        ServerLevel world = world();
         SixNodeElement source = element(world, X, Z);
         SixNodeElement cable = element(world, X + 1, Z);
         SixNodeElement cable2 = element(world, X + 2, Z);

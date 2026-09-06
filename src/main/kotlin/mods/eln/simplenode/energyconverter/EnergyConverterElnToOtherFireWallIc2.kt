@@ -4,7 +4,7 @@ import net.minecraftforge.fml.common.FMLCommonHandler
 import ic2.api.energy.event.EnergyTileLoadEvent
 import ic2.api.energy.event.EnergyTileUnloadEvent
 import ic2.api.info.Info
-import net.minecraftforge.common.MinecraftForge
+import net.neoforged.neoforge.common.NeoForge
 
 object EnergyConverterElnToOtherFireWallIc2 {
     /**
@@ -23,7 +23,7 @@ object EnergyConverterElnToOtherFireWallIc2 {
         if (!e.addedToEnet &&
             !FMLCommonHandler.instance().effectiveSide.isClient &&
             Info.isIc2Available()) {
-            MinecraftForge.EVENT_BUS.post(EnergyTileLoadEvent(e))
+            NeoForge.EVENT_BUS.post(EnergyTileLoadEvent(e))
             e.addedToEnet = true
         }
     }
@@ -42,7 +42,7 @@ object EnergyConverterElnToOtherFireWallIc2 {
      */
     fun onChunkUnload(e: EnergyConverterElnToOtherEntity) {
         if (e.addedToEnet && Info.isIc2Available()) {
-            MinecraftForge.EVENT_BUS.post(EnergyTileUnloadEvent(e))
+            NeoForge.EVENT_BUS.post(EnergyTileUnloadEvent(e))
             e.addedToEnet = false
         }
     }

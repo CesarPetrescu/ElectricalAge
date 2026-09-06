@@ -2,7 +2,7 @@ package mods.eln.node
 
 import mods.eln.Eln
 import mods.eln.misc.UtilsClient
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.level.block.entity.BlockEntity
 import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
 import java.io.IOException
@@ -10,14 +10,14 @@ import mods.eln.misc.xCoord
 import mods.eln.misc.yCoord
 import mods.eln.misc.zCoord
 
-class NodeEntityClientSender(private val e: TileEntity, private val nodeUuid: String) {
+class NodeEntityClientSender(private val e: BlockEntity, private val nodeUuid: String) {
     fun preparePacketForServer(stream: DataOutputStream) {
         try {
             stream.writeByte(Eln.packetPublishForNode.toInt())
             stream.writeInt(e.xCoord)
             stream.writeInt(e.yCoord)
             stream.writeInt(e.zCoord)
-            stream.writeByte(e.world.provider.dimension)
+            stream.writeByte(e.level.dimension())
             stream.writeUTF(nodeUuid)
         } catch (e: IOException) {
             e.printStackTrace()

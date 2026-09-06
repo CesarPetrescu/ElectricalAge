@@ -6,12 +6,12 @@ import mcp.mobius.waila.api.IWailaDataAccessor
 import mcp.mobius.waila.api.IWailaDataProvider
 import mcp.mobius.waila.api.SpecialChars
 import mods.eln.simplenode.computerprobe.ComputerProbeEntity
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.world.level.block.entity.BlockEntity
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level
 
 @Optional.Interface(iface = "mcp.mobius.waila.api.IWailaDataProvider", modid = "waila")
 class ComputerProbeWailaProvider : IWailaDataProvider {
@@ -45,15 +45,15 @@ class ComputerProbeWailaProvider : IWailaDataProvider {
     ): MutableList<String> = currenttip
 
     override fun getNBTData(
-        player: EntityPlayerMP?,
-        te: TileEntity?,
-        tag: NBTTagCompound,
-        world: World?,
+        player: ServerPlayer?,
+        te: BlockEntity?,
+        tag: CompoundTag,
+        world: Level?,
         pos: BlockPos?
-    ): NBTTagCompound {
+    ): CompoundTag {
         val probe = te as? ComputerProbeEntity ?: return tag
-        tag.setString(TAG_COMPONENT_NAME, probe.getComponentName())
-        probe.getOpenComputersAddress()?.let { tag.setString(TAG_ADDRESS, it) }
+        tag.putString(TAG_COMPONENT_NAME, probe.getComponentName())
+        probe.getOpenComputersAddress()?.let { tag.putString(TAG_ADDRESS, it) }
         return tag
     }
 

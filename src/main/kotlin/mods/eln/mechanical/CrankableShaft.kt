@@ -6,8 +6,8 @@ import mods.eln.node.transparent.EntityMetaTag
 import mods.eln.node.transparent.TransparentNode
 import mods.eln.node.transparent.TransparentNodeDescriptor
 import mods.eln.sim.IProcess
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
 import java.io.DataOutputStream
 import kotlin.math.abs
 
@@ -17,7 +17,7 @@ class CrankableShaftDescriptor(name: String, override val obj: Obj3D, private va
     override val static = arrayOf(obj.getPart("Stand"), obj.getPart("Cowl"))
     override val rotating = arrayOf(obj.getPart("Shaft"))
 
-    override fun addInformation(stack: ItemStack, player: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(stack: ItemStack, player: Player?, list: MutableList<String>, par4: Boolean) {
         list.add(tr("Player crankable shaft"))
         list.add(tr("Can rotate slowly"))
         list.add(Utils.plotRads(tr("Max rads:  "), nominalRads.toDouble()))
@@ -49,7 +49,7 @@ class CrankableShaftElement(node: TransparentNode, desc_: TransparentNodeDescrip
         }
     }
 
-    override fun onBlockActivated(player: EntityPlayer, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
+    override fun onBlockActivated(player: Player, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
         playerInputEnergy += desc.nominalP / 20.0 // TPS is 20 assumed here
         return false
     }

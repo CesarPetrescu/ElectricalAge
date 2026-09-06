@@ -16,9 +16,9 @@ import mods.eln.sim.ElectricalLoad;
 import mods.eln.sim.ThermalLoad;
 import mods.eln.sim.mna.component.PowerSource;
 import mods.eln.sim.nbt.NbtElectricalLoad;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.IInventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.Container;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -110,7 +110,7 @@ public class WaterTurbineElement extends TransparentNodeElement {
     TransparentNodeElementInventory inventory = new TransparentNodeElementInventory(0, 64, this);
 
     @Override
-    public IInventory getInventory() {
+    public Container getInventory() {
 
         return inventory;
     }
@@ -123,7 +123,7 @@ public class WaterTurbineElement extends TransparentNodeElement {
 
     @Nullable
     @Override
-    public Container newContainer(@NotNull Direction side, @NotNull EntityPlayer player) {
+    public AbstractContainerMenu newContainer(@NotNull Direction side, @NotNull Player player) {
 
         return new WaterTurbineContainer(this.node, player, inventory);
     }
@@ -143,7 +143,7 @@ public class WaterTurbineElement extends TransparentNodeElement {
     }
 
     @Override
-    public boolean onBlockActivated(EntityPlayer player, Direction side, float vx, float vy, float vz) {
+    public boolean onBlockActivated(Player player, Direction side, float vx, float vy, float vz) {
 
         return false;
     }

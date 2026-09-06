@@ -1,15 +1,15 @@
 package mods.eln.server
 
 import mods.eln.Eln
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.world.storage.WorldSavedData
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.world.level.saveddata.SavedData
 
-class SaveConfig(par1Str: String) : WorldSavedData(par1Str) {
-    override fun readFromNBT(nbt: NBTTagCompound) {
+class SaveConfig(par1Str: String) : SavedData(par1Str) {
+    override fun readFromNBT(nbt: CompoundTag) {
         Eln.wind.readFromNBT(nbt, "wind")
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
+    override fun writeToNBT(nbt: CompoundTag): CompoundTag {
         Eln.wind.writeToNBT(nbt, "wind")
         return nbt
     }

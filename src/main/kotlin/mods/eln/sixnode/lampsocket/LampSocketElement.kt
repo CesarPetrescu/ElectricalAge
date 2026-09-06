@@ -32,12 +32,12 @@ import mods.eln.sim.process.destruct.VoltageStateWatchDog
 import mods.eln.sim.process.destruct.WorldExplosion
 import mods.eln.sixnode.currentcable.CurrentCableDescriptor
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.inventory.Container
-import net.minecraft.inventory.IInventory
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.entity.player.Player
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.inventory.AbstractContainerMenu
+import net.minecraft.world.Container
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
@@ -82,7 +82,7 @@ class LampSocketElement(sixNode: SixNode, side: Direction, sixNodeDescriptor: Si
         slowProcessList.add(lampSocketProcess)
     }
 
-    override fun newContainer(side: Direction, player: EntityPlayer): Container {
+    override fun newContainer(side: Direction, player: Player): AbstractContainerMenu {
         return LampSocketContainer(player, inventory, descriptor)
     }
 
@@ -90,7 +90,7 @@ class LampSocketElement(sixNode: SixNode, side: Direction, sixNodeDescriptor: Si
         return true
     }
 
-    override fun onBlockActivated(entityPlayer: EntityPlayer, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
+    override fun onBlockActivated(entityPlayer: Player, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
         if (Utils.isPlayerUsingWrench(entityPlayer)) {
             front = front.nextClockwise
             reconnect()
@@ -100,14 +100,14 @@ class LampSocketElement(sixNode: SixNode, side: Direction, sixNodeDescriptor: Si
 
         var takeItem = false
 
-        when (val equippedItemDescriptor = getItemObject(entityPlayer.heldItemMainhand)) {
+        when (val equippedItemDescriptor = getItemObject(entityPlayer.mainHandItem)) {
             is BrushDescriptor -> {
                 // Ignore brush use on non-paintable sockets (e.g. Streetlight)
                 if (!descriptor.paintable) return false
 
-                val brushColor = equippedItemDescriptor.getColor(entityPlayer.heldItemMainhand)
+                val brushColor = equippedItemDescriptor.getColor(entityPlayer.mainHandItem)
 
-                if (brushColor != paintColor && equippedItemDescriptor.use(entityPlayer.heldItemMainhand, entityPlayer)) {
+                if (brushColor != paintColor && equippedItemDescriptor.use(entityPlayer.mainHandItem, entityPlayer)) {
                     paintColor = brushColor
                     needPublish()
                 }
@@ -131,11 +131,11 @@ class LampSocketElement(sixNode: SixNode, side: Direction, sixNodeDescriptor: Si
         }
 
         return if (takeItem) {
-            AutoAcceptInventoryProxy.creativeFreeInsert = Eln.config.getBooleanOrElse("gameplay.qol.creativeNoConsumeInsertedItems", false) && entityPlayer is EntityPlayerMP && isCreative(entityPlayer)
-            inventoryProxy.take(entityPlayer.heldItemMainhand, this, notifyInventoryChange = true).also { accepted ->
+            AutoAcceptInventoryProxy.creativeFreeInsert = Eln.config.getBooleanOrElse("gameplay.qol.creativeNoConsumeInsertedItems", false) && entityPlayer is ServerPlayer && isCreative(entityPlayer)
+            inventoryProxy.take(entityPlayer.mainHandItem, this, notifyInventoryChange = true).also { accepted ->
                 if (accepted && Eln.config.getBooleanOrElse("gameplay.qol.rememberLastLampSocketContents", false)) {
-                    lastLampStack = inventory.getStackInSlot(LampSocketContainer.LAMP_SLOT_ID)?.copy()
-                    lastCableStack = inventory.getStackInSlot(LampSocketContainer.CABLE_SLOT_ID)?.copy()
+                    lastLampStack = inventory.getItem(LampSocketContainer.LAMP_SLOT_ID)?.copy()
+                    lastCableStack = inventory.getItem(LampSocketContainer.CABLE_SLOT_ID)?.copy()
                 }
                 AutoAcceptInventoryProxy.creativeFreeInsert = false
             }
@@ -145,31 +145,31 @@ class LampSocketElement(sixNode: SixNode, side: Direction, sixNodeDescriptor: Si
     /**
      * The if/else blocks here address the possible existence of legacy NBT tags and should remain in place.
      */
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
 
-        if (nbt.hasKey("front")) {
+        if (nbt.contains("front")) {
             val temp = nbt.getByte("front")
             front = LRDU.fromInt((temp.toInt() shr 0) and 0x3)
             grounded = (temp.toInt() and 4) != 0
-            nbt.removeTag("front")
+            nbt.remove("front")
         } else {
-            front = LRDU.fromInt(nbt.getInteger("frontNew"))
+            front = LRDU.fromInt(nbt.getInt("frontNew"))
             grounded = nbt.getBoolean("grounded")
         }
 
-        if (nbt.hasKey("color")) {
+        if (nbt.contains("color")) {
             paintColor = if (descriptor.paintable) nbt.getByte("color").toInt() and 0xF else LampSocketRender.DEFAULT_PAINT_COLOR
-            nbt.removeTag("color")
+            nbt.remove("color")
         } else {
-            paintColor = if (descriptor.paintable) nbt.getInteger("paintColor") else LampSocketRender.DEFAULT_PAINT_COLOR
+            paintColor = if (descriptor.paintable) nbt.getInt("paintColor") else LampSocketRender.DEFAULT_PAINT_COLOR
         }
 
         poweredByLampSupply = nbt.getBoolean("poweredByLampSupply")
 
-        if (nbt.hasKey("channel")) {
+        if (nbt.contains("channel")) {
             lampSupplyChannel = nbt.getString("channel")
-            nbt.removeTag("channel")
+            nbt.remove("channel")
         } else {
             lampSupplyChannel = nbt.getString("lampSupplyChannel")
         }
@@ -178,22 +178,22 @@ class LampSocketElement(sixNode: SixNode, side: Direction, sixNodeDescriptor: Si
         lampSocketProcess.stableLightProbability = nbt.getDouble("stableLightProbability")
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound) {
+    override fun writeToNBT(nbt: CompoundTag) {
         super.writeToNBT(nbt)
-        nbt.setInteger("frontNew", front.toInt())
-        nbt.setBoolean("grounded", grounded)
-        nbt.setInteger("paintColor", paintColor)
-        nbt.setBoolean("poweredByLampSupply", poweredByLampSupply)
-        nbt.setString("lampSupplyChannel", lampSupplyChannel)
-        nbt.setDouble("projectionRotationAngle", projectionRotationAngle)
-        nbt.setDouble("stableLightProbability", lampSocketProcess.stableLightProbability)
+        nbt.putInt("frontNew", front.toInt())
+        nbt.putBoolean("grounded", grounded)
+        nbt.putInt("paintColor", paintColor)
+        nbt.putBoolean("poweredByLampSupply", poweredByLampSupply)
+        nbt.putString("lampSupplyChannel", lampSupplyChannel)
+        nbt.putDouble("projectionRotationAngle", projectionRotationAngle)
+        nbt.putDouble("stableLightProbability", lampSocketProcess.stableLightProbability)
     }
 
     override fun initialize() {
         computeInventory()
         if (Eln.config.getBooleanOrElse("gameplay.qol.rememberLastLampSocketContents", false) && placingPlayerIsCreative) {
-            lastLampStack?.let { inventory.setInventorySlotContents(LampSocketContainer.LAMP_SLOT_ID, it.copy()) }
-            lastCableStack?.let { inventory.setInventorySlotContents(LampSocketContainer.CABLE_SLOT_ID, it.copy()) }
+            lastLampStack?.let { inventory.setItem(LampSocketContainer.LAMP_SLOT_ID, it.copy()) }
+            lastCableStack?.let { inventory.setItem(LampSocketContainer.CABLE_SLOT_ID, it.copy()) }
             computeInventory()
             placingPlayerIsCreative = false
         }
@@ -214,15 +214,15 @@ class LampSocketElement(sixNode: SixNode, side: Direction, sixNodeDescriptor: Si
         electricalLoad.state = 0.0
     }
 
-    override fun inventoryChange(inventory: IInventory?) {
+    override fun inventoryChange(inventory: Container?) {
         computeInventory()
         reconnect()
         needPublish()
     }
 
     fun computeInventory() {
-        val lampStack = inventory.getStackInSlot(LampSocketContainer.LAMP_SLOT_ID)
-        val cableStack = inventory.getStackInSlot(LampSocketContainer.CABLE_SLOT_ID)
+        val lampStack = inventory.getItem(LampSocketContainer.LAMP_SLOT_ID)
+        val cableStack = inventory.getItem(LampSocketContainer.CABLE_SLOT_ID)
 
         when (lampStack) {
             null -> lampResistor.highImpedance()
@@ -244,7 +244,7 @@ class LampSocketElement(sixNode: SixNode, side: Direction, sixNodeDescriptor: Si
 
     override fun getElectricalLoad(lrdu: LRDU, mask: Int): ElectricalLoad? {
         return when {
-            inventory.getStackInSlot(LampSocketContainer.CABLE_SLOT_ID).isNothing() -> null
+            inventory.getItem(LampSocketContainer.CABLE_SLOT_ID).isNothing() -> null
             poweredByLampSupply -> null
             grounded -> electricalLoad
             else -> null
@@ -257,7 +257,7 @@ class LampSocketElement(sixNode: SixNode, side: Direction, sixNodeDescriptor: Si
 
     override fun getConnectionMask(lrdu: LRDU): Int {
         return when {
-            inventory.getStackInSlot(LampSocketContainer.CABLE_SLOT_ID).isNothing() -> 0
+            inventory.getItem(LampSocketContainer.CABLE_SLOT_ID).isNothing() -> 0
             poweredByLampSupply -> 0
             grounded -> NodeBase.maskElectricalPower
             front == lrdu || front == lrdu.inverse() -> NodeBase.maskElectricalPower
@@ -276,8 +276,8 @@ class LampSocketElement(sixNode: SixNode, side: Direction, sixNodeDescriptor: Si
             stream.writeInt(paintColor)
             stream.writeBoolean(grounded)
             stream.writeInt(sixNode!!.lightValue)
-            serialiseItemStack(stream, inventory.getStackInSlot(LampSocketContainer.LAMP_SLOT_ID))
-            serialiseItemStack(stream, inventory.getStackInSlot(LampSocketContainer.CABLE_SLOT_ID))
+            serialiseItemStack(stream, inventory.getItem(LampSocketContainer.LAMP_SLOT_ID))
+            serialiseItemStack(stream, inventory.getItem(LampSocketContainer.CABLE_SLOT_ID))
         } catch (e: IOException) {
             e.printStackTrace()
         }
@@ -319,8 +319,8 @@ class LampSocketElement(sixNode: SixNode, side: Direction, sixNodeDescriptor: Si
 
         info[I18N.tr("Power Consumption")] = plotPower("", electricalLoad.voltage.pow(2) / lampResistor.resistance)
 
-        val lampStack = inventory.getStackInSlot(LampSocketContainer.LAMP_SLOT_ID)
-        if (!lampStack.isNothing()) info[I18N.tr("Bulb")] = lampStack.displayName
+        val lampStack = inventory.getItem(LampSocketContainer.LAMP_SLOT_ID)
+        if (!lampStack.isNothing()) info[I18N.tr("Bulb")] = $1.hoverName
         else info[I18N.tr("Bulb")] = I18N.tr("None")
 
         if (Eln.config.getBooleanOrElse("ui.waila.easyMode", false)) {
@@ -341,26 +341,26 @@ class LampSocketElement(sixNode: SixNode, side: Direction, sixNodeDescriptor: Si
         return info
     }
 
-    override fun readConfigTool(compound: NBTTagCompound, invoker: EntityPlayer) {
+    override fun readConfigTool(compound: CompoundTag, invoker: Player) {
         var publishChanges = false
         var inventoryChanged = false
 
-        if (compound.hasKey("poweredByLampSupply")) {
+        if (compound.contains("poweredByLampSupply")) {
             poweredByLampSupply = compound.getBoolean("poweredByLampSupply")
             publishChanges = true
         }
 
-        if (compound.hasKey("lampSupplyChannel")) {
+        if (compound.contains("lampSupplyChannel")) {
             lampSupplyChannel = compound.getString("lampSupplyChannel")
             publishChanges = true
         }
 
-        if (descriptor.enableProjectionRotation && compound.hasKey("projectionRotationAngle")) {
+        if (descriptor.enableProjectionRotation && compound.contains("projectionRotationAngle")) {
             projectionRotationAngle = compound.getDouble("projectionRotationAngle")
             publishChanges = true
         }
 
-        if (compound.hasKey("grounded")) {
+        if (compound.contains("grounded")) {
             grounded = compound.getBoolean("grounded")
             publishChanges = true
         }
@@ -377,20 +377,20 @@ class LampSocketElement(sixNode: SixNode, side: Direction, sixNodeDescriptor: Si
         if (inventoryChanged) {
             inventoryChange(inventory)
             if (Eln.config.getBooleanOrElse("gameplay.qol.rememberLastLampSocketContents", false)) {
-                lastLampStack = inventory.getStackInSlot(LampSocketContainer.LAMP_SLOT_ID)?.copy()
-                lastCableStack = inventory.getStackInSlot(LampSocketContainer.CABLE_SLOT_ID)?.copy()
+                lastLampStack = inventory.getItem(LampSocketContainer.LAMP_SLOT_ID)?.copy()
+                lastCableStack = inventory.getItem(LampSocketContainer.CABLE_SLOT_ID)?.copy()
             }
         }
         else if (publishChanges) needPublish()
     }
 
-    override fun writeConfigTool(compound: NBTTagCompound, invoker: EntityPlayer) {
-        compound.setBoolean("poweredByLampSupply", poweredByLampSupply)
-        compound.setString("lampSupplyChannel", lampSupplyChannel)
-        if (descriptor.enableProjectionRotation) compound.setDouble("projectionRotationAngle", projectionRotationAngle)
-        compound.setBoolean("grounded", grounded)
-        ConfigCopyToolDescriptor.writeGenDescriptor(compound, "lamp", inventory.getStackInSlot(LampSocketContainer.LAMP_SLOT_ID))
-        ConfigCopyToolDescriptor.writeCableType(compound, inventory.getStackInSlot(LampSocketContainer.CABLE_SLOT_ID))
+    override fun writeConfigTool(compound: CompoundTag, invoker: Player) {
+        compound.putBoolean("poweredByLampSupply", poweredByLampSupply)
+        compound.putString("lampSupplyChannel", lampSupplyChannel)
+        if (descriptor.enableProjectionRotation) compound.putDouble("projectionRotationAngle", projectionRotationAngle)
+        compound.putBoolean("grounded", grounded)
+        ConfigCopyToolDescriptor.writeGenDescriptor(compound, "lamp", inventory.getItem(LampSocketContainer.LAMP_SLOT_ID))
+        ConfigCopyToolDescriptor.writeCableType(compound, inventory.getItem(LampSocketContainer.CABLE_SLOT_ID))
     }
 
     companion object {

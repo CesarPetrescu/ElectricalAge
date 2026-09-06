@@ -2,7 +2,7 @@ package mods.eln.sim.mna.component
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.nbt.CompoundTag
 
 class CurrentSourceNbtTest {
     @Test
@@ -10,7 +10,7 @@ class CurrentSourceNbtTest {
         val source = CurrentSource("i")
         source.current = 1.25
 
-        val nbt = NBTTagCompound()
+        val nbt = CompoundTag()
         source.writeToNBT(nbt, "pfx")
 
         val other = CurrentSource("i")

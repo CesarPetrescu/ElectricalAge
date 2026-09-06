@@ -14,9 +14,9 @@ import mods.eln.sim.nbt.NbtElectricalLoad
 import mods.eln.sim.nbt.NbtThermalLoad
 import mods.eln.sixnode.genericcable.GenericCableDescriptor
 import net.minecraft.client.Minecraft
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
+import net.minecraft.resources.ResourceLocation
 import mods.eln.client.itemrender.IItemRenderer
 import org.lwjgl.opengl.GL11
 import java.util.HashMap
@@ -46,7 +46,7 @@ class PortableNaNDescriptor(name: String, renderIn: CableRenderDescriptor): Gene
 
     override fun applyTo(thermalLoad: ThermalLoad) = thermalLoad.set(Double.NaN, Double.NaN, Double.NaN)
 
-    override fun addInformation(itemStack: ItemStack, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack, entityPlayer: Player?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
 
         list.add(tr("Nominal Ratings:"))
@@ -137,13 +137,13 @@ class PortableNaNRender(tileEntity: SixNodeEntity, side: Direction, descriptor: 
     }
 
     override fun draw() {
-        Minecraft.getMinecraft().profiler.startSection("ACable")
+        Minecraft.getInstance().profiler.startSection("ACable")
 
         UtilsClient.bindTexture(descriptor.render?.cableTexture)
         glListCall()
 
         GL11.glColor3f(1f, 1f, 1f)
-        Minecraft.getMinecraft().profiler.endSection()
+        Minecraft.getInstance().profiler.endSection()
     }
 
     override fun glListDraw() {

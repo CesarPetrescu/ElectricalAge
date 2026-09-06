@@ -9,12 +9,12 @@ import mods.eln.misc.Utils.addSmelting
 import mods.eln.misc.Utils.areSame
 import mods.eln.misc.Utils.println
 import mods.eln.railroad.EntityElectricMinecart
-import net.minecraft.init.Blocks
-import net.minecraft.init.Items
-import net.minecraft.item.ItemStack
-import net.minecraft.item.crafting.IRecipe
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.crafting.Recipe
 import net.minecraft.launchwrapper.LogWrapper
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.ResourceLocation
 import net.minecraftforge.fml.common.registry.ForgeRegistries
 import net.minecraftforge.oredict.OreDictionary
 import net.minecraftforge.oredict.ShapedOreRecipe
@@ -189,7 +189,7 @@ object CraftingRecipes {
     private var recipeIndex = 0
     private val recipeGroup = ResourceLocation(Eln.MODID, "recipes")
 
-    private fun registerRecipe(recipe: IRecipe, output: ItemStack) {
+    private fun registerRecipe(recipe: Recipe, output: ItemStack) {
         val base = output.item.registryName?.path ?: "recipe"
         recipe.registryName = ResourceLocation(Eln.MODID, "${base}_${output.metadata}_${recipeIndex++}")
         ForgeRegistries.RECIPES.register(recipe)

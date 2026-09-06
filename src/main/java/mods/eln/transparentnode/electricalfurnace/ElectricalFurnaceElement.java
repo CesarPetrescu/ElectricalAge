@@ -21,12 +21,12 @@ import mods.eln.sim.nbt.NbtElectricalLoad;
 import mods.eln.sim.nbt.NbtThermalLoad;
 import mods.eln.sim.process.destruct.VoltageStateWatchDog;
 import mods.eln.sim.process.destruct.WorldExplosion;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -90,7 +90,7 @@ public class ElectricalFurnaceElement extends TransparentNodeElement {
     }
 
     @Override
-    public IInventory getInventory() {
+    public Container getInventory() {
         return inventory;
     }
 
@@ -101,7 +101,7 @@ public class ElectricalFurnaceElement extends TransparentNodeElement {
 
     @Nullable
     @Override
-    public Container newContainer(@NotNull Direction side, @NotNull EntityPlayer player) {
+    public AbstractContainerMenu newContainer(@NotNull Direction side, @NotNull Player player) {
         return new ElectricalFurnaceContainer(this.node, player, inventory);
     }
 
@@ -154,13 +154,13 @@ public class ElectricalFurnaceElement extends TransparentNodeElement {
 
         //	ItemStack stack = new ItemStack(Item.coal);
         //	EntityItem entity = new EntityItem(node.coordonate.world(), node.coordonate.x + 0.5, node.coordonate.y + 0.5, node.coordonate.z + 1.5, stack);
-        //	node.coordonate.world().spawnEntity(entity);
+        //	node.coordonate.world().addFreshEntity(entity);
 
         connect();
     }
 
     @Override
-    public void inventoryChange(IInventory inventory) {
+    public void inventoryChange(Container inventory) {
         super.inventoryChange(inventory);
         setPhysicalValue();
         needPublish();
@@ -169,7 +169,7 @@ public class ElectricalFurnaceElement extends TransparentNodeElement {
     public void setPhysicalValue() {
         ItemStack itemStack;
         heatingCorpResistor.setState(powerOn);
-        itemStack = inventory.getStackInSlot(heatingCorpSlotId);
+        itemStack = inventory.getItem(heatingCorpSlotId);
         if (McBridge.isNothing(itemStack)) {
             thermalRegulator.setMinimumResistance(MnaConst.highImpedance);
             voltageWatchdog.setNominalVoltage(100000);
@@ -185,7 +185,7 @@ public class ElectricalFurnaceElement extends TransparentNodeElement {
             }
         }
 
-        itemStack = inventory.getStackInSlot(thermalRegulatorSlotId);
+        itemStack = inventory.getItem(thermalRegulatorSlotId);
         if (McBridge.isNothing(itemStack)) {
             thermalRegulator.setNone();
         } else {
@@ -200,7 +200,7 @@ public class ElectricalFurnaceElement extends TransparentNodeElement {
     }
 
     @Override
-    public boolean onBlockActivated(EntityPlayer player, Direction side, float vx, float vy, float vz) {
+    public boolean onBlockActivated(Player player, Direction side, float vx, float vy, float vz) {
         return false;
     }
 
@@ -213,12 +213,12 @@ public class ElectricalFurnaceElement extends TransparentNodeElement {
             stream.writeShort((int) thermalLoad.temperatureCelsius);
 
             ItemStack stack;
-            if ((stack = inventory.getStackInSlot(inSlotId)) == null) {
+            if ((stack = inventory.getItem(inSlotId)) == null) {
                 stream.writeShort(-1);
                 stream.writeShort(-1);
             } else {
                 stream.writeShort(Item.getIdFromItem(stack.getItem()));
-                stream.writeShort(stack.getItemDamage());
+                stream.writeShort(stack.getItemDamage() /* TODO(flattening) */);
             }
 
             stream.writeShort((int) heatingCorpResistor.getPower());
@@ -233,14 +233,14 @@ public class ElectricalFurnaceElement extends TransparentNodeElement {
     }
 
     @Override
-    public void writeToNBT(NBTTagCompound nbt) {
+    public void writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setBoolean("powerOn", powerOn);
-        nbt.setBoolean("autoShutDown", autoShutDown);
+        nbt.putBoolean("powerOn", powerOn);
+        nbt.putBoolean("autoShutDown", autoShutDown);
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt) {
+    public void readFromNBT(CompoundTag nbt) {
         super.readFromNBT(nbt);
         powerOn = nbt.getBoolean("powerOn");
         autoShutDown = nbt.getBoolean("autoShutDown");
@@ -284,8 +284,8 @@ public class ElectricalFurnaceElement extends TransparentNodeElement {
     public Map<String, String> getWaila() {
         Map<String, String> info = new HashMap<String, String>();
         info.put(I18N.tr("Temperature"), plotAmbientCelsius("", thermalLoad.temperatureCelsius));
-        if (!McBridge.isNothing(inventory.getStackInSlot(heatingCorpSlotId))) {
-            info.put(I18N.tr("Heating element"), inventory.getStackInSlot(heatingCorpSlotId).getDisplayName());
+        if (!McBridge.isNothing(inventory.getItem(heatingCorpSlotId))) {
+            info.put(I18N.tr("Heating element"), inventory.getItem(heatingCorpSlotId).getDisplayName());
         } else {
             info.put(I18N.tr("Heating element"), I18N.tr("None"));
         }

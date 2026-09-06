@@ -3,12 +3,12 @@ package mods.eln.node.six
 import mods.eln.misc.Direction.Companion.fromInt
 import mods.eln.misc.UtilsClient.glDefaultColor
 import net.minecraft.client.Minecraft
-import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer
 import org.lwjgl.opengl.GL11
 
-class SixNodeRender : TileEntitySpecialRenderer<SixNodeEntity>() {
+class SixNodeRender : BlockEntityRenderer<SixNodeEntity>() {
     override fun render(entity: SixNodeEntity, x: Double, y: Double, z: Double, partialTicks: Float, destroyStage: Int, alpha: Float) {
-        Minecraft.getMinecraft().profiler.startSection("SixNode")
+        Minecraft.getInstance().profiler.startSection("SixNode")
         val tileEntity = entity
         GL11.glPushMatrix()
         GL11.glTranslatef(x.toFloat() + .5f, y.toFloat() + .5f, z.toFloat() + .5f)
@@ -23,6 +23,6 @@ class SixNodeRender : TileEntitySpecialRenderer<SixNodeEntity>() {
             }
         }
         GL11.glPopMatrix()
-        Minecraft.getMinecraft().profiler.endSection()
+        Minecraft.getInstance().profiler.endSection()
     }
 }

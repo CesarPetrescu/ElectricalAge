@@ -3,7 +3,7 @@ package mods.eln.sixnode.rs485cable;
 import mods.eln.cable.CableRenderDescriptor;
 import mods.eln.node.six.SixNodeDescriptor;
 import mods.eln.wiki.Data;
-import net.minecraft.item.Item;
+import net.minecraft.world.item.Item;
 
 public class Rs485CableDescriptor extends SixNodeDescriptor {
 

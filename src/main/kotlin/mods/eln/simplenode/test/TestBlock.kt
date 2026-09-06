@@ -3,11 +3,11 @@ package mods.eln.simplenode.test
 import mods.eln.node.simple.SimpleNode
 import mods.eln.node.simple.SimpleNodeBlock
 import net.minecraft.block.material.Material
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.world.World
+import net.minecraft.world.level.block.entity.BlockEntity
+import net.minecraft.world.level.Level
 
 class TestBlock : SimpleNodeBlock(Material.PACKED_ICE) {
-    override fun createNewTileEntity(world: World?, meta: Int): TileEntity {
+    override fun createNewTileEntity(world: Level?, meta: Int): BlockEntity {
         return TestEntity()
     }
 

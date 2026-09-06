@@ -2,14 +2,14 @@ package mods.eln.gui;
 
 import mods.eln.misc.UtilsClient;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.inventory.GuiContainer;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.util.ResourceLocation;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import net.minecraft.resources.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
@@ -18,22 +18,22 @@ import java.util.Iterator;
 import java.util.List;
 
 public class GuiHelper {
-    public GuiScreen screen;
+    public Screen screen;
     public int xSize, ySize;
     ResourceLocation background;
-    static final ResourceLocation helperTexture = new ResourceLocation("eln", "sprites/gui/helpertexture.png");
+    static final ResourceLocation helperTexture = ResourceLocation.fromNamespaceAndPath("eln", "sprites/gui/helpertexture.png");
 
-    static final ResourceLocation slotSkin = new ResourceLocation("textures/gui/container/furnace.png");
+    static final ResourceLocation slotSkin = ResourceLocation.parse($1);
 
 
-    public GuiHelper(GuiScreen screen, int xSize, int ySize, String backgroundName) {
+    public GuiHelper(Screen screen, int xSize, int ySize, String backgroundName) {
         this.screen = screen;
         this.xSize = xSize;
         this.ySize = ySize;
-        background = new ResourceLocation("eln", "sprites/gui/" + backgroundName);
+        background = ResourceLocation.fromNamespaceAndPath("eln", "sprites/gui/" + backgroundName);
     }
 
-    public GuiHelper(GuiScreen screen, int xSize, int ySize) {
+    public GuiHelper(Screen screen, int xSize, int ySize) {
         this.screen = screen;
         this.xSize = xSize;
         this.ySize = ySize;
@@ -45,7 +45,7 @@ public class GuiHelper {
 
     GuiTextFieldEln newGuiTextField(int x, int y, int width, int maxLength) {
         GuiTextFieldEln o;
-        o = new GuiTextFieldEln(Minecraft.getMinecraft().fontRenderer,
+        o = new GuiTextFieldEln(Minecraft.getInstance().font,
             screen.width / 2 - xSize / 2 + x, screen.height / 2 - ySize / 2 + y, width, 12, this, maxLength);
         objectList.add(o);
         return o;
@@ -94,8 +94,8 @@ public class GuiHelper {
         return o;
     }
 
-	/*public void drawHoveringText(List list, int x, int y, FontRenderer fontRenderer, GuiContainerEln cont) {
-        drawHoveringText(list, screen.width / 2 - xSize / 2 + x, screen.height / 2 - ySize / 2 + y, Minecraft.getMinecraft().fontRenderer);
+	/*public void drawHoveringText(List list, int x, int y, Font fontRenderer, GuiContainerEln cont) {
+        drawHoveringText(list, screen.width / 2 - xSize / 2 + x, screen.height / 2 - ySize / 2 + y, Minecraft.getInstance().font);
 	}*/
 
     public void add(IGuiObject o) {
@@ -200,7 +200,7 @@ public class GuiHelper {
     }
 
     public void drawString(int x, int y, int color, String str) {
-        Minecraft.getMinecraft().fontRenderer.drawString(str, screen.width / 2 - xSize / 2 + x, screen.height / 2 - ySize / 2 + y, color);
+        Minecraft.getInstance().font.drawString(str, screen.width / 2 - xSize / 2 + x, screen.height / 2 - ySize / 2 + y, color);
     }
 
     public void draw2(int x, int y) {
@@ -209,9 +209,9 @@ public class GuiHelper {
         }
     }
 
-    public void drawHoveringText(List par1List, int x, int y, FontRenderer font) {
+    public void drawHoveringText(List par1List, int x, int y, Font font) {
         if (!par1List.isEmpty()) {
-            if (screen instanceof GuiContainer) {
+            if (screen instanceof AbstractContainerScreen) {
                 x -= (screen.width - xSize) / 2;
                 y -= (screen.height - ySize) / 2;
             }
@@ -225,14 +225,14 @@ public class GuiHelper {
 
             while (iterator.hasNext()) {
                 String s = (String) iterator.next();
-                int l = font.getStringWidth(s);
+                int l = font.width(s);
 
                 if (l > textWidth) {
                     textWidth = l;
                 }
             }
 
-            if (screen instanceof GuiContainer) {
+            if (screen instanceof AbstractContainerScreen) {
                 if (x + (screen.width - xSize) / 2 + textWidth + 30 > screen.width) {
                     x -= textWidth + 24;
                 }
@@ -304,9 +304,9 @@ public class GuiHelper {
         GL11.glDisable(GL11.GL_ALPHA_TEST);
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         GL11.glShadeModel(GL11.GL_SMOOTH);
-        Tessellator tessellator = Tessellator.getInstance();
+        Tesselator tessellator = Tesselator.getInstance();
         BufferBuilder buffer = tessellator.getBuffer();
-        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
+        buffer.begin(GL11.GL_QUADS, DefaultVertexFormat.POSITION_COLOR);
         buffer.pos((double) par3, (double) par2, 0).color(f1, f2, f3, f).endVertex();
         buffer.pos((double) par1, (double) par2, 0).color(f1, f2, f3, f).endVertex();
         buffer.pos((double) par1, (double) par4, 0).color(f5, f6, f7, f4).endVertex();
@@ -318,16 +318,16 @@ public class GuiHelper {
         GL11.glEnable(GL11.GL_TEXTURE_2D);
     }
 
-    public int getHoveringTextWidth(List<String> comment, FontRenderer fontRenderer) {
+    public int getHoveringTextWidth(List<String> comment, Font fontRenderer) {
         int strWidth = 0;
         for (String str : comment) {
-            int size = fontRenderer.getStringWidth(str);
+            int size = fontRenderer.width(str);
             if (size > strWidth) strWidth = size;
         }
         return strWidth + 5;
     }
 
-    public int getHoveringTextHeight(List<String> comment, FontRenderer fontRenderer) {
+    public int getHoveringTextHeight(List<String> comment, Font fontRenderer) {
         return comment.size() * 9 - 4;
     }
 

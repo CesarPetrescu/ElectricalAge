@@ -8,10 +8,10 @@ import mods.eln.misc.RcInterpolator;
 import mods.eln.misc.Utils;
 import mods.eln.sim.IProcess;
 import mods.eln.sixnode.electricalwatch.ElectricalWatchContainer;
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.block.BlockFire;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.FireBlock;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 
@@ -31,7 +31,7 @@ public class ElectricalFireDetectorSlowProcess implements IProcess {
     }
 
     double getBatteryLevel() {
-        ItemStack batteryStack = element.getInventory().getStackInSlot(ElectricalWatchContainer.batteryId);
+        ItemStack batteryStack = element.getInventory().getItem(ElectricalWatchContainer.batteryId);
         BatteryItem battery = (BatteryItem) GenericItemUsingDamageDescriptor.getDescriptor(batteryStack, BatteryItem.class);
         if (battery != null) {
             return battery.getEnergy(batteryStack) / battery.getEnergyMax(batteryStack);
@@ -43,7 +43,7 @@ public class ElectricalFireDetectorSlowProcess implements IProcess {
     @Override
     public void process(double time) {
         if (element.descriptor.batteryPowered) {
-            ItemStack batteryStack = element.getInventory().getStackInSlot(ElectricalFireDetectorContainer.Companion.getBatteryId());
+            ItemStack batteryStack = element.getInventory().getItem(ElectricalFireDetectorContainer.Companion.getBatteryId());
             BatteryItem battery = (BatteryItem) GenericItemUsingDamageDescriptor.getDescriptor(batteryStack, BatteryItem.class);
             double energy;
             if (battery == null || (energy = battery.getEnergy(batteryStack)) < element.descriptor.PowerComsumption * time * 4) {
@@ -101,14 +101,14 @@ public class ElectricalFireDetectorSlowProcess implements IProcess {
                     for (int dz = -maxRangeHalf; dz <= maxRangeHalf; ++dz) {
                         Block block = McBridge.getBlock(detectionBBCenter.world(), detectionBBCenter.x + dx, detectionBBCenter.y + dy,
                             detectionBBCenter.z + dz);
-                        if (block.getClass() == BlockFire.class) {
+                        if (block.getClass() == FireBlock.class) {
                             fireDetected = true;
 
                             Coordinate coord = element.getCoordinate();
-                            List<IBlockState> blockList = Utils.traceRay(coord.world(), coord.x + 0.5, coord.y + 0.5, coord.z + 0.5,
+                            List<BlockState> blockList = Utils.traceRay(coord.world(), coord.x + 0.5, coord.y + 0.5, coord.z + 0.5,
                                 detectionBBCenter.x + dx + 0.5, detectionBBCenter.y + dy + 0.5, detectionBBCenter.z + dz + 0.5);
 
-                            for (IBlockState b : blockList)
+                            for (BlockState b : blockList)
                                 if (b.isOpaqueCube()) {
                                     fireDetected = false;
                                     break;

@@ -4,8 +4,8 @@ import mods.eln.gui.GuiButtonEln;
 import mods.eln.gui.GuiContainerEln;
 import mods.eln.gui.GuiHelperContainer;
 import mods.eln.gui.IGuiObject;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
 import java.io.IOException;
 
 public class HubGui extends GuiContainerEln {
@@ -18,7 +18,7 @@ public class HubGui extends GuiContainerEln {
 
     HubRender render;
 
-    public HubGui(EntityPlayer player, IInventory inventory, HubRender render) {
+    public HubGui(Player player, Container inventory, HubRender render) {
         super(new HubContainer(player, inventory));
         this.render = render;
     }

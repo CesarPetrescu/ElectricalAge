@@ -15,19 +15,19 @@ import mods.eln.sim.ThermalLoad
 import mods.eln.sim.nbt.NbtElectricalGateInputOutput
 import mods.eln.sim.nbt.NbtElectricalGateOutputProcess
 import net.minecraft.block.material.Material
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.world.World
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.world.entity.player.Player
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.world.level.block.entity.BlockEntity
+import net.minecraft.world.level.Level
 import java.io.DataInputStream
 import java.io.DataOutputStream
 
 
 class DeviceProbeBlock: SimpleNodeBlock(Material.ICE) {
 
-    override fun createNewTileEntity(world: World?, metadata: Int): TileEntity {
+    override fun createNewTileEntity(world: Level?, metadata: Int): BlockEntity {
         return DeviceProbeEntity()
     }
 
@@ -95,7 +95,7 @@ class DeviceProbeNode: SimpleNode() {
         }
     }
 
-    override fun networkUnserialize(stream: DataInputStream, player: EntityPlayerMP?) {
+    override fun networkUnserialize(stream: DataInputStream, player: ServerPlayer?) {
         super.networkUnserialize(stream, player)
         Direction.values().forEach {
             side ->
@@ -103,9 +103,9 @@ class DeviceProbeNode: SimpleNode() {
         }
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
-        if (nbt.hasKey("arduinoData")) {
+        if (nbt.contains("arduinoData")) {
             Direction.values().forEach {
                 side ->
                 pinInformation[side.toSideValue()].readFromNBT(nbt, side.name)
@@ -113,9 +113,9 @@ class DeviceProbeNode: SimpleNode() {
         }
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound) {
+    override fun writeToNBT(nbt: CompoundTag) {
         super.writeToNBT(nbt)
-        nbt.setBoolean("arduinoData", true)
+        nbt.putBoolean("arduinoData", true)
         Direction.values().forEach {
             side ->
             pinInformation[side.toSideValue()].writeToNBT(nbt, side.name)
@@ -131,25 +131,25 @@ data class ServerPinInformation(
     var portMode: PortMode
     ): INBTTReady {
 
-    override fun readFromNBT(nbt: NBTTagCompound, str: String) {
+    override fun readFromNBT(nbt: CompoundTag, str: String) {
         electricalLoadPin.writeToNBT(nbt, str)
         electricalProcess.writeToNBT(nbt, str)
         if (arduinoPin != null)
-            nbt.setInteger("${str}arduinoPin", arduinoPin!!)
-        nbt.setInteger("${str}direction", direction.id)
-        nbt.setInteger("${str}portMode", portMode.id)
+            nbt.putInt("${str}arduinoPin", arduinoPin!!)
+        nbt.putInt("${str}direction", direction.id)
+        nbt.putInt("${str}portMode", portMode.id)
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound, str: String) {
+    override fun writeToNBT(nbt: CompoundTag, str: String) {
         electricalLoadPin.readFromNBT(nbt, str)
         electricalProcess.readFromNBT(nbt, str)
-        arduinoPin = if (nbt.hasKey("${str}arduinoPin")) {
-            nbt.getInteger("${str}arduinoPin")
+        arduinoPin = if (nbt.contains("${str}arduinoPin")) {
+            nbt.getInt("${str}arduinoPin")
         } else {
             null
         }
-        direction = intToDirectionalMode(nbt.getInteger("${str}direction"))
-        portMode = intToPortMode(nbt.getInteger("${str}portMode"))
+        direction = intToDirectionalMode(nbt.getInt("${str}direction"))
+        portMode = intToPortMode(nbt.getInt("${str}portMode"))
     }
 
     fun writeToNetwork(stream: DataOutputStream) {
@@ -220,7 +220,7 @@ class DeviceProbeEntity : SimpleNodeEntity("ElnDeviceProbe") {
         }
     }
 
-    override fun newGuiDraw(side: Direction, player: EntityPlayer): GuiScreen {
+    override fun newGuiDraw(side: Direction, player: Player): Screen {
         return DeviceProbeGui(this)
     }
 

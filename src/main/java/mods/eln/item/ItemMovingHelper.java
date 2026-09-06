@@ -4,44 +4,44 @@ import mods.eln.misc.McBridge;
 import mods.eln.misc.Utils;
 import mods.eln.sixnode.electricalcable.IUtilityCableInventory;
 import mods.eln.sixnode.electricalcable.UtilityCableDescriptor;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.play.server.SPacketSetSlot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 
 public abstract class ItemMovingHelper {
     public abstract boolean acceptsStack(ItemStack stack);
     public abstract ItemStack newStackOfSize(int items);
 
-    public void move(InventoryPlayer src, IInventory dst, int dstSlot, int desired) {
+    public void move(Inventory src, Container dst, int dstSlot, int desired) {
         boolean dstChanged = false;
-        if(Utils.isCreative((EntityPlayerMP) src.player)) {
+        if(Utils.isCreative((ServerPlayer) src.player)) {
             if(desired == 0) {
-                dst.setInventorySlotContents(dstSlot, ItemStack.EMPTY);
+                dst.setItem(dstSlot, ItemStack.EMPTY);
             } else {
-                dst.setInventorySlotContents(dstSlot, newStackOfSize(desired));
+                dst.setItem(dstSlot, newStackOfSize(desired));
             }
-            dst.markDirty();
+            dst.setChanged();
             return;
         }
         int now = 0;
-        ItemStack stack = dst.getStackInSlot(dstSlot);
+        ItemStack stack = dst.getItem(dstSlot);
         if(!McBridge.isNothing(stack)) {
             now = stack.getCount();
         }
         Utils.println(String.format("IMH.m: now %d, desired %d", now, desired));
         if(now < desired) {
             int diff = desired - now;
-            for(int idx = 0; idx < src.getSizeInventory(); idx++) {
-                ItemStack invStack = src.getStackInSlot(idx);
+            for(int idx = 0; idx < src.getContainerSize(); idx++) {
+                ItemStack invStack = src.getItem(idx);
                 if(McBridge.isNothing(invStack)) continue;
                 if(!acceptsStack(invStack)) continue;
                 if (Utils.getItemObject(invStack) instanceof UtilityCableDescriptor) {
                     if (IUtilityCableInventory.trimCable(invStack, dst, dstSlot)) {
-                        if (invStack.getCount() == 0) src.setInventorySlotContents(idx, ItemStack.EMPTY);
+                        if (invStack.getCount() == 0) src.setItem(idx, ItemStack.EMPTY);
                         syncItemInSlot(src, idx);
                         diff -= Math.min(invStack.getCount(), diff);
                         Utils.println(String.format("IMH.m: moved %d into node", (desired - now) - diff));
@@ -54,7 +54,7 @@ public abstract class ItemMovingHelper {
                 if(invStack.getCount() == 0) {
                     invStack = null;
                 }
-                src.setInventorySlotContents(idx, invStack);
+                src.setItem(idx, invStack);
                 // Grissess: We need to send this immediately to sync with the client
                 syncItemInSlot(src, idx);
                 if(diff <= 0) break;
@@ -62,7 +62,7 @@ public abstract class ItemMovingHelper {
             int moved = (desired - now) - diff;
             Utils.println(String.format("IMH.m: moved %d into node", moved));
             if(moved > 0) {
-                dst.setInventorySlotContents(dstSlot, newStackOfSize(now + moved));
+                dst.setItem(dstSlot, newStackOfSize(now + moved));
                 dstChanged = true;
             }
         } else {
@@ -71,9 +71,9 @@ public abstract class ItemMovingHelper {
             if(diff > 0) {
                 if (src.addItemStackToInventory(newStackOfSize(diff))) {
                     if(desired == 0) {
-                        dst.setInventorySlotContents(dstSlot, ItemStack.EMPTY);
+                        dst.setItem(dstSlot, ItemStack.EMPTY);
                     } else {
-                        dst.setInventorySlotContents(dstSlot, newStackOfSize(desired));
+                        dst.setItem(dstSlot, newStackOfSize(desired));
                     }
                     dstChanged = true;
                     Utils.println("IMH.m: move succeeded");
@@ -88,41 +88,41 @@ public abstract class ItemMovingHelper {
         }
 
         if (dstChanged) {
-            dst.markDirty();
+            dst.setChanged();
         }
     }
 
-    public static void syncItemInSlot(InventoryPlayer inv, int slot) {
-        EntityPlayerMP playerMP = (EntityPlayerMP) inv.player;
-        Container container =  playerMP.openContainer;
+    public static void syncItemInSlot(Inventory inv, int slot) {
+        ServerPlayer playerMP = (ServerPlayer) inv.player;
+        AbstractContainerMenu container =  playerMP.containerMenu;
 
         playerMP.connection.sendPacket(
-            new SPacketSetSlot(
+            new ClientboundContainerSetSlotPacket(
                 container.windowId,
-                container.getSlotFromInventory(inv, slot).slotNumber,
-                inv.getStackInSlot(slot)
+                container.getSlotFromInventory(inv, slot).index,
+                inv.getItem(slot)
             )
         );
 
-        inv.markDirty();
+        inv.setChanged();
     }
 
-    public static void syncEntireInventory(EntityPlayer player) {
-        IInventory inv = player.inventory;
-        EntityPlayerMP playerMP = (EntityPlayerMP) player;
+    public static void syncEntireInventory(Player player) {
+        Container inv = player.inventory;
+        ServerPlayer playerMP = (ServerPlayer) player;
 
-        for(int idx = 0; idx < inv.getSizeInventory(); idx++) {
-            Container container = playerMP.openContainer;
+        for(int idx = 0; idx < inv.getContainerSize(); idx++) {
+            AbstractContainerMenu container = playerMP.containerMenu;
             playerMP.connection.sendPacket(
-                new SPacketSetSlot(
+                new ClientboundContainerSetSlotPacket(
                     container.windowId,
-                    container.getSlotFromInventory(inv, idx).slotNumber,
-                    inv.getStackInSlot(idx)
+                    container.getSlotFromInventory(inv, idx).index,
+                    inv.getItem(idx)
                 )
             );
         }
 
-        inv.markDirty();
+        inv.setChanged();
     }
 
 }

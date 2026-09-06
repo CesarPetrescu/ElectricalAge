@@ -1,14 +1,14 @@
 package mods.eln.gui;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.init.SoundEvents;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.sounds.SoundEvents;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
 
-public class GuiButtonEln extends GuiButton implements IGuiObject {
+public class GuiButtonEln extends Button implements IGuiObject {
 
     IGuiObjectObserver observer;
     private boolean playPressSound = true;
@@ -36,7 +36,7 @@ public class GuiButtonEln extends GuiButton implements IGuiObject {
     @Override
     public void idraw(int x, int y, float f) {
         GL11.glColor4f(1f, 1f, 1f, 1f);
-        drawButton(Minecraft.getMinecraft(), x, y, f);
+        drawButton(Minecraft.getInstance(), x, y, f);
     }
 
     @Override
@@ -57,7 +57,7 @@ public class GuiButtonEln extends GuiButton implements IGuiObject {
         if (code != 0) {
             return;
         }
-        pressedInside = mousePressed(Minecraft.getMinecraft(), x, y);
+        pressedInside = mousePressed(Minecraft.getInstance(), x, y);
     }
 
     @Override
@@ -70,7 +70,7 @@ public class GuiButtonEln extends GuiButton implements IGuiObject {
         pressedInside = false;
         if (shouldActivate) {
             if (playPressSound) {
-                Minecraft.getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                Minecraft.getInstance().getSoundManager().playSound(SimpleSoundInstance.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F));
             }
             onMouseClicked();
             if (observer != null) {
@@ -86,7 +86,7 @@ public class GuiButtonEln extends GuiButton implements IGuiObject {
     @Override
     public void idraw2(int x, int y) {
         if (helper != null && visible && x >= this.x && y >= this.y && x < this.x + width && y < this.y + height)
-            helper.drawHoveringText(comment, x, y, Minecraft.getMinecraft().fontRenderer);
+            helper.drawHoveringText(comment, x, y, Minecraft.getInstance().font);
     }
 
     @Override

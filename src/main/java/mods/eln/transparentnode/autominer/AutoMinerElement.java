@@ -19,10 +19,10 @@ import mods.eln.sim.mna.component.Resistor;
 import mods.eln.sim.nbt.NbtElectricalLoad;
 import mods.eln.sim.process.destruct.VoltageStateWatchDog;
 import mods.eln.sim.process.destruct.WorldExplosion;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.Container;
+import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -139,8 +139,8 @@ public class AutoMinerElement extends TransparentNodeElement {
     }
 
     @Override
-    public boolean onBlockActivated(EntityPlayer player, Direction side, float vx, float vy, float vz) {
-        return inventory.take(player.getHeldItemMainhand());
+    public boolean onBlockActivated(Player player, Direction side, float vx, float vy, float vz) {
+        return inventory.take(player.getMainHandItem());
     }
 
     @Override
@@ -150,12 +150,12 @@ public class AutoMinerElement extends TransparentNodeElement {
 
     @Nullable
     @Override
-    public Container newContainer(@NotNull Direction side, @NotNull EntityPlayer player) {
+    public AbstractContainerMenu newContainer(@NotNull Direction side, @NotNull Player player) {
         return new AutoMinerContainer(player, inventory.getInventory());
     }
 
     @Override
-    public IInventory getInventory() {
+    public Container getInventory() {
         return inventory.getInventory();
     }
 
@@ -187,14 +187,14 @@ public class AutoMinerElement extends TransparentNodeElement {
     }
 
     @Override
-    public void writeToNBT(NBTTagCompound nbt) {
+    public void writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
-        nbt.setBoolean("powerOk", powerOk);
-        nbt.setBoolean("silkTouch", slowProcess.silkTouch);
+        nbt.putBoolean("powerOk", powerOk);
+        nbt.putBoolean("silkTouch", slowProcess.silkTouch);
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt) {
+    public void readFromNBT(CompoundTag nbt) {
         super.readFromNBT(nbt);
         powerOk = nbt.getBoolean("powerOk");
         slowProcess.silkTouch = nbt.getBoolean("silkTouch");

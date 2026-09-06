@@ -7,8 +7,8 @@ import mods.eln.node.six.SixNodeItemSlot
 import mods.eln.sixnode.currentcable.CurrentCableDescriptor
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor
 import mods.eln.sixnode.electricalcable.UtilityCableDescriptor
-import net.minecraft.inventory.IInventory
-import net.minecraft.item.ItemStack
+import net.minecraft.world.Container
+import net.minecraft.world.item.ItemStack
 import kotlin.math.abs
 
 /**
@@ -17,7 +17,7 @@ import kotlin.math.abs
  * accepted in inventories where they do not make sense.
  */
 class CableItemSlot(
-    inventory: IInventory,
+    inventory: Container,
     slot: Int,
     x: Int,
     y: Int,

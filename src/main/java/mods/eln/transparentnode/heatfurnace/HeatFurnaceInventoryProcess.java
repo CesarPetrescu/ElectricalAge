@@ -7,9 +7,9 @@ import mods.eln.item.ThermalIsolatorElement;
 import mods.eln.misc.INBTTReady;
 import mods.eln.misc.Utils;
 import mods.eln.sim.IProcess;
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 
 public class HeatFurnaceInventoryProcess implements IProcess, INBTTReady {
 
@@ -23,9 +23,9 @@ public class HeatFurnaceInventoryProcess implements IProcess, INBTTReady {
 
     @Override
     public void process(double time) {
-        ItemStack combustibleStack = furnace.inventory.getStackInSlot(HeatFurnaceContainer.combustibleId);
-        ItemStack combustionChamberStack = furnace.inventory.getStackInSlot(HeatFurnaceContainer.combustrionChamberId);
-        ItemStack isolatorChamberStack = furnace.inventory.getStackInSlot(HeatFurnaceContainer.isolatorId);
+        ItemStack combustibleStack = furnace.inventory.getItem(HeatFurnaceContainer.combustibleId);
+        ItemStack combustionChamberStack = furnace.inventory.getItem(HeatFurnaceContainer.combustrionChamberId);
+        ItemStack isolatorChamberStack = furnace.inventory.getItem(HeatFurnaceContainer.isolatorId);
 
         double isolationFactor = 1;
         if (!McBridge.isNothing(isolatorChamberStack)) {
@@ -34,7 +34,7 @@ public class HeatFurnaceInventoryProcess implements IProcess, INBTTReady {
             if (iso == null) {
                 isolationFactor = 1;
             } else if (furnace.thermalLoad.temperatureCelsius > iso.getTmax()) {
-                furnace.inventory.decrStackSize(HeatFurnaceContainer.isolatorId, 1);
+                furnace.inventory.removeItem(HeatFurnaceContainer.isolatorId, 1);
             } else {
                 isolationFactor = iso.getConductionFactor();
             }
@@ -56,10 +56,10 @@ public class HeatFurnaceInventoryProcess implements IProcess, INBTTReady {
                     if (furnace.furnaceProcess.combustibleEnergy + combustibleBuffer < furnace.furnaceProcess.nominalCombustibleEnergy) {
                         //	furnace.furnaceProcess.combustibleEnergy += itemEnergy;
                         combustibleBuffer += itemEnergy;
-                        furnace.inventory.decrStackSize(HeatFurnaceContainer.combustibleId, 1);
+                        furnace.inventory.removeItem(HeatFurnaceContainer.combustibleId, 1);
                         if (combustibleStack.getItem().getTranslationKey().toLowerCase().contains("bucket")) {
-                            furnace.inventory.setInventorySlotContents(HeatFurnaceContainer.combustibleId, new ItemStack(Items.BUCKET));
-                            furnace.inventory.markDirty();
+                            furnace.inventory.setItem(HeatFurnaceContainer.combustibleId, new ItemStack(Items.BUCKET));
+                            furnace.inventory.setChanged();
                         }
                     }
                 }
@@ -77,12 +77,12 @@ public class HeatFurnaceInventoryProcess implements IProcess, INBTTReady {
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt, String str) {
+    public void readFromNBT(CompoundTag nbt, String str) {
         combustibleBuffer = nbt.getDouble(str + "HFIP" + "combustribleBuffer");
     }
 
     @Override
-    public void writeToNBT(NBTTagCompound nbt, String str) {
-        nbt.setDouble(str + "HFIP" + "combustribleBuffer", combustibleBuffer);
+    public void writeToNBT(CompoundTag nbt, String str) {
+        nbt.putDouble(str + "HFIP" + "combustribleBuffer", combustibleBuffer);
     }
 }

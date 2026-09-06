@@ -16,7 +16,7 @@ import mods.eln.sim.ElectricalLoad;
 import mods.eln.sim.ThermalLoad;
 import mods.eln.sim.nbt.NbtElectricalGateInputOutput;
 import mods.eln.sim.nbt.NbtElectricalGateOutputProcess;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -46,7 +46,7 @@ public class ComputerCraftIoElement extends TransparentNodeElement implements IP
     @Override
     public ElectricalLoad getElectricalLoad(Direction side, LRDU lrdu) {
         if (lrdu != LRDU.Down || side.isY()) return null;
-        return ioGate[side.getHorizontalIndex()];
+        return ioGate[side.get2DDataValue()];
     }
 
     @Nullable
@@ -81,7 +81,7 @@ public class ComputerCraftIoElement extends TransparentNodeElement implements IP
     }
 
     @Override
-    public boolean onBlockActivated(EntityPlayer player, Direction side, float vx, float vy, float vz) {
+    public boolean onBlockActivated(Player player, Direction side, float vx, float vy, float vz) {
         return false;
     }
 

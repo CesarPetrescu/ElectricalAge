@@ -6,10 +6,10 @@ import mods.eln.gui.IGuiObject;
 import mods.eln.misc.Recipe;
 import mods.eln.misc.RecipesList;
 import mods.eln.misc.Utils;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.item.ItemStack;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.world.item.crafting.Recipe;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,9 +24,9 @@ public class ItemDefault extends Default {
     }
 
     private ItemStack stack;
-    private GuiScreen previewScreen;
+    private Screen previewScreen;
 
-    public ItemDefault(ItemStack stack, GuiScreen previewScreen) {
+    public ItemDefault(ItemStack stack, Screen previewScreen) {
         super(previewScreen);
         this.stack = stack;
 
@@ -51,26 +51,26 @@ public class ItemDefault extends Default {
 
             self = new GuiItemStack(6, y, stack, helper);
             extender.add(self);
-            extender.add(new GuiLabel(6 + 21, y + 3, stack.getDisplayName()));
+            extender.add(new GuiLabel(6 + 21, y + 3, $1.getHoverName()));
             y += 24;
 
             if (plugIn != null) y = plugIn.top(y, extender, stack);
 
-            List<IRecipe> recipeOutList = new ArrayList<IRecipe>();
-            List<IRecipe> recipeInList = new ArrayList<IRecipe>();
+            List<Recipe> recipeOutList = new ArrayList<Recipe>();
+            List<Recipe> recipeInList = new ArrayList<Recipe>();
             if (!McBridge.isNothing(stack)) {
                 for (Object o : ForgeRegistries.RECIPES) {
                     try {
-                        if (o instanceof IRecipe) {
-                            IRecipe r = (IRecipe) o;
+                        if (o instanceof Recipe) {
+                            Recipe r = (Recipe) o;
 
                             ItemStack out = r.getRecipeOutput();
-                            if (out != null && out.getItem() == stack.getItem() && out.getItemDamage() == stack.getItemDamage()) {
+                            if (out != null && out.getItem() == stack.getItem() && out.getItemDamage() /* TODO(flattening) */ == stack.getItemDamage() /* TODO(flattening) */) {
                                 recipeOutList.add(r);
                             }
 
                             for (ItemStack rStack : Utils.getRecipeInputs(r)) {
-                                if (!McBridge.isNothing(rStack) && rStack.getItem() == stack.getItem() && rStack.getItemDamage() == stack.getItemDamage()) {
+                                if (!McBridge.isNothing(rStack) && rStack.getItem() == stack.getItem() && rStack.getItemDamage() /* TODO(flattening) */ == stack.getItemDamage() /* TODO(flattening) */) {
                                     recipeInList.add(r);
                                     break;
                                 }
@@ -92,7 +92,7 @@ public class ItemDefault extends Default {
                 y += 12;
 
                 counter = -1;
-                for (IRecipe r : recipeOutList) {
+                for (Recipe r : recipeOutList) {
                     if (counter == 0) y += 60;
                     if (counter == -1) counter = 0;
                     ItemStack[][] stacks = Utils.getItemStackGrid(r);
@@ -118,7 +118,7 @@ public class ItemDefault extends Default {
                 extender.add(new GuiLabel(6, y, tr("Can be used to craft:")));
                 y += 12;
                 counter = -1;
-                for (IRecipe r : recipeInList) {
+                for (Recipe r : recipeInList) {
                     if (counter == 0) y += 60;
                     if (counter == -1) counter = 0;
 

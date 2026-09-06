@@ -6,9 +6,9 @@ import mods.eln.misc.*;
 import mods.eln.node.transparent.TransparentNodeDescriptor;
 import mods.eln.node.transparent.TransparentNodeElementRender;
 import mods.eln.node.transparent.TransparentNodeEntity;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
@@ -47,7 +47,7 @@ public class TeleporterRender extends TransparentNodeElementRender {
         Coordinate lightCoordinate = new Coordinate(this.d.lightCoordinate);
         lightCoordinate.applyTransformation(front, c);
 
-        boolean lightEnable = McBridge.getBlock(getTileEntity().getWorld(), lightCoordinate.x, lightCoordinate.y, lightCoordinate.z) == Eln.lightBlock;
+        boolean lightEnable = McBridge.getBlock(getTileEntity().getLevel(), lightCoordinate.x, lightCoordinate.y, lightCoordinate.z) == Eln.lightBlock;
 
 
         front.glRotateXnRef();
@@ -119,7 +119,7 @@ public class TeleporterRender extends TransparentNodeElementRender {
             d.scr1_cables.draw();
             d.scr2_transporter.draw();
 
-            if (!getTileEntity().getWorld().getEntitiesWithinAABB(Entity.class, d.getBB(c, front)).isEmpty())
+            if (!getTileEntity().getLevel().getEntitiesOfClass(Entity.class, d.getBB(c, front)).isEmpty())
                 d.scr3_userin.draw();
 
             if (doorState)
@@ -236,7 +236,7 @@ public class TeleporterRender extends TransparentNodeElementRender {
 
     @Nullable
     @Override
-    public GuiScreen newGuiDraw(@NotNull Direction side, @NotNull EntityPlayer player) {
+    public Screen newGuiDraw(@NotNull Direction side, @NotNull Player player) {
 
         return new TeleporterGui(player, this);
     }

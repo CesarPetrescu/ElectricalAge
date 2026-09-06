@@ -5,13 +5,13 @@ import mods.eln.item.electricalinterface.IItemEnergyBattery
 import mods.eln.misc.Utils
 import mods.eln.misc.UtilsClient
 import mods.eln.wiki.Data
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.ResourceLocation
-import net.minecraft.world.World
+import net.minecraft.world.entity.player.Player
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.level.Level
 import mods.eln.client.itemrender.IItemRenderer.ItemRenderType
 import mods.eln.client.itemrender.IItemRenderer.ItemRendererHelper
 import mods.eln.misc.isNothing
@@ -53,11 +53,11 @@ class ElectricalFlashlightItem(name: String, var lightMin: Int, var rangeMin: In
         }
     }
 
-    override fun getDefaultNBT(): NBTTagCompound? {
-        val nbt = NBTTagCompound()
-        nbt.setDouble("energy", 0.0)
-        nbt.setBoolean("powerOn", false)
-        nbt.setInteger("rand", (Math.random() * 0xFFFFFFF).toInt())
+    override fun getDefaultNBT(): CompoundTag? {
+        val nbt = CompoundTag()
+        nbt.putDouble("energy", 0.0)
+        nbt.putBoolean("powerOn", false)
+        nbt.putInt("rand", (Math.random() * 0xFFFFFFF).toInt())
         return nbt
     }
 
@@ -73,14 +73,14 @@ class ElectricalFlashlightItem(name: String, var lightMin: Int, var rangeMin: In
         return if (getLightState(stack) == 1) lightMin else lightMax
     }
 
-    override fun onItemRightClick(s: ItemStack, w: World, p: EntityPlayer): ItemStack {
-        if (!w.isRemote && getEnergy(s) > 0) {
+    override fun onItemRightClick(s: ItemStack, w: Level, p: Player): ItemStack {
+        if (!w.isClientSide && getEnergy(s) > 0) {
             var lightState = getLightState(s) + 1
             if (lightState > 2) lightState = 0
             when (lightState) {
-                0 -> Utils.sendMessage(p as EntityPlayerMP, "Flashlight OFF")
-                1 -> Utils.sendMessage(p as EntityPlayerMP, "Flashlight ON")
-                2 -> Utils.sendMessage(p as EntityPlayerMP, "Flashlight BOOSTED")
+                0 -> Utils.sendMessage(p as ServerPlayer, "Flashlight OFF")
+                1 -> Utils.sendMessage(p as ServerPlayer, "Flashlight ON")
+                2 -> Utils.sendMessage(p as ServerPlayer, "Flashlight BOOSTED")
                 else -> {
                 }
             }
@@ -89,7 +89,7 @@ class ElectricalFlashlightItem(name: String, var lightMin: Int, var rangeMin: In
         return s
     }
 
-    override fun addInformation(itemStack: ItemStack?, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack?, entityPlayer: Player?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         list.add(tr("Discharge power: %1\$W", Utils.plotValue(dischargeMin)))
         if (!itemStack.isNothing()) {
@@ -184,6 +184,6 @@ class ElectricalFlashlightItem(name: String, var lightMin: Int, var rangeMin: In
         boosted = ResourceLocation("eln", "textures/items/" + name.replace(" ", "").lowercase() + "boosted.png")
         on = ResourceLocation("eln", "textures/items/" + name.replace(" ", "").lowercase() + "on.png")
         off = ResourceLocation("eln", "textures/items/" + name.replace(" ", "").lowercase() + "off.png")
-        //	off = new ResourceLocation("eln", "/model/StoneFurnace/all.png");
+        //	off = ResourceLocation.fromNamespaceAndPath("eln", "/model/StoneFurnace/all.png");
     }
 }

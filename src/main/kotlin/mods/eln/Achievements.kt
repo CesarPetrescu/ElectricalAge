@@ -1,7 +1,7 @@
 package mods.eln
 
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.util.ResourceLocation
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.resources.ResourceLocation
 
 /**
  * 1.12.2 replaced achievements with data-driven advancements. The two Eln achievements live in
@@ -15,7 +15,7 @@ object Achievements {
     val craft50VMacerator = ResourceLocation(Eln.MODID, "craft_50v_macerator")
 
     @JvmStatic
-    fun grant(player: EntityPlayerMP, id: ResourceLocation) {
+    fun grant(player: ServerPlayer, id: ResourceLocation) {
         val advancement = player.server.advancementManager.getAdvancement(id) ?: return
         val progress = player.advancements.getProgress(advancement)
         if (progress.isDone) return

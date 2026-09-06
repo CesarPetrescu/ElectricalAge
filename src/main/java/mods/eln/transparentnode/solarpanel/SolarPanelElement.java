@@ -19,10 +19,10 @@ import mods.eln.sim.ThermalLoad;
 import mods.eln.sim.mna.component.CurrentSource;
 import mods.eln.sim.mna.component.Resistor;
 import mods.eln.sim.nbt.NbtElectricalLoad;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.Container;
+import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -167,19 +167,19 @@ public class SolarPanelElement extends TransparentNodeElement {
     }
 
     @Override
-    public boolean onBlockActivated(EntityPlayer player, Direction side, float vx, float vy, float vz) {
-        return descriptor.canRotate && inventory.take(player.getHeldItemMainhand(), this, true, false);
+    public boolean onBlockActivated(Player player, Direction side, float vx, float vy, float vz) {
+        return descriptor.canRotate && inventory.take(player.getMainHandItem(), this, true, false);
     }
 
     @Override
-    public void writeToNBT(NBTTagCompound nbt) {
+    public void writeToNBT(CompoundTag nbt) {
         super.writeToNBT(nbt);
         powerSource.writeToNBT(nbt, "powerSource");
-        nbt.setDouble("panelAlpha", panelAlpha);
+        nbt.putDouble("panelAlpha", panelAlpha);
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt) {
+    public void readFromNBT(CompoundTag nbt) {
         super.readFromNBT(nbt);
         enforceGroundingMode();
         powerSource.readFromNBT(nbt, "powerSource");
@@ -190,7 +190,7 @@ public class SolarPanelElement extends TransparentNodeElement {
     public void networkSerialize(java.io.DataOutputStream stream) {
         super.networkSerialize(stream);
         try {
-            stream.writeBoolean(getInventory().getStackInSlot(SolarPanelContainer.trackerSlotId) != null);
+            stream.writeBoolean(getInventory().getItem(SolarPanelContainer.trackerSlotId) != null);
             stream.writeFloat((float) panelAlpha);
             node.lrduCubeMask.getTranslate(Direction.YN).serialize(stream);
         } catch (IOException e) {
@@ -233,7 +233,7 @@ public class SolarPanelElement extends TransparentNodeElement {
             .acceptIfEmpty(0, SolarTrackerDescriptor.class);
 
     @Override
-    public IInventory getInventory() {
+    public Container getInventory() {
         return inventory.getInventory();
     }
 
@@ -244,7 +244,7 @@ public class SolarPanelElement extends TransparentNodeElement {
 
     @Nullable
     @Override
-    public Container newContainer(@NotNull Direction side, @NotNull EntityPlayer player) {
+    public AbstractContainerMenu newContainer(@NotNull Direction side, @NotNull Player player) {
         return new SolarPanelContainer(node, player, inventory.getInventory());
     }
 

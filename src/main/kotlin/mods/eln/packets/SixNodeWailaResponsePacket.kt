@@ -4,7 +4,7 @@ import net.minecraftforge.fml.common.network.ByteBufUtils
 import io.netty.buffer.ByteBuf
 import mods.eln.misc.Coordinate
 import mods.eln.misc.Direction
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 
 class SixNodeWailaResponsePacket : TransparentNodeResponsePacket {
     lateinit var side: Direction

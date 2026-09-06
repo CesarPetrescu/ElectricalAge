@@ -36,14 +36,14 @@ import mods.eln.sim.process.destruct.WorldExplosion
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor
 import mods.eln.sound.LoopedSound
 import mods.eln.wiki.Data
-import net.minecraft.client.audio.ISound
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.Container
-import net.minecraft.inventory.IInventory
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.client.resources.sounds.SoundInstance
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.inventory.AbstractContainerMenu
+import net.minecraft.world.Container
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
 import mods.eln.client.itemrender.IItemRenderer
 import org.lwjgl.opengl.GL11
 import java.io.DataInputStream
@@ -99,7 +99,7 @@ class DcDcDescriptor(
         Data.addWiring(newItemStack())
     }
 
-    override fun addInformation(itemStack: ItemStack, entityPlayer: EntityPlayer?, list: MutableList<String>, par4: Boolean) {
+    override fun addInformation(itemStack: ItemStack, entityPlayer: Player?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         Collections.addAll(list, *tr("Transforms an input voltage to\nan output voltage.")!!.split("\n".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray())
     }
@@ -306,9 +306,9 @@ class DcDcElement(transparentNode: TransparentNode, descriptor: TransparentNodeD
     }
 
     private fun computeInventory() {
-        val primaryCable = inventory.getStackInSlot(DcDcContainer.primaryCableSlotId)
-        val secondaryCable = inventory.getStackInSlot(DcDcContainer.secondaryCableSlotId)
-        val core = inventory.getStackInSlot(DcDcContainer.ferromagneticSlotId)
+        val primaryCable = inventory.getItem(DcDcContainer.primaryCableSlotId)
+        val secondaryCable = inventory.getItem(DcDcContainer.secondaryCableSlotId)
+        val core = inventory.getItem(DcDcContainer.ferromagneticSlotId)
         val primaryWinding = dcDcWinding(primaryCable)
         val secondaryWinding = dcDcWinding(secondaryCable)
 
@@ -366,14 +366,14 @@ class DcDcElement(transparentNode: TransparentNode, descriptor: TransparentNodeD
         return false
     }
 
-    override fun inventoryChange(inventory: IInventory?) {
+    override fun inventoryChange(inventory: Container?) {
         disconnect()
         computeInventory()
         connect()
         needPublish()
     }
 
-    override fun onBlockActivated(player: EntityPlayer, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
+    override fun onBlockActivated(player: Player, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
         return false
     }
 
@@ -381,7 +381,7 @@ class DcDcElement(transparentNode: TransparentNode, descriptor: TransparentNodeD
         return true
     }
 
-    override fun newContainer(side: Direction, player: EntityPlayer): Container? {
+    override fun newContainer(side: Direction, player: Player): AbstractContainerMenu? {
         return DcDcContainer(player, inventory)
     }
 
@@ -398,13 +398,13 @@ class DcDcElement(transparentNode: TransparentNode, descriptor: TransparentNodeD
     override fun networkSerialize(stream: DataOutputStream) {
         super.networkSerialize(stream)
         try {
-            stream.writeShort(dcDcRenderedWindingCount(inventory.getStackInSlot(0)))
-            stream.writeShort(dcDcRenderedWindingCount(inventory.getStackInSlot(1)))
-            stream.writeFloat(dcDcRenderedWindingThickness(inventory.getStackInSlot(DcDcContainer.primaryCableSlotId)))
-            stream.writeFloat(dcDcRenderedWindingThickness(inventory.getStackInSlot(DcDcContainer.secondaryCableSlotId)))
-            Utils.serialiseItemStack(stream, inventory.getStackInSlot(DcDcContainer.ferromagneticSlotId))
-            Utils.serialiseItemStack(stream, inventory.getStackInSlot(DcDcContainer.primaryCableSlotId))
-            Utils.serialiseItemStack(stream, inventory.getStackInSlot(DcDcContainer.secondaryCableSlotId))
+            stream.writeShort(dcDcRenderedWindingCount(inventory.getItem(0)))
+            stream.writeShort(dcDcRenderedWindingCount(inventory.getItem(1)))
+            stream.writeFloat(dcDcRenderedWindingThickness(inventory.getItem(DcDcContainer.primaryCableSlotId)))
+            stream.writeFloat(dcDcRenderedWindingThickness(inventory.getItem(DcDcContainer.secondaryCableSlotId)))
+            Utils.serialiseItemStack(stream, inventory.getItem(DcDcContainer.ferromagneticSlotId))
+            Utils.serialiseItemStack(stream, inventory.getItem(DcDcContainer.primaryCableSlotId))
+            Utils.serialiseItemStack(stream, inventory.getItem(DcDcContainer.secondaryCableSlotId))
             node!!.lrduCubeMask.getTranslate(front.down()).serialize(stream)
             var load = 0f
             if (primaryMeltCurrent != 0.0 && secondaryMeltCurrent != 0.0) {
@@ -412,7 +412,7 @@ class DcDcElement(transparentNode: TransparentNode, descriptor: TransparentNodeD
                     secondaryLoad.current / secondaryMeltCurrent).toFloat(), 0f, 1f)
             }
             stream.writeFloat(load)
-            stream.writeBoolean(!inventory.getStackInSlot(3).isNothing())
+            stream.writeBoolean(!inventory.getItem(3).isNothing())
         } catch (e: IOException) {
             e.printStackTrace()
         }
@@ -423,12 +423,12 @@ class DcDcElement(transparentNode: TransparentNode, descriptor: TransparentNodeD
         info[tr("Construction")] = dcDcFlexibleConstructionWaila()
         info[tr("Ratio")] = Utils.plotValue(interSystemProcess.ratio)
         info[tr("Primary winding")] = windingStatus(
-            inventory.getStackInSlot(DcDcContainer.primaryCableSlotId),
+            inventory.getItem(DcDcContainer.primaryCableSlotId),
             primaryVoltageSource.current,
             primaryThermalLoad
         )
         info[tr("Secondary winding")] = windingStatus(
-            inventory.getStackInSlot(DcDcContainer.secondaryCableSlotId),
+            inventory.getItem(DcDcContainer.secondaryCableSlotId),
             secondaryVoltageSource.current,
             secondaryThermalLoad
         )
@@ -442,9 +442,9 @@ class DcDcElement(transparentNode: TransparentNode, descriptor: TransparentNodeD
 
     private fun dcDcFlexibleConstructionWaila(): String {
         val messages = mutableListOf<String>()
-        val core = inventory.getStackInSlot(DcDcContainer.ferromagneticSlotId)
-        val primary = inventory.getStackInSlot(DcDcContainer.primaryCableSlotId)
-        val secondary = inventory.getStackInSlot(DcDcContainer.secondaryCableSlotId)
+        val core = inventory.getItem(DcDcContainer.ferromagneticSlotId)
+        val primary = inventory.getItem(DcDcContainer.primaryCableSlotId)
+        val secondary = inventory.getItem(DcDcContainer.secondaryCableSlotId)
         val hasCore = GenericItemUsingDamageDescriptor.getDescriptor(
             core,
             FerromagneticCoreDescriptor::class.java
@@ -487,8 +487,8 @@ class DcDcElement(transparentNode: TransparentNode, descriptor: TransparentNodeD
         )
     }
 
-    override fun readConfigTool(compound: NBTTagCompound, invoker: EntityPlayer) {
-        if (compound.hasKey("isolator")) {
+    override fun readConfigTool(compound: CompoundTag, invoker: Player) {
+        if (compound.contains("isolator")) {
             disconnect()
             reconnect()
             needPublish()
@@ -501,10 +501,10 @@ class DcDcElement(transparentNode: TransparentNode, descriptor: TransparentNodeD
             inventoryChange(inventory)
     }
 
-    override fun writeConfigTool(compound: NBTTagCompound, invoker: EntityPlayer) {
-        ConfigCopyToolDescriptor.writeGenDescriptor(compound, "primary", inventory.getStackInSlot(DcDcContainer.primaryCableSlotId))
-        ConfigCopyToolDescriptor.writeGenDescriptor(compound, "secondary", inventory.getStackInSlot(DcDcContainer.secondaryCableSlotId))
-        ConfigCopyToolDescriptor.writeGenDescriptor(compound, "core", inventory.getStackInSlot(DcDcContainer.ferromagneticSlotId))
+    override fun writeConfigTool(compound: CompoundTag, invoker: Player) {
+        ConfigCopyToolDescriptor.writeGenDescriptor(compound, "primary", inventory.getItem(DcDcContainer.primaryCableSlotId))
+        ConfigCopyToolDescriptor.writeGenDescriptor(compound, "secondary", inventory.getItem(DcDcContainer.secondaryCableSlotId))
+        ConfigCopyToolDescriptor.writeGenDescriptor(compound, "core", inventory.getItem(DcDcContainer.ferromagneticSlotId))
     }
 }
 
@@ -559,7 +559,7 @@ class DcDcRender(tileEntity: TransparentNodeEntity, val descriptor: TransparentN
     private var cableRenderType: CableRenderType? = null
 
     init {
-        addLoopedSound(object : LoopedSound("eln:transformer", coordinate(), ISound.AttenuationType.LINEAR) {
+        addLoopedSound(object : LoopedSound("eln:transformer", coordinate(), SoundInstance.AttenuationType.LINEAR) {
             override fun getVolume(): Float {
                 return if (load.position > (descriptor as DcDcDescriptor).minimalLoadToHum)
                     0.1f * (load.position - descriptor.minimalLoadToHum) / (1 - descriptor.minimalLoadToHum)
@@ -663,7 +663,7 @@ class DcDcRender(tileEntity: TransparentNodeEntity, val descriptor: TransparentN
         load.step(deltaT)
 
         if (hasCasing) {
-            if (!Utils.isPlayerAround(tileEntity.world, coordinate.moved(front!!).getAxisAlignedBB(0)))
+            if (!Utils.isPlayerAround(tileEntity.level, coordinate.moved(front!!).getAxisAlignedBB(0)))
                 doorOpen.target = 0f
             else
                 doorOpen.target = 1f
@@ -671,19 +671,19 @@ class DcDcRender(tileEntity: TransparentNodeEntity, val descriptor: TransparentN
         }
     }
 
-    override fun newGuiDraw(side: Direction, player: EntityPlayer): GuiScreen {
+    override fun newGuiDraw(side: Direction, player: Player): Screen {
         return DcDcGui(player, inventory, this)
     }
 }
 
-class DcDcGui(player: EntityPlayer, inventory: IInventory, val render: DcDcRender): GuiContainerEln(DcDcContainer(player, inventory)) {
+class DcDcGui(player: Player, inventory: Container, val render: DcDcRender): GuiContainerEln(DcDcContainer(player, inventory)) {
     override fun newHelper(): GuiHelperContainer {
         val descriptor = render.descriptor as DcDcDescriptor
         return GuiHelperContainer(this, 176, 194 - 33 + 20, 8, 84 + 194 - 166 - 33 + 20, descriptor.guiTexture)
     }
 }
 
-class DcDcContainer(player: EntityPlayer, inventory: IInventory) : BasicContainer(player, inventory,
+class DcDcContainer(player: Player, inventory: Container) : BasicContainer(player, inventory,
     arrayOf(
         DcDcWindingSlot(inventory, primaryCableSlotId, 58, 30, 16,
             arrayOf(tr("Power cable or wire slot"))),

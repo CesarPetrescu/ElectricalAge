@@ -14,10 +14,10 @@ import mods.eln.sim.ElectricalLoad
 import mods.eln.sim.ThermalLoad
 import mods.eln.sim.nbt.NbtElectricalGateOutput
 import mods.eln.sim.nbt.NbtElectricalGateOutputProcess
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.Container
-import net.minecraft.inventory.IInventory
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.inventory.AbstractContainerMenu
+import net.minecraft.world.Container
+import net.minecraft.nbt.CompoundTag
 import java.io.DataInputStream
 import java.io.DataOutputStream
 
@@ -51,20 +51,20 @@ class ThermometerSensorElement(sixNode: SixNode, side: Direction, descriptor: Si
         const val setValueId = 1.toByte()
     }
 
-    override val inventory: IInventory
+    override val inventory: Container
         get() = serverInventory
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
         lowValue = nbt.getFloat("lowValue")
         highValue = nbt.getFloat("highValue")
         if (highValue <= lowValue) highValue = lowValue + 0.0001f
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound) {
+    override fun writeToNBT(nbt: CompoundTag) {
         super.writeToNBT(nbt)
-        nbt.setFloat("lowValue", lowValue)
-        nbt.setFloat("highValue", highValue)
+        nbt.putFloat("lowValue", lowValue)
+        nbt.putFloat("highValue", highValue)
     }
 
     override fun getElectricalLoad(lrdu: LRDU, mask: Int): ElectricalLoad? {
@@ -104,7 +104,7 @@ class ThermometerSensorElement(sixNode: SixNode, side: Direction, descriptor: Si
 
     override fun hasGui(): Boolean = true
 
-    override fun newContainer(side: Direction, player: EntityPlayer): Container {
+    override fun newContainer(side: Direction, player: Player): AbstractContainerMenu {
         return ThermometerSensorContainer(player, serverInventory)
     }
 

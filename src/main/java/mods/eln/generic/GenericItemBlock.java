@@ -1,9 +1,9 @@
 package mods.eln.generic;
 
-import net.minecraft.block.Block;
-import net.minecraft.item.ItemBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.item.BlockItem;
 
-public class GenericItemBlock extends ItemBlock {
+public class GenericItemBlock extends BlockItem {
 
     int textureIdOffset;
 
@@ -38,6 +38,6 @@ public class GenericItemBlock extends ItemBlock {
 	/*
 	@Override //caca1.5.1
 	public String getItemNameIS(ItemStack itemstack) {
-		return getItemName() + "." + subNames[itemstack.getItemDamage()];
+		return getItemName() + "." + subNames[itemstack.getItemDamage() /* TODO(flattening) */];
 	}*/
 }

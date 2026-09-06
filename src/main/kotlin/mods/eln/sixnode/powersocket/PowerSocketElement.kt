@@ -19,10 +19,10 @@ import mods.eln.sim.process.destruct.VoltageStateWatchDog
 import mods.eln.sim.process.destruct.WorldExplosion
 import mods.eln.sixnode.lampsupply.LampSupplyElement
 import mods.eln.sixnode.lampsupply.LampSupplyElement.PowerSupplyChannelHandle
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagList
-import net.minecraft.nbt.NBTTagString
+import net.minecraft.world.entity.player.Player
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.nbt.ListTag
+import net.minecraft.nbt.StringTag
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
@@ -104,16 +104,16 @@ class PowerSocketElement(sixNode: SixNode?, side: Direction?, descriptor: SixNod
         needPublish()
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound) {
+    override fun writeToNBT(nbt: CompoundTag) {
         super.writeToNBT(nbt)
-        nbt.setString("channel", channel)
-        nbt.setInteger("color", paintColor)
+        nbt.putString("channel", channel)
+        nbt.putInt("color", paintColor)
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
+    override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
         channel = nbt.getString("channel")
-        paintColor = nbt.getInteger("color")
+        paintColor = nbt.getInt("color")
     }
 
     override fun networkUnserialize(stream: DataInputStream) {
@@ -145,13 +145,13 @@ class PowerSocketElement(sixNode: SixNode?, side: Direction?, descriptor: SixNod
     }
 
     override fun onBlockActivated(
-        entityPlayer: EntityPlayer,
+        entityPlayer: Player,
         side: Direction,
         vx: Float,
         vy: Float,
         vz: Float
     ): Boolean {
-        val used = entityPlayer.heldItemMainhand
+        val used = entityPlayer.mainHandItem
         if (used != null) {
             val desc = getDescriptor(used)
             if (desc != null && desc is BrushDescriptor) {
@@ -166,9 +166,9 @@ class PowerSocketElement(sixNode: SixNode?, side: Direction?, descriptor: SixNod
         return false
     }
 
-    override fun readConfigTool(compound: NBTTagCompound, invoker: EntityPlayer) {
-        if (compound.hasKey("powerChannels")) {
-            val newChannel = compound.getTagList("powerChannels", 8).getStringTagAt(0)
+    override fun readConfigTool(compound: CompoundTag, invoker: Player) {
+        if (compound.contains("powerChannels")) {
+            val newChannel = compound.getList("powerChannels", 8).getStringTagAt(0)
             if (newChannel != null && !newChannel.isEmpty()) {
                 channel = newChannel
                 needPublish()
@@ -176,10 +176,10 @@ class PowerSocketElement(sixNode: SixNode?, side: Direction?, descriptor: SixNod
         }
     }
 
-    override fun writeConfigTool(compound: NBTTagCompound, invoker: EntityPlayer) {
-        val list = NBTTagList()
-        list.appendTag(NBTTagString(channel))
-        compound.setTag("powerChannels", list)
+    override fun writeConfigTool(compound: CompoundTag, invoker: Player) {
+        val list = ListTag()
+        list.appendTag(StringTag(channel))
+        compound.put("powerChannels", list)
     }
 
     companion object {

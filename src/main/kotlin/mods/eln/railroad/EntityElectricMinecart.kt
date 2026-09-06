@@ -4,21 +4,21 @@ import mods.eln.Eln
 import mods.eln.misc.Coordinate
 import mods.eln.node.NodeManager
 import mods.eln.sim.mna.misc.MnaConst
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.item.EntityMinecart
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Blocks
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumHand
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.entity.vehicle.AbstractMinecart
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.world.InteractionHand
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level
 import kotlin.math.abs
 import kotlin.math.sign
 
-class EntityElectricMinecart(world: World, x: Double, y: Double, z: Double): EntityMinecart(world, x, y, z) {
+class EntityElectricMinecart(world: Level, x: Double, y: Double, z: Double): AbstractMinecart(world, x, y, z) {
 
     // TODO: Confirm if this is actually needed for anything
-    constructor(world: World): this(world, 0.0, 0.0, 0.0)
+    constructor(world: Level): this(world, 0.0, 0.0, 0.0)
 
     private var lastPowerElement: RailroadPowerInterface? = null
     private val locomotiveMaximumResistance = 200.0
@@ -72,7 +72,7 @@ class EntityElectricMinecart(world: World, x: Double, y: Double, z: Double): Ent
      */
     override fun getMaxSpeed(): Double = super.getMaxSpeed() + 1
 
-    override fun moveAlongTrack(pos: BlockPos, state: IBlockState) {
+    override fun moveAlongTrack(pos: BlockPos, state: BlockState) {
         super.moveAlongTrack(pos, state)
         if (energyBufferJoules > 0) {
             val maxEnergy = 40.0
@@ -126,37 +126,37 @@ class EntityElectricMinecart(world: World, x: Double, y: Double, z: Double): Ent
         return null
     }
 
-    override fun processInitialInteract(player: EntityPlayer, hand: EnumHand): Boolean {
+    override fun processInitialInteract(player: Player, hand: InteractionHand): Boolean {
         if (super.processInitialInteract(player, hand)) return true
-        if (player.isSneaking) return false
+        if (player.isShiftKeyDown) return false
 
         if (isBeingRidden && !isPassenger(player)) {
             return true
         }
 
-        if (!world.isRemote) {
+        if (!world.isClientSide) {
             player.startRiding(this)
         }
         return true
     }
 
-    override fun writeEntityToNBT(tag: NBTTagCompound) {
+    override fun writeEntityToNBT(tag: CompoundTag) {
         super.writeEntityToNBT(tag)
-        tag.setDouble("EnergyBufferJ", energyBufferJoules)
-        tag.setDouble("EnergyBufferTargetJ", energyBufferTargetJoules)
+        tag.putDouble("EnergyBufferJ", energyBufferJoules)
+        tag.putDouble("EnergyBufferTargetJ", energyBufferTargetJoules)
     }
 
-    override fun readEntityFromNBT(tag: NBTTagCompound) {
+    override fun readEntityFromNBT(tag: CompoundTag) {
         super.readEntityFromNBT(tag)
-        if (tag.hasKey("EnergyBufferJ")) {
+        if (tag.contains("EnergyBufferJ")) {
             energyBufferJoules = tag.getDouble("EnergyBufferJ")
         }
-        if (tag.hasKey("EnergyBufferTargetJ")) {
+        if (tag.contains("EnergyBufferTargetJ")) {
             energyBufferTargetJoules = tag.getDouble("EnergyBufferTargetJ")
         }
     }
 
-    override fun getType(): EntityMinecart.Type = EntityMinecart.Type.RIDEABLE
+    override fun getType(): AbstractMinecart.Type = AbstractMinecart.Type.RIDEABLE
 
-    override fun getDefaultDisplayTile(): IBlockState = Blocks.IRON_BLOCK.defaultState
+    override fun getDefaultDisplayTile(): BlockState = Blocks.IRON_BLOCK.defaultState
 }

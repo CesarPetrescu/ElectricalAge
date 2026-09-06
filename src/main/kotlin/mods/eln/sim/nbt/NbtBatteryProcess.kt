@@ -6,7 +6,7 @@ import mods.eln.sim.BatteryProcess
 import mods.eln.sim.ThermalLoad
 import mods.eln.sim.mna.component.VoltageSource
 import mods.eln.sim.mna.state.VoltageState
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.nbt.CompoundTag
 
 class NbtBatteryProcess(
     positiveLoad: VoltageState?,
@@ -17,15 +17,15 @@ class NbtBatteryProcess(
     thermalLoad: ThermalLoad
 ) : BatteryProcess(positiveLoad, negativeLoad, voltageFunction, IMax, voltageSource, thermalLoad), INBTTReady {
 
-    override fun readFromNBT(nbt: NBTTagCompound, str: String) {
+    override fun readFromNBT(nbt: CompoundTag, str: String) {
         Q = nbt.getDouble(str + "NBP" + "Q")
         if (!Q.isFinite()) Q = 0.0
         life = nbt.getDouble(str + "NBP" + "life")
         if (!life.isFinite()) life = 1.0
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound, str: String) {
-        nbt.setDouble(str + "NBP" + "Q", Q)
-        nbt.setDouble(str + "NBP" + "life", life)
+    override fun writeToNBT(nbt: CompoundTag, str: String) {
+        nbt.putDouble(str + "NBP" + "Q", Q)
+        nbt.putDouble(str + "NBP" + "life", life)
     }
 }

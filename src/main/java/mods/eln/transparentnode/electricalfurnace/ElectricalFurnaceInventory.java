@@ -4,7 +4,7 @@ import mods.eln.misc.Direction;
 import mods.eln.node.transparent.TransparentNodeElement;
 import mods.eln.node.transparent.TransparentNodeElementInventory;
 import mods.eln.node.transparent.TransparentNodeElementRender;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 
 public class ElectricalFurnaceInventory extends TransparentNodeElementInventory {
 
@@ -28,7 +28,7 @@ public class ElectricalFurnaceInventory extends TransparentNodeElementInventory 
     }
 
     @Override
-    public boolean canInsertItem(int var1, ItemStack var2, int side) {
+    public boolean canPlaceItemThroughFace(int var1, ItemStack var2, int side) {
         switch (Direction.fromIntMinecraftSide(side)) {
             case YP:
                 return true;
@@ -38,7 +38,7 @@ public class ElectricalFurnaceInventory extends TransparentNodeElementInventory 
     }
 
     @Override
-    public boolean canExtractItem(int var1, ItemStack var2, int side) {
+    public boolean canTakeItemThroughFace(int var1, ItemStack var2, int side) {
         switch (Direction.fromIntMinecraftSide(side)) {
             case YP:
                 return false;

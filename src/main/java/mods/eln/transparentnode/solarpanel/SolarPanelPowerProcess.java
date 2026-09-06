@@ -6,7 +6,7 @@ import mods.eln.sim.mna.component.Resistor;
 import mods.eln.sim.mna.misc.IRootSystemPreStepProcess;
 import mods.eln.sim.mna.misc.MnaConst;
 import mods.eln.sim.mna.state.State;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundTag;
 
 public class SolarPanelPowerProcess implements IRootSystemPreStepProcess, INBTTReady {
     private final CurrentSource source;
@@ -122,12 +122,12 @@ public class SolarPanelPowerProcess implements IRootSystemPreStepProcess, INBTTR
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt, String str) {
+    public void readFromNBT(CompoundTag nbt, String str) {
         setLightFactor(nbt.getDouble(str + "light"));
     }
 
     @Override
-    public void writeToNBT(NBTTagCompound nbt, String str) {
-        nbt.setDouble(str + "light", lightFactor);
+    public void writeToNBT(CompoundTag nbt, String str) {
+        nbt.putDouble(str + "light", lightFactor);
     }
 }

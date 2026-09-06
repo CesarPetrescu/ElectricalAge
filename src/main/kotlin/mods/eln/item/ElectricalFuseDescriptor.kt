@@ -6,8 +6,8 @@ import mods.eln.misc.VoltageLevelColor
 import mods.eln.misc.preserveMatrix
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor
 import mods.eln.wiki.Data
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import mods.eln.client.itemrender.IItemRenderer
 import org.lwjgl.opengl.GL11
 
