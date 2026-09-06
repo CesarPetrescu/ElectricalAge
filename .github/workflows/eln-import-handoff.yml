@@ -1,0 +1,40 @@
+name: Import reviewed 1.21.1 handoff
+on:
+  push:
+    branches: ['port/1.21.1']
+    paths: ['porting/handoff-transfer/**', '.github/workflows/eln-import-handoff.yml']
+permissions:
+  contents: write
+jobs:
+  import:
+    if: github.ref == 'refs/heads/port/1.21.1'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Apply exact reviewed patch on its pinned baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD^)" = '8e5f8b2a7d16e5ba399efe98624db5d463eccf93'
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,lzma,subprocess
+          raw=lzma.decompress(b''.join(Path(f'porting/handoff-transfer/part{i}.xz').read_bytes() for i in range(1,5)))
+          assert hashlib.sha256(raw).hexdigest()=='da2d4d71499735f0efb1858240e3d12a517e561a41bce95073e8c35fd23dd68c'
+          for line in raw.decode().splitlines():
+              if line.startswith('+++ ') or line.startswith('--- '):
+                  assert line[4:]=='/dev/null' or line[4:].startswith(('a/ports/1.21.1/','b/ports/1.21.1/')),line
+          patch=Path('/tmp/eln-reviewed.patch');patch.write_bytes(raw)
+          subprocess.run(['git','apply','--check','--index',str(patch)],check=True)
+          subprocess.run(['git','apply','--index',str(patch)],check=True)
+          PY
+          git diff --cached --check
+          git rm -r porting/handoff-transfer
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'port: harden MNA lifecycle and add bounded connected circuits [skip ci]'
+          git push origin HEAD:port/1.21.1
+          git rev-parse HEAD
