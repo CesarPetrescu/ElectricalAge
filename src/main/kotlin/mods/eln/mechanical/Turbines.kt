@@ -309,7 +309,7 @@ class TurbineElement(node: TransparentNode, desc_: TransparentNodeDescriptor) :
                 lifeLeftH < 1.0  -> "<1h"
                 else             -> String.format("%.1fh", lifeLeftH)
             }
-            info[tr("Blade")] = bladeStack.hoverName
+            info[tr("Blade")] = bladeStack.hoverName.string
             info[tr("Life Left")] = lifeLeftStr
         } else {
             info[tr("Blade")] = tr("None")

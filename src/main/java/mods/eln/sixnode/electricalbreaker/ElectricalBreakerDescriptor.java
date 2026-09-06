@@ -132,7 +132,7 @@ public class ElectricalBreakerDescriptor extends SixNodeDescriptor {
         GL11.glDisable(GL11.GL_DEPTH_TEST);
         GL11.glPushMatrix();
         GL11.glScalef(scale, scale, 1f);
-        font.drawStringWithShadow(overlay, x, y, 0xFFFFFF);
+        mods.eln.client.gl.FixedFunction.drawString(font, overlay, x, y, 0xFFFFFF, true);
         GL11.glPopMatrix();
         GL11.glPopAttrib();
     }

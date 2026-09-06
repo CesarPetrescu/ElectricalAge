@@ -169,8 +169,8 @@ class PowerSocketElement(sixNode: SixNode?, side: Direction?, descriptor: SixNod
 
     override fun readConfigTool(compound: CompoundTag, invoker: Player) {
         if (compound.contains("powerChannels")) {
-            val newChannel = compound.getList("powerChannels", 8).getStringTagAt(0)
-            if (newChannel != null && !newChannel.isEmpty()) {
+            val newChannel = compound.getList("powerChannels", 8).getString(0)
+            if (!newChannel.isEmpty()) {
                 channel = newChannel
                 needPublish()
             }
@@ -179,7 +179,7 @@ class PowerSocketElement(sixNode: SixNode?, side: Direction?, descriptor: SixNod
 
     override fun writeConfigTool(compound: CompoundTag, invoker: Player) {
         val list = ListTag()
-        list.appendTag(StringTag(channel))
+        list.add(StringTag.valueOf(channel))
         compound.put("powerChannels", list)
     }
 

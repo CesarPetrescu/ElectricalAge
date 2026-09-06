@@ -54,8 +54,8 @@ object MqttSignalControllerRegistry {
         assignments.clear()
         usedIds.clear()
         val list = tag.getList("entries", 10)
-        for (i in 0 until list.tagCount()) {
-            val entryTag = list.getCompoundTagAt(i)
+        for (i in 0 until list.size) {
+            val entryTag = list.getCompound(i)
             val coord = Coordinate()
             coord.readFromNBT(entryTag, "coord")
             val id = entryTag.getString("id")
@@ -75,7 +75,7 @@ object MqttSignalControllerRegistry {
             val entryTag = CompoundTag()
             entry.coordinate.writeToNBT(entryTag, "coord")
             entryTag.putString("id", entry.controllerId)
-            list.appendTag(entryTag)
+            list.add(entryTag)
         }
         tag.put("entries", list)
     }

@@ -15,6 +15,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.common.NeoForge;
 
 /**
@@ -37,11 +38,18 @@ public final class ClientSetup {
             context -> new ReplicatorRender(context, new SilverfishModel<>(context.bakeLayer(ModelLayers.SILVERFISH)), 0.3f));
     }
 
+    /** Key mappings are registered through the mod bus (1.7.10's ClientRegistry.registerKeyBinding). */
+    @SubscribeEvent
+    public static void onRegisterKeyMappings(RegisterKeyMappingsEvent event) {
+        Eln.clientKeyHandler = new ClientKeyHandler();
+        Eln.clientKeyHandler.register(event);
+        NeoForge.EVENT_BUS.register(Eln.clientKeyHandler);
+    }
+
     /** Called from FMLCommonSetupEvent on the client. */
     public static void init() {
-        Eln.clientKeyHandler = new ClientKeyHandler();
-        NeoForge.EVENT_BUS.register(Eln.clientKeyHandler);
         NeoForge.EVENT_BUS.register(new TutorialSignOverlay());
+        NeoForge.EVENT_BUS.register(new mods.eln.eventhandlers.ElnForgeEventsHandler());
         uuidManager = new UuidManager();
         soundClientEventListener = new SoundClientEventListener(uuidManager);
 

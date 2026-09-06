@@ -9,7 +9,6 @@ import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.world.level.Level
-import net.minecraft.world.level.saveddata.SavedData
 import java.util.*
 import mods.eln.misc.getBlock
 import mods.eln.misc.isBlockLoaded
@@ -18,7 +17,7 @@ import mods.eln.misc.setBlock
 import mods.eln.misc.setBlockToAir
 import mods.eln.misc.writeToNBT
 
-class GhostManager(par1Str: String?) : SavedData(par1Str) {
+class GhostManager(@Suppress("UNUSED_PARAMETER") par1Str: String?) {
     var ghostTable: MutableMap<Coordinate?, GhostElement> = Hashtable()
     var observerTable: MutableMap<Coordinate?, GhostObserver> = Hashtable()
     fun clear() {
@@ -27,9 +26,6 @@ class GhostManager(par1Str: String?) : SavedData(par1Str) {
     }
 
     fun init() {}
-    override fun isDirty(): Boolean {
-        return true
-    }
 
     fun getGhost(coordinate: Coordinate?): GhostElement? {
         return ghostTable[coordinate]
@@ -101,13 +97,6 @@ class GhostManager(par1Str: String?) : SavedData(par1Str) {
         coordinate.world().setBlockToAir(coordinate.x, coordinate.y, coordinate.z) //caca1.5.1
     }
 
-    override fun readFromNBT(nbt: CompoundTag) {
-    }
-
-    override fun writeToNBT(nbt: CompoundTag): CompoundTag {
-
-        return nbt
-    }
 
     fun loadFromNBT(nbt: CompoundTag?) {
         for (o in getTags(nbt!!)) {

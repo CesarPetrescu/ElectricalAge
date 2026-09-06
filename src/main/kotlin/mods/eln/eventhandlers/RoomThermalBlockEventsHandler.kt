@@ -10,14 +10,15 @@ class RoomThermalBlockEventsHandler {
     fun onBlockBreak(event: BlockEvent.BreakEvent) = onChanged(event)
 
     @SubscribeEvent
-    fun onBlockPlace(event: BlockEvent.PlaceEvent) = onChanged(event)
+    fun onBlockPlace(event: BlockEvent.EntityPlaceEvent) = onChanged(event)
 
     @SubscribeEvent
-    fun onBlockMultiPlace(event: BlockEvent.MultiPlaceEvent) = onChanged(event)
+    fun onBlockMultiPlace(event: BlockEvent.EntityMultiPlaceEvent) = onChanged(event)
 
     private fun onChanged(event: BlockEvent) {
         val pos = event.pos
-        RoomThermalManager.onBlockChanged(event.level, pos.x, pos.y, pos.z)
+        val level = event.level as? net.minecraft.world.level.Level ?: return
+        RoomThermalManager.onBlockChanged(level, pos.x, pos.y, pos.z)
     }
 
     @SubscribeEvent

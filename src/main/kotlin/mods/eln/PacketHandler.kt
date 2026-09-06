@@ -21,6 +21,7 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
 import mods.eln.misc.getBlockEntity
+import mods.eln.misc.dimension
 
 /**
  * The byte protocol, both directions: a leading packet id selects the handler. 1.21: the bytes

@@ -22,7 +22,6 @@ import mods.eln.sim.process.destruct.ThermalLoadWatchDog
 import mods.eln.sim.process.destruct.WorldExplosion
 import mods.eln.sound.LoopedSound
 import mods.eln.wiki.Data
-import net.minecraft.client.gui.components.Button
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.Container
 import net.minecraft.world.item.Item
@@ -333,8 +332,8 @@ class FuelHeatFurnaceContainer(val base: NodeBase?, player: Player, inventory: C
 
 class FuelHeatFurnaceGui(player: Player, val inventory: Container, val render: FuelHeatFurnaceRender) :
     GuiContainerEln(FuelHeatFurnaceContainer(null, player, inventory)) {
-    lateinit var externalControlled: Button
-    lateinit var mainSwitch: Button
+    lateinit var externalControlled: GuiButtonEln
+    lateinit var mainSwitch: GuiButtonEln
 
     lateinit var manualControl: GuiVerticalTrackBar
     lateinit var setTemperature: GuiVerticalTrackBarHeat

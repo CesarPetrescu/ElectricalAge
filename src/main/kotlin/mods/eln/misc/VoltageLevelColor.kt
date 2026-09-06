@@ -29,6 +29,17 @@ enum class VoltageLevelColor(val textureName: String?) {
             else -> null
         }
 
+    /**
+     * The voltage background behind a 3D-drawn item icon (render code only). Flat icons get it
+     * from their JSON model instead (see ElnDataGenerators).
+     */
+    fun drawIconBackground(type: mods.eln.client.itemrender.IItemRenderer.ItemRenderType) {
+        if (!mods.eln.Eln.config.getBooleanOrElse("ui.icons.noVoltageBackground", false) && textureName != null &&
+            (type == mods.eln.client.itemrender.IItemRenderer.ItemRenderType.INVENTORY || type == mods.eln.client.itemrender.IItemRenderer.ItemRenderType.FIRST_PERSON_MAP)) {
+            UtilsClient.drawIcon(type, net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("eln", "textures/voltages/$textureName.png"))
+        }
+    }
+
     /** The 1.7.10 fixed-function tint (render code only). */
     fun setGLColor() {
         val c = rgb ?: return

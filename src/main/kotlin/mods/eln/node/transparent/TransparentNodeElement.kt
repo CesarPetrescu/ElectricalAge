@@ -246,7 +246,7 @@ abstract class TransparentNodeElement(@JvmField var node: TransparentNode?, @Jvm
 
     val dropItemStack: ItemStack
         get() {
-            val itemStack = ItemStack(Eln.transparentNodeBlock, 1, node!!.elementId)
+            val itemStack = Eln.transparentNodeItem.getDescriptor(node!!.elementId)?.newItemStack(1) ?: return ItemStack.EMPTY
             itemStack.tagCompound = getItemStackNBT()
             return itemStack
         }

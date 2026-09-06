@@ -17,7 +17,7 @@ import mods.eln.sim.process.destruct.VoltageStateWatchDog
 import mods.eln.sim.process.destruct.WorldExplosion
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor
 import mods.eln.sixnode.lampsupply.LampSupplyElement
-import net.minecraft.client.gui.components.Button
+import mods.eln.gui.GuiButtonEln
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.nbt.CompoundTag
@@ -266,7 +266,7 @@ class EmergencyLampRender(entity: SixNodeEntity, side: Direction, descriptor: Si
 
 class EmergencyLampGui(private var render: EmergencyLampRender)
     : GuiScreenEln() {
-    private lateinit var buttonSupplyType: Button
+    private lateinit var buttonSupplyType: GuiButtonEln
     private lateinit var channel: GuiTextFieldEln
     private lateinit var charge: GuiVerticalProgressBar
 

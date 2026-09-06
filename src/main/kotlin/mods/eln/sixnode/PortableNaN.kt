@@ -70,7 +70,7 @@ class PortableNaNDescriptor(name: String, renderIn: CableRenderDescriptor): Gene
 
     override fun renderItem(type: IItemRenderer.ItemRenderType, item: ItemStack, vararg data: Any) {
         val icon = iconName ?: return
-        UtilsClient.drawIcon(type, ResourceLocation("eln", "textures/blocks/$icon.png"))
+        UtilsClient.drawIcon(type, ResourceLocation.fromNamespaceAndPath("eln", "textures/blocks/$icon.png"))
     }
 }
 

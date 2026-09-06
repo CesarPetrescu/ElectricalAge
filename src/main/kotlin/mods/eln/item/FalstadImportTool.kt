@@ -8,7 +8,9 @@ import mods.eln.misc.Utils.sendMessage
 import mods.eln.misc.UtilsClient
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.Button
+import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.screens.Screen
+import net.minecraft.network.chat.Component
 import net.minecraft.world.entity.player.Player
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.item.ItemStack
@@ -33,63 +35,58 @@ class FalstadImportToolDescriptor(name: String) : GenericItemUsingDamageDescript
     }
 }
 
-class FalstadImportGui : Screen() {
-    override fun initGui() {
-        super.initGui()
-        buttonList.clear()
-        buttonList.add(Button(0, width / 2 - 70, height / 2 - 10, 140, 20, tr("Paste Clipboard")))
-        buttonList.add(Button(1, width / 2 - 70, height / 2 + 16, 140, 20, tr("Cancel")))
+class FalstadImportGui : Screen(Component.literal("Falstad Import Tool")) {
+    override fun init() {
+        super.init()
+        addRenderableWidget(Button.builder(Component.literal(tr("Paste Clipboard"))) { paste() }
+            .bounds(width / 2 - 70, height / 2 - 10, 140, 20).build())
+        addRenderableWidget(Button.builder(Component.literal(tr("Cancel"))) { minecraft?.setScreen(null) }
+            .bounds(width / 2 - 70, height / 2 + 16, 140, 20).build())
     }
 
-    override fun actionPerformed(button: Button) {
-        when (button.id) {
-            0 -> {
-                val clipboard = getClipboardString().orEmpty().trim()
-                val player = Minecraft.getInstance().player
-                if (clipboard.isEmpty()) {
-                    if (player != null) sendMessage(player, tr("Falstad import: clipboard is empty."))
-                    return
-                }
-
-                if (!looksLikeFalstadData(clipboard)) {
-                    if (player != null) sendMessage(player, tr("Falstad import: clipboard is not valid Falstad data."))
-                    return
-                }
-
-                val bytes = clipboard.toByteArray(StandardCharsets.UTF_8)
-                if (bytes.size > MAX_FALSTAD_IMPORT_BYTES) {
-                    if (player != null) {
-                        sendMessage(
-                            player,
-                            tr(
-                                "Falstad import: netlist is too large to send (%1$ bytes, limit %2$).",
-                                bytes.size,
-                                MAX_FALSTAD_IMPORT_BYTES
-                            )
-                        )
-                    }
-                    return
-                }
-                val bos = ByteArrayOutputStream(bytes.size + 8)
-                val stream = DataOutputStream(bos)
-                stream.writeByte(Eln.packetFalstadImport.toInt())
-                stream.writeInt(bytes.size)
-                stream.write(bytes)
-                UtilsClient.sendPacketToServer(bos)
-                mc.setScreen(null)
-            }
-            else -> mc.setScreen(null)
+    private fun paste() {
+        val clipboard = minecraft?.keyboardHandler?.clipboard.orEmpty().trim()
+        val player = Minecraft.getInstance().player
+        if (clipboard.isEmpty()) {
+            if (player != null) sendMessage(player, tr("Falstad import: clipboard is empty."))
+            return
         }
+
+        if (!looksLikeFalstadData(clipboard)) {
+            if (player != null) sendMessage(player, tr("Falstad import: clipboard is not valid Falstad data."))
+            return
+        }
+
+        val bytes = clipboard.toByteArray(StandardCharsets.UTF_8)
+        if (bytes.size > MAX_FALSTAD_IMPORT_BYTES) {
+            if (player != null) {
+                sendMessage(
+                    player,
+                    tr(
+                        "Falstad import: netlist is too large to send (%1$ bytes, limit %2$).",
+                        bytes.size,
+                        MAX_FALSTAD_IMPORT_BYTES
+                    )
+                )
+            }
+            return
+        }
+        val bos = ByteArrayOutputStream(bytes.size + 8)
+        val stream = DataOutputStream(bos)
+        stream.writeByte(Eln.packetFalstadImport.toInt())
+        stream.writeInt(bytes.size)
+        stream.write(bytes)
+        UtilsClient.sendPacketToServer(bos)
+        minecraft?.setScreen(null)
     }
 
-    override fun drawScreen(mouseX: Int, mouseY: Int, partialTicks: Float) {
-        drawDefaultBackground()
-        drawCenteredString(fontRenderer, tr("Falstad Import Tool"), width / 2, height / 2 - 42, 0xFFFFFF)
-        drawCenteredString(fontRenderer, tr("Reads Falstad text from the system clipboard."), width / 2, height / 2 - 28, 0xA0A0A0)
-        super.drawScreen(mouseX, mouseY, partialTicks)
+    override fun render(graphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTicks: Float) {
+        super.render(graphics, mouseX, mouseY, partialTicks)
+        graphics.drawCenteredString(font, tr("Falstad Import Tool"), width / 2, height / 2 - 42, 0xFFFFFF)
+        graphics.drawCenteredString(font, tr("Reads Falstad text from the system clipboard."), width / 2, height / 2 - 28, 0xA0A0A0)
     }
 
-    override fun doesGuiPauseGame(): Boolean = false
+    override fun isPauseScreen(): Boolean = false
 }
 
 object FalstadImportPacketHandler {

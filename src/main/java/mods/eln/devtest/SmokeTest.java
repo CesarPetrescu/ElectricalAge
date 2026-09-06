@@ -109,7 +109,7 @@ public final class SmokeTest {
             return;
         }
         CompoundTag cfg = new CompoundTag();
-        cfg.setDouble("voltage", 50.0);
+        cfg.putDouble("voltage", 50.0);
         if (source instanceof mods.eln.item.IConfigurable) {
             ((mods.eln.item.IConfigurable) source).readConfigTool(cfg, player);
         }

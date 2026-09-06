@@ -6,12 +6,11 @@ import mods.eln.misc.Utils.println
 import mods.eln.node.transparent.TransparentNode
 import mods.eln.node.transparent.TransparentNodeElement
 import net.minecraft.nbt.CompoundTag
-import net.minecraft.world.level.saveddata.SavedData
 import java.util.*
 import mods.eln.misc.rand
 import mods.eln.misc.writeToNBT
 
-class NodeManager(par1Str: String?) : SavedData(par1Str) {
+class NodeManager(@Suppress("UNUSED_PARAMETER") par1Str: String?) {
     val nodeArray: HashMap<Coordinate, NodeBase>
     val nodes: ArrayList<NodeBase>
     val nodeList: Collection<NodeBase>
@@ -42,13 +41,7 @@ class NodeManager(par1Str: String?) : SavedData(par1Str) {
         // println("NodeManager has " + nodeArray.size + "node")
     }
 
-    override fun isDirty(): Boolean {
-        return true
-    }
 
-    override fun readFromNBT(nbt: CompoundTag) {}
-
-    override fun writeToNBT(nbt: CompoundTag): CompoundTag = nbt
 
     fun getNodeFromCoordonate(nodeCoordinate: Coordinate?): NodeBase? {
         return nodeArray[nodeCoordinate]

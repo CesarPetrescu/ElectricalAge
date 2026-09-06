@@ -259,7 +259,7 @@ abstract class SixNodeElement(sixNode: SixNode, @JvmField var side: Direction, d
     }
 
     val dropItemStack: ItemStack
-        get() = ItemStack(Eln.sixNodeBlock, 1, itemStackDamageId) //sixNode.sideElementIdList[side.getInt()]
+        get() = Eln.sixNodeItem.getDescriptor(itemStackDamageId)?.newItemStack(1) ?: ItemStack.EMPTY //sixNode.sideElementIdList[side.getInt()]
 
     open fun readFromNBT(nbt: CompoundTag) {
         front = readFromNBT(nbt, "sixFront")

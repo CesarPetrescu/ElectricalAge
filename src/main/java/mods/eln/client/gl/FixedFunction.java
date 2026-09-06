@@ -220,6 +220,22 @@ public final class FixedFunction {
     }
 
     /**
+     * Draws a line of text at the current matrix (1.7.10's FontRenderer.drawString inside a
+     * render pass): in the world through the buffer source, in a GUI through the GuiGraphics pose.
+     */
+    public static void drawString(net.minecraft.client.gui.Font font, String text, float x, float y, int color, boolean shadow) {
+        if (pose == null) return;
+        MultiBufferSource source = buffers;
+        boolean own = false;
+        if (source == null) {
+            source = net.minecraft.client.Minecraft.getInstance().renderBuffers().bufferSource();
+            own = true;
+        }
+        font.drawInBatch(text, x, y, color, shadow, pose.last().pose(), source, net.minecraft.client.gui.Font.DisplayMode.NORMAL, 0, packedLight);
+        if (own) ((MultiBufferSource.BufferSource) source).endBatch();
+    }
+
+    /**
      * Draws an item's baked model at the current matrix (what the 1.7.10 code did by rendering an
      * EntityItem in place). World renders only: in a GUI, GuiGraphics.renderItem is the way.
      */

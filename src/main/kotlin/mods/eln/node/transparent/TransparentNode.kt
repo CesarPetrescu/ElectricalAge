@@ -142,13 +142,13 @@ class TransparentNode : Node() {
     override fun initializeFromThat(front: Direction, entityLiving: LivingEntity?, itemStack: ItemStack?) {
         try {
             val descriptor = Eln.transparentNodeItem.getDescriptor(itemStack)
-            val metadata = itemStack!!.itemDamage
-            elementId = metadata
+            // the descriptor's sub-id (the item damage before the Flattening)
+            elementId = descriptor!!.parentItemDamage
             element = descriptor!!.ElementClass.getConstructor(TransparentNode::class.java, TransparentNodeDescriptor::class.java).newInstance(this, descriptor) as TransparentNodeElement
             if (descriptor is FloodlightDescriptor) {
                 FloodlightElement.placingPlayerIsCreative = entityLiving is ServerPlayer && isCreative(entityLiving)
             }
-            element!!.initializeFromThat(front, entityLiving, itemStack.tagCompound)
+            element!!.initializeFromThat(front, entityLiving, itemStack?.tagCompound)
         } catch (e: InstantiationException) {
             e.printStackTrace()
         } catch (e: IllegalAccessException) {

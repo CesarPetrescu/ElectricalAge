@@ -17,7 +17,7 @@ import mods.eln.sim.nbt.NbtElectricalGateOutput
 import mods.eln.sim.nbt.NbtElectricalGateOutputProcess
 import mods.eln.sixnode.AnalogFunction
 import mods.eln.wiki.Data
-import net.minecraft.client.gui.components.Button
+import mods.eln.gui.GuiButtonEln
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.Item
@@ -457,7 +457,7 @@ class PalRender(entity: SixNodeEntity, side: Direction, descriptor: SixNodeDescr
 }
 
 class PalGui(val render: PalRender) : GuiScreenEln() {
-    val buttons = arrayOfNulls<Button>(8)
+    val buttons = arrayOfNulls<GuiButtonEln>(8)
 
     override fun initGui() {
         super.initGui()
@@ -482,7 +482,7 @@ class PalGui(val render: PalRender) : GuiScreenEln() {
             render.preparePacketForServer(stream)
 
             stream.writeByte(PalElement.TruthTablePositionClickedEvent)
-            stream.writeInt(buttons.indexOf(sender as Button))
+            stream.writeInt(buttons.indexOf(sender as GuiButtonEln))
 
             render.sendPacketToServer(bos)
         } catch (e: IOException) {

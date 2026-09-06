@@ -12,7 +12,6 @@ import mods.eln.node.transparent.TransparentNodeDescriptor
 import mods.eln.sim.IProcess
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.player.Player
-import net.minecraft.world.damagesource.DamageSource
 
 class FlywheelDescriptor(baseName: String, obj: Obj3D, val capacityScale: Float = 1f) : SimpleShaftDescriptor(baseName,
     FlyWheelElement::class, ShaftRender::class, EntityMetaTag.Basic) {
@@ -80,15 +79,15 @@ class FlyWheelElement(node: TransparentNode, desc_: TransparentNodeDescriptor) :
                     val ply = ent
                     // creative mode players can't have their position set, apparently.
                     if (!ply.isCreative()) {
-                        ent.addVelocity(vel[0], vel[1], vel[2])
+                        ent.push(vel[0], vel[1], vel[2])
                     }
                 } else {
                     // not a player, we do what we want
-                    ent.addVelocity(vel[0], vel[1], vel[2])
+                    ent.push(vel[0], vel[1], vel[2])
                 }
                 Utils.println("FFP.sP: ent " + ent + " flung " + vel.joinToString(",") + " for damage " + dmg)
                 if(dmg <= 0) continue
-                ent.hurt(DamageSource("Flywheel"), dmg.toFloat())
+                ent.hurt(ent.damageSources().flyIntoWall(), dmg.toFloat())
             }
         }
     }

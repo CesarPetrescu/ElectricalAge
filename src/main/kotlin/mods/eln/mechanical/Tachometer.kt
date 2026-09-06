@@ -3,6 +3,7 @@ package mods.eln.mechanical
 import mods.eln.Eln
 import mods.eln.cable.CableRenderDescriptor
 import mods.eln.cable.CableRenderType
+import mods.eln.gui.GuiButtonEln
 import mods.eln.gui.GuiHelper
 import mods.eln.gui.GuiScreenEln
 import mods.eln.gui.GuiTextFieldEln
@@ -25,7 +26,6 @@ import mods.eln.sim.ThermalLoad
 import mods.eln.sim.nbt.NbtElectricalGateOutput
 import mods.eln.sim.nbt.NbtElectricalGateOutputProcess
 import mods.eln.sixnode.electricaldatalogger.DataLogs
-import net.minecraft.client.gui.components.Button
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.world.entity.player.Player
 import net.minecraft.nbt.CompoundTag
@@ -155,7 +155,7 @@ class TachometerRender(entity: TransparentNodeEntity, desc: TransparentNodeDescr
 }
 
 class TachometerGui(val render: TachometerRender) : GuiScreenEln() {
-    val validate: Button by lazy { newGuiButton(82, 12, 80, tr("Validate")) }
+    val validate: GuiButtonEln by lazy { newGuiButton(82, 12, 80, tr("Validate")) }
     val lowValue: GuiTextFieldEln by lazy { newGuiTextField(8, 24, 70) }
     val highValue: GuiTextFieldEln by lazy { newGuiTextField(8, 8, 70) }
 

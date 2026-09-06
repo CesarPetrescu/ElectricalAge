@@ -1,16 +1,13 @@
 package mods.eln.server
 
 import mods.eln.Eln
+import net.minecraft.core.HolderLookup
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.world.level.saveddata.SavedData
-import mods.eln.misc.writeToNBT
 
-class SaveConfig(par1Str: String) : SavedData(par1Str) {
-    override fun readFromNBT(nbt: CompoundTag) {
-        Eln.wind.readFromNBT(nbt, "wind")
-    }
-
-    override fun writeToNBT(nbt: CompoundTag): CompoundTag {
+/** The mod's per-world settings (the wind state), as world-saved data. */
+class SaveConfig : SavedData() {
+    override fun save(nbt: CompoundTag, registries: HolderLookup.Provider): CompoundTag {
         Eln.wind.writeToNBT(nbt, "wind")
         return nbt
     }
@@ -22,6 +19,9 @@ class SaveConfig(par1Str: String) : SavedData(par1Str) {
     companion object {
         @JvmField
         var instance: SaveConfig? = null
+
+        @JvmField
+        val FACTORY = Factory({ SaveConfig() }, { nbt, _ -> SaveConfig().also { Eln.wind.readFromNBT(nbt, "wind") } }, null)
     }
 
     init {

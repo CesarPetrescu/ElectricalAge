@@ -19,8 +19,8 @@ fun registerElnFluids() {
     ElnFluidRegistry.values().forEach {
         val fluid = Fluid(
             it.name,
-            ResourceLocation(MODID, "blocks/fluids/${it.name}_still"),
-            ResourceLocation(MODID, "blocks/fluids/${it.name}_flow"),
+            ResourceLocation.fromNamespaceAndPath(MODID, "blocks/fluids/${it.name}_still"),
+            ResourceLocation.fromNamespaceAndPath(MODID, "blocks/fluids/${it.name}_flow"),
             it.color or 0xFF000000.toInt()
         ).setDensity(it.density).setViscosity(it.viscosity).setLuminosity(it.luminosity)
             .setTemperature(it.temperature).setGaseous(it.isGaseous)

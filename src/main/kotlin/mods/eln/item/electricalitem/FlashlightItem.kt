@@ -6,7 +6,6 @@ import net.minecraft.world.entity.Entity
 import net.minecraft.world.item.ItemStack
 import net.minecraft.util.Mth
 import net.minecraft.world.level.Level
-import mods.eln.misc.isAirBlock
 import mods.eln.misc.isEmptyBlock
 
 abstract class FlashlightItem(name: String?) : GenericItemUsingDamageDescriptor(name!!) {
@@ -22,7 +21,7 @@ abstract class FlashlightItem(name: String?) : GenericItemUsingDamageDescriptor(
             var x = entity.x
             var y = entity.y + 1.62 - yOffset
             var z = entity.z
-            val v = entity.lookVec.scale(0.25) // Vec3d is immutable on 1.12.2
+            val v = entity.lookAngle.scale(0.25) // Vec3 is immutable
             val range = getRange(stack) + 1
             var rCount = 0
             for (idx in 0 until range) {

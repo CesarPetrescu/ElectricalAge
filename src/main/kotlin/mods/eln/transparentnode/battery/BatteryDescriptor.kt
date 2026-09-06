@@ -194,9 +194,9 @@ class BatteryDescriptor(
     }
 
     override fun onEntityItemUpdate(entityItem: ItemEntity): Boolean {
-        if (entityItem.isBurning) {
-            entityItem.level().createExplosion(entityItem, entityItem.x, entityItem.y, entityItem.z, 2f, true)
-            entityItem.extinguish()
+        if (entityItem.isOnFire) {
+            entityItem.level().explode(entityItem, entityItem.x, entityItem.y, entityItem.z, 2f, true, net.minecraft.world.level.Level.ExplosionInteraction.BLOCK)
+            entityItem.clearFire()
             entityItem.discard()
         }
         return false

@@ -28,7 +28,7 @@ import net.minecraft.nbt.CompoundTag
 import net.minecraft.world.level.block.entity.BlockEntity
 import mods.eln.client.itemrender.IItemRenderer
 import mods.eln.client.gl.GL11
-import org.lwjgl.util.Color
+import java.awt.Color
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
@@ -65,8 +65,7 @@ class ElectricalVuMeterDescriptor(name: String, objName: String, var onOffOnly: 
             ObjType.LedOnOff -> {
                 main!!.draw()
                 if (isRGB) {
-                    val ledColor = Color()
-                    ledColor.fromHSB(factor, 1f, 1f)
+                    val ledColor = Color(Color.HSBtoRGB(factor, 1f, 1f))
                     if (factor > 0.005f) {
                         GL11.glColor3f(ledColor.red / 255f, ledColor.green / 255f, ledColor.blue / 255f)
                     } else {

@@ -31,6 +31,7 @@ import mods.eln.sixnode.logicgate.LogicGateDescriptor
 import mods.eln.sixnode.resistor.ResistorDescriptor
 import mods.eln.sixnode.resistor.ResistorElement
 import net.minecraft.world.level.block.Block
+import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.item.Items
@@ -76,7 +77,7 @@ object FalstadImporter {
     }
 
     fun importFromClipboardAsync(player: ServerPlayer, netlist: String) {
-        val playerName = player.name
+        val playerName = player.name.string
         val dimension = player.level().dimension()
         planningExecutor.execute {
             val parseResult = try {
@@ -84,7 +85,7 @@ object FalstadImporter {
             } catch (_: Exception) {
                 Eln.delayedTask.add(object : mods.eln.server.DelayedTaskManager.ITask {
                     override fun run() {
-                        val livePlayer = player.server.playerList.getPlayerByUsername(playerName)
+                        val livePlayer = player.server.playerList.getPlayerByName(playerName)
                         if (livePlayer != null) {
                             sendMessage(livePlayer, tr("Falstad import: clipboard is not valid Falstad data."))
                         }
@@ -95,8 +96,8 @@ object FalstadImporter {
             val plan = FalstadLayoutPlanner.plan(parseResult)
             Eln.delayedTask.add(object : mods.eln.server.DelayedTaskManager.ITask {
                 override fun run() {
-                    val livePlayer = player.server.playerList.getPlayerByUsername(playerName)
-                    if (livePlayer == null || livePlayer.level.dimension() != dimension) {
+                    val livePlayer = player.server.playerList.getPlayerByName(playerName)
+                    if (livePlayer == null || livePlayer.level().dimension() != dimension) {
                         return
                     }
                     importPlanned(livePlayer, plan)
@@ -537,7 +538,7 @@ object FalstadImporter {
         val supportBlock = world.getBlock(x, y, z)
         val supportMeta = world.getBlockMetadata(x, y, z)
         val resolvedX = x
-        val resolvedY = if (supportBlock === Blocks.SNOW_LAYER && world.getBlockMetadata(x, y, z) and 0x7 < 1) {
+        val resolvedY = if (supportBlock === Blocks.SNOW && world.getBlockState(x, y, z).getValue(net.minecraft.world.level.block.SnowLayerBlock.LAYERS) <= 1) {
             y
         } else if (!supportBlock.isReplaceable(world, x, y, z)) {
             y + 1
@@ -549,7 +550,7 @@ object FalstadImporter {
         val targetBlock = world.getBlock(x, targetY, z)
         val targetMeta = world.getBlockMetadata(x, targetY, z)
         val targetTile = world.getBlockEntity(x, targetY, z)?.javaClass?.simpleName ?: "none"
-        val canEdit = player.canPlayerEdit(BlockPos(x, y, z), EnumFacing.UP, stack)
+        val canEdit = player.mayUseItemAt(BlockPos(x, y, z), EnumFacing.UP, stack)
         val canPlaceOnSide = Eln.sixNodeItem.canPlaceBlockOnSide(world, BlockPos(x, y, z), EnumFacing.UP, player, stack)
         val supportReplaceable = supportBlock.isReplaceable(world, x, y, z)
         val targetReplaceable = targetBlock.isReplaceable(world, x, targetY, z)
@@ -576,14 +577,14 @@ object FalstadImporter {
             x,
             y,
             z,
-            Block.REGISTRY.getNameForObject(supportBlock),
+            BuiltInRegistries.BLOCK.getKey(supportBlock),
             supportMeta,
-            world.getBlockState(x, y, z).material.isSolid,
+            world.getBlockState(x, y, z).isSolid,
             supportReplaceable,
             resolvedX,
             targetY,
             resolvedZ,
-            Block.REGISTRY.getNameForObject(targetBlock),
+            BuiltInRegistries.BLOCK.getKey(targetBlock),
             targetMeta,
             targetReplaceable,
             targetTile
@@ -596,11 +597,11 @@ object FalstadImporter {
             canEdit,
             canPlaceOnSide,
             precheck,
-            Block.REGISTRY.getNameForObject(supportBlock),
-            Block.REGISTRY.getNameForObject(targetBlock),
+            BuiltInRegistries.BLOCK.getKey(supportBlock),
+            BuiltInRegistries.BLOCK.getKey(targetBlock),
             targetTile
         )
-        return "desc=${descriptor.name}, front=$front->$resolvedFront, canEdit=$canEdit, canPlace=$canPlaceOnSide, precheck=$precheck, target=${Block.REGISTRY.getNameForObject(targetBlock)}, tile=$targetTile"
+        return "desc=${descriptor.name}, front=$front->$resolvedFront, canEdit=$canEdit, canPlace=$canPlaceOnSide, precheck=$precheck, target=${BuiltInRegistries.BLOCK.getKey(targetBlock)}, tile=$targetTile"
     }
 
     private fun getTopElement(world: Level, area: Area, point: FalstadPoint): SixNodeElement? {
@@ -987,7 +988,7 @@ object FalstadImporter {
     }
 
     private fun isSolidSupport(world: Level, x: Int, y: Int, z: Int, block: Block): Boolean {
-        return block !== Blocks.AIR && world.getBlockState(x, y, z).material.isSolid && !block.isReplaceable(world, x, y, z)
+        return block !== Blocks.AIR && world.getBlockState(x, y, z).isSolid && !block.isReplaceable(world, x, y, z)
     }
 
     private fun isReplaceableAbove(world: Level, x: Int, y: Int, z: Int): Boolean {

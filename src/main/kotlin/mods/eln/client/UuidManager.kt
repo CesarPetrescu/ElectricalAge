@@ -3,6 +3,7 @@ package mods.eln.client
 import net.neoforged.neoforge.common.NeoForge
 
 import net.neoforged.bus.api.SubscribeEvent
+import net.neoforged.neoforge.client.event.ClientTickEvent
 import java.util.*
 
 class UuidManager {

@@ -56,7 +56,7 @@ abstract class GridElement(transparentNode: TransparentNode, descriptor: Transpa
 
     private fun onTryGridConnect(entityPlayer: Player, stack: ItemStack, cable: ElectricalCableDescriptor, side: Direction): Boolean {
         // First node, or second node?
-        val uuid = entityPlayer.persistentID
+        val uuid = entityPlayer.uuid
         val p = pending[uuid]
         var other: GridElement? = null
         if (p != null) {
@@ -173,7 +173,7 @@ abstract class GridElement(transparentNode: TransparentNode, descriptor: Transpa
         val gridLinks = nbt.getCompound("gridLinks")
         var i: Int? = 0
         while (true) {
-            val linkTag = gridLinks.getCompoundTag(i!!.toString())
+            val linkTag = gridLinks.getCompound(i!!.toString())
             if (linkTag.isEmpty())
                 break
             gridLinksBooting.add(GridLink(linkTag, ""))
@@ -262,10 +262,8 @@ abstract class GridElement(transparentNode: TransparentNode, descriptor: Transpa
                 // It's always the "a" side doing this.
                 val offset = link.b.subtract(link.a)
                 for (i in 0..1) {
-                    val start = getRenderCablePoint(ourSide, i)
-                    start.rotateYaw(Math.toRadians(idealRenderingAngle.toDouble()).toFloat())
-                    var end = target.getRenderCablePoint(theirSide, i)
-                    end.rotateYaw(Math.toRadians(target.idealRenderingAngle.toDouble()).toFloat())
+                    val start = getRenderCablePoint(ourSide, i).yRot(Math.toRadians(idealRenderingAngle.toDouble()).toFloat())
+                    var end = target.getRenderCablePoint(theirSide, i).yRot(Math.toRadians(target.idealRenderingAngle.toDouble()).toFloat())
                     end = end.add(offset.x.toDouble(), offset.y.toDouble(), offset.z.toDouble())
                     writeVec(stream, start)
                     writeVec(stream, end)

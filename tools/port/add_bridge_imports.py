@@ -17,7 +17,7 @@ SYMBOLS = [
     "getIndirectPowerLevelTo", "markBlockForUpdate", "isReplaceable", "isNothing",
     # 1.21
     "rand", "isItemEqual", "writeToNBT", "stackFromNbt", "itemId", "itemById", "blockById",
-    "tagCompound", "hasTagCompound", "editTag",
+    "tagCompound", "dimension", "hasTagCompound", "editTag",
 ]
 PKG = "mods.eln.misc"
 

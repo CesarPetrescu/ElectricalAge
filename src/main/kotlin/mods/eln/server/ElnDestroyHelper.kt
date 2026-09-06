@@ -48,7 +48,7 @@ object ElnDestroyHelper {
         maxZ: Int,
         player: ServerPlayer
     ): ElnDestroySummary {
-        val dim = world.dimension()
+        val dim = mods.eln.misc.DimensionIds.id(world)
         val targetNodes = nodeManager.nodeList.filter {
             val c = it.coordinate
             c.dimension == dim &&
@@ -111,7 +111,7 @@ object ElnDestroyHelper {
                     node.sideElementList.forEach { element ->
                         clearInventoryWithoutDrops(element?.inventory)
                     }
-                    node.sixNodeCacheBlock = net.minecraft.level.level.block.Blocks.AIR
+                    node.sixNodeCacheBlock = net.minecraft.world.level.block.Blocks.AIR
                     for (direction in Direction.values()) {
                         if (node.getSideEnable(direction)) {
                             node.deleteSubBlock(player, direction)

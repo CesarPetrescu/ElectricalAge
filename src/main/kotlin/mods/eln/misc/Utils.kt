@@ -712,7 +712,8 @@ object Utils {
     @JvmStatic
     fun getRedstoneLevelAround(coord: Coordinate, side: Direction): Int {
         var side = side
-        var level = coord.world().getDirectSignal(BlockPos(coord.x, coord.y, coord.z))
+        // 1.21: getDirectSignal takes the side it is asked from; the strongest of the six is the old "level here".
+        var level = net.minecraft.core.Direction.values().maxOf { coord.world().getDirectSignal(BlockPos(coord.x, coord.y, coord.z), it) }
         if (level >= 15) return 15
         side = side.inverse
         when (side) {
@@ -777,11 +778,13 @@ object Utils {
     fun getItemObject(stack: ItemStack?): Any? {
         if (stack.isNothing()) return null
         val i = stack.item
-        if (i is GenericItemUsingDamage<*>) {
-            return i.getDescriptor(stack)
+        // The Flattening: the family is reachable from the per-descriptor item.
+        val family = (i as? mods.eln.generic.IDescriptorItem)?.descriptorFamily()
+        if (family is GenericItemUsingDamage<*>) {
+            return family.getDescriptor(stack)
         }
-        return if (i is GenericItemBlockUsingDamage<*>) {
-            i.getDescriptor(stack)
+        return if (family is GenericItemBlockUsingDamage<*>) {
+            family.getDescriptor(stack)
         } else i
     }
 
@@ -1207,7 +1210,7 @@ object Utils {
     }
 
     fun isWrench(stack: ItemStack): Boolean {
-        return areSame(stack, Eln.wrenchItemStack) || stack.hoverName.lowercase().contains("wrench")
+        return areSame(stack, Eln.wrenchItemStack) || stack.hoverName.string.lowercase().contains("wrench")
     }
 
     @JvmStatic

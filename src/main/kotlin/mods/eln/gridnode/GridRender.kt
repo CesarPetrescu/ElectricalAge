@@ -26,7 +26,7 @@ abstract class GridRender(tileEntity: TransparentNodeEntity, descriptor: Transpa
     init {
         this.descriptor = descriptor as GridDescriptor
 
-        cableTexture = ResourceLocation("eln", this.descriptor.cableTexture)
+        cableTexture = ResourceLocation.fromNamespaceAndPath("eln", this.descriptor.cableTexture)
     }
 
     override fun draw() {
@@ -181,7 +181,7 @@ abstract class GridRender(tileEntity: TransparentNodeEntity, descriptor: Transpa
             // This is just to copy.
             // We don't care what r is, so long as it's linearly independent of delta.
             // Vec3 is immutable on 1.12.2: the rotations return new vectors.
-            val r = delta.normalize().rotateYaw(1f).rotatePitch(1f)
+            val r = delta.normalize().yRot(1f).xRot(1f)
             // This gives us one vector which is perpendicular to delta.
             val x1 = multiply(delta.cross(r).normalize(), cableWidth)
             // And this, another, perpendicular to delta and x1.

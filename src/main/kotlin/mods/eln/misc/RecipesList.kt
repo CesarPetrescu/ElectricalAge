@@ -4,7 +4,7 @@ package mods.eln.misc
 import mods.eln.Eln
 import mods.eln.transparentnode.electricalfurnace.ElectricalFurnaceProcess
 import net.minecraft.world.item.ItemStack
-import net.minecraft.item.crafting.FurnaceRecipes
+import net.minecraft.world.item.crafting.RecipeType
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -54,22 +54,22 @@ class RecipesList {
             for (recipesList in listOfList) {
                 list.addAll(recipesList.getRecipeFromOutput(output))
             }
-            val furnaceRecipes = FurnaceRecipes.instance()
-            run {
-                val it: Iterator<*> = furnaceRecipes.smeltingList.entries.iterator()
-                while (it.hasNext()) {
-                    try {
-                        val pairs = it.next() as Map.Entry<*, *>
-                        var recipe: Recipe // List<Integer>, ItemStack
-                        val stack = pairs.value as ItemStack
-                        val li = pairs.key as ItemStack
-                        if (Utils.areSame(output, stack)) {
-                            list.add(Recipe(li.copy(), output, ElectricalFurnaceProcess.energyNeededPerSmelt).also { recipe = it })
+            // 1.13+: smelting recipes are data, held by the recipe manager; each has one ingredient.
+            val manager = McRecipes.manager() ?: return list
+            val access = McRegistries.access()
+            for (holder in manager.getAllRecipesFor(RecipeType.SMELTING)) {
+                try {
+                    val stack = holder.value().getResultItem(access)
+                    val inputs = holder.value().ingredients.firstOrNull()?.items ?: continue
+                    if (Utils.areSame(output, stack)) {
+                        for (li in inputs) {
+                            val recipe = Recipe(li.copy(), output, ElectricalFurnaceProcess.energyNeededPerSmelt)
                             recipe.setMachineList(Eln.instance.furnaceList)
+                            list.add(recipe)
                         }
-                    } catch (e: Exception) {
-                        // TODO: handle exception
                     }
+                } catch (e: Exception) {
+                    // TODO: handle exception
                 }
             }
             return list
@@ -85,8 +85,11 @@ class RecipesList {
                 val r = recipesList.getRecipe(input)
                 if (r != null) list.add(r)
             }
-            val furnaceRecipes = FurnaceRecipes.instance()
-            val smeltResult = furnaceRecipes.getSmeltingResult(input)
+            val manager = McRecipes.manager() ?: return list
+            // Matched by ingredient (no level needed, so the wiki can ask on the client too).
+            val smeltResult = manager.getAllRecipesFor(RecipeType.SMELTING)
+                .firstOrNull { it.value().ingredients.firstOrNull()?.test(input) == true }
+                ?.value()?.getResultItem(McRegistries.access()) ?: ItemStack.EMPTY
             var smeltRecipe: Recipe
             if (!smeltResult.isEmpty) {
                 try {

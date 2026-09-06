@@ -187,11 +187,11 @@ object CraftingRecipes {
      * through here, named after its output plus a running index (several recipes share an output).
      */
     private var recipeIndex = 0
-    private val recipeGroup = ResourceLocation(Eln.MODID, "recipes")
+    private val recipeGroup = ResourceLocation.fromNamespaceAndPath(Eln.MODID, "recipes")
 
     private fun registerRecipe(recipe: Recipe, output: ItemStack) {
         val base = output.item.registryName?.path ?: "recipe"
-        recipe.registryName = ResourceLocation(Eln.MODID, "${base}_${output.metadata}_${recipeIndex++}")
+        recipe.registryName = ResourceLocation.fromNamespaceAndPath(Eln.MODID, "${base}_${output.metadata}_${recipeIndex++}")
         ForgeRegistries.RECIPES.register(recipe)
     }
 
@@ -2799,7 +2799,7 @@ object CraftingRecipes {
 
         // 1.12.2: entity ids are per-mod, the global id space (and the config key that stored one) is gone.
         EntityRegistry.registerModEntity(
-            ResourceLocation(Eln.MODID, "replicator"), ReplicatorEntity::class.java,
+            ResourceLocation.fromNamespaceAndPath(Eln.MODID, "replicator"), ReplicatorEntity::class.java,
             I18N.TR_NAME(I18N.Type.ENTITY, "EAReplicator"), ENTITY_ID_REPLICATOR, Eln.instance,
             80, 3, true, redColor, orangeColor
         )
@@ -2814,7 +2814,7 @@ object CraftingRecipes {
 
     private fun registerElectricMinecart() {
         EntityRegistry.registerModEntity(
-            ResourceLocation(Eln.MODID, "electric_minecart"), EntityElectricMinecart::class.java,
+            ResourceLocation.fromNamespaceAndPath(Eln.MODID, "electric_minecart"), EntityElectricMinecart::class.java,
             I18N.TR_NAME(I18N.Type.ENTITY, "ElectricMinecart"), ENTITY_ID_ELECTRIC_MINECART, Eln.instance,
             80, 3, true
         )

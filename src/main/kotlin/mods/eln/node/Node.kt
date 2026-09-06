@@ -3,7 +3,6 @@ package mods.eln.node
 
 import mods.eln.misc.Direction
 import net.minecraft.nbt.CompoundTag
-import net.minecraft.world.level.LightLayer
 import java.io.DataOutputStream
 import java.io.IOException
 import mods.eln.misc.getBlockEntity
@@ -19,7 +18,7 @@ abstract class Node : NodeBase() {
             if (light < 0) light = 0
             if (lastLight != light) {
                 lastLight = light
-                coordinate.world().checkLightFor(LightLayer.BLOCK, coordinate.pos)
+                coordinate.world().lightEngine.checkBlock(coordinate.pos)
                 needPublish = true
             }
         }

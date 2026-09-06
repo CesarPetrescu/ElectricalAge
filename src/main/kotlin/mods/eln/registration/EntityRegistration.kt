@@ -35,7 +35,7 @@ object EntityRegistration {
                 .clientTrackingRange(80 / 16)
                 .updateInterval(3)
         }
-        ElnRegistry.registerAttributes(ReplicatorEntity.TYPE) { ReplicatorEntity.createAttributes() }
+        ElnRegistry.registerAttributes({ ReplicatorEntity.TYPE.get() }) { ReplicatorEntity.createAttributes() }
         ReplicatorEntity.SPAWN_EGG = ElnRegistry.registerItem("replicator_spawn_egg", {
             DeferredSpawnEggItem(ReplicatorEntity.TYPE, redColor, orangeColor, Item.Properties())
         })

@@ -5,7 +5,7 @@ import net.neoforged.api.distmarker.OnlyIn
 import mods.eln.cable.CableRender
 import mods.eln.cable.CableRenderDescriptor
 import mods.eln.cable.CableRenderType
-import mods.eln.client.ClientProxy
+import mods.eln.client.ClientSetup
 import mods.eln.misc.Direction
 import mods.eln.misc.LRDU
 import mods.eln.misc.LRDU.Companion.fromInt
@@ -161,7 +161,7 @@ abstract class SixNodeElementRender(open var tileEntity: SixNodeEntity, @JvmFiel
     }
 
     fun destructor() {
-        if (usedUuid()) ClientProxy.uuidManager.kill(uuid)
+        if (usedUuid()) ClientSetup.uuidManager.kill(uuid)
         if (glListEnable()) {
             glDeleteListsSafe(glList)
         }

@@ -22,7 +22,7 @@ class ElectricMinecartItem(name: String) : GenericItemUsingDamageDescriptor(name
         vz: Float
     ): Boolean {
         if (world == null || stack.isNothing()) return false
-        return if (BaseRailBlock.isRailBlock(world.getBlockState(x, y, z))) {
+        return if (BaseRailBlock.isRail(world.getBlockState(x, y, z))) {
             if (!world.isClientSide) {
                 val minecart = EntityElectricMinecart(
                     world,

@@ -17,7 +17,7 @@ class NodeEntityClientSender(private val e: BlockEntity, private val nodeUuid: S
             stream.writeInt(e.xCoord)
             stream.writeInt(e.yCoord)
             stream.writeInt(e.zCoord)
-            stream.writeByte(e.level.dimension())
+            stream.writeByte(mods.eln.misc.DimensionIds.id(e.level!!))
             stream.writeUTF(nodeUuid)
         } catch (e: IOException) {
             e.printStackTrace()

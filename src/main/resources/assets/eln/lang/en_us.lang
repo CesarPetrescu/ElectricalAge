@@ -2098,3 +2098,9 @@ Bulb_2_Life_Left=Bulb 2 Life Left
 Beam_width\:_%1$°=Beam width: %1$°
 Horizontal_angle\:_%1$°=Horizontal angle: %1$°
 Vertical_angle\:_%1$°=Vertical angle: %1$°
+
+# 1.21 damage types (data/eln/damage_type)
+death.attack.eln.electrical=%1$s was electrocuted
+death.attack.eln.electrical.player=%1$s was electrocuted whilst fighting %2$s
+death.attack.eln.turret=%1$s was shot by a turret
+death.attack.eln.turret.player=%1$s was shot by a turret whilst fighting %2$s

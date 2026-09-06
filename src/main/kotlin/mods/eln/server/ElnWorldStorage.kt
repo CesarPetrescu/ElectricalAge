@@ -1,18 +1,18 @@
 package mods.eln.server
 
+import mods.eln.misc.DimensionIds
+import net.minecraft.core.HolderLookup
 import net.minecraft.nbt.CompoundTag
+import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.saveddata.SavedData
-import mods.eln.misc.writeToNBT
 
-class ElnWorldStorage(str: String?) : SavedData(str) {
-    private var dim = 0
-    override fun readFromNBT(nbt: CompoundTag) {
-        dim = nbt.getInt("dim")
-        ServerEventListener.readFromEaWorldNBT(nbt, dim)
-    }
-
-    override fun writeToNBT(nbt: CompoundTag): CompoundTag {
+/**
+ * The legacy per-dimension world storage of the node graph (the fallback when the mod's own
+ * `electricalAgeWorld<dim>.dat` files cannot be read). 1.21: a SavedData per server level.
+ */
+class ElnWorldStorage private constructor(private val dim: Int) : SavedData() {
+    override fun save(nbt: CompoundTag, registries: HolderLookup.Provider): CompoundTag {
         nbt.putInt("dim", dim)
         ServerEventListener.writeToEaWorldNBT(nbt, dim)
         return nbt
@@ -24,21 +24,18 @@ class ElnWorldStorage(str: String?) : SavedData(str) {
 
     companion object {
         const val key = "eln.worldStorage"
+
+        private fun factory(dim: Int) = Factory({ ElnWorldStorage(dim) }, { nbt, _ ->
+            val d = if (nbt.contains("dim")) nbt.getInt("dim") else dim
+            ServerEventListener.readFromEaWorldNBT(nbt, d)
+            ElnWorldStorage(d)
+        }, null)
+
         @JvmStatic
-        fun forWorld(world: Level): ElnWorldStorage {
-            // Retrieves the MyWorldData instance for the given world, creating it if necessary
-            val storage = world.perWorldStorage
-            val dim = world.dimension()
-            var result = storage.getOrLoadData(ElnWorldStorage::class.java, key + dim) as ElnWorldStorage?
-            if (result == null) {
-                result = storage.getOrLoadData(ElnWorldStorage::class.java, key + dim + "back") as ElnWorldStorage?
-            }
-            if (result == null) {
-                result = ElnWorldStorage(key + dim)
-                result.dim = dim
-                storage.setData(key + dim, result)
-            }
-            return result
+        fun forWorld(world: Level): ElnWorldStorage? {
+            val level = world as? ServerLevel ?: return null
+            val dim = DimensionIds.id(level)
+            return level.dataStorage.computeIfAbsent(factory(dim), key + dim)
         }
     }
 }

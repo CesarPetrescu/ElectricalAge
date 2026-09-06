@@ -31,7 +31,7 @@ import mods.eln.sim.process.heater.ElectricalLoadHeatThermalLoad
 import mods.eln.sixnode.currentcable.CurrentCableDescriptor
 import mods.eln.sixnode.electricalrelay.ElectricalRelayElement
 import mods.eln.sound.SoundCommand
-import net.minecraft.client.gui.components.Button
+import mods.eln.gui.GuiButtonEln
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
@@ -339,7 +339,7 @@ class CurrentRelayGateProcess(val element: CurrentRelayElement, name: String?, g
 }
 
 class CurrentRelayGui(val render: CurrentRelayRender): GuiScreenEln() {
-    private lateinit var toggleDefaultOutput: Button
+    private lateinit var toggleDefaultOutput: GuiButtonEln
 
     override fun initGui() {
         super.initGui()

@@ -62,7 +62,7 @@ class ElectricalFlashlightItem(name: String, var lightMin: Int, var rangeMin: In
     }
 
     public override fun getLightState(stack: ItemStack): Int {
-        return getNbt(stack).getInteger("LightState")
+        return getNbt(stack).getInt("LightState")
     }
 
     fun setLightState(stack: ItemStack?, value: Int) {
@@ -181,9 +181,9 @@ class ElectricalFlashlightItem(name: String, var lightMin: Int, var rangeMin: In
         this.dischargeMax = dischargeMax
         this.energyStorage = energyStorage
         setDefaultIcon(name + "off")
-        boosted = ResourceLocation("eln", "textures/items/" + name.replace(" ", "").lowercase() + "boosted.png")
-        on = ResourceLocation("eln", "textures/items/" + name.replace(" ", "").lowercase() + "on.png")
-        off = ResourceLocation("eln", "textures/items/" + name.replace(" ", "").lowercase() + "off.png")
+        boosted = ResourceLocation.fromNamespaceAndPath("eln", "textures/items/" + name.replace(" ", "").lowercase() + "boosted.png")
+        on = ResourceLocation.fromNamespaceAndPath("eln", "textures/items/" + name.replace(" ", "").lowercase() + "on.png")
+        off = ResourceLocation.fromNamespaceAndPath("eln", "textures/items/" + name.replace(" ", "").lowercase() + "off.png")
         //	off = ResourceLocation.fromNamespaceAndPath("eln", "/model/StoneFurnace/all.png");
     }
 }

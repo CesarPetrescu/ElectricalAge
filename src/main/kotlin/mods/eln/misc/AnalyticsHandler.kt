@@ -68,8 +68,8 @@ object AnalyticsHandler {
                     Eln.config.getStringOrElse("analytics.endpointUrl", "http://eln.ja13.org/stat"),
                     version,
                     lang,
-                    Minecraft.getInstance().session.profile.id.toString(),
-                    Minecraft.getInstance().session.playerID
+                    Minecraft.getInstance().user.profileId.toString(),
+                    Minecraft.getInstance().user.name
                 )
             } else {
                 // PLAYER HAS NOT OPTED INTO SENDING THEIR UUID

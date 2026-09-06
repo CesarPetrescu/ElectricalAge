@@ -290,7 +290,7 @@ class MqttSignalControllerElement(
         if (!serverMatched) return
         val server = MqttManager.getServerByName(controllerInfo.serverName) ?: return
         MqttSignalControllerManager.ensureSubscription(controllerInfo.controllerId, coord, server, this::handleCommand)
-        val dimension = coord.world().provider.dimensionType.getName()
+        val dimension = coord.world().dimension().location().toString()
         val snapshots = signalPorts.mapIndexed { idx, port ->
             SignalPortSnapshot(port, portModes[idx], portLoads[idx].voltage)
         }

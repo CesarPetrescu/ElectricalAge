@@ -16,12 +16,12 @@ class ElectricMinecartChargeReporter {
     fun onRightClickItem(event: PlayerInteractEvent.RightClickItem) = report(event)
 
     private fun report(event: PlayerInteractEvent) {
-        val player = event.entityPlayer ?: return
-        val world = player.level
-        if (world == null || world.isClientSide) return
+        val player = event.entity
+        val world = player.level()
+        if (world.isClientSide) return
 
-        val minecart = player.ridingEntity as? EntityElectricMinecart ?: return
-        val heldItem = player.mainHandItem ?: return
+        val minecart = player.vehicle as? EntityElectricMinecart ?: return
+        val heldItem = player.mainHandItem
         val multiMeter = Eln.multiMeterElement
         val allMeter = Eln.allMeterElement
         val holdingMeter = (multiMeter != null && multiMeter.checkSameItemStack(heldItem)) ||

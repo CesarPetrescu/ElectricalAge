@@ -36,12 +36,12 @@ class WoundWireBundleDescriptor(name: String) : GenericItemUsingDamageDescriptor
     ): ItemStack {
         return newItemStack(1).apply {
             tagCompound = CompoundTag().apply {
-                setString(NBT_TARGET_LABEL, targetLabel)
-                setString(NBT_TARGET_METRIC, targetMetricLabel)
-                setString(NBT_MATERIAL, material.label)
-                setInteger(NBT_CONDUCTOR_COUNT, conductorCount)
-                setDouble(NBT_AREA, areaMm2)
-                setDouble(NBT_LENGTH, lengthMeters)
+                putString(NBT_TARGET_LABEL, targetLabel)
+                putString(NBT_TARGET_METRIC, targetMetricLabel)
+                putString(NBT_MATERIAL, material.label)
+                putInt(NBT_CONDUCTOR_COUNT, conductorCount)
+                putDouble(NBT_AREA, areaMm2)
+                putDouble(NBT_LENGTH, lengthMeters)
             }
         }
     }

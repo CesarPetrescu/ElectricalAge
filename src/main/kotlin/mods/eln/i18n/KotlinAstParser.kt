@@ -1,3 +1,5 @@
+@file:OptIn(org.jetbrains.kotlin.config.CompilerConfiguration.Internals::class, org.jetbrains.kotlin.K1Deprecation::class)
+@file:Suppress("DEPRECATION")
 package mods.eln.i18n
 
 import org.jetbrains.kotlin.com.intellij.openapi.util.Disposer

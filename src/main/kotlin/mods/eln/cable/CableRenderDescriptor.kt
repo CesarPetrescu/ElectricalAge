@@ -8,7 +8,7 @@ class CableRenderDescriptor(modName: String?, cableTexture: String?, var widthPi
     var height: Float = heightPixel / 16
     var widthDiv2: Float = width / 2
     @JvmField
-    var cableTexture = ResourceLocation(modName, cableTexture)
+    var cableTexture = ResourceLocation.fromNamespaceAndPath(modName, cableTexture)
 
     fun bindCableTexture() {
         bindTexture(cableTexture)

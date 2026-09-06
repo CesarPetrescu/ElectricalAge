@@ -331,7 +331,7 @@ public class TurretSlowProcess extends StateMachine {
         public void enter() {
             if (target != null) {
                 target.hurtResistantTime = 0;
-                target.hurt(new DamageSource("Unknown"), 5);
+                target.hurt(mods.eln.misc.ElnDamage.turret(target), 5);
                 element.shoot();
                 element.play(new SoundCommand("eln:lasergun"));
             }

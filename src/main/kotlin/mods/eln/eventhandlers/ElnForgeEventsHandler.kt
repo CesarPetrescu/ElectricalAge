@@ -1,19 +1,17 @@
 package mods.eln.eventhandlers
 
 import net.neoforged.bus.api.SubscribeEvent
-import net.neoforged.api.distmarker.Dist
-import net.neoforged.api.distmarker.OnlyIn
-import mods.eln.Eln
+import mods.eln.network.ElnNetwork
 import mods.eln.packets.AchievePacket
 import mods.eln.wiki.Root
 import net.neoforged.neoforge.client.event.ScreenEvent.Opening
 
+/** Client only: opening the wiki grants the "open guide" advancement (registered from ClientSetup). */
 class ElnForgeEventsHandler {
     @SubscribeEvent
-    @OnlyIn(Dist.CLIENT)
     fun openGuide(event: Opening) {
-        if (event.gui is Root) {
-            Eln.elnNetwork.sendToServer(openWikiPacket)
+        if (event.newScreen is Root) {
+            ElnNetwork.sendToServer(openWikiPacket)
         }
     }
 

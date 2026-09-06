@@ -128,9 +128,9 @@ class ElectricalFuseHolderElement(sixNode: SixNode, side: Direction, descriptor:
         super.readFromNBT(nbt)
         front = LRDU.readFromNBT(nbt, "front")
 
-        val fuseCompound = nbt.getTag("fuse") as? CompoundTag
+        val fuseCompound = nbt.get("fuse") as? CompoundTag
         if (fuseCompound != null) {
-            val fuseStack = ItemStack(fuseCompound)
+            val fuseStack = mods.eln.misc.stackFromNbt(fuseCompound)
             if (!fuseStack.isNothing()) {
                 installedFuse = GenericItemUsingDamageDescriptor.getDescriptor(fuseStack) as? ElectricalFuseDescriptor
             }

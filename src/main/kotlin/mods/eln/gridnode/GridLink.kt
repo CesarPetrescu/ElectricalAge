@@ -1,5 +1,7 @@
 package mods.eln.gridnode
 
+import mods.eln.misc.stackFromNbt
+
 import mods.eln.Eln
 import mods.eln.misc.Coordinate
 import mods.eln.misc.Direction
@@ -137,7 +139,7 @@ class GridLink : INBTTReady {
         `as` = Direction.readFromNBT(nbt, str + "as")!!
         bs = Direction.readFromNBT(nbt, str + "bs")!!
         rs = nbt.getDouble(str + "rs")
-        cable = ItemStack(nbt)
+        cable = stackFromNbt(nbt)
     }
 
     override fun writeToNBT(nbt: CompoundTag, str: String) {

@@ -49,7 +49,7 @@ open class TransparentNodeDescriptor @JvmOverloads constructor(
         // 1.12.2 has no IIcon; the block sprite is addressed by its path under textures/blocks.
         val icon = iconName ?: return
         voltageLevelColor.drawIconBackground(type)
-        drawIcon(type, ResourceLocation("eln", "textures/blocks/$icon.png"))
+        drawIcon(type, ResourceLocation.fromNamespaceAndPath("eln", "textures/blocks/$icon.png"))
     }
 
     fun objItemScale(obj: Obj3D?) {
@@ -85,12 +85,12 @@ open class TransparentNodeDescriptor @JvmOverloads constructor(
         fun opaqueAt(direction: Direction): Boolean {
             val temp = Coordinate(coord!!)
             temp.move(direction)
-            return temp.blockState.isOpaqueCube
+            return temp.blockState.isSolidRender(temp.world(), temp.pos)
         }
         if (mustHaveFloor()) {
             val temp = Coordinate(coord!!)
             temp.move(Direction.YN)
-            if (!temp.blockState.isOpaqueCube && temp.block !is HopperBlock) return tr("You can't place this block at this side")
+            if (!temp.blockState.isSolidRender(temp.world(), temp.pos) && temp.block !is HopperBlock) return tr("You can't place this block at this side")
         }
         if (mustHaveCeiling()) {
             if (!opaqueAt(Direction.YP)) return tr("You can't place this block at this side")
@@ -133,7 +133,7 @@ open class TransparentNodeDescriptor @JvmOverloads constructor(
 
     open fun addCollisionBoxesToList(par5AxisAlignedBB: AABB, list: MutableList<AABB?>, world: Level?, x: Int, y: Int, z: Int) {
         // A full stone cube at (x, y, z); 1.12 block boxes are block-local, so offset explicitly.
-        val bb = Block.FULL_BLOCK_AABB.offset(x.toDouble(), y.toDouble(), z.toDouble())
+        val bb = AABB(0.0, 0.0, 0.0, 1.0, 1.0, 1.0).move(x.toDouble(), y.toDouble(), z.toDouble())
         if (par5AxisAlignedBB.intersects(bb)) list.add(bb)
     }
 }

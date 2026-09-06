@@ -6,7 +6,7 @@ import mods.eln.gui.GuiTextFieldEln
 import mods.eln.gui.HelperStdContainer
 import mods.eln.gui.IGuiObject
 import mods.eln.i18n.I18N.tr
-import net.minecraft.client.gui.components.Button
+import mods.eln.gui.GuiButtonEln
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.Container
 import java.text.NumberFormat
@@ -14,7 +14,7 @@ import java.text.NumberFormat
 class ThermometerSensorGui(player: Player, inventory: Container, private val render: ThermometerSensorRender) :
     GuiContainerEln(ThermometerSensorContainer(player, inventory)) {
 
-    private lateinit var validate: Button
+    private lateinit var validate: GuiButtonEln
     private lateinit var lowValue: GuiTextFieldEln
     private lateinit var highValue: GuiTextFieldEln
 

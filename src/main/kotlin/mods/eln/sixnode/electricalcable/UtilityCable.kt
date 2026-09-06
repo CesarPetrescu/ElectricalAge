@@ -259,8 +259,8 @@ class UtilityCableDescriptor(
 
     override fun getDefaultNBT(): CompoundTag {
         return CompoundTag().apply {
-            setDouble(nbtLengthMeters, defaultLengthMeters())
-            setString(nbtUniqueId, UUID.randomUUID().toString())
+            putDouble(nbtLengthMeters, defaultLengthMeters())
+            putString(nbtUniqueId, UUID.randomUUID().toString())
         }
     }
 
@@ -304,7 +304,7 @@ class UtilityCableDescriptor(
         GL11.glDisable(GL11.GL_DEPTH_TEST)
         GL11.glPushMatrix()
         GL11.glScalef(scale, scale, 1f)
-        font.drawStringWithShadow(overlay, x.toFloat(), y.toFloat(), 0xFFFFFF)
+        mods.eln.client.gl.FixedFunction.drawString(font, overlay, x.toFloat(), y.toFloat(), 0xFFFFFF, true)
         GL11.glPopMatrix()
         GL11.glPopAttrib()
     }
@@ -823,7 +823,7 @@ class UtilityCableElement(
         val world = coord.world()
         val players = world.getEntitiesOfClass(Player::class.java, coord.getAxisAlignedBB(1))
         for (player in players) {
-            (player as? Player)?.hurt(DamageSource("electrical_cable"), damage)
+            (player as? Player)?.hurt(mods.eln.misc.ElnDamage.electrical(player), damage)
         }
     }
 

@@ -51,7 +51,7 @@ open class SixNodeDescriptor : GenericItemBlockUsingDamageDescriptor, IItemRende
         // 1.12.2 has no IIcon; the block sprite is addressed by its path under textures/blocks.
         val icon = iconName ?: return
         voltageLevelColor.drawIconBackground(type)
-        drawIcon(type, ResourceLocation("eln", "textures/blocks/$icon.png"))
+        drawIcon(type, ResourceLocation.fromNamespaceAndPath("eln", "textures/blocks/$icon.png"))
     }
 
     open fun hasVolume(): Boolean {

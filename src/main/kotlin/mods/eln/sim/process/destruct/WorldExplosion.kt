@@ -52,13 +52,14 @@ class WorldExplosion : IDestructible {
     }
 
     override fun destructImpl() {
-        if (Eln.config.getBooleanOrElse("gameplay.hazards.explosionsEnabled", false)) coordinate.world().createExplosion(
+        if (Eln.config.getBooleanOrElse("gameplay.hazards.explosionsEnabled", false)) coordinate.world().explode(
             null as Entity?,
             coordinate.x.toDouble(),
             coordinate.y.toDouble(),
             coordinate.z.toDouble(),
             strength,
-            true
+            true,
+            net.minecraft.world.level.Level.ExplosionInteraction.BLOCK
         ) else coordinate.world().setBlock(
             coordinate.x, coordinate.y, coordinate.z, Blocks.AIR
         )

@@ -665,8 +665,8 @@ class SummingUnitElement(node: SixNode, side: Direction, sixNodeDescriptor: SixN
         with(function as SummingUnit) {
             if(compound.contains("gains")) {
                 val list = compound.getList("gains", 6)
-                for(idx in 0 until Math.min(list.tagCount(), 3)) {
-                    gains[idx] = list.getDoubleAt(idx)
+                for(idx in 0 until Math.min(list.size, 3)) {
+                    gains[idx] = list.getDouble(idx)
                 }
             }
         }
@@ -676,7 +676,7 @@ class SummingUnitElement(node: SixNode, side: Direction, sixNodeDescriptor: SixN
         with(function as SummingUnit) {
             var list = ListTag();
             for(d in gains) {
-                list.appendTag(DoubleTag(d))
+                list.add(DoubleTag.valueOf(d))
             }
             compound.put("gains", list)
         }
@@ -782,8 +782,8 @@ class Filter: AnalogFunction() {
 
     override fun writeToNBT(nbt: CompoundTag, str: String) {
         nbt.apply {
-            setDouble("feedback", feedback)
-            setDouble("output", output)
+            putDouble("feedback", feedback)
+            putDouble("output", output)
         }
     }
 }

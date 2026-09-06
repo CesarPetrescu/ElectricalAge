@@ -173,7 +173,7 @@ class FloodlightProcess(val element: FloodlightElement) : IProcess {
                 lightZ += step.z
                 placeAt(lightX, lightY, lightZ)
 
-                if (!lbCoordinate.blockExist || lbCoordinate.block.defaultState.isOpaqueCube) {
+                if (!lbCoordinate.blockExist || lbCoordinate.blockState.isSolidRender(lbCoordinate.world(), lbCoordinate.pos)) {
                     // Back off one step so the light lands in the last open block, not inside
                     // the wall the beam hit.
                     placeAt(lightX - step.x, lightY - step.y, lightZ - step.z)

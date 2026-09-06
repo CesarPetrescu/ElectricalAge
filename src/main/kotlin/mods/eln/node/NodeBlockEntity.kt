@@ -76,7 +76,7 @@ abstract class NodeBlockEntity(type: BlockEntityType<*>, pos: BlockPos, state: B
 			world.checkLightFor(LightLayer.BLOCK, pos);
 		}*/if (lastLight != light) {
             lastLight = light
-            world.checkLightFor(LightLayer.BLOCK, pos)
+            world.lightEngine.checkBlock(blockPos)
         }
     }
 
@@ -112,7 +112,8 @@ abstract class NodeBlockEntity(type: BlockEntityType<*>, pos: BlockPos, state: B
         return null
     }
 
-    override fun getRenderBoundingBox(): AABB {
+    /** Read by the block entity renderers (1.21 asks the renderer, not the entity; see SixNodeRender). */
+    fun getRenderBoundingBox(): AABB {
         return if (cameraDrawOptimisation()) localRenderBoundingBox() else unoptimizedRenderBoundingBox()
     }
 

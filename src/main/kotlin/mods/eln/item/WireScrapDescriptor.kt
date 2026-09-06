@@ -21,12 +21,12 @@ class WireScrapDescriptor(name: String) : GenericItemUsingDamageDescriptor(name,
     fun createScrapStack(cable: UtilityCableDescriptor, count: Int = 1): ItemStack {
         val stack = newItemStack(count)
         stack.tagCompound = CompoundTag().apply {
-            setString(nbtSourceName, cable.name)
-            setString(nbtMaterial, cable.material.label)
-            setString(nbtSize, cable.sizeLabel)
-            setString(nbtMetricSize, cable.metricSizeLabel)
-            setInteger(nbtConductorCount, cable.conductorCount)
-            setBoolean(nbtInsulated, cable.insulated)
+            putString(nbtSourceName, cable.name)
+            putString(nbtMaterial, cable.material.label)
+            putString(nbtSize, cable.sizeLabel)
+            putString(nbtMetricSize, cable.metricSizeLabel)
+            putInt(nbtConductorCount, cable.conductorCount)
+            putBoolean(nbtInsulated, cable.insulated)
         }
         return stack
     }

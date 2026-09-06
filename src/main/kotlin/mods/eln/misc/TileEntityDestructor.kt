@@ -20,8 +20,8 @@ class TileEntityDestructor {
     @SubscribeEvent
     fun tick(event: ServerTickEvent.Pre) {
         for (t in destroyList) {
-            if (t.level != null && t.level.getBlockEntity(t.xCoord, t.yCoord, t.zCoord) === t) {
-                t.level.setBlockToAir(t.xCoord, t.yCoord, t.zCoord)
+            if (t.level != null && t.level!!.getBlockEntity(t.xCoord, t.yCoord, t.zCoord) === t) {
+                t.level!!.setBlockToAir(t.xCoord, t.yCoord, t.zCoord)
                 Utils.println("destroy light at " + t.xCoord + " " + t.yCoord + " " + t.zCoord)
             }
         }

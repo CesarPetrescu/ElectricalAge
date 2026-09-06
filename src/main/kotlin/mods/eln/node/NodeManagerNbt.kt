@@ -1,20 +1,22 @@
 package mods.eln.node
 
+import net.minecraft.core.HolderLookup
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.world.level.saveddata.SavedData
-import mods.eln.misc.writeToNBT
 
-class NodeManagerNbt(par1Str: String?) : SavedData(par1Str) {
+/** The world-saved hook that loads the node manager (1.7.10's WorldSavedData). */
+class NodeManagerNbt : SavedData() {
     override fun isDirty(): Boolean {
         return true
     }
 
-    override fun readFromNBT(nbt: CompoundTag) {
-        NodeManager.instance!!.loadFromNbt(nbt)
-    }
-
-    override fun writeToNBT(nbt: CompoundTag): CompoundTag {
+    override fun save(nbt: CompoundTag, registries: HolderLookup.Provider): CompoundTag {
         //NodeManager.instance.saveToNbt(nbt, Integer.MIN_VALUE);
         return nbt
+    }
+
+    companion object {
+        @JvmField
+        val FACTORY = Factory({ NodeManagerNbt() }, { nbt, _ -> NodeManagerNbt().also { NodeManager.instance!!.loadFromNbt(nbt) } }, null)
     }
 }

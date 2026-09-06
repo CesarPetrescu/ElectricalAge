@@ -1,7 +1,6 @@
 package mods.eln.mechanical
 
 import net.neoforged.fml.ModList
-import net.minecraftforge.fml.common.LoaderState
 import mods.eln.Eln
 import mods.eln.misc.Coordinate
 import mods.eln.misc.Direction
@@ -142,7 +141,9 @@ open class ShaftNetwork() : INBTTReady {
         some point, consider serializing network connectivity properly.
          */
 
-        val loadMerge = ModList.instance().loaderState == LoaderState.SERVER_ABOUT_TO_START
+        // 1.21: the mod-loading state machine is gone; "the server is about to start" is
+        // "no server level is ticking yet" (the node graph is being restored from NBT).
+        val loadMerge = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer()?.isRunning != true
         // val loadMerge = false
         // Utils.println("SN.mS: state " + ModList.instance().loaderState.name)
 

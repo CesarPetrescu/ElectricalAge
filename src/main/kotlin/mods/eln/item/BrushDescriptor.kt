@@ -19,13 +19,13 @@ import mods.eln.misc.tagCompound
 
 class BrushDescriptor(name: String): GenericItemUsingDamageDescriptor(name) {
 
-    private val ricon = ResourceLocation("eln", "textures/items/" + name.lowercase().replace(" ", "") + ".png")
+    private val ricon = ResourceLocation.fromNamespaceAndPath("eln", "textures/items/" + name.lowercase().replace(" ", "") + ".png")
 
     /**
      * 1.12.2 indexes the creative search tree at startup, before a player exists, so every
      * tooltip/name path has to tolerate a null client player.
      */
-    private fun isCreative() = Minecraft.getInstance().player?.capabilities?.isCreativeMode == true
+    private fun isCreative() = Minecraft.getInstance().player?.isCreative == true
 
 
     override fun getName(stack: ItemStack): String {
@@ -40,7 +40,8 @@ class BrushDescriptor(name: String): GenericItemUsingDamageDescriptor(name) {
         Data.addWiring(newItemStack())
     }
 
-    fun getColor(stack: ItemStack) = stack.itemDamage and 0xF
+    /** The brush colour is its sub-id (the item damage before the Flattening): one item per colour. */
+    fun getColor(@Suppress("UNUSED_PARAMETER") stack: ItemStack) = parentItemDamage and 0xF
 
     private fun getLife(stack: ItemStack?) = if (stack.isNothing() || stack.tagCompound == null)
         32
@@ -67,7 +68,7 @@ class BrushDescriptor(name: String): GenericItemUsingDamageDescriptor(name) {
 
     fun use(stack: ItemStack, entityPlayer: Player): Boolean {
 
-        val creative = entityPlayer.isCreative()
+        val creative = entityPlayer.isCreative
         var life = stack.tagCompound!!.getInt("life")
         return if (creative || life != 0) {
             if (!creative) {
@@ -101,6 +102,6 @@ class BrushDescriptor(name: String): GenericItemUsingDamageDescriptor(name) {
     }
 
     companion object {
-        private val dryOverlay = ResourceLocation("eln", "textures/items/brushdryoverlay.png")
+        private val dryOverlay = ResourceLocation.fromNamespaceAndPath("eln", "textures/items/brushdryoverlay.png")
     }
 }

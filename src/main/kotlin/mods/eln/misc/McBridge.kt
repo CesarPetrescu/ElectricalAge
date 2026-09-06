@@ -126,8 +126,19 @@ object McRegistries {
     }
 }
 
+/** The recipe manager of the current side (server first; the client's while in a world). */
+object McRecipes {
+    @JvmStatic
+    fun manager(): net.minecraft.world.item.crafting.RecipeManager? {
+        net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer()?.let { return it.recipeManager }
+        if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient) return ClientRegistries.recipes()
+        return null
+    }
+}
+
 private object ClientRegistries {
     fun access(): net.minecraft.core.RegistryAccess? = net.minecraft.client.Minecraft.getInstance().level?.registryAccess()
+    fun recipes(): net.minecraft.world.item.crafting.RecipeManager? = net.minecraft.client.Minecraft.getInstance().level?.recipeManager
 }
 
 /** 1.7.10's `ItemStack.writeToNBT(tag)`. */

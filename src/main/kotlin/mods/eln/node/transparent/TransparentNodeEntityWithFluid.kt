@@ -9,10 +9,10 @@ import mods.eln.fluid.ISidedFluidHandler
 /**
  * Proxy class for TNEs with Forge fluids.
  */
-class TransparentNodeEntityWithFluid(pos: net.minecraft.core.BlockPos, state: net.minecraft.level.level.block.state.BlockState) : TransparentNodeEntity(TYPE.get(), pos, state), ISidedFluidHandler {
+class TransparentNodeEntityWithFluid(pos: net.minecraft.core.BlockPos, state: net.minecraft.world.level.block.state.BlockState) : TransparentNodeEntity(TYPE.get(), pos, state), ISidedFluidHandler {
     companion object {
         @JvmField
-        var TYPE: java.util.function.Supplier<net.minecraft.level.level.block.entity.BlockEntityType<TransparentNodeEntityWithFluid>> = java.util.function.Supplier { throw IllegalStateException("TransparentNodeEntityWithFluid type not registered") }
+        var TYPE: java.util.function.Supplier<net.minecraft.world.level.block.entity.BlockEntityType<TransparentNodeEntityWithFluid>> = java.util.function.Supplier { throw IllegalStateException("TransparentNodeEntityWithFluid type not registered") }
     }
 
     private val fluidHandler: ISidedFluidHandler

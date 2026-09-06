@@ -139,22 +139,23 @@ class LampSocketProcess(var element: LampSocketElement) : IProcess {
 
         if (randTarget > Math.random()) {
             var rotationVector = Vec3(1.0, 0.0, 0.0)
-            rotationVector = rotationVector.rotatePitch((element.projectionRotationAngle * (Math.PI / 180.0)).toFloat())
-            rotationVector = rotationVector.rotateYaw(((Math.random() - 0.5) * Math.PI / 2.0).toFloat())
-            rotationVector = rotationVector.rotatePitch(((Math.random() - 0.5) * Math.PI / 2.0).toFloat())
+            rotationVector = rotationVector.xRot((element.projectionRotationAngle * (Math.PI / 180.0)).toFloat())
+            rotationVector = rotationVector.yRot(((Math.random() - 0.5) * Math.PI / 2.0).toFloat())
+            rotationVector = rotationVector.xRot(((Math.random() - 0.5) * Math.PI / 2.0).toFloat())
             rotationVector = element.front.rotateOnXnLeft(rotationVector)
             rotationVector = element.side.rotateFromXN(rotationVector)
 
             val lbCoordinate = raytrace(rotationVector, actualLight)
             val lbPos = BlockPos(lbCoordinate.x, lbCoordinate.y, lbCoordinate.z)
             val lbWorld = lbCoordinate.world()
-            lbCoordinate.block.updateTick(lbWorld, lbPos, lbWorld.getBlockState(lbPos), lbWorld.rand)
+            // 1.7.10 ticked the lit block by hand; the light block schedules nothing (its entity ticks), so the state read suffices.
+            lbWorld.getBlockState(lbPos)
         }
     }
 
     private fun placeSpot(lightValue: Int) {
         var rotationVector = Vec3(1.0, 0.0, 0.0)
-        rotationVector = rotationVector.rotatePitch((element.projectionRotationAngle * (Math.PI / 180.0)).toFloat())
+        rotationVector = rotationVector.xRot((element.projectionRotationAngle * (Math.PI / 180.0)).toFloat())
         rotationVector = element.front.rotateOnXnLeft(rotationVector)
         rotationVector = element.side.rotateFromXN(rotationVector)
 
@@ -190,7 +191,7 @@ class LampSocketProcess(var element: LampSocketElement) : IProcess {
             lightZ += rotationVector.z
             placeAt(lightX, lightY, lightZ)
 
-            if (!lbCoordinate.blockExist || lbCoordinate.block.defaultState.isOpaqueCube) {
+            if (!lbCoordinate.blockExist || lbCoordinate.blockState.isSolidRender(lbCoordinate.world(), lbCoordinate.pos)) {
                 // Step back so the light lands in the last open block, not inside the wall.
                 placeAt(lightX - rotationVector.x, lightY - rotationVector.y, lightZ - rotationVector.z)
                 break

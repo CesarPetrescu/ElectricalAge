@@ -92,7 +92,7 @@ class FabricatorElement(node: TransparentNode, descriptor: TransparentNodeDescri
     override fun thermoMeterString(side: Direction): String = ""
 
     override fun getWaila(): Map<String, String> {
-        return mapOf(Pair(tr("Operation"), operation?.outputItem?.displayName ?: "None"))
+        return mapOf(Pair(tr("Operation"), operation?.outputItem?.hoverName?.string ?: "None"))
     }
 
     override fun initialize() {
@@ -194,8 +194,9 @@ class FabricatorProcess(val element: FabricatorElement): IProcess {
         val siliconWaferSlot = element.inventory.getItem(FabricatorSlots.SILICON_WAFER.slotId)
         val plateCopperSlot = element.inventory.getItem(FabricatorSlots.COPPER_PLATE.slotId)
 
-        val siliconWaferName = "Silicon_Wafer"
-        val copperPlateName = "Copper_Plate"
+        // The descriptor names ("Silicon Wafer", "Copper Plate"); the items' lang keys are "<Name_With_Underscores>.name".
+        val siliconWaferName = "Silicon_Wafer.name"
+        val copperPlateName = "Copper_Plate.name"
 
         val canOutput = if (outputSlot != null) {
             val stack = element.inventory.getItem(FabricatorSlots.OUTPUT.slotId)
@@ -210,8 +211,8 @@ class FabricatorProcess(val element: FabricatorElement): IProcess {
         val hasInputs = (
             siliconWaferSlot != null &&
             plateCopperSlot != null &&
-            siliconWaferSlot.translationKey == siliconWaferName &&
-            plateCopperSlot.translationKey == copperPlateName
+            siliconWaferSlot.descriptionId == siliconWaferName &&
+            plateCopperSlot.descriptionId == copperPlateName
         )
 
         if (canOutput && hasInputs && operation != null) {

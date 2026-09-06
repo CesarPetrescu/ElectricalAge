@@ -11,6 +11,6 @@ class ReplicatorHungryAttack<T : LivingEntity>(
 ) : NearestAttackableTargetGoal<T>(replicator, targetClass, shouldCheckSight) {
     override fun canUse(): Boolean {
         if (replicator.hunger < replicator.hungerToCanibal) return false
-        return super.shouldExecute()
+        return super.canUse()
     }
 }

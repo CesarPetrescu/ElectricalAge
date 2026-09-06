@@ -131,11 +131,11 @@ class LampSocketRender(tileEntity: SixNodeEntity, side: Direction, sixNodeDescri
             entityTimeout -= deltaT
 
             if (entityTimeout < 0) {
-                entityList = tileEntity.getLevel().getEntitiesOfClass(Entity::class.java, Coordinate(
+                entityList = tileEntity.getLevel()!!.getEntitiesOfClass(Entity::class.java, Coordinate(
                     tileEntity.xCoord,
                     tileEntity.yCoord - 2,
                     tileEntity.zCoord,
-                    tileEntity.getLevel()
+                    tileEntity.getLevel()!!
                 ).getAxisAlignedBB(2))
                 entityTimeout = 0.1
             }
@@ -148,12 +148,12 @@ class LampSocketRender(tileEntity: SixNodeEntity, side: Direction, sixNodeDescri
                 if (e is LivingEntity) eFactor = 4
                 if (eFactor == 0) continue
 
-                perturbVy += (e.motionZ * eFactor * deltaT)
-                perturbVz += (e.motionX * eFactor * deltaT)
+                perturbVy += (e.deltaMovement.z * eFactor * deltaT)
+                perturbVz += (e.deltaMovement.x * eFactor * deltaT)
             }
 
-            if (tileEntity.getLevel().getBrightness(LightLayer.SKY, tileEntity.pos) > 3) {
-                val weather = (UtilsClient.getWeather(tileEntity.getLevel()) * 0.9) + 0.1
+            if (tileEntity.getLevel()!!.getBrightness(LightLayer.SKY, tileEntity.blockPos) > 3) {
+                val weather = (UtilsClient.getWeather(tileEntity.getLevel()!!) * 0.9) + 0.1
 
                 // TODO: Reduce swinging of lamps to some degree?
                 weatherAngleY += ((0.4 - Math.random()) * deltaT * (Math.PI / 0.2) * weather)

@@ -19,7 +19,7 @@ class ConfigurableAiWander(
 
     override fun canUse(): Boolean {
         // EntityLiving.age (time since last player proximity) became getIdleTime() in 1.8.
-        if (entity.idleTime >= 100) return false
+        if (entity.noActionTime >= 100) return false
         if (entity.random.nextInt(randLimit) != 0) return false
 
         val vec3 = DefaultRandomPos.getPos(entity, 10, 7) ?: return false

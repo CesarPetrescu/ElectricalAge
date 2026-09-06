@@ -197,7 +197,7 @@ public class WirelessSignalRxElement extends SixNodeElement implements IConfigur
     @Override
     public void writeConfigTool(CompoundTag compound, Player invoker) {
         ListTag list = new ListTag();
-        list.appendTag(new StringTag(channel));
+        list.add(new StringTag(channel));
         compound.put("wirelessChannels", list);
     }
 

@@ -106,7 +106,7 @@ class MqttSignalControllerRender(
             }
             ledTimer = 0f
         }
-        if (!Utils.isPlayerAround(tileEntity.level, coord.getAxisAlignedBB(0))) {
+        if (!Utils.isPlayerAround(tileEntity.level!!, coord.getAxisAlignedBB(0))) {
             interpolator.target = 0f
         } else {
             interpolator.target = 1f

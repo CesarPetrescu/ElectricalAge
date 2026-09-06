@@ -8,7 +8,6 @@ import mods.eln.config.JsonConfig;
 import mods.eln.entity.ReplicatorPopProcess;
 import mods.eln.environment.BiomeClimateService;
 import mods.eln.eventhandlers.ElnFMLEventsHandler;
-import mods.eln.eventhandlers.ElnForgeEventsHandler;
 import mods.eln.eventhandlers.RoomThermalBlockEventsHandler;
 import mods.eln.fluid.ElnFluidRegistry;
 import mods.eln.fluid.FuelRegistry;
@@ -448,7 +447,6 @@ public class Eln {
         TR_GROUP("ElnMachines", "Electrical Age - Machines");
         TR_GROUP("ElnCreative", "Electrical Age - Creative");
         TR_GROUP("ElnOther", "Electrical Age - Other");
-        NeoForge.EVENT_BUS.register(new ElnForgeEventsHandler());
         NeoForge.EVENT_BUS.register(new RoomThermalBlockEventsHandler());
         NeoForge.EVENT_BUS.register(new ElectricMinecartChargeReporter());
         NeoForge.EVENT_BUS.register(new ElnFMLEventsHandler());

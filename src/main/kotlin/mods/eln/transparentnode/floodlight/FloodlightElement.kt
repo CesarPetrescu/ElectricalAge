@@ -287,11 +287,11 @@ class FloodlightElement(transparentNode: TransparentNode, transparentNodeDescrip
         info[I18N.tr("Power Consumption")] = plotPower("", electricalLoad.voltage.pow(2) / parallelResistance)
 
         val lamp1Stack = inventory.getItem(FloodlightContainer.LAMP_SLOT_1_ID)
-        if (!lamp1Stack.isNothing()) info[I18N.tr("Bulb 1")] = lamp1Stack.hoverName
+        if (!lamp1Stack.isNothing()) info[I18N.tr("Bulb 1")] = lamp1Stack.hoverName.string
         else info[I18N.tr("Bulb 1")] = I18N.tr("None")
 
         val lamp2Stack = inventory.getItem(FloodlightContainer.LAMP_SLOT_2_ID)
-        if (!lamp2Stack.isNothing()) info[I18N.tr("Bulb 2")] = lamp2Stack.hoverName
+        if (!lamp2Stack.isNothing()) info[I18N.tr("Bulb 2")] = lamp2Stack.hoverName.string
         else info[I18N.tr("Bulb 2")] = I18N.tr("None")
 
         if (Eln.config.getBooleanOrElse("ui.waila.easyMode", false)) {

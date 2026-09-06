@@ -6,7 +6,7 @@ import net.neoforged.api.distmarker.OnlyIn
 import mods.eln.cable.CableRender
 import mods.eln.cable.CableRenderDescriptor
 import mods.eln.cable.CableRenderType
-import mods.eln.client.ClientProxy
+import mods.eln.client.ClientSetup
 import mods.eln.misc.Coordinate
 import mods.eln.misc.Direction
 import mods.eln.misc.Direction.Companion.fromInt
@@ -192,7 +192,7 @@ abstract class TransparentNodeElementRender(var tileEntity: TransparentNodeEntit
         )
         for (box in collisionBoxes) {
             if (box != null) {
-                merged = merged.union(box)
+                merged = merged.minmax(box)
             }
         }
 
@@ -210,11 +210,11 @@ abstract class TransparentNodeElementRender(var tileEntity: TransparentNodeEntit
                     (y + 1).toDouble(),
                     (z + 1).toDouble()
                 )
-                merged = merged.union(blockBox)
+                merged = merged.minmax(blockBox)
             }
         }
 
-        return merged.expand(0.25, 0.25, 0.25)
+        return merged.inflate(0.25, 0.25, 0.25)
     }
 
     open fun getCableRenderSide(side: Direction, lrdu: LRDU): CableRenderDescriptor? {
@@ -250,7 +250,7 @@ abstract class TransparentNodeElementRender(var tileEntity: TransparentNodeEntit
     open fun notifyNeighborSpawn() {}
     open fun serverPacketUnserialize(stream: DataInputStream?) {}
     protected fun coordinate(): Coordinate {
-        return Coordinate(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord, tileEntity.level)
+        return Coordinate(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord, tileEntity.level!!)
     }
 
     private var uuid = 0
@@ -278,7 +278,7 @@ abstract class TransparentNodeElementRender(var tileEntity: TransparentNodeEntit
     }
 
     fun destructor() {
-        if (usedUuid()) ClientProxy.uuidManager.kill(uuid)
+        if (usedUuid()) ClientSetup.uuidManager.kill(uuid)
         loopedSoundManager.dispose()
     }
 

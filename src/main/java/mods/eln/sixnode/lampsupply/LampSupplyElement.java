@@ -450,7 +450,7 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
     public void readConfigTool(NBTTagCompound compound, Player invoker) {
         if(compound.contains("powerChannels")) {
             NBTTagList list = compound.getList("powerChannels", 8);
-            for(int idx = 0; idx < descriptor.channelCount && idx < list.tagCount(); idx++) {
+            for(int idx = 0; idx < descriptor.channelCount && idx < list.size(); idx++) {
                 channelRemove(this, idx, entries.get(idx).powerChannel);
                 entries.get(idx).powerChannel = list.getStringTagAt(idx);
                 channelRegister(this, idx, entries.get(idx).powerChannel);
@@ -459,7 +459,7 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
         }
         if(compound.contains("wirelessChannels")) {
             NBTTagList list = compound.getList("wirelessChannels", 8);
-            for(int idx = 0; idx < descriptor.channelCount && idx < list.tagCount(); idx++) {
+            for(int idx = 0; idx < descriptor.channelCount && idx < list.size(); idx++) {
                 channelRemove(this, idx, entries.get(idx).wirelessChannel);
                 entries.get(idx).wirelessChannel = list.getStringTagAt(idx);
                 channelRegister(this, idx, entries.get(idx).wirelessChannel);
@@ -483,8 +483,8 @@ public class LampSupplyElement extends SixNodeElement implements IConfigurable {
         NBTTagList wirelessList = new NBTTagList();
         int[] aggregators = new int[descriptor.channelCount];
         for(int idx = 0; idx < descriptor.channelCount; idx++) {
-            powerList.appendTag(new NBTTagString(entries.get(idx).powerChannel));
-            wirelessList.appendTag(new NBTTagString(entries.get(idx).wirelessChannel));
+            powerList.add(new NBTTagString(entries.get(idx).powerChannel));
+            wirelessList.add(new NBTTagString(entries.get(idx).wirelessChannel));
             aggregators[idx] = entries.get(idx).aggregator;
         }
         compound.put("powerChannels", powerList);
