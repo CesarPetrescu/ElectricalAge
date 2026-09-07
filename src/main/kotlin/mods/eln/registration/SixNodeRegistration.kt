@@ -421,7 +421,7 @@ object SixNodeRegistration {
                 material,
                 render("sprites/cable_melted.png", 2.4f, 0.9f)
             ).also { desc ->
-                desc.setDefaultIcon("arcmetalblock")
+                desc.setDefaultIcon("arc_metal_block")
                 desc.hideFromCreative()
             }
         }

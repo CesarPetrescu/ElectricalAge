@@ -24,11 +24,12 @@ class WikiClientChecks {
     private var root: Root? = null
     private var savedScroll = 0f
     private var finished = false
+    private var awaitedPage: Default? = null
+    private var requiredFrames = 0
 
     private fun test(name: String, body: () -> Unit) {
-        val passed = report.test("eln:wiki", name, body)
+        report.test("eln:wiki", name, body)
         report.write(false)
-        check(passed) { "Wiki client contract failed: $name" }
     }
 
     private fun pressP(down: Boolean) {
@@ -45,6 +46,7 @@ class WikiClientChecks {
 
     fun tick(mc: Minecraft): Boolean {
         if (finished) return true
+        if (mc.screen === awaitedPage && awaitedPage != null && awaitedPage!!.renderedFrames < requiredFrames) return false
         if (wait++ < 12) return false
         wait = 0
         when (step) {
@@ -69,6 +71,7 @@ class WikiClientChecks {
                 step++
             }
             1 -> {
+                shot(mc, "contents-scale-$scale")
                 test("layout-and-visible-content-scale-$scale") {
                     val page = mc.screen as Root
                     val v = page.extender
@@ -82,12 +85,12 @@ class WikiClientChecks {
                     Screenshot.takeScreenshot(mc.mainRenderTarget).use { image ->
                         val x = ((v.posX + first.posX - .5) * mc.window.guiScale).toInt()
                         val y = ((v.posY + first.posY + 4) * mc.window.guiScale).toInt()
-                        check(image.getPixelRGBA(x, y) and 0xFFFFFF == 0x665B46) {
-                            "First slot is clipped/misplaced at GUI scale $scale"
+                        val actual = image.getPixelRGBA(x, y) and 0xFFFFFF
+                        check(actual == 0x665B46) {
+                            "First slot clipped/misplaced: scale=$scale pixel=($x,$y) ABGR=${actual.toString(16)} frames=${page.renderedFrames}"
                         }
                     }
                 }
-                shot(mc, "contents-scale-$scale")
                 if (++scale <= 3) {
                     mc.options.guiScale().set(scale); mc.resizeDisplay()
                 } else {
@@ -200,8 +203,11 @@ class WikiClientChecks {
                 mc.resizeDisplay()
                 report.write(true)
                 finished = true
+                check(report.failures == 0) { "Wiki client contracts failed: ${report.failures}" }
             }
         }
+        awaitedPage = mc.screen as? Default
+        requiredFrames = (awaitedPage?.renderedFrames ?: 0) + 2
         return finished
     }
 

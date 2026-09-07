@@ -170,7 +170,7 @@ jobs:
 
       - name: Validate and summarize block contracts
         if: always()
-        run: python3 script/check_block_contracts.py
+        run: python3 script/check_block_contracts.py --client
 
       - name: Upload screenshots and logs
         if: always()

@@ -20,6 +20,7 @@ public class Default extends Screen {
     protected int left, top;
     private float savedScroll;
     private String query = "";
+    int renderedFrames;
 
     public Default(Screen preview) {
         super(Component.literal(tr("Electrical Age Guide")));
@@ -28,6 +29,7 @@ public class Default extends Screen {
 
     @Override
     protected void init() {
+        renderedFrames = 0;
         initGui();
         extender.setSliderPosition(savedScroll);
     }
@@ -136,5 +138,6 @@ public class Default extends Screen {
         Gui.begin(g);
         try { extender.idraw2(mouseX, mouseY); }
         finally { Gui.end(); }
+        renderedFrames++;
     }
 }
