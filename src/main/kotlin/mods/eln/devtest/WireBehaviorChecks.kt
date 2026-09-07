@@ -128,6 +128,14 @@ object WireBehaviorChecks {
                 val hot = d.resistanceOhms(celsius = 80.0)
                 loads[0].serialResistance = hot / 2; repeat(5) { r.step() }
                 near(sink.current, 10.0 / (10.0 + hot), 1e-6)
+                if (d.poleEligible) {
+                    near(mods.eln.gridnode.GridLink.resistanceForCable(d, 32), d.resistanceOhms(32.0), 1e-12)
+                    val span = mods.eln.gridnode.WireSpanConnection(sourceLoad, end, d.resistanceOhms(32.0))
+                    span.notifyRsChange()
+                    near(span.resistance, d.resistanceOhms(32.0), 1e-12)
+                    end.serialResistance = .1; span.notifyRsChange()
+                    near(span.resistance, d.resistanceOhms(32.0) + .1, 1e-12)
+                }
             }
         }
         for (name in listOf("Wire Roller", "Wire Insulator", "Wire Combiner", "Iron Roller Wheel", "Steel Roller Wheel", "Aluminum Roller Wheel")) {

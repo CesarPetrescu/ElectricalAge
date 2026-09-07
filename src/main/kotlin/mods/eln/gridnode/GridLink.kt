@@ -9,6 +9,7 @@ import mods.eln.misc.INBTTReady
 import mods.eln.misc.UserError
 import mods.eln.node.NodeManager
 import mods.eln.sim.ElectricalConnection
+import mods.eln.sim.ElectricalLoad
 import mods.eln.sim.mna.misc.MnaConst
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor
 import mods.eln.sixnode.electricalcable.UtilityCableDescriptor
@@ -79,9 +80,10 @@ class GridLink : INBTTReady {
             throw UserError("Invalid connection side")
         }
         assert(ab == null)
-        ab = ElectricalConnection(aLoad, bLoad)
+        val utility = Eln.sixNodeItem.getDescriptor(cable) as? UtilityCableDescriptor
+        ab = if (utility != null) WireSpanConnection(aLoad, bLoad, rs) else ElectricalConnection(aLoad, bLoad)
         Eln.simulator.addElectricalComponent(ab)
-        ab!!.resistance = rs
+        if (utility == null) ab!!.resistance = rs
 
         // Add link to link lists.
         a.gridLinkList.add(this)
@@ -140,6 +142,10 @@ class GridLink : INBTTReady {
         bs = Direction.readFromNBT(nbt, str + "bs")!!
         rs = nbt.getDouble(str + "rs")
         cable = stackFromNbt(nbt)
+        // Migrate the old saved, arbitrary resistance using the actual paid length in the cable stack.
+        (Eln.sixNodeItem.getDescriptor(cable) as? UtilityCableDescriptor)?.let {
+            rs = it.resistanceOhms(it.getRemainingLengthMeters(cable))
+        }
     }
 
     override fun writeToNBT(nbt: CompoundTag, str: String) {
@@ -182,6 +188,9 @@ class GridLink : INBTTReady {
 
     companion object {
 
+        fun resistanceForCable(cable: ElectricalCableDescriptor, meters: Int): Double =
+            if (cable is UtilityCableDescriptor) cable.resistanceOhms(meters.toDouble()) else cable.electricalRs * meters
+
         fun getElementFromCoordinate(coord: Coordinate?): GridElement? {
             if (coord == null) return null
             val element = NodeManager.instance!!.getTransparentNodeFromCoordinate(coord)
@@ -206,8 +215,16 @@ class GridLink : INBTTReady {
             // Makin' a Link. Where'd Zelda go?
             val link = GridLink(
                     a.coordinate(), b.coordinate(), `as`, bs, linkStack,
-                    cable.electricalRs * cableLength)
+                    resistanceForCable(cable, cableLength))
             link.connect()
         }
+    }
+}
+
+/** A span is additional wire, not merely the two pole contacts. Keep it across Rs notifications. */
+internal class WireSpanConnection(private val from: ElectricalLoad, private val to: ElectricalLoad,
+                                  private val spanOhms: Double) : ElectricalConnection(from, to) {
+    override fun notifyRsChange() {
+        resistance = spanOhms + from.serialResistance + to.serialResistance
     }
 }

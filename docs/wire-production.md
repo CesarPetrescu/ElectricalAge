@@ -36,6 +36,8 @@ For example, 12 AWG copper (3.309 mm²) has about **5.21 mΩ/m at 20 °C**. A 10
 
 The tooltip shows per-core resistance per metre and over the current spool; the in-world overlay shows the segment's current resistance. Modern utility cables no longer use the old arbitrary near-zero resistance formula. Legacy voltage-tier and ideal creative/signal devices retain their existing models because they have no specified physical conductor geometry.
 
+Pole-to-pole utility spans use their paid cable length and full conductor resistance, plus endpoint contact resistance. Old saved spans are recalculated on loading. Pole spans currently remain single electrical links at the 20 °C reference; they do not yet simulate separate multicore circuits or distributed heating along an aerial span.
+
 Limits: no contact resistance, AC skin/proximity effect or strand lay factor; the low-temperature linear factor is clamped positive, not a superconductivity model. Insulation and current ratings remain gameplay limits. Metal densities retain the existing nominal game values, 8,960 kg/m³ copper and 2,700 kg/m³ aluminum.
 
 ## Regression gates

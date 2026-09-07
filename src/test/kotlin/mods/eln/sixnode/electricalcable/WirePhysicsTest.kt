@@ -31,9 +31,15 @@ class WirePhysicsTest {
         assertEquals(WirePhysics.massKg(copper, 3.309, 64.0), WirePhysics.massKg(copper, 3.309, 32.0) * 2, 1e-12)
     }
     @Test fun invalidGeometryCannotPoisonSolver() {
+        // NeoForge isolates kotlin-reflect from kotlin-test; assertFailsWith's KClass cast fails there.
+        fun rejects(body: () -> Unit) {
+            var rejected = false
+            try { body() } catch (_: IllegalArgumentException) { rejected = true }
+            assertTrue(rejected, "Invalid geometry must throw IllegalArgumentException")
+        }
         for (area in listOf(0.0, -1.0, Double.NaN, Double.POSITIVE_INFINITY))
-            assertFailsWith<IllegalArgumentException> { WirePhysics.resistance(copper, area) }
-        assertFailsWith<IllegalArgumentException> { WirePhysics.resistance(copper, 1.0, -1.0) }
-        assertFailsWith<IllegalArgumentException> { WirePhysics.resistance(copper, 1.0, celsius = Double.NaN) }
+            rejects { WirePhysics.resistance(copper, area) }
+        rejects { WirePhysics.resistance(copper, 1.0, -1.0) }
+        rejects { WirePhysics.resistance(copper, 1.0, celsius = Double.NaN) }
     }
 }
