@@ -287,6 +287,7 @@ public final class FixedFunction {
     }
 
     public static void color(float r, float g, float b, float a) {
+        if (recording != null) recordingColorSet = true;
         state.r = r;
         state.g = g;
         state.b = b;
@@ -314,6 +315,8 @@ public final class FixedFunction {
     private static int nextList = 1;
     private static List<Batch> recording = null;
     private static Matrix4f recordingBase = null;
+    private static boolean recordingColorSet = false;
+    private static float[] recordingEntryColor;
 
     static void begin(int mode) {
         current = new Batch(mode);
@@ -337,7 +340,10 @@ public final class FixedFunction {
 
     static void vertex(float x, float y, float z) {
         if (current == null) return; // glVertex outside glBegin: GL ignores it too
-        current.vertices.add(new float[]{x, y, z, u, v, nx, ny, nz, state.r, state.g, state.b, state.a});
+        // A list records commands, not the caller's current color. OBJ lists contain no glColor:
+        // their LEDs/dyes must inherit each invocation's color, including after a black first frame.
+        float red = recording != null && !recordingColorSet ? Float.NaN : state.r;
+        current.vertices.add(new float[]{x, y, z, u, v, nx, ny, nz, red, state.g, state.b, state.a});
     }
 
     /** glEnd: closes the primitive opened by {@link #begin(int)}. */
@@ -364,6 +370,8 @@ public final class FixedFunction {
 
     static void newList(int id) {
         recording = new ArrayList<>();
+        recordingColorSet = false;
+        recordingEntryColor = new float[]{state.r, state.g, state.b, state.a};
         recordingBase = new Matrix4f(pose.last().pose());
         lists.put(id, recording);
     }
@@ -371,6 +379,10 @@ public final class FixedFunction {
     static void endList() {
         recording = null;
         recordingBase = null;
+        if (recordingEntryColor != null) {
+            color(recordingEntryColor[0], recordingEntryColor[1], recordingEntryColor[2], recordingEntryColor[3]);
+            recordingEntryColor = null;
+        }
     }
 
     static void callList(int id) {
@@ -382,6 +394,19 @@ public final class FixedFunction {
             return;
         }
         for (Batch b : batches) emit(b, b.transform);
+        // An explicit color command inside a display list also changes the caller's current color.
+        for (int i = batches.size() - 1; i >= 0; i--) {
+            var vertices = batches.get(i).vertices;
+            if (vertices.isEmpty()) continue;
+            float[] last = vertices.get(vertices.size() - 1);
+            if (!Float.isNaN(last[8])) color(last[8], last[9], last[10], last[11]);
+            break;
+        }
+    }
+
+    private static VertexConsumer vertexColor(VertexConsumer consumer, float[] vertex) {
+        return Float.isNaN(vertex[8]) ? consumer.setColor(state.r, state.g, state.b, state.a)
+            : consumer.setColor(vertex[8], vertex[9], vertex[10], vertex[11]);
     }
 
     // ------------------------------------------------------------------ emission
@@ -419,8 +444,7 @@ public final class FixedFunction {
                 for (float[] vtx : prims) {
                     Vector4f pos = new Vector4f(vtx[0], vtx[1], vtx[2], 1f).mul(model);
                     MeshNormals.transform(normals, vtx[5], vtx[6], vtx[7], normal);
-                    vc.addVertex(pos.x, pos.y, pos.z)
-                        .setColor(vtx[8], vtx[9], vtx[10], vtx[11])
+                    vertexColor(vc.addVertex(pos.x, pos.y, pos.z), vtx)
                         .setUv(vtx[3], vtx[4])
                         .setOverlay(packedOverlay)
                         .setLight(light)
@@ -445,7 +469,7 @@ public final class FixedFunction {
                 bb = Tesselator.getInstance().begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
                 for (float[] vtx : prims) {
                     Vector4f pos = new Vector4f(vtx[0], vtx[1], vtx[2], 1f).mul(model);
-                    bb.addVertex(pos.x, pos.y, pos.z).setColor(vtx[8], vtx[9], vtx[10], vtx[11]);
+                    vertexColor(bb.addVertex(pos.x, pos.y, pos.z), vtx);
                 }
             } else {
                 RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
@@ -453,7 +477,7 @@ public final class FixedFunction {
                 bb = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
                 for (float[] vtx : prims) {
                     Vector4f pos = new Vector4f(vtx[0], vtx[1], vtx[2], 1f).mul(model);
-                    bb.addVertex(pos.x, pos.y, pos.z).setUv(vtx[3], vtx[4]).setColor(vtx[8], vtx[9], vtx[10], vtx[11]);
+                    vertexColor(bb.addVertex(pos.x, pos.y, pos.z).setUv(vtx[3], vtx[4]), vtx);
                 }
             }
             BufferUploader.drawWithShader(bb.buildOrThrow());
@@ -465,7 +489,7 @@ public final class FixedFunction {
 
     private static void lineVertex(VertexConsumer vc, Matrix4f model, PoseStack.Pose p, float[] vtx, Vector3f dir) {
         Vector4f pos = new Vector4f(vtx[0], vtx[1], vtx[2], 1f).mul(model);
-        vc.addVertex(pos.x, pos.y, pos.z).setColor(vtx[8], vtx[9], vtx[10], vtx[11]).setNormal(p, dir.x, dir.y, dir.z);
+        vertexColor(vc.addVertex(pos.x, pos.y, pos.z), vtx).setNormal(p, dir.x, dir.y, dir.z);
     }
 
     /** Every primitive type Electrical Age uses, as a flat quad list (triangles get a repeated vertex). */

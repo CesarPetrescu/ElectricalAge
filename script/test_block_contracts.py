@@ -20,7 +20,7 @@ class ReportsTest(unittest.TestCase):
             (self.path / f"{suite}.json").write_text(json.dumps(data), encoding="utf-8")
 
     def test_missing(self):
-        self.assertEqual(len(summarize(self.path)[1]), 3)
+        self.assertEqual(len(summarize(self.path)[1]), len(REQUIRED))
 
     def test_valid(self):
         self.write()

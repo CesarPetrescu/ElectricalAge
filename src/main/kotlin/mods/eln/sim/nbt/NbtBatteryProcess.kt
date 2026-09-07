@@ -21,8 +21,8 @@ class NbtBatteryProcess(
     override fun readFromNBT(nbt: CompoundTag, str: String) {
         Q = nbt.getDouble(str + "NBP" + "Q")
         if (!Q.isFinite()) Q = 0.0
-        life = nbt.getDouble(str + "NBP" + "life")
-        if (!life.isFinite()) life = 1.0
+        life = if (nbt.contains(str + "NBP" + "life")) nbt.getDouble(str + "NBP" + "life") else 1.0
+        if (!life.isFinite() || life <= 0.0) life = 1.0
     }
 
     override fun writeToNBT(nbt: CompoundTag, str: String) {

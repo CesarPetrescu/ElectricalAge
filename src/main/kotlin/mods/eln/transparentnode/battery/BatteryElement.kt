@@ -93,12 +93,14 @@ class BatteryElement(transparentNode: TransparentNode, descriptor: TransparentNo
         descriptor.applyTo(batterySlowProcess)
         positiveLoad.serialResistance = descriptor.electricalRs
         negativeLoad.serialResistance = descriptor.electricalRs
-        dischargeResistor.resistance = MnaConst.highImpedance
         if (fromItemStack) {
             batteryProcess.life = fromItemstackLife
             batteryProcess.charge = fromItemstackCharge
             fromItemStack = false
         }
+        batteryProcess.sanitizeState()
+        // A restored charged battery must not be a zero-volt short for the first MNA step.
+        voltageSource.voltage = batteryProcess.computeVoltage()
         connect()
     }
 
@@ -117,8 +119,8 @@ class BatteryElement(transparentNode: TransparentNode, descriptor: TransparentNo
 
     override fun readItemStackNBT(nbt: CompoundTag?) {
         super.readItemStackNBT(nbt)
-        fromItemstackCharge = nbt?.getDouble("charge")?: descriptor.getChargeInTag(this.descriptor.newItemStack())
-        fromItemstackLife = nbt?.getDouble("life")?: descriptor.getLifeInTag(this.descriptor.newItemStack())
+        fromItemstackCharge = if (nbt?.contains("charge") == true) nbt.getDouble("charge") else descriptor.startCharge
+        fromItemstackLife = if (nbt?.contains("life") == true) nbt.getDouble("life") else 1.0
         fromItemStack = true
     }
 

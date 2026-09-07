@@ -5,7 +5,7 @@ import os
 from collections import Counter, defaultdict
 from pathlib import Path
 
-REQUIRED = ("blocks-place", "blocks-settled", "blocks-restart")
+REQUIRED = ("blocks-place", "blocks-settled", "blocks-restart", "power-behavior", "power-behavior-restart")
 
 
 def summarize(directory):

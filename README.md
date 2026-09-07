@@ -175,6 +175,7 @@ Read the [contribution guide](CONTRIBUTING.md) for setup, translation rules, reg
 ## Documentation and credits
 
 - [Create shaft adapters](docs/create-shaft-adapters.md) — connections, gearing, braking and controls.
+- [Generators, motors and batteries](docs/power-machines.md) — polarity, return paths, reverse operation, charge limits and regression tests.
 - [Test coverage](docs/block-contracts.md) — per-block reports, nightly runs and known gaps.
 - [Circuit examples](docs/examples/README.md) — worked electrical examples.
 - [Porting notes](PORT-1.21.md) — historical migration decisions and known differences.

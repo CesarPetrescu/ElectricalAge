@@ -52,6 +52,7 @@ class GeneratorDescriptor(
     val nominalP = nominalP
     val nominalU = nominalU
     val generationEfficiency = 0.95
+    val motoringEfficiency = 0.1
     val nominalCurrent = nominalP / nominalU
     val regulatorRampTime = 0.75
     val regulatorCurrentLimit = nominalCurrent * 1.5
@@ -141,6 +142,9 @@ class GeneratorRender(entity: TransparentNodeEntity, desc_: TransparentNodeDescr
 
     override fun draw() {
         draw {
+            GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS)
+            UtilsClient.disableLight()
+            GL11.glDisable(GL11.GL_LIGHTING)
             ledColors.forEachIndexed { i, color ->
                 GL11.glColor3f(
                     color.red / 255f,
@@ -149,12 +153,13 @@ class GeneratorRender(entity: TransparentNodeEntity, desc_: TransparentNodeDescr
                 )
                 desc.powerLights[i].draw()
             }
+            GL11.glPopAttrib()
         }
     }
 
     override fun getCableRenderSide(side: Direction, lrdu: LRDU): CableRenderDescriptor? {
         val f = front ?: return null
-        if (lrdu == LRDU.Down && (side == f || (desc.bipolarTerminals && side == f.back()))) {
+        if (lrdu == LRDU.Down && (side == f || side == f.back())) {
             return desc.cable.render
         }
         return null
@@ -173,7 +178,6 @@ class GeneratorElement(node: TransparentNode, desc_: TransparentNodeDescriptor) 
     val desc = desc_ as GeneratorDescriptor
     private var regulatorVoltageTarget = 0.0
     private var regulatorCurrentLimitRequest = 0.0
-    private var regulatorFilteredOutputVoltage = 0.0
 
     internal val inputLoad = NbtElectricalLoad("inputLoad")
     internal val negativeLoad = NbtElectricalLoad("negativeLoad")
@@ -229,24 +233,12 @@ class GeneratorElement(node: TransparentNode, desc_: TransparentNodeDescriptor) 
                     (regulatorVoltageTarget - rampRate * dt).coerceAtLeast(targetU)
             }
 
-            val droopedTarget = (regulatorVoltageTarget -
-                Math.abs(electricalPowerSource.current) * desc.regulatorDroopResistance).coerceAtLeast(0.0)
-
-            val commandedVoltage = if (th.isHighImpedance()) {
-                regulatorCurrentLimitRequest = 0.0
-                droopedTarget
-            } else {
-                regulatorCurrentLimitRequest = desc.regulatorCurrentLimit.toDouble()
-                val currentLimitedVoltage = th.voltage + regulatorCurrentLimitRequest * th.resistance
-                minOf(droopedTarget, currentLimitedVoltage)
-            }
-            regulatorFilteredOutputVoltage = if (regulatorFilteredOutputVoltage <= 0.0) {
-                commandedVoltage
-            } else {
-                val alpha = (dt / desc.regulatorVoltageFilterTime).coerceIn(0.0, 1.0)
-                regulatorFilteredOutputVoltage + (commandedVoltage - regulatorFilteredOutputVoltage) * alpha
-            }
-            electricalPowerSource.setVoltage(regulatorFilteredOutputVoltage)
+            regulatorCurrentLimitRequest = if (th.isHighImpedance()) 0.0 else desc.regulatorCurrentLimit.toDouble()
+            electricalPowerSource.setVoltage(ShaftElectricalMath.sourceVoltage(
+                minOf(regulatorVoltageTarget, targetU), th.voltage, th.resistance,
+                desc.regulatorDroopResistance.toDouble(), desc.regulatorCurrentLimit.toDouble(),
+                shaft.energy / dt * desc.generationEfficiency
+            ))
         }
 
         override fun rootSystemPreStepProcess() {
@@ -263,19 +255,9 @@ class GeneratorElement(node: TransparentNode, desc_: TransparentNodeDescriptor) 
             maybePublishE(electricalPower)
 
             val dragPower = defaultDrag * Math.max(shaft.rads, 1.0)
-            val shaftPower = if (electricalPower >= 0.0) {
-                electricalPower / desc.generationEfficiency
-            } else {
-                electricalPower * desc.generationEfficiency
-            }
-            val conversionLossPower = if (electricalPower >= 0.0) {
-                electricalPower * (1.0 / desc.generationEfficiency - 1.0)
-            } else {
-                -electricalPower * (1.0 - desc.generationEfficiency)
-            }
-
-            shaft.energy -= (shaftPower + dragPower) * time
-            thermal.movePowerTo(conversionLossPower + dragPower)
+            val transfer = ShaftElectricalMath.transfer(electricalPower, desc.generationEfficiency, desc.motoringEfficiency)
+            shaft.energy += (transfer.shaftPower - dragPower) * time
+            thermal.movePowerTo(transfer.heatPower + dragPower)
         }
     }
 

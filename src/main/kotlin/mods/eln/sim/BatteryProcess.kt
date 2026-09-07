@@ -24,9 +24,12 @@ open class BatteryProcess(
     var isRechargeable = true
 
     override fun process(time: Double) {
+        if (!time.isFinite() || time <= 0.0 || !QNominal.isFinite() || QNominal <= 0.0) return
+        sanitizeState()
         val lastQ = Q
+        val current = voltageSource.current.takeIf { it.isFinite() } ?: 0.0
+        val deltaQ = current * time / QNominal
         var wasteQ = 0.0
-        val deltaQ = voltageSource.current * time / QNominal
         if (!isRechargeable && deltaQ < 0.0) {
             if (Eln.config.getBooleanOrElse("debug.logging.enabled", false)) {
                 Eln.logger.warn("Battery is recharging when it shouldn't! current=${voltageSource.current}")
@@ -34,31 +37,43 @@ open class BatteryProcess(
             wasteQ = -deltaQ
             Q = lastQ
         } else {
-            Q = Math.max(Q - deltaQ, 0.0)
+            val requestedQ = Q - deltaQ
+            Q = requestedQ.coerceIn(0.0, life)
+            // Once full, charging becomes heat rather than unlimited stored energy.
+            wasteQ = (requestedQ - life).coerceAtLeast(0.0)
         }
         val voltage = computeVoltage()
         voltageSource.voltage = voltage
         if (wasteQ > 0) {
-            thermalLoad.movePowerTo(Math.abs(voltageSource.current * voltage))
+            thermalLoad.movePowerTo(wasteQ * QNominal * voltage / time)
         }
     }
 
     fun computeVoltage(): Double {
-        val voltage = voltageFunction.getValue(Q / life)
+        if (charge <= 0.0) return 0.0
+        val voltage = voltageFunction.getValue(charge)
         return Math.max(0.0, voltage * uNominal)
     }
 
+    fun sanitizeState() {
+        life = life.takeIf { it.isFinite() && it > 0.0 }?.coerceIn(0.1, 1.0) ?: 1.0
+        Q = Q.takeIf { it.isFinite() }?.coerceIn(0.0, life) ?: 0.0
+    }
+
     fun changeLife(newLife: Double) {
-        if (newLife < life) {
-            Q *= newLife / life
+        sanitizeState()
+        val safeLife = newLife.takeIf { it.isFinite() }?.coerceIn(0.1, 1.0) ?: life
+        if (safeLife < life) {
+            Q *= safeLife / life
         }
-        life = newLife
+        life = safeLife
     }
 
     var charge: Double
-        get() = Q / life
+        get() = if (life > 0.0 && life.isFinite() && Q.isFinite()) (Q / life).coerceIn(0.0, 1.0) else 0.0
         set(charge) {
-            Q = life * charge
+            sanitizeState()
+            Q = life * (charge.takeIf { it.isFinite() }?.coerceIn(0.0, 1.0) ?: 0.0)
         }
     val energy: Double
         get() {

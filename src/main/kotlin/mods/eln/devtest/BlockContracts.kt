@@ -120,6 +120,11 @@ object BlockContracts {
                     check(identity(world, entry)) { "Wrong or missing descriptor/entity at $p (${d.name})" }
                 }
                 if (ok) {
+                    if (d is mods.eln.transparentnode.battery.BatteryDescriptor) {
+                        report.test(key, "battery-initial-state/${mount.label}") {
+                            PowerBehaviorChecks.checkPlaced(node(world, p))
+                        }
+                    }
                     if (d is mods.eln.sixnode.lampsocket.LampSocketDescriptor || d is mods.eln.transparentnode.floodlight.FloodlightDescriptor) {
                         report.test(key, "lighting/${mount.label}") {
                             LightingChecks.check(node(world, p), player, ElnDirection.fromFacing(face).inverse)

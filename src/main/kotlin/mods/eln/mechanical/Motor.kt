@@ -66,6 +66,7 @@ class MotorDescriptor(
 
     val customSound = "eln:shaft_motor"
     val efficiency = 0.99
+    val generationEfficiency = 0.1
     val nominalCurrent = nominalP / nominalU
     val driveRampTime = 1.5
     val driveCurrentLimit = nominalCurrent
@@ -167,6 +168,9 @@ class MotorRender(entity: TransparentNodeEntity, desc_: TransparentNodeDescripto
 
     override fun draw() {
         draw {
+            GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS)
+            UtilsClient.disableLight()
+            GL11.glDisable(GL11.GL_LIGHTING)
             ledColors.forEachIndexed { i, color ->
                 GL11.glColor3f(
                     color.red / 255f,
@@ -175,12 +179,13 @@ class MotorRender(entity: TransparentNodeEntity, desc_: TransparentNodeDescripto
                 )
                 desc.leds[i].draw()
             }
+            GL11.glPopAttrib()
         }
     }
 
     override fun getCableRenderSide(side: Direction, lrdu: LRDU): CableRenderDescriptor? {
         val f = front ?: return null
-        if (lrdu == LRDU.Down && (side == f || (desc.bipolarTerminals && side == f.back()))) {
+        if (lrdu == LRDU.Down && (side == f || side == f.back())) {
             return desc.cable.render
         }
         return null
@@ -250,6 +255,21 @@ class MotorElement(node: TransparentNode, desc_: TransparentNodeDescriptor) :
             val dt = if (time > 0.0) time else Eln.simulator.electricalPeriod
 
             val th = getSupplyThevenin(noTorqueU)
+            // An externally driven motor is still a generator, including against a live battery.
+            // Limit regeneration before solving, not afterwards by discarding negative shaft energy.
+            if (noTorqueU > th.voltage && !th.isHighImpedance()) {
+                driveSpeedTarget = 0.0
+                driveIntegrator = 0.0
+                driveCurrentRequest = 0.0
+                driveStallTimer = 0.0
+                driveFilteredOutputVoltage = ShaftElectricalMath.sourceVoltage(
+                    noTorqueU, th.voltage, th.resistance,
+                    desc.nominalU * 0.05 / desc.nominalCurrent, desc.driveCurrentLimit.toDouble(),
+                    shaft.energy / dt * desc.generationEfficiency
+                )
+                powerSource.setVoltage(driveFilteredOutputVoltage)
+                return
+            }
             val supplyPresent = !th.isHighImpedance() && th.voltage > desc.nominalU * 0.1
             if (!supplyPresent) {
                 driveSpeedTarget = 0.0
@@ -328,6 +348,11 @@ class MotorElement(node: TransparentNode, desc_: TransparentNodeDescriptor) :
                 val alpha = (dt / desc.driveOutputFilterTime).coerceIn(0.0, 1.0)
                 driveFilteredOutputVoltage + (commandedVoltage - driveFilteredOutputVoltage) * alpha
             }
+            // Voltage smoothing must never bypass the current limiter when a battery/load changes.
+            driveFilteredOutputVoltage = driveFilteredOutputVoltage.coerceIn(
+                maxOf(noTorqueU, th.voltage - desc.driveCurrentLimit * seriesResistance).coerceAtMost(th.voltage),
+                th.voltage
+            )
             powerSource.setVoltage(driveFilteredOutputVoltage)
         }
 
@@ -347,14 +372,13 @@ class MotorElement(node: TransparentNode, desc_: TransparentNodeDescriptor) :
                 return MotorSupplyThevenin(noTorqueU, MnaConst.highImpedance)
             }
 
-            return MotorSupplyThevenin(
-                positive.voltage - negativeLoad.voltage,
-                positive.resistance
-            )
+            // getTh measures across the voltage source: already differential, even on a floating circuit.
+            return MotorSupplyThevenin(positive.voltage, positive.resistance)
         }
 
         private fun getDriveSeriesResistance(th: MotorSupplyThevenin): Double {
-            return th.resistance + wireShaftResistor.resistance
+            // The source's Thevenin measurement already includes the internal series resistor.
+            return th.resistance
         }
 
         override fun rootSystemPreStepProcess() {
@@ -365,27 +389,22 @@ class MotorElement(node: TransparentNode, desc_: TransparentNodeDescriptor) :
     inner class MotorShaftProcess : IProcess {
         override fun process(time: Double) {
             val p = powerSource.power
-            var E = -p * time
-            if (E.isNaN())
-                E = 0.0
-            if(E < 0) {
-                // Pushing power--this is very inefficient
-                E = E * 10.0
-            }
-            maybePublishP(E / time)
-            E = E - defaultDrag * Math.max(shaft.rads, 1.0)
-            shaft.energy += E * desc.efficiency
-            thermal.movePowerTo(E * (1 - desc.efficiency))
+            val transfer = ShaftElectricalMath.transfer(p, desc.generationEfficiency, desc.efficiency)
+            val dragPower = defaultDrag * Math.max(shaft.rads, 1.0)
+            maybePublishP(-p)
+            shaft.energy += (transfer.shaftPower - dragPower) * time
+            thermal.movePowerTo(transfer.heatPower + dragPower)
         }
     }
 
     var lastP = 0.0
     var lastDriveCurrent = 0.0
     fun maybePublishP(P: Double) {
-        val currentChanged = Math.abs(driveCurrentRequest - lastDriveCurrent) / desc.driveCurrentLimit > 0.01
+        val current = (-powerSource.current).coerceAtLeast(0.0)
+        val currentChanged = Math.abs(current - lastDriveCurrent) / desc.driveCurrentLimit > 0.01
         if(Math.abs(P - lastP) / desc.nominalP > 0.01 || currentChanged) {
             lastP = P
-            lastDriveCurrent = driveCurrentRequest
+            lastDriveCurrent = current
             needPublish()
         }
     }
@@ -428,7 +447,7 @@ class MotorElement(node: TransparentNode, desc_: TransparentNodeDescriptor) :
     override fun networkSerialize(stream: DataOutputStream) {
         super.networkSerialize(stream)
         stream.writeDouble(lastP)
-        stream.writeDouble(driveCurrentRequest)
+        stream.writeDouble((-powerSource.current).coerceAtLeast(0.0))
     }
 
     override fun getWaila(): MutableMap<String, String> {

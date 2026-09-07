@@ -117,6 +117,7 @@ public final class ClientSmokeTest {
                 }
                 if (wait++ < 100) return;
                 check(LightingClientChecks.checkAssets(mc) == 0, "real-atlas block particles, hit/break hooks and removed-BE fallback");
+                check(PowerClientChecks.run() == 0, "all generator/motor LED meshes update black, green, yellow and red at full brightness");
                 shot(mc, "smoke-world");
                 // the same view at midnight: the lit lamp socket and the spot it projects are the block light
                 var server = mc.getSingleplayerServer();

@@ -88,6 +88,7 @@ public final class SmokeTest {
                 forceLoad(world());
                 if (placing) place();
                 if (everything) placeEverything();
+                check(PowerBehaviorChecks.run(world(), !placing) == 0, "generator, motor and battery behavior contracts");
             } catch (Throwable t) {
                 fail("placement threw", t);
                 shutdown();

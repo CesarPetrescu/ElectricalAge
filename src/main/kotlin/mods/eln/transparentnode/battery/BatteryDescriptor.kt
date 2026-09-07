@@ -155,12 +155,16 @@ class BatteryDescriptor(
 
     fun getChargeInTag(stack: ItemStack): Double {
         if (!stack.hasTagCompound()) stack.tagCompound = defaultNBT
-        return stack.tagCompound!!.getDouble("charge")
+        val tag = stack.tagCompound!!
+        if (!tag.contains("charge")) return startCharge
+        return tag.getDouble("charge").takeIf { it.isFinite() }?.coerceIn(0.0, 1.0) ?: startCharge
     }
 
     fun getLifeInTag(stack: ItemStack): Double {
         if (!stack.hasTagCompound()) stack.tagCompound = defaultNBT
-        return stack.tagCompound!!.getDouble("life")
+        val tag = stack.tagCompound!!
+        if (!tag.contains("life")) return 1.0
+        return tag.getDouble("life").takeIf { it.isFinite() && it > 0.0 }?.coerceIn(0.1, 1.0) ?: 1.0
     }
 
     fun getEnergy(charge: Double, life: Double): Double {
