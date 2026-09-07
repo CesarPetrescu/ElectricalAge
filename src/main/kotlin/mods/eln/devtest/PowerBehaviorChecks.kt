@@ -101,9 +101,11 @@ object PowerBehaviorChecks {
                 reference(r,negative)
                 val fault=FaultWire(r,g.inputLoad,negative)
                 val initial=g.shaft.energy
+                // Match the live simulator: rebuild topology before invoking the regulator.
+                r.addProcess(g.electricalProcess)
                 r.generate()
                 repeat(1200) {
-                    g.electricalProcess.process(DT);r.step()
+                    r.step()
                     val before=g.shaft.energy
                     g.thermal.PcTemp=0.0;g.shaftProcess.process(DT)
                     check(abs((before-g.shaft.energy)/DT-g.electricalPowerSource.power-g.thermal.PcTemp)<.05)

@@ -38,11 +38,15 @@ Automated development build for **Minecraft 1.21.1 / NeoForge 21.1.249 / Java 21
 
 Use a fresh world; legacy saves are not migrated.
 
+**Back up existing 1.21.1 worlds before updating.** AWG/kcmil wires now retain their full electrical heating and can burn open under overload instead of plateauing at an artificial temperature. Damaged insulation is not a repaired or unlimited-current cable. [Wire model and overload guide]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/blob/$GITHUB_SHA/docs/wire-thermal-model.md).
+
+Includes the **EC-240 evaporative heat sink**, with tested power, water, airflow, saved-world and native UI behavior. [Cooler guide]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/blob/$GITHUB_SHA/docs/evaporative-cooler.md).
+
 Includes nine organized inventory categories and optional **4 kW / 16 kW Create shaft adapters**.
 Install **Create 6.0.10 for NeoForge 1.21.1** to enable the adapters. [Connection and controls guide]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/blob/$GITHUB_SHA/docs/create-shaft-adapters.md).
 
 Source commit: [$GITHUB_SHA]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/commit/$GITHUB_SHA)
-Passed build, unit tests, benchmarks, and server/restart/client smoke tests: [CI run]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID).
+Passed build, unit tests, benchmarks, wire fault/thermal contracts, cooler contracts, companion integrations and server/restart/client smoke tests: [CI run]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID).
 
 Download **ElectricalAge-1.21.1-latest.jar** below and place it in your mods folder.
 SHA256SUMS.txt contains its checksum. Screenshots and test reports are attached to the CI run.
