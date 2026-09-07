@@ -76,8 +76,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           find artwork/evaporative_cooler -type f -name '*.blend[0-9]*' -delete
-          git add -A -- src tools/evaporative artwork/evaporative_cooler docs/evaporative-cooler.md docs/evaporative-redesign.md .github/workflows/evaporative-cooler.yml
-          git add -u -- .github
+          git add -A -- src tools/evaporative artwork/evaporative_cooler docs .github
           if ! git diff --cached --quiet; then
             git commit -m 'Restyle evaporative cooling as classic ELN heatsink family with compact native controls'
             git push origin HEAD:refs/heads/design/evaporative-eln-family
