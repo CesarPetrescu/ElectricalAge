@@ -12,7 +12,8 @@ public final class ClientDevHooks {
     private int ticksAtTitle;
 
     public static void registerIfRequested() {
-        ClientSmokeTest.registerIfRequested();
+        if ("evaporative".equals(System.getProperty("eln.smokeClient"))) EvaporativeClientChecks.register();
+        else ClientSmokeTest.registerIfRequested();
         if (System.getProperty("eln.stopAtTitle") == null) return;
         NeoForge.EVENT_BUS.register(new ClientDevHooks());
     }

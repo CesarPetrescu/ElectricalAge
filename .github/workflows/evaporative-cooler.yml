@@ -1,107 +1,101 @@
-name: Evaporative cooler development
+name: Evaporative cooler
 
 on:
   push:
-    branches: [feature/evaporative-cooler-20260907]
+    branches: [feature/evaporative-cooler-20260907, main]
     paths: ['.github/workflows/evaporative-cooler.yml', 'src/**', 'tools/evaporative/**']
+  pull_request:
+    paths: ['.github/workflows/evaporative-cooler.yml', 'src/**/evaporative/**', 'src/**/devtest/Evaporative*', 'tools/evaporative/**']
   workflow_dispatch:
-
-concurrency:
-  group: evaporative-cooler-development
-  cancel-in-progress: false
 
 permissions:
   contents: read
+concurrency:
+  group: evaporative-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
-    name: Blender assets, model regression and Minecraft build
-    if: github.repository == 'CesarPetrescu/ElectricalAge' && github.ref == 'refs/heads/feature/evaporative-cooler-20260907'
+  verify:
+    name: EC-240 build, save/restart and native UI
     runs-on: ubuntu-latest
-    timeout-minutes: 55
-    permissions:
-      contents: write
+    timeout-minutes: 40
     env:
-      OPENBLAS_NUM_THREADS: '1'
-      OMP_NUM_THREADS: '4'
+      DISPLAY: ':99'
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
       - uses: gradle/actions/setup-gradle@v4
-      - name: Apply checksum-verified feature source
-        shell: bash
+      - name: Numerical regression and Minecraft build
         run: |
-          if test -d .github/evaporative-seed; then
-            python - <<'PY'
-          import pathlib, base64, gzip, hashlib
-          root = pathlib.Path('.github/evaporative-seed')
-          encoded = ''.join(p.read_text().strip() for p in sorted(root.glob('*.b64')))
-          # Correct one identified transport transcription before validating the complete source hash.
-          encoded = encoded.replace('KjuMU1tipR', 'KjuMU1ipR')
-          patch = gzip.decompress(base64.b64decode(encoded, validate=True))
-          expected = 'dddd9aca40d104e505c72c396fb23eecf668b918ed283e77146ccb1b440a3ebc'
-          assert hashlib.sha256(patch).hexdigest() == expected, 'Feature source checksum mismatch'
-          pathlib.Path('/tmp/evaporative.patch').write_bytes(patch)
+          mkdir -p build
+          bash tools/evaporative/test-core.sh | tee build/evaporative-core-tests.log
+          ./gradlew build --stacktrace 2>&1 | tee build/evaporative-build.log
+      - name: Headless display
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends xserver-xorg-video-dummy xserver-xorg-core x11-xserver-utils libgl1-mesa-dri mesa-utils
+          sudo tee /tmp/evap-dummy.conf >/dev/null <<'XORG'
+          Section "Monitor"
+            Identifier "Monitor0"
+            HorizSync 28.0-90.0
+            VertRefresh 48.0-80.0
+          EndSection
+          Section "Device"
+            Identifier "Card0"
+            Driver "dummy"
+            VideoRam 256000
+          EndSection
+          Section "Screen"
+            Identifier "Screen0"
+            Device "Card0"
+            Monitor "Monitor0"
+            DefaultDepth 24
+            SubSection "Display"
+              Depth 24
+              Modes "1280x1024"
+              Virtual 1280 1024
+            EndSubSection
+          EndSection
+          XORG
+          sudo nohup Xorg :99 -config /tmp/evap-dummy.conf -logfile /tmp/evap-xorg.log -noreset -nolisten tcp -ac > /tmp/evap-xorg.stdout 2>&1 &
+          for i in $(seq 1 30); do xset -display :99 q >/dev/null 2>&1 && break; sleep 1; done
+          xset -display :99 q >/dev/null
+          glxinfo -B
+      - name: Disposable test world
+        run: |
+          mkdir -p run/server run/client/saves build/smoke-artifacts
+          echo eula=true > run/server/eula.txt
+          cat > run/server/server.properties <<'PROPS'
+          online-mode=false
+          max-tick-time=-1
+          level-type=minecraft\:flat
+          generator-settings={"layers":[{"block":"minecraft:bedrock","height":1},{"block":"minecraft:stone","height":63}],"biome":"minecraft:plains"}
+          PROPS
+          printf 'onboardAccessibility:false\nnarrator:0\nguiScale:2\n' > run/client/options.txt
+      - name: Live power, capabilities, buckets and failure modes
+        run: timeout --signal=TERM --kill-after=30s 12m ./gradlew runServer -PsmokeTest=evaporative-place -q 2>&1 | tee build/smoke-artifacts/evaporative-server-place.log
+      - name: Real saved-world restart in a separate JVM
+        run: |
+          cp -r run/server/world run/client/saves/evaporative
+          timeout --signal=TERM --kill-after=30s 12m ./gradlew runServer -PsmokeTest=evaporative-restart -q 2>&1 | tee build/smoke-artifacts/evaporative-server-restart.log
+      - name: Actual native renderer and UI interactions
+        run: timeout --signal=TERM --kill-after=30s 12m ./gradlew runClient -PsmokeClient=evaporative -q 2>&1 | tee build/smoke-artifacts/evaporative-client.log
+      - name: Require complete, passing runtime reports and screenshots
+        run: |
+          python - <<'PY'
+          import json,pathlib
+          for suite in ['evaporative-place','evaporative-restart','evaporative-client']:
+              data=json.loads(pathlib.Path(f'build/smoke-artifacts/contracts/{suite}.json').read_text())
+              assert data['complete'] and data['results'] and data['failures']==0, suite
+              assert all(r['status']=='passed' for r in data['results']), suite
+              print(suite, len(data['results']), 'passed')
+          for name in ['world','world-spin','ui-wet','ui-dry','ui-interlock']:
+              assert pathlib.Path(f'run/client/screenshots/evaporative-{name}.png').stat().st_size>10000,name
           PY
-            git apply --check /tmp/evaporative.patch
-            git apply /tmp/evaporative.patch
-            rm -r .github/evaporative-seed
-            python - <<'PY'
-          from pathlib import Path
-          p = Path('src/test/java/mods/eln/transparentnode/evaporative/EvaporationModelTest.java')
-          p.write_text('''package mods.eln.transparentnode.evaporative;
-          import org.junit.Test;
-          import org.junit.runner.RunWith;
-          import org.junit.runners.Parameterized;
-          import java.util.Collection;
-          @RunWith(Parameterized.class)
-          public class EvaporationModelTest {
-              @Parameterized.Parameters(name="{0}") public static Collection<Object[]> cases() {
-                  return EvaporationRegression.cases().stream().map(c -> new Object[]{c.name(),c.body()}).toList();
-              }
-              private final Runnable body;
-              public EvaporationModelTest(String name, Runnable body) { this.body = body; }
-              @Test public void regression() { body.run(); }
-          }
-          ''')
-          PY
-          fi
-      - name: Install pinned Blender Python distribution
-        run: python -m pip install bpy==5.2.0
-      - name: Generate original Blender model and renders
-        run: python tools/evaporative/build_model.py --root .
-      - name: Run tick-independent numerical and control regression
-        run: bash tools/evaporative/test-core.sh | tee build/evaporative-core-tests.log
-      - name: Commit implementation and generated model to feature branch only
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          find artwork/evaporative_cooler -name '*.blend1' -delete
-          git add src tools/evaporative artwork/evaporative_cooler docs/evaporative-cooler.md
-          git add -u .github/evaporative-seed || true
-          if ! git diff --cached --quiet; then
-            git commit -m 'Implement EC-240 evaporative heat sink, controls, regression tests and Blender assets'
-            git push origin HEAD:refs/heads/feature/evaporative-cooler-20260907
-          fi
-      - name: Build mod and run NeoForge unit tests
-        run: ./gradlew generateLangFiles runData build --stacktrace 2>&1 | tee build/evaporative-build.log
-      - name: Persist generated translations and data
-        if: success()
-        run: |
-          git add src/main/resources src/generated/resources
-          if ! git diff --cached --quiet; then
-            git commit -m 'Generate EC-240 translations, recipes and item models'
-            git push origin HEAD:refs/heads/feature/evaporative-cooler-20260907
-          fi
-      - name: Export reviewable source
+      - name: Export source identity
         if: always()
         run: |
           mkdir -p build/evaporative-artifacts
@@ -114,11 +108,13 @@ jobs:
           path: |
             build/evaporative-artifacts/
             build/evaporative-*.log
-            build/evaporative-renders/
             build/libs/*.jar
             build/reports/tests/
             build/test-results/
+            build/smoke-artifacts/
             artwork/evaporative_cooler/
             run/server/logs/
+            run/client/logs/
+            run/client/screenshots/evaporative-*.png
           retention-days: 14
           if-no-files-found: error
