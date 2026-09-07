@@ -77,10 +77,18 @@ class CreateAdapterSmoke {
                 val joint = node.element as ShaftElement
                 check(a.getShaft(ShaftDirection.XP) === joint.getShaft(ShaftDirection.XN)) { "Adapter not in ELN shaft network" }
                 check(!a.command(1)) { "Changed gear while engaged" }
+                for (id in 4..7) check(!a.command(id) && a.ratio == 8) { "Direct gear selection bypassed clutch" }
+                check(!a.command(8) && !a.command(-1)) { "Invalid command accepted" }
                 val generatorNode = NodeManager.instance!!.getNodeFromCoordonate(Coordinate(base.x + 3, base.y, base.z + i * 8, world)) as TransparentNode
                 val generator = generatorNode.element as mods.eln.mechanical.GeneratorElement
                 check(kotlin.math.abs(generator.electricalPowerSource.power) > 0.01) { "Generator has no electrical load" }
-                a.command(0); check(a.command(1)); a.command(1); a.command(1); a.command(1); a.command(0)
+                a.command(0)
+                val speedBeforeShift = a.outputSpeed
+                for ((index, ratio) in listOf(1, 2, 4, 8).withIndex()) {
+                    check(a.command(4 + index) && a.ratio == ratio) { "Cannot select $ratio:1" }
+                    check(a.outputSpeed == speedBeforeShift) { "Gear selection changed stored shaft speed" }
+                }
+                a.command(0)
                 Eln.logger.info("CREATE SMOKE PASS tier={} speed={} restart={}", i, a.outputSpeed, verify)
             }
             if (ticks == 180) for (i in 0..1) {

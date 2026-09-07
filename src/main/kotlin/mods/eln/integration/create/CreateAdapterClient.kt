@@ -25,22 +25,47 @@ object CreateAdapterClient {
 }
 
 private class AdapterScreen(menu: CreateAdapterMenu, inventory: Inventory, title: Component) : AbstractContainerScreen<CreateAdapterMenu>(menu, inventory, title) {
-    init { imageWidth = 260; imageHeight = 200 }
+    private val ratios = intArrayOf(1, 2, 4, 8)
+    private val gearButtons = mutableListOf<Button>()
+    private lateinit var clutchButton: Button
+    private lateinit var retryButton: Button
+    init { imageWidth = 290; imageHeight = 224 }
     override fun init() {
         super.init()
-        fun button(x: Int, y: Int, id: Int, text: String) {
+        gearButtons.clear()
+        fun button(x: Int, y: Int, width: Int, id: Int, text: String): Button =
             addRenderableWidget(Button.builder(Component.literal(text)) {
                 minecraft?.gameMode?.handleInventoryButtonClick(menu.containerId, id)
-            }.bounds(leftPos + x, topPos + y, 116, 20).build())
+            }.bounds(leftPos + x, topPos + y, width, 18).build())
+        ratios.forEachIndexed { i, ratio -> gearButtons.add(button(10 + i * 69, 130, 63, 4 + i, tr("%1$:1", ratio))) }
+        clutchButton = button(10, 178, 132, 0, tr("Disengage"))
+        button(148, 178, 132, 2, tr("Reset fault"))
+        retryButton = button(10, 202, 270, 3, tr("Automatic retry: off"))
+        updateControls()
+    }
+    override fun containerTick() {
+        super.containerTick()
+        updateControls()
+    }
+    private fun updateControls() {
+        val engaged = menu.values.get(1) != 0
+        clutchButton.message = Component.literal(if (engaged) tr("Disengage") else tr("Engage"))
+        retryButton.message = Component.literal(if (menu.values.get(2) != 0) tr("Automatic retry: on (5 seconds)") else tr("Automatic retry: off"))
+        gearButtons.forEachIndexed { i, button ->
+            val selected = menu.values.get(0) == ratios[i]
+            button.active = !engaged && !selected
+            button.tooltip = net.minecraft.client.gui.components.Tooltip.create(Component.literal(
+                if (engaged) tr("Disengage to change gear.") else if (selected) tr("Selected gear") else tr("Select %1$:1 gear", ratios[i])))
         }
-        button(10, 147, 0, tr("Engage / disengage"))
-        button(134, 147, 1, tr("Change gear"))
-        button(10, 173, 2, tr("Reset fault"))
-        button(134, 173, 3, tr("Automatic retry"))
     }
     override fun renderBg(graphics: GuiGraphics, partial: Float, mouseX: Int, mouseY: Int) {
         graphics.fill(leftPos, topPos, leftPos + imageWidth, topPos + imageHeight, 0xFF242D35.toInt())
         graphics.fill(leftPos + 4, topPos + 4, leftPos + imageWidth - 4, topPos + 26, 0xFF515D68.toInt())
+        val selected = ratios.indexOf(menu.values.get(0))
+        if (selected >= 0) {
+            val x = leftPos + 10 + selected * 69
+            graphics.fill(x - 1, topPos + 129, x + 64, topPos + 149, 0xFF73C9AE.toInt())
+        }
     }
     override fun renderLabels(g: GuiGraphics, x: Int, y: Int) {
         g.drawString(font, title, 10, 11, 0xFFFFFF, false)
@@ -51,10 +76,11 @@ private class AdapterScreen(menu: CreateAdapterMenu, inventory: Inventory, title
             tr("Input: %1$ RPM | Gear: %2$:1", rpm, d.get(0)),
             tr("Target: %1$ rad/s", String.format(java.util.Locale.ROOT, "%.1f", abs(rpm) * PI / 30 * d.get(0))),
             tr("Output: %1$ rad/s (%2$ RPM)", omega, (omega * 30 / PI).toInt()),
-            tr("Power: %1$ W | Stress: %2$ SU", d.get(6), d.get(7)),
-            if (d.get(2) == 1) tr("Automatic retry: on (5 seconds)") else tr("Automatic retry: off"),
-            tr("Disengage before changing gear."))
+            tr("Power: %1$ W | Stress: %2$ SU", d.get(6), d.get(7)))
         lines.forEachIndexed { i, text -> g.drawString(font, text, 10, 35 + i * 15, 0xEEEEEE, false) }
+        g.drawString(font, tr("Selected gear: %1$:1", d.get(0)), 10, 114, 0x73C9AE, false)
+        g.drawString(font, if (d.get(1) != 0) tr("Disengage to change gear.") else tr("Select a ratio, then engage."),
+            10, 157, if (d.get(1) != 0) 0xE7BE75 else 0xEEEEEE, false)
     }
 }
 

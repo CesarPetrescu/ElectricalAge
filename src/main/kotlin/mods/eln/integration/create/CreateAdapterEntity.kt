@@ -139,6 +139,7 @@ class CreateAdapterEntity(type: BlockEntityType<*>, pos: BlockPos, state: BlockS
             1 -> { if (engaged) return false; ratio = AdapterDrive.RATIOS[(AdapterDrive.RATIOS.indexOf(ratio) + 1) % 4] }
             2 -> resetFault()
             3 -> autoRetry = !autoRetry
+            in 4..7 -> { if (engaged) return false; ratio = AdapterDrive.RATIOS[id - 4] }
             else -> return false
         }
         needPublish(); return true

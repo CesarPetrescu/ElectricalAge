@@ -17,14 +17,17 @@ toward the face you clicked; sneak while placing to reverse it. All six directio
 north/south, east/west and up/down. Use a Joint hub for vertical ELN connections. Both Create rotation directions work; ELN's
 current shaft model records speed without a direction sign.
 
-The remaining four faces are control terminals, not mechanical ports. They accept redstone and
+The remaining four faces have recessed, bolted service covers with small signal sockets, not
+exposed copper/redstone components or mechanical ports. They accept redstone and
 ELN Signal Cable mounted directly on the face; power cables and other ELN surface components
 cannot be mounted on this housing. A rising redstone signal or signal-wire voltage of at least
 half the normal ELN signal voltage resets a fault. The wire input is high-impedance and does not
 transfer electrical power. Signals on either shaft end are ignored. The controls remain optional.
 
 Right-click the adapter to open its controls. It starts engaged with an 8:1 step-up ratio.
-Disengage before changing between 1:1, 2:1, 4:1, and 8:1. Re-engagement accelerates the attached
+Press **Disengage**, select **1:1**, **2:1**, **4:1**, or **8:1**, then press **Engage**.
+The selected ratio has a teal outline and is repeated above the selector. While engaged, ratio
+buttons are disabled and the screen explains that you must disengage first. Re-engagement accelerates the attached
 machinery using the available torque and power. Changing gear never resets a flywheel's speed.
 The screen reports input RPM, target and actual output speed, output watts, and Create stress.
 

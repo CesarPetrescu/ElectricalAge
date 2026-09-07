@@ -860,17 +860,21 @@ Right=Right
 Transfer=Transfer
 
 # src/main/kotlin/mods/eln/integration/create/CreateAdapterClient.kt
-Automatic_retry=Automatic retry
+%1$\:1=%1$:1
 Automatic_retry\:_off=Automatic retry: off
 Automatic_retry\:_on_(5_seconds)=Automatic retry: on (5 seconds)
-Change_gear=Change gear
-Disengage_before_changing_gear.=Disengage before changing gear.
+Disengage=Disengage
+Disengage_to_change_gear.=Disengage to change gear.
 Disengaged=Disengaged
-Engage_/_disengage=Engage / disengage
+Engage=Engage
 Input\:_%1$_RPM_|_Gear\:_%2$\:1=Input: %1$ RPM | Gear: %2$:1
 Output\:_%1$_rad/s_(%2$_RPM)=Output: %1$ rad/s (%2$ RPM)
 Power\:_%1$_W_|_Stress\:_%2$_SU=Power: %1$ W | Stress: %2$ SU
 Reset_fault=Reset fault
+Select_%1$\:1_gear=Select %1$:1 gear
+Select_a_ratio,_then_engage.=Select a ratio, then engage.
+Selected_gear=Selected gear
+Selected_gear\:_%1$\:1=Selected gear: %1$:1
 Target\:_%1$_rad/s=Target: %1$ rad/s
 Tripped\:_Create_overstressed=Tripped: Create overstressed
 Tripped\:_target_exceeds_240_rad/s=Tripped: target exceeds 240 rad/s

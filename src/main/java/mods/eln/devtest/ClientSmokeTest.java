@@ -34,7 +34,7 @@ public final class ClientSmokeTest {
     /** The server test's mechanical rows (SmokeTest.MECH_Z, LARGE_Z). */
     private static final int MECH_Z = Z + 14, LARGE_Z = Z + 21, GALLERY_Z = Z + 28;
 
-    private enum Phase { OPEN, JOIN, SETUP, WORLD_SHOT, NIGHT_SHOT, GRID_SHOT, MECH_SHOT, MECH_SPIN_SHOT, TACHOMETER_GUI, TACHOMETER_GUI_SHOT, LARGE_SHOT, GALLERY_SHOT, THIRD_PERSON_SHOT, HAND_THIRD_SHOT, HAND_FIRST_SHOT, HAND_CABLE_SHOT, GUI, GUI_SHOT, MACHINE_GUI, MACHINE_GUI_SHOT, INVENTORY, INVENTORY_SHOT, CREATIVE_TAB, CREATIVE_SHOT, CREATIVE_TAB_POWER, CREATIVE_POWER_SHOT, ADAPTER_VIEW, ADAPTER_GUI, ADAPTER_GUI_SHOT, ADAPTER_DETAILS, DONE }
+    private enum Phase { OPEN, JOIN, SETUP, WORLD_SHOT, NIGHT_SHOT, GRID_SHOT, MECH_SHOT, MECH_SPIN_SHOT, TACHOMETER_GUI, TACHOMETER_GUI_SHOT, LARGE_SHOT, GALLERY_SHOT, THIRD_PERSON_SHOT, HAND_THIRD_SHOT, HAND_FIRST_SHOT, HAND_CABLE_SHOT, GUI, GUI_SHOT, MACHINE_GUI, MACHINE_GUI_SHOT, INVENTORY, INVENTORY_SHOT, CREATIVE_TAB, CREATIVE_SHOT, CREATIVE_TAB_POWER, CREATIVE_POWER_SHOT, ADAPTER_VIEW, ADAPTER_GUI, ADAPTER_GUI_SHOT, ADAPTER_GEARS, ADAPTER_DETAILS, DONE }
 
     private final String save;
     private Phase phase = Phase.OPEN;
@@ -353,27 +353,58 @@ public final class ClientSmokeTest {
                 if (wait++ < 40) return;
                 check(mc.player.containerMenu instanceof mods.eln.integration.create.CreateAdapterMenu, "Create adapter configuration screen opened");
                 shot(mc, "smoke-create-adapter-menu-" + adapterIndex);
-                adapterIndex++;
-                mc.player.closeContainer();
-                phase = adapterIndex < 2 ? Phase.ADAPTER_GUI : Phase.ADAPTER_DETAILS;
+                var menu = (mods.eln.integration.create.CreateAdapterMenu) mc.player.containerMenu;
+                check(menu.getValues().get(0) == 8, "Initial 8:1 ratio synchronized");
+                pressAdapterButton(mc, "Disengage");
+                adapterGearStep = 0;
+                phase = Phase.ADAPTER_GEARS;
+                wait = 0;
+            }
+            case ADAPTER_GEARS -> {
+                if (wait++ < 20) return;
+                var menu = (mods.eln.integration.create.CreateAdapterMenu) mc.player.containerMenu;
+                int[] ratios = {1, 2, 4, 8};
+                if (adapterGearStep == 0) check(menu.getValues().get(1) == 0, "Clutch disengaged through GUI");
+                if (adapterGearStep >= 1 && adapterGearStep <= 4) {
+                    int ratio = ratios[adapterGearStep - 1];
+                    check(menu.getValues().get(0) == ratio, "GUI selected and synchronized " + ratio + ":1");
+                    shot(mc, "smoke-create-gear-" + adapterIndex + "-" + ratio);
+                }
+                if (adapterGearStep < 4) pressAdapterButton(mc, ratios[adapterGearStep] + ":1");
+                else if (adapterGearStep == 4) pressAdapterButton(mc, "Engage");
+                else {
+                    check(menu.getValues().get(1) == 1, "Clutch re-engaged through GUI");
+                    adapterIndex++;
+                    mc.player.closeContainer();
+                    phase = adapterIndex < 2 ? Phase.ADAPTER_GUI : Phase.ADAPTER_DETAILS;
+                }
+                adapterGearStep++;
                 wait = 0;
             }
             case ADAPTER_DETAILS -> {
                 if (wait == 0) {
                     mc.setScreen(null);
+                    mc.options.hideGui = true;
                     mc.getSingleplayerServer().execute(() -> {
                         var player = mc.getSingleplayerServer().getPlayerList().getPlayers().get(0);
                         int index = adapterViewIndex % Direction.values().length;
                         var face = Direction.values()[index];
                         var center = new Vec3(652.5, 69.5, 638.5 + index * 5);
+                        // The server already checked these deliberately misplaced hubs. Remove them
+                        // for unobstructed service-cover and socket inspection in the close-ups.
+                        for (var side : Direction.values()) {
+                            if (side.getAxis() != face.getAxis())
+                                player.serverLevel().removeBlock(BlockPos.containing(center).relative(side), false);
+                        }
                         if (adapterViewIndex >= Direction.values().length) {
                             face = face.getOpposite();
                             // Expose the input stub after the powered topology checks have finished.
                             player.serverLevel().removeBlock(BlockPos.containing(center).relative(face), false);
                         }
-                        var camera = center.add(Vec3.atLowerCornerOf(face.getNormal()).scale(2))
-                            .add(face.getAxis().isVertical() ? new Vec3(2, -1, 2) : new Vec3(1, 1, 1));
-                        player.teleportTo(player.serverLevel(), camera.x, camera.y, camera.z, 0f, 0f);
+                        var offset = face.getAxis().isVertical() ? new Vec3(1.4, 0, 1.4)
+                            : face.getAxis() == Direction.Axis.X ? new Vec3(0, .8, 1.4) : new Vec3(1.4, .8, 0);
+                        var camera = center.add(Vec3.atLowerCornerOf(face.getNormal()).scale(1.8)).add(offset);
+                        player.teleportTo(player.serverLevel(), camera.x, camera.y - player.getEyeHeight(), camera.z, 0f, 0f);
                         player.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES, center);
                         player.serverLevel().setDayTime(1000);
                     });
@@ -451,6 +482,16 @@ public final class ClientSmokeTest {
 
     private double mechAngle = Double.NaN;
     private int adapterViewIndex = 0;
+    private int adapterGearStep = 0;
+
+    private void pressAdapterButton(Minecraft mc, String label) {
+        var button = mc.screen.children().stream()
+            .filter(child -> child instanceof net.minecraft.client.gui.components.Button)
+            .map(child -> (net.minecraft.client.gui.components.Button) child)
+            .filter(child -> child.getMessage().getString().equals(label)).findFirst().orElseThrow();
+        check(button.active, "Adapter button enabled: " + label);
+        button.onPress();
+    }
     private int creativeCategory = 0;
     private int adapterIndex = 0;
     private static final String[] CREATIVE_CATEGORIES = {"Wires & Cables", "Signals & Control", "Power", "Mechanics", "Processing", "Lighting", "Materials", "Tools & Armor", "Creative Only"};
