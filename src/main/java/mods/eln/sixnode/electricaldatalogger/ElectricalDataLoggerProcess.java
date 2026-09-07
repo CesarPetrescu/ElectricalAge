@@ -31,7 +31,7 @@ public class ElectricalDataLoggerProcess implements IProcess {
         if (e.printToDo) {
             ItemStack paperStack = e.inventory.getItem(ElectricalDataLoggerContainer.paperSlotId);
             ItemStack printStack = e.inventory.getItem(ElectricalDataLoggerContainer.printSlotId);
-            if (!McBridge.isNothing(paperStack) && McBridge.isNothing(printStack)) {
+            if (paperStack.is(net.minecraft.world.item.Items.PAPER) && McBridge.isNothing(printStack)) {
                 e.inventory.removeItem(ElectricalDataLoggerContainer.paperSlotId, 1);
                 ItemStack print = Eln.instance.dataLogsPrintDescriptor.newItemStack(1);
                 Eln.instance.dataLogsPrintDescriptor.initializeStack(print, e.logs);
@@ -41,7 +41,7 @@ public class ElectricalDataLoggerProcess implements IProcess {
             e.printToDo = false;
         }
         //p.add("C");
-        if (e.timeToNextSample <= 0.0) {
+        if (!e.pause && e.sampleStackNbr > 0 && e.timeToNextSample <= 0.0) {
             e.timeToNextSample += e.logs.samplingPeriod;
             byte value = (byte) (e.sampleStack / e.sampleStackNbr);
             e.sampleStackReset();

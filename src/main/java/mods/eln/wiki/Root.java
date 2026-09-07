@@ -31,6 +31,7 @@ public class Root extends Default {
         extender.clear();
         int y = 8;
         if (query().isBlank()) {
+            y = CircuitLessons.addLinks(this, y);
             for (var group : WikiContent.groups().entrySet())
                 y = addStackGroupe(group.getValue(), group.getKey(), y);
         } else {

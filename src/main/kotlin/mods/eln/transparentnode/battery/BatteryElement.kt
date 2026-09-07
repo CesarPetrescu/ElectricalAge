@@ -67,6 +67,9 @@ class BatteryElement(transparentNode: TransparentNode, descriptor: TransparentNo
         str += Utils.plotPercent("Charge:", batteryProcess.charge)
         // batteryProcess.life is a percentage from 1.0 to 0.0.
         str += Utils.plotPercent("Life:", batteryProcess.life)
+        str += "\n" + tr("Terminal voltage (+ minus -): %1$", Utils.plotVolt("", positiveLoad.voltage - negativeLoad.voltage))
+        str += "\n" + tr("Relative to ground: + terminal %1$; - terminal %2$", Utils.plotVolt("", positiveLoad.voltage), Utils.plotVolt("", negativeLoad.voltage))
+        str += "\n" + tr("A floating battery can read negative on one terminal. Its output is the difference between terminals.")
         return str
     }
 

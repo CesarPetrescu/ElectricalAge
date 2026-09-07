@@ -919,6 +919,13 @@ Right_click_to_import_a_Falstad_netlist_from_the_clipboard.=Clique direito para 
 Burn_unit_for_the_gas_heat_furnace.=Unidade de queima para a fornalha térmica a gás.
 Produced_heat_power\:_=Potência térmica produzida:
 
+# src/main/kotlin/mods/eln/item/MeterDescriptor.kt
+Aim_near_the_cable_connector._Sneak-use_in_air_clears_the_probes.=Aim near the cable connector. Sneak-use in air clears the probes.
+Meter_probes_cleared.=Meter probes cleared.
+Reference_probe_A_is_selected.=Reference probe A is selected.
+Right-click_a_device_for_its_normal_readings.=Right-click a device for its normal readings.
+Sneak-click_terminal_A,_then_terminal_B,_to_measure_V(B)_-_V(A).=Sneak-click terminal A, then terminal B, to measure V(B) - V(A).
+
 # src/main/kotlin/mods/eln/item/NopeWandDescriptor.kt
 Removes_them_without_dropping_items,_much_like_/eln_zonedestroy.=Remove-os sem derrubar itens, semelhante ao /eln zonedestroy.
 Right_click_to_immediately_remove_ELN_nodes_and_blocks_in_a_10-block_radius.=Clique direito para remover imediatamente nós e blocos ELN em um raio de 10 blocos.
@@ -1042,6 +1049,19 @@ Turbine_blade_slot=Espaço de lâmina de turbina
 
 # src/main/kotlin/mods/eln/misc/Version.kt
 mod.name=Electrical Age
+
+# src/main/kotlin/mods/eln/node/CircuitDiagnostics.kt
+A_remains_selected._Sneak-click_another_B_to_compare;_sneak-use_in_air_to_clear.=A remains selected. Sneak-click another B to compare; sneak-use in air to clear.
+Almost_no_current\:_the_load_may_be_off,_disconnected,_or_idle._This_reading_alone_cannot_prove_a_broken_return_wire.=Almost no current: the load may be off, disconnected, or idle. This reading alone cannot prove a broken return wire.
+B_minus_A\:_%1$_|_A_to_ground\:_%2$_|_B_to_ground\:_%3$=B minus A: %1$ | A to ground: %2$ | B to ground: %3$
+Both_probes_touch_the_same_electrical_terminal.=Both probes touch the same electrical terminal.
+No_unambiguous_electrical_terminal_here._Aim_at_a_connector;_use_a_single-core_breakout_for_multicore_cables.=No unambiguous electrical terminal here. Aim at a connector; use a single-core breakout for multicore cables.
+Probe_A_is_unloaded,_in_another_dimension,_or_over_64_blocks_away._Select_it_again.=Probe A is unloaded, in another dimension, or over 64 blocks away. Select it again.
+Probe_A_no_longer_has_the_selected_terminal._Select_it_again.=Probe A no longer has the selected terminal. Select it again.
+Probe_A_selected_at_%1$,_face_%2$,_port_%3$._Sneak-click_B_to_measure_B_minus_A.=Probe A selected at %1$, face %2$, port %3$. Sneak-click B to measure B minus A.
+Separate_or_unsolved_electrical_sections\:_check_their_ground_references_before_interpreting_this_difference.=Separate or unsolved electrical sections: check their ground references before interpreting this difference.
+Terminal_B_current\:_%1$_|_Cable/contact_loss_at_B\:_%2$=Terminal B current: %1$ | Cable/contact loss at B: %2$
+The_circuit_has_no_finite_solver_reading_yet.=The circuit has no finite solver reading yet.
 
 # src/main/kotlin/mods/eln/node/six/SixNodeDescriptor.kt
 
@@ -1930,6 +1950,19 @@ Wrench\:_cycle_conductor_colors=Chave inglesa: alternar cores do condutor
 Yellow=Amarelo
 loss=loss
 
+# src/main/kotlin/mods/eln/sixnode/electricaldatalogger/DataLogsPrintDescriptor.kt
+Printed_values_are_a_snapshot;_they_do_not_update.=Printed values are a snapshot; they do not update.
+Recorded_samples\:_%1$=Recorded samples: %1$
+Right-click_to_read_the_printed_chart.=Right-click to read the printed chart.
+
+# src/main/kotlin/mods/eln/sixnode/electricaldatalogger/PrintedLogScreen.kt
+%1$_ago\:_%2$=%1$ ago: %2$
+%1$_samples_|_%2$_per_sample=%1$ samples | %2$ per sample
+Done=Done
+Latest=Latest
+Monitor_printout=Monitor printout
+No_recorded_samples=No recorded samples
+
 # src/main/kotlin/mods/eln/sixnode/electricalhumiditysensor/ElectricalHumiditySensorDescriptor.kt
 0%%_RH\:_%1$V=0%% UR: %1$V
 100%%_RH\:_%1$V=100%% UR: %1$V
@@ -2114,7 +2147,10 @@ __*_Voltage_oriented_uses_two_smaller_batteries_in_series_to_increase_voltage=  
 _charged_at_=carregada a
 
 # src/main/kotlin/mods/eln/transparentnode/battery/BatteryElement.kt
+A_floating_battery_can_read_negative_on_one_terminal._Its_output_is_the_difference_between_terminals.=A floating battery can read negative on one terminal. Its output is the difference between terminals.
 Life=Vida Útil
+Relative_to_ground\:_+_terminal_%1$;_-_terminal_%2$=Relative to ground: + terminal %1$; - terminal %2$
+Terminal_voltage_(+_minus_-)\:_%1$=Terminal voltage (+ minus -): %1$
 
 # src/main/kotlin/mods/eln/transparentnode/battery/BatteryGuiDraw.kt
 Charged=Carregada
@@ -2210,6 +2246,29 @@ Bulb_2_Life_Left=Vida Restante Lâmpada 2
 Beam_width\:_%1$°=Largura do feixe: %1$°
 Horizontal_angle\:_%1$°=Ângulo horizontal: %1$°
 Vertical_angle\:_%1$°=Ângulo vertical: %1$°
+
+# src/main/kotlin/mods/eln/wiki/CircuitLessons.kt
+1._Hold_a_Multimeter_or_AllMeter._Normal_right-click_keeps_the_existing_machine_readings._Sneak-click_a_connector_to_select_reference_A,_then_sneak-click_a_second_connector_B.=1. Hold a Multimeter or AllMeter. Normal right-click keeps the existing machine readings. Sneak-click a connector to select reference A, then sneak-click a second connector B.
+1._Place_a_charged_12_V_battery._Locate_its_positive_and_negative_cable_terminals;_normal_right-click_with_the_meter_also_reports_terminal_voltage_and_both_ground-referenced_voltages.=1. Place a charged 12 V battery. Locate its positive and negative cable terminals; normal right-click with the meter also reports terminal voltage and both ground-referenced voltages.
+1._Place_a_monitor_and_connect_a_Signal_Source_through_Signal_Cable_to_its_input_connector._Use_a_low_signal_level_first;_do_not_feed_a_power_cable_directly_into_a_signal_input.=1. Place a monitor and connect a Signal Source through Signal Cable to its input connector. Use a low signal level first; do not feed a power cable directly into a signal input.
+2._In_the_monitor,_choose_a_sampling_period,_unit_and_minimum/maximum_display_values._Those_labels_scale_the_signal_graph;_selecting_volts_does_not_turn_a_monitor_into_a_power-voltage_sensor.=2. In the monitor, choose a sampling period, unit and minimum/maximum display values. Those labels scale the signal graph; selecting volts does not turn a monitor into a power-voltage sensor.
+2._Read_B_minus_A,_not_just_B_relative_to_ground._Both_voltages_are_read_again_at_the_second_click._A_remains_selected_for_further_comparisons;_sneak-use_in_air_clears_it.=2. Read B minus A, not just B relative to ground. Both voltages are read again at the second click. A remains selected for further comparisons; sneak-use in air clears it.
+2._Select_the_negative_terminal_as_A_and_the_positive_terminal_as_B._If_the_terminal-to-terminal_output_is_12_V,_the_meter_reads_+12_V_even_when_A_is_-6_V_and_B_is_+6_V_relative_to_ground._Reversing_the_probes_reads_-12_V.=2. Select the negative terminal as A and the positive terminal as B. If the terminal-to-terminal output is 12 V, the meter reads +12 V even when A is -6 V and B is +6 V relative to ground. Reversing the probes reads -12 V.
+3._Aim_near_the_intended_terminal_on_a_face._Multicore_cables_require_a_single-core_breakout;_the_meter_will_not_silently_choose_a_core._Probes_must_be_in_the_same_dimension,_loaded_and_within_64_blocks_of_one_another.=3. Aim near the intended terminal on a face. Multicore cables require a single-core breakout; the meter will not silently choose a core. Probes must be in the same dimension, loaded and within 64 blocks of one another.
+3._Change_the_source_level_and_wait_for_several_samples._Pause_the_monitor_to_freeze_the_trace._Put_vanilla_paper_in_its_input_slot,_leave_the_print_output_empty,_then_press_Print.=3. Change the source level and wait for several samples. Pause the monitor to freeze the trace. Put vanilla paper in its input slot, leave the print output empty, then press Print.
+3._Connecting_only_the_negative_terminal_to_ELN_ground_establishes_approximately_0_V_there_and_+12_V_on_the_positive_terminal._Do_not_ground_both_terminals\:_that_shorts_the_battery.=3. Connecting only the negative terminal to ELN ground establishes approximately 0 V there and +12 V on the positive terminal. Do not ground both terminals: that shorts the battery.
+4._A_near-zero_current_can_mean_a_switch_is_open,_a_return_is_missing,_or_the_load_is_idle._Inspect_both_sides_of_the_switch_and_the_return_path._The_meter_does_not_claim_that_every_idle_circuit_is_broken.=4. A near-zero current can mean a switch is open, a return is missing, or the load is idle. Inspect both sides of the switch and the return path. The meter does not claim that every idle circuit is broken.
+4._One_paper_produces_one_saved_printout._Take_it_and_right-click_in_air_to_read_it._The_newest_sample_is_on_the_right._Hover_over_the_line_to_inspect_sample_values_and_ages.=4. One paper produces one saved printout. Take it and right-click in air to read it. The newest sample is on the right. Hover over the line to inspect sample values and ages.
+4._Under_load,_terminal_voltage_can_fall_because_of_internal_and_cable_resistance._Nominal_voltage_is_a_rating,_not_a_promise_of_exactly_that_reading_at_every_charge_level.=4. Under load, terminal voltage can fall because of internal and cable resistance. Nominal voltage is a rating, not a promise of exactly that reading at every charge level.
+5._Change_or_reset_the_monitor\:_the_old_print_must_stay_unchanged._Paper_with_no_samples_opens_an_explicit_empty-chart_page._Printed_data_survives_saving_and_reloading.=5. Change or reset the monitor: the old print must stay unchanged. Paper with no samples opens an explicit empty-chart page. Printed data survives saving and reloading.
+Check_a_simple_powered_load=Check a simple powered load
+Creative-mode_exercise\:_place_Electrical_Source,_Low_Voltage_Cable,_a_Creative_Power_Resistor_and_Ground_Cable_in_a_line_on_the_same_mounting_surface._Rotate_the_resistor_so_its_two_electrical_terminals_face_the_source_and_the_return.=Creative-mode exercise: place Electrical Source, Low Voltage Cable, a Creative Power Resistor and Ground Cable in a line on the same mounting surface. Rotate the resistor so its two electrical terminals face the source and the return.
+For_a_survival_build,_replace_the_creative_source_and_load_with_a_battery_and_a_voltage-matched_lamp_or_machine,_checking_the_bulb,_installed_cable_and_switch_first._Never_test_a_source_by_shorting_it_directly_to_ground.=For a survival build, replace the creative source and load with a battery and a voltage-matched lamp or machine, checking the bulb, installed cable and switch first. Never test a source by shorting it directly to ground.
+Measure_across_the_resistor_with_probes_A_and_B._Breaking_the_return_path_stops_useful_current_even_if_a_source-side_cable_still_shows_voltage_relative_to_ground._Restore_the_return_before_drawing_conclusions_about_the_generator.=Measure across the resistor with probes A and B. Breaking the return path stops useful current even if a source-side cable still shows voltage relative to ground. Restore the return before drawing conclusions about the generator.
+Measure_between_two_terminals=Measure between two terminals
+Record_and_print_a_monitor_chart=Record and print a monitor chart
+Set_the_source_to_12_V_and_the_resistor_to_12_ohms._With_negligible_cable_resistance,_expect_approximately_1_A_and_12_W_at_the_load._Real_cable_resistance_reduces_the_load_voltage_and_current,_and_dissipates_some_power_as_heat.=Set the source to 12 V and the resistor to 12 ohms. With negligible cable resistance, expect approximately 1 A and 12 W at the load. Real cable resistance reduces the load voltage and current, and dissipates some power as heat.
+Understand_a_floating_12_V_battery=Understand a floating 12 V battery
 
 # src/main/kotlin/mods/eln/wiki/WikiContent.kt
 Other_ELN_items=Other ELN items

@@ -25,19 +25,9 @@ public class DataLogs implements INBTTReady {
     }
 
     void write(byte data) {
-        int idx;
-        if (size != sizeMax) {
-            size++;
-        }
-        if (size != sizeMax)
-            idx = size;
-        else
-            idx = size - 1;
-
-        while (idx > 0) {
-            log[idx] = log[idx - 1];
-            idx--;
-        }
+        if (sizeMax <= 0) return;
+        size = Math.min(size + 1, sizeMax);
+        System.arraycopy(log, 0, log, 1, size - 1);
         log[0] = data;
     }
 
@@ -56,17 +46,18 @@ public class DataLogs implements INBTTReady {
     @Override
     public void readFromNBT(CompoundTag nbt, String str) {
         byte[] cpy = nbt.getByteArray(str + "log");
-        Utils.println("Datalog readnbt " + cpy.length);
-        for (int idx = 0; idx < cpy.length; idx++) {
-            write(cpy[cpy.length - 1 - idx]);
-        }
+        reset();
+        for (int idx = Math.min(cpy.length, sizeMax) - 1; idx >= 0; idx--) write(cpy[idx]);
 
         samplingPeriod = nbt.getFloat(str + "samplingPeriod");
         maxValue = nbt.getFloat(str + "maxValue");
         minValue = nbt.getFloat(str + "minValue");
         unitType = nbt.getByte(str + "unitType");
         showZeroLine = !nbt.contains(str + "showZeroLine") || nbt.getBoolean(str + "showZeroLine");
-        Utils.println("Datalog readnbt done");
+        if (!Float.isFinite(samplingPeriod) || samplingPeriod <= 0) samplingPeriod = 0.5f;
+        if (!Float.isFinite(maxValue)) maxValue = 100f;
+        if (!Float.isFinite(minValue)) minValue = 0f;
+        if (unitType < 0 || unitType > 8) unitType = noType;
     }
 
     @Override

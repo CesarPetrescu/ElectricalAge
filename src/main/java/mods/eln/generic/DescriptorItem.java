@@ -60,7 +60,8 @@ public class DescriptorItem<D extends GenericItemUsingDamageDescriptor> extends 
         ItemStack result = descriptor.onItemRightClick(s, level, player);
         // 1.7.10 swung the arm only when the stack changed; keep that.
         boolean changed = result != s || result.getCount() != s.getCount();
-        return changed ? InteractionResultHolder.success(result) : InteractionResultHolder.pass(result);
+        return changed || descriptor.consumesRightClick(s, level, player)
+            ? InteractionResultHolder.sidedSuccess(result, level.isClientSide) : InteractionResultHolder.pass(result);
     }
 
     @Override

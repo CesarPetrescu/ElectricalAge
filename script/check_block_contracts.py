@@ -6,7 +6,8 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 REQUIRED = ("blocks-place", "blocks-settled", "blocks-restart", "power-behavior", "power-behavior-restart", "wire-behavior", "wire-behavior-restart", "wire-thermal", "wire-thermal-restart")
-CLIENT_REQUIRED = ("power-client-leds", "wiki-client", "lighting-gallery")
+REQUIRED += ("monitor-print", "monitor-print-restart", "circuit-diagnostics", "circuit-diagnostics-restart")
+CLIENT_REQUIRED = ("power-client-leds", "wiki-client", "lighting-gallery", "monitor-print-client")
 
 
 def summarize(directory, suites=REQUIRED):

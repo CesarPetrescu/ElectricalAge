@@ -1023,7 +1023,7 @@ object ItemRegistration {
             subId = 0
             completId = subId + (id shl 6)
             element =
-                GenericItemUsingDamageDescriptor(I18N.TR_NAME(I18N.Type.NONE, "MultiMeter"))
+                mods.eln.item.MeterDescriptor(I18N.TR_NAME(I18N.Type.NONE, "MultiMeter"))
             Eln.sharedItem.addElement(completId, element)
             Eln.multiMeterElement = element
         }
@@ -1043,7 +1043,7 @@ object ItemRegistration {
             subId = 2
             completId = subId + (id shl 6)
             element =
-                GenericItemUsingDamageDescriptor(I18N.TR_NAME(I18N.Type.NONE, "AllMeter"))
+                mods.eln.item.MeterDescriptor(I18N.TR_NAME(I18N.Type.NONE, "AllMeter"))
             Eln.sharedItem.addElement(completId, element)
             Eln.allMeterElement = element
         }

@@ -52,7 +52,9 @@ class ElnItemModelProvider(output: PackOutput, helper: ExistingFileHelper) : Ite
     override fun registerModels() {
         ElnRegistry.registeredItems.forEach { (id, item) ->
             when (item) {
-                is DescriptorItem<*> -> flatItem(id, item.descriptor.iconPath, item.descriptor.voltageLevelColor)
+                is DescriptorItem<*> -> if (item.descriptor is mods.eln.sixnode.electricaldatalogger.DataLogsPrintDescriptor)
+                    withExistingParent(id.path, mcLoc("item/generated")).texture("layer0", mcLoc("item/paper"))
+                else flatItem(id, item.descriptor.iconPath, item.descriptor.voltageLevelColor)
                 is DescriptorBlockItem<*> -> {
                     val model = modLoc("block/${id.path}")
                     if (existingFileHelper.exists(model, PackType.CLIENT_RESOURCES, ".json", "models")) withExistingParent(id.path, model)
