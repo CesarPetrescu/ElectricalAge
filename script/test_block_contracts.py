@@ -56,6 +56,7 @@ class ReportsTest(unittest.TestCase):
         self.assertEqual(len(bad), 2)
         self.assertEqual(set(known), {"eln:item/conduit"})
         self.assertFalse(inspect("normal startup")[0])
+        self.assertEqual(len(inspect("Failed to load texture: eln:textures/blocks/missing.png")[0]), 1)
 
 
 if __name__ == "__main__":

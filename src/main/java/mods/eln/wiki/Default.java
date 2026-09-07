@@ -81,6 +81,13 @@ public class Default extends Screen {
     public boolean isPauseScreen() { return false; }
 
     @Override
+    public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        // Screen.render calls this before its widgets. Our document was already drawn,
+        // so vanilla's full-screen blur here would blur the guide, not just the world.
+        // render() paints its own dark backdrop instead.
+    }
+
+    @Override
     public boolean mouseScrolled(double x, double y, double horizontal, double vertical) {
         return extender.scroll(x, y, vertical) || super.mouseScrolled(x, y, horizontal, vertical);
     }

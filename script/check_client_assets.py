@@ -15,7 +15,7 @@ KNOWN_MODELS = {
 def inspect(log):
     failed, exempt = set(), set()
     for line in log.splitlines():
-        if "eln:" not in line or not re.search(r"Unable to load model|Missing textures|Using missing texture|Exception loading", line, re.I):
+        if "eln:" not in line or not re.search(r"Unable to load model|Missing textures|Using missing texture|Exception loading|Failed to load texture", line, re.I):
             continue
         match = re.search(r"Unable to load model: '([^']+)'", line)
         if match and match[1] in KNOWN_MODELS:
