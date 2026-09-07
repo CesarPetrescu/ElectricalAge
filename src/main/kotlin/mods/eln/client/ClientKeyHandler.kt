@@ -48,9 +48,10 @@ class ClientKeyHandler {
         if (entry.lastState != state) {
             entry.lastState = state // Be sure to set the state so that it calls again when key released
 
-            if (entry.name == ServerKeyHandler.WIKI && state) {
-                // Only trigger if state = true (ie, when pressed, not when released)
-                // TODO: Add latch feature to allow closing of the UI by pressing again.
+            if (entry.name == ServerKeyHandler.WIKI && state &&
+                net.minecraft.client.Minecraft.getInstance().level != null &&
+                net.minecraft.client.Minecraft.getInstance().screen == null) {
+                // Typing P in a search box (or any other screen) must not reopen the guide.
                 clientOpenGui(Root(null))
             }
 

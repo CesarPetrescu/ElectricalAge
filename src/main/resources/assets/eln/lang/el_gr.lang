@@ -616,7 +616,6 @@ Manual_shutdown=Χειροκίνητη απενεργοποίηση
 Set_point\:_%1$=Σημείο ρύθμισης: %1$
 
 # src/main/java/mods/eln/transparentnode/electricalmachine/ElectricalMachineDescriptor.java
-Cost=Κόστος
 
 # src/main/java/mods/eln/transparentnode/electricalmachine/ElectricalMachineElement.java
 Power_provided=Παρεχόμενη ισχύς
@@ -754,15 +753,15 @@ Utilities=Εργαλεία
 Wiring=Καλωδίωση
 
 # src/main/java/mods/eln/wiki/Default.java
+Contents=Contents
+Electrical_Age_Guide=Electrical Age Guide
 Previous=Προηγούμενο
+Scroll_to_browse_•_Click_an_item_for_recipes=Scroll to browse • Click an item for recipes
+Search_items=Search items
 
-# src/main/java/mods/eln/wiki/ItemDefault.java
-Can_be_used_to_craft\:=Μπορεί να χρησιμοποιηθεί για κατασκευή:
-Cannot_be_crafted!=Δεν μπορεί να κατασκευαστεί!
-Cost_%1$J=Κόστος %1$J
-Created_by\:=Δημιουργήθηκε από:
-Is_not_a_crafting_material!=Δεν είναι υλικό κατασκευής!
-Recipe\:=Συνταγή:
+# src/main/java/mods/eln/wiki/Root.java
+No_matching_items.=No matching items.
+Search_results\:_%1$=Search results: %1$
 
 # src/main/kotlin/mods/eln/block/ArcClayBlock.kt
 tile.arc_clay_block.name=Μπλοκ Πηλού Τόξου
@@ -2129,3 +2128,14 @@ Bulb_2_Life_Left=Απομένουσα Ζωή Λαμπτήρα 2
 Beam_width\:_%1$°=Πλάτος δέσμης: %1$°
 Horizontal_angle\:_%1$°=Οριζόντια γωνία: %1$°
 Vertical_angle\:_%1$°=Κατακόρυφη γωνία: %1$°
+
+# src/main/kotlin/mods/eln/wiki/WikiContent.kt
+Other_ELN_items=Other ELN items
+
+# src/main/kotlin/mods/eln/wiki/WikiRecipes.kt
+Can_be_used_to_craft\:=Μπορεί να χρησιμοποιηθεί για κατασκευή:
+Cost=Κόστος
+Created_by\:=Δημιουργήθηκε από:
+Machines\:=Machines:
+No_crafting-table_recipe.=No crafting-table recipe.
+Recipe\:=Συνταγή:

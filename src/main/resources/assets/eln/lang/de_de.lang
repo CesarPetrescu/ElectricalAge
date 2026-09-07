@@ -616,7 +616,6 @@ Manual_shutdown=Manuelle Abschaltung
 Set_point\:_%1$=Sollwert: %1$
 
 # src/main/java/mods/eln/transparentnode/electricalmachine/ElectricalMachineDescriptor.java
-Cost=Kosten
 
 # src/main/java/mods/eln/transparentnode/electricalmachine/ElectricalMachineElement.java
 Power_provided=Bereitgestellte Leistung
@@ -754,15 +753,15 @@ Utilities=Werkzeuge
 Wiring=Verdrahtung
 
 # src/main/java/mods/eln/wiki/Default.java
+Contents=Contents
+Electrical_Age_Guide=Electrical Age Guide
 Previous=Zurück
+Scroll_to_browse_•_Click_an_item_for_recipes=Scroll to browse • Click an item for recipes
+Search_items=Search items
 
-# src/main/java/mods/eln/wiki/ItemDefault.java
-Can_be_used_to_craft\:=Kann verwendet werden zum Herstellen von:
-Cannot_be_crafted!=Kann nicht hergestellt werden!
-Cost_%1$J=Kosten %1$J
-Created_by\:=Hergestellt von:
-Is_not_a_crafting_material!=Ist kein Herstellungsmaterial!
-Recipe\:=Rezept:
+# src/main/java/mods/eln/wiki/Root.java
+No_matching_items.=No matching items.
+Search_results\:_%1$=Search results: %1$
 
 # src/main/kotlin/mods/eln/block/ArcClayBlock.kt
 tile.arc_clay_block.name=Lichtbogen-Tonblock
@@ -2129,3 +2128,14 @@ Bulb_2_Life_Left=Lampe 2 Restlebensdauer
 Beam_width\:_%1$°=Strahlbreite: %1$°
 Horizontal_angle\:_%1$°=Horizontalwinkel: %1$°
 Vertical_angle\:_%1$°=Vertikalwinkel: %1$°
+
+# src/main/kotlin/mods/eln/wiki/WikiContent.kt
+Other_ELN_items=Other ELN items
+
+# src/main/kotlin/mods/eln/wiki/WikiRecipes.kt
+Can_be_used_to_craft\:=Kann verwendet werden zum Herstellen von:
+Cost=Kosten
+Created_by\:=Hergestellt von:
+Machines\:=Machines:
+No_crafting-table_recipe.=No crafting-table recipe.
+Recipe\:=Rezept:

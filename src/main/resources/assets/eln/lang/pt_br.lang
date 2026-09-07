@@ -616,7 +616,6 @@ Manual_shutdown=Desligamento manual
 Set_point\:_%1$=Ponto definido: %1$
 
 # src/main/java/mods/eln/transparentnode/electricalmachine/ElectricalMachineDescriptor.java
-Cost=Custo
 
 # src/main/java/mods/eln/transparentnode/electricalmachine/ElectricalMachineElement.java
 Power_provided=Potência fornecida
@@ -754,15 +753,15 @@ Utilities=Utilitários
 Wiring=Fiação
 
 # src/main/java/mods/eln/wiki/Default.java
+Contents=Contents
+Electrical_Age_Guide=Electrical Age Guide
 Previous=Anterior
+Scroll_to_browse_•_Click_an_item_for_recipes=Scroll to browse • Click an item for recipes
+Search_items=Search items
 
-# src/main/java/mods/eln/wiki/ItemDefault.java
-Can_be_used_to_craft\:=Pode ser usado para fabricar:
-Cannot_be_crafted!=Não pode ser fabricado!
-Cost_%1$J=Custo %1$J
-Created_by\:=Criado por:
-Is_not_a_crafting_material!=Não é um material de fabricação!
-Recipe\:=Receita:
+# src/main/java/mods/eln/wiki/Root.java
+No_matching_items.=No matching items.
+Search_results\:_%1$=Search results: %1$
 
 # src/main/kotlin/mods/eln/block/ArcClayBlock.kt
 tile.arc_clay_block.name=Bloco de Argila de Arco
@@ -2129,3 +2128,14 @@ Bulb_2_Life_Left=Vida Restante Lâmpada 2
 Beam_width\:_%1$°=Largura do feixe: %1$°
 Horizontal_angle\:_%1$°=Ângulo horizontal: %1$°
 Vertical_angle\:_%1$°=Ângulo vertical: %1$°
+
+# src/main/kotlin/mods/eln/wiki/WikiContent.kt
+Other_ELN_items=Other ELN items
+
+# src/main/kotlin/mods/eln/wiki/WikiRecipes.kt
+Can_be_used_to_craft\:=Pode ser usado para fabricar:
+Cost=Custo
+Created_by\:=Criado por:
+Machines\:=Machines:
+No_crafting-table_recipe.=No crafting-table recipe.
+Recipe\:=Receita:

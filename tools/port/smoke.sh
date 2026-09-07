@@ -13,6 +13,7 @@ mkdir -p run/client/saves build/smoke-artifacts
 # Never let a stale report from a previous invocation satisfy this run's gate.
 rm -f build/smoke-artifacts/contracts/blocks-{place,settled,restart}.{json,xml}
 rm -f build/smoke-artifacts/contracts/power-{behavior,behavior-restart,client-leds}.{json,xml}
+rm -f build/smoke-artifacts/contracts/{wiki-client,lighting-gallery}.{json,xml}
 run_gradle() {
     # Bound each process separately so a stuck shutdown cannot consume the whole job.
     timeout --signal=TERM --kill-after=30s 25m ./gradlew "$@"
@@ -48,6 +49,7 @@ fi
 if [ -z "${SKIP_CLIENT:-}" ]; then
     run_gradle runClient "${gradle_args[@]}" -PsmokeClient=smoke -q 2>&1 | tee build/smoke-artifacts/client.log
     python3 script/check_client_assets.py run/client/logs/latest.log
+    python3 script/check_block_contracts.py --client
     ls -l run/client/screenshots/smoke-*.png
 fi
 echo "smoke: all runs passed"

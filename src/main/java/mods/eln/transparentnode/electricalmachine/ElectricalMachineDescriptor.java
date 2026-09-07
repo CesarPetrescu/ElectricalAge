@@ -161,34 +161,9 @@ public class ElectricalMachineDescriptor extends TransparentNodeDescriptor imple
 
     @Override
     public int bottom(int y, GuiVerticalExtender extender, ItemStack stack) {
-        int counter = -1;
-
-        extender.add(new GuiLabel(6, y, tr("Can create:")));
-        y += 12;
-        for (Recipe r : recipe.getRecipes()) {
-            if (counter == 0)
-                y += (int) (18 * 1.3);
-            if (counter == -1)
-                counter = 0;
-            int x = 6 + counter * 60;
-
-            extender.add(new GuiItemStack(x, y, r.input, extender.helper));
-            x += 18 * 2;
-
-            for (ItemStack m : recipe.getMachines()) {
-                extender.add(new GuiItemStack(x, y, m, extender.helper));
-                x += 18;
-            }
-            x += 18;
-            extender.add(new GuiItemStack(x, y, r.getOutputCopy()[0], extender.helper));
-
-            x += 22;
-            extender.add(new GuiLabel(x, y + 4, Utils.plotEnergy(tr("Cost"), r.energy)));
-
-            counter = (counter + 1) % 1; // WTF ? (% 1 is afaik always 0...)
-        }
-        y += (int) (18 * 1.3);
-
+        y = mods.eln.wiki.WikiRecipes.text(extender, y + 6, tr("Can create:"));
+        for (Recipe r : recipe.getRecipes())
+            y = mods.eln.wiki.WikiRecipes.processing(extender, y, r);
         return y;
     }
 }

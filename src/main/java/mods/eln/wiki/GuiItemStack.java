@@ -1,161 +1,58 @@
 package mods.eln.wiki;
 
-import mods.eln.misc.McBridge;
 import mods.eln.gui.Gui;
 import mods.eln.gui.GuiHelper;
 import mods.eln.gui.IGuiObject;
-import mods.eln.misc.UtilsClient;
 import net.minecraft.client.Minecraft;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.client.gui.GuiGraphics;
-import mods.eln.client.gl.RenderHelper;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.resources.ResourceLocation;
-import mods.eln.client.gl.GL11;
-
-import java.util.List;
 
 public class GuiItemStack extends Gui implements IGuiObject {
+    int posX, posY, h = 18, w = 18;
+    final ItemStack stack;
+    public final GuiHelper helper;
 
     public GuiItemStack(int x, int y, ItemStack stack, GuiHelper helper) {
-        this.posX = x;
-        this.posY = y;
-        h = 18;
-        w = 18;
-        this.stack = stack;
+        posX = x; posY = y;
+        this.stack = stack == null ? ItemStack.EMPTY : stack;
         this.helper = helper;
     }
 
-
-    int posX, posY, h, w;
-    ItemStack stack;
-
-    public GuiHelper helper;
-    static final ResourceLocation slotSkin = ResourceLocation.parse("textures/gui/container/furnace.png");
-
-
-    @Override
-    public void idraw(int x, int y, float f) {
-        //RenderHelper.disableStandardItemLighting();
-        try {
-            GL11.glColor3f(1f, 1f, 1f);
-            UtilsClient.bindTexture(slotSkin);
-            drawTexturedModalRect(posX - 1, posY - 1, 55, 16, 73 - 55, 34 - 16);
-
-            if (!McBridge.isNothing(stack)) {
-                //	RenderHelper.enableStandardItemLighting();
-                RenderHelper.enableStandardItemLighting();
-                RenderHelper.enableGUIStandardItemLighting();
-
-                UtilsClient.drawItemStack(stack, posX, posY, null, true);
-
-                RenderHelper.disableStandardItemLighting();
-                // GL11.glEnable(GL11.GL_LIGHTING);
-                //  GL11.glEnable(GL11.GL_DEPTH_TEST);
-                //  RenderHelper.enableStandardItemLighting();
-            }
-        } catch (Exception e) {
-            // TODO: handle exception
-        }
-
-
+    boolean contains(int x, int y) {
+        return x >= posX && y >= posY && x < posX + w && y < posY + h;
     }
-    /*    GL11.glDisable(GL12.GL_RESCALE_NORMAL);
-    RenderHelper.disableStandardItemLighting();
-    GL11.glDisable(GL11.GL_LIGHTING);
-  //  GL11.glDisable(GL11.GL_DEPTH_TEST);
-    RenderHelper.enableGUIStandardItemLighting();
-    
-    short short1 = 240;
-    short short2 = 240;
-    OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, (float)short1 / 1.0F, (float)short2 / 1.0F);
-
-    GL11.glEnable(GL11.GL_LIGHTING);
-    
-    
-  //  RenderHelper.enableStandardItemLighting();
-  //  RenderHelper.disableStandardItemLighting();
- //   RenderHelper.enableStandardItemLighting();
- /*  GL11.glDepthFunc(GL11.GL_GREATER);
-    GL11.glDisable(GL11.GL_LIGHTING);
-    GL11.glDepthMask(false);
- //   par2TextureManager.func_110577_a(field_110798_h);
-    this.zLevel -= 50.0F;
-    GL11.glEnable(GL11.GL_BLEND);
-    GL11.glBlendFunc(GL11.GL_DST_COLOR, GL11.GL_DST_COLOR);
-    GL11.glColor4f(0.5F, 0.25F, 0.8F, 1.0F);
-  //  this.renderGlint(par4 * 431278612 + par5 * 32178161, par4 - 2, par5 - 2, 20, 20);
-    GL11.glDisable(GL11.GL_BLEND);
-    GL11.glDepthMask(true);
-    this.zLevel += 50.0F;
-    GL11.glEnable(GL11.GL_LIGHTING);
-    GL11.glDepthFunc(GL11.GL_LEQUAL);
-	*/
-
-    //RenderHelper.enableGUIStandardItemLighting();
-    //RenderHelper.enableStandardItemLighting();
-    //RenderHelper.disableStandardItemLighting();
-    // RenderHelper.enableGUIStandardItemLighting();
 
     @Override
-    public void idraw2(int x, int y) {
-        if (McBridge.isNothing(stack)) return;
-        if ((x >= posX && y >= posY && x < posX + w && y < posY + h)) {
-            int px, py;
-            px = posX;
-            py = posY;
-            List<String> list = new java.util.ArrayList<>();
-            for (net.minecraft.network.chat.Component line : stack.getTooltipLines(net.minecraft.world.item.Item.TooltipContext.of(Minecraft.getInstance().level), Minecraft.getInstance().player, TooltipFlag.NORMAL)) {
-                list.add(line.getString());
-            }
-            helper.drawHoveringText(list, x, y, Minecraft.getInstance().font);
+    public void idraw(int x, int y, float partialTick) {
+        var g = graphics();
+        g.fill(posX - 1, posY - 1, posX + 17, posY + 17, contains(x, y) ? 0xFF72CDB3 : 0xFF465B66);
+        g.fill(posX, posY, posX + 16, posY + 16, 0xFF26343D);
+        // Flush background before the custom OBJ renderer's immediate draw calls.
+        g.flush();
+        if (!stack.isEmpty()) {
+            g.renderItem(stack, posX, posY);
+            g.renderItemDecorations(Minecraft.getInstance().font, stack, posX, posY);
         }
     }
 
-    @Override
-    public boolean ikeyTyped(char key, int code) {
-
-        return false;
+    void renderTooltip(int x, int y) {
+        if (!stack.isEmpty()) graphics().renderTooltip(Minecraft.getInstance().font, stack, x, y);
     }
 
     @Override
-    public void imouseClicked(int x, int y, int code) {
-        if (x >= posX && y >= posY && x < posX + w && y < posY + h) {
-            if (!McBridge.isNothing(stack)) {
-                UtilsClient.clientOpenGui(new ItemDefault(stack, helper.screen));
-            }
-			/*if(observer != null){
-				observer.guiObjectEvent(this);
-			}*/
-        }
-
-    }
-
+    public void idraw2(int x, int y) { if (contains(x, y)) renderTooltip(x, y); }
     @Override
-    public void imouseMove(int x, int y) {
-
-
-    }
-
+    public boolean ikeyTyped(char key, int code) { return false; }
     @Override
-    public void imouseMovedOrUp(int x, int y, int witch) {
-
-
+    public void imouseClicked(int x, int y, int button) {
+        if (button == 0 && contains(x, y) && !stack.isEmpty())
+            Minecraft.getInstance().setScreen(new ItemDefault(stack, helper.screen));
     }
-
     @Override
-    public void translate(int x, int y) {
-
-        this.posX += x;
-        this.posY += y;
-    }
-
-
+    public void imouseMove(int x, int y) {}
     @Override
-    public int getYMax() {
-
-        return posY + h;
-    }
-
-
+    public void imouseMovedOrUp(int x, int y, int button) {}
+    @Override
+    public void translate(int x, int y) { posX += x; posY += y; }
+    @Override
+    public int getYMax() { return posY + h; }
 }

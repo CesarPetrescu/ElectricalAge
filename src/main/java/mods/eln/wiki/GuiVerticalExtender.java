@@ -2,198 +2,128 @@ package mods.eln.wiki;
 
 import mods.eln.gui.Gui;
 import mods.eln.gui.GuiHelper;
-import mods.eln.gui.GuiVerticalTrackBar;
 import mods.eln.gui.IGuiObject;
-import mods.eln.gui.IGuiObject.IGuiObjectObserver;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.world.item.ItemStack;
-import mods.eln.client.gl.GL11;
-
 import java.util.ArrayList;
 
-public class GuiVerticalExtender extends Gui implements IGuiObject, IGuiObjectObserver {
-
-    GuiVerticalTrackBar slider;
-    int offX, offY;
+/** GUI-coordinate viewport. Drawing, hit testing and scrolling share the same absolute bounds. */
+public class GuiVerticalExtender extends Gui implements IGuiObject {
+    public final GuiHelper helper;
+    int posX, posY, w, h;
+    final ArrayList<IGuiObject> objectList = new ArrayList<>();
+    private float scroll;
+    private boolean dragging;
 
     public GuiVerticalExtender(int x, int y, int w, int h, GuiHelper helper) {
-        this.posX = x;
-        this.posY = y;
-        this.h = h;
-        this.w = w;
-        this.offX = x;
-        this.offY = y;
-        slider = new GuiVerticalTrackBar(x + w - 10, y, 10, h, helper);
-
-        slider.setStepIdMax(200);
-        slider.setStepId(200);
-        refreshRange();
-
-        //add(slider);
-        slider.setObserver(observer);
-        this.helper = helper;
+        posX = x; posY = y; this.w = w; this.h = h; this.helper = helper;
     }
 
-    public float getSliderPosition() {
-        return (slider.getValue());
+    public int contentWidth() { return w - 14; }
+    public int maxScroll() {
+        int bottom = 0;
+        for (IGuiObject o : objectList) bottom = Math.max(bottom, o.getYMax());
+        return Math.max(0, bottom + 8 - h);
     }
-
+    public float getSliderPosition() { return -scroll; }
     public void setSliderPosition(float position) {
-        refreshRange();
-        slider.setValue(position);
+        scroll = Float.isFinite(position) ? Math.max(0, Math.min(maxScroll(), -position)) : 0;
     }
-
-    void refreshRange() {
-
-        int maxY = 10;
-        for (IGuiObject o : objectList) {
-            maxY = Math.max(maxY, o.getYMax());
-        }
-        float max = Math.min(0, -(maxY + 10 - h));
-        slider.setRange(max, 0);
-
-
-        slider.setVisible(max != 0);
-
+    public void add(IGuiObject o) { objectList.add(o); }
+    public void clear() { objectList.clear(); scroll = 0; }
+    void remove(IGuiObject o) { objectList.remove(o); }
+    public boolean contains(double x, double y) {
+        return x >= posX && x < posX + w && y >= posY && y < posY + h;
     }
-
-    public GuiHelper helper;
-
-    IGuiObjectObserver observer;
-
-    int posX, posY, h, w;
-    ItemStack stack;
-
-    ArrayList<IGuiObject> objectList = new ArrayList<IGuiObject>();
-
-    public void add(IGuiObject o) {
-        objectList.add(o);
+    private boolean containsContent(double x, double y) {
+        return contains(x, y) && x < posX + contentWidth();
     }
-
-    void remove(IGuiObject o) {
-        objectList.remove(o);
+    public boolean scroll(double x, double y, double delta) {
+        if (!contains(x, y)) return false;
+        setSliderPosition(getSliderPosition() + (float) delta * 24);
+        return true;
     }
-
-    int getxOffset() {
-        return posX;
-    }
-
-    int getYOffset() {
-        int sliderOffset = (int) slider.getValue();
-        return posY + sliderOffset;
-    }
-
-    IGuiObject[] objectListCopy() {
-        IGuiObject[] cpy = new IGuiObject[objectList.size()];
-        for (int idx = 0; idx < cpy.length; idx++) {
-            cpy[idx] = objectList.get(idx);
-        }
-        return cpy;
-    }
-
+    public void scrollPage(int direction) { setSliderPosition(getSliderPosition() + direction * h * .85f); }
+    private int thumbHeight() { return Math.max(16, h * h / (h + maxScroll())); }
+    private int thumbY() { return posY + (maxScroll() == 0 ? 0 : Math.round(scroll / maxScroll() * (h - thumbHeight()))); }
 
     @Override
-    public void idraw(int x, int y, float f) {
-        refreshRange();
-
-        slider.idraw(x, y, f);
-        x -= getxOffset();
-        y -= getYOffset();
-        GL11.glPushMatrix();
-        // 1.21: the scissor box is in GUI coordinates (GuiGraphics.enableScissor handles the window scale).
-        int sx = (this.helper.screen.width - this.helper.xSize) / 2 + posX;
-        int sy = (this.helper.screen.height - this.helper.ySize) / 2 + posY;
-        mods.eln.gui.Gui.graphics().enableScissor(sx, sy, sx + w, sy + h);
-        //	GL11.glEnable(GL11.GL_SCISSOR_BOX);
-
-        GL11.glTranslatef(getxOffset(), getYOffset(), 0f);
-
-        for (IGuiObject o : objectList) {
-            o.idraw(x, y, f);
+    public void idraw(int x, int y, float partialTick) {
+        setSliderPosition(getSliderPosition());
+        var g = graphics();
+        g.flush();
+        // posX/posY are ALREADY screen coordinates, including GuiHelper.add's translation.
+        g.enableScissor(posX, posY, posX + contentWidth(), posY + h);
+        g.pose().pushPose();
+        try {
+            g.pose().translate(posX, posY - Math.round(scroll), 0);
+            for (IGuiObject o : objectList) {
+                if (o instanceof GuiItemStack item &&
+                    (item.posY + item.h < scroll || item.posY > scroll + h)) continue;
+                o.idraw(x - posX, y - posY + Math.round(scroll), partialTick);
+            }
+            g.flush();
+        } finally {
+            g.pose().popPose();
+            g.disableScissor();
         }
-        mods.eln.gui.Gui.graphics().disableScissor();
-        GL11.glPopMatrix();
-
-        //	GL11.glColor3f(1f, 1f, 1f);
+        if (maxScroll() > 0) {
+            g.fill(posX + w - 8, posY, posX + w - 2, posY + h, 0xFF30434D);
+            g.fill(posX + w - 8, thumbY(), posX + w - 2, thumbY() + thumbHeight(), 0xFF83BFAF);
+        }
     }
 
     @Override
     public void idraw2(int x, int y) {
-        slider.idraw2(x, y);
-        x -= getxOffset();
-        y -= getYOffset();
-        GL11.glPushMatrix();
-        //	GL11.glScissor(displayWidth-(int)((posX+w)*ratio),displayHeight-(int)((posY+h)*ratio),(int)(w*ratio),(int)(h*ratio));
-        //	GL11.glEnable(GL11.GL_SCISSOR_TEST);
-        //	GL11.glEnable(GL11.GL_SCISSOR_BOX);
-
-        GL11.glTranslatef(getxOffset(), getYOffset(), 0f);
+        if (!containsContent(x, y) || dragging) return;
+        int localX = x - posX, localY = y - posY + Math.round(scroll);
         for (IGuiObject o : objectList) {
-            o.idraw2(x, y);
+            if (o instanceof GuiItemStack item && item.contains(localX, localY)) {
+                item.renderTooltip(x, y); // Screen coordinates, with no scrolled pose on the tooltip.
+                return;
+            }
         }
-        //	GL11.glDisable(GL11.GL_SCISSOR_TEST);
-        //GL11.glDisable(GL11.GL_SCISSOR_BOX);
-        GL11.glPopMatrix();
+        // Other users (the Modbus editor) still host legacy text fields with hover help.
+        var g = graphics();
+        g.pose().pushPose();
+        try {
+            g.pose().translate(posX, posY - Math.round(scroll), 0);
+            for (IGuiObject o : objectList) if (!(o instanceof GuiItemStack)) o.idraw2(localX, localY);
+        } finally { g.pose().popPose(); }
     }
 
     @Override
     public boolean ikeyTyped(char key, int code) {
-        for (IGuiObject o : objectListCopy()) {
-            if (o.ikeyTyped(key, code)) return true;
-        }
+        for (IGuiObject o : new ArrayList<>(objectList)) if (o.ikeyTyped(key, code)) return true;
         return false;
     }
-
     @Override
-    public void imouseClicked(int x, int y, int code) {
-        slider.imouseClicked(x, y, code);
-        x -= getxOffset();
-        y -= getYOffset();
-        for (IGuiObject o : objectListCopy()) {
-            o.imouseClicked(x, y, code);
+    public void imouseClicked(int x, int y, int button) {
+        if (!contains(x, y)) return;
+        if (button == 0 && x >= posX + contentWidth() && maxScroll() > 0) {
+            dragging = true;
+            imouseMove(x, y);
+        } else if (containsContent(x, y)) {
+            for (IGuiObject o : new ArrayList<>(objectList))
+                o.imouseClicked(x - posX, y - posY + Math.round(scroll), button);
         }
     }
-
     @Override
     public void imouseMove(int x, int y) {
-        slider.imouseMove(x, y);
-        x -= getxOffset();
-        y -= getYOffset();
-        for (IGuiObject o : objectList) {
-            o.imouseMove(x, y);
+        if (dragging) {
+            scroll = Math.max(0, Math.min(maxScroll(),
+                (float) (y - posY - thumbHeight() / 2) / Math.max(1, h - thumbHeight()) * maxScroll()));
         }
+        if (containsContent(x, y))
+            for (IGuiObject o : objectList) o.imouseMove(x - posX, y - posY + Math.round(scroll));
     }
-
     @Override
-    public void imouseMovedOrUp(int x, int y, int witch) {
-        slider.imouseMovedOrUp(x, y, witch);
-        x -= getxOffset();
-        y -= getYOffset();
-        for (IGuiObject o : objectList) {
-            o.imouseMovedOrUp(x, y, witch);
-        }
+    public void imouseMovedOrUp(int x, int y, int button) {
+        if (button == 0) dragging = false;
+        // Release even outside the viewport so child buttons cannot remain pressed.
+        for (IGuiObject o : new ArrayList<>(objectList))
+            o.imouseMovedOrUp(x - posX, y - posY + Math.round(scroll), button);
     }
-
     @Override
-    public void translate(int x, int y) {
-        slider.translate(x, y);
-        posX += x;
-        posY += y;
-    }
-
+    public void translate(int x, int y) { posX += x; posY += y; }
     @Override
-    public void guiObjectEvent(IGuiObject object) {
-        if (object == slider) {
-
-        }
-    }
-
-    @Override
-    public int getYMax() {
-
-        return posY + h;
-    }
-
-
+    public int getYMax() { return posY + h; }
 }

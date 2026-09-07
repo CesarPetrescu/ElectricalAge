@@ -2,7 +2,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from check_block_contracts import REQUIRED, summarize
+from check_block_contracts import REQUIRED, CLIENT_REQUIRED, summarize
 from check_client_assets import inspect
 
 
@@ -12,8 +12,8 @@ class ReportsTest(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.path = Path(self.temp.name)
 
-    def write(self, **changes):
-        for suite in REQUIRED:
+    def write(self, suites=REQUIRED, **changes):
+        for suite in suites:
             data = dict(suite=suite, complete=True, failures=0,
                         results=[dict(id="eln:sample", check="place", status="passed", detail="")])
             data.update(changes)
@@ -41,6 +41,15 @@ class ReportsTest(unittest.TestCase):
         row = dict(id="eln:x", check="place", status="passed", detail="")
         self.write(results=[row, row])
         self.assertTrue(summarize(self.path)[1])
+
+    def test_client_reports_are_required_and_must_finish(self):
+        suites = REQUIRED + CLIENT_REQUIRED
+        self.write()
+        self.assertEqual(len(summarize(self.path, suites)[1]), len(CLIENT_REQUIRED))
+        self.write(suites=CLIENT_REQUIRED)
+        self.assertFalse(summarize(self.path, suites)[1])
+        self.write(suites=("wiki-client",), complete=False)
+        self.assertEqual(len(summarize(self.path, suites)[1]), 1)
 
     def test_asset_gate(self):
         bad, known = inspect("Unable to load model: 'eln:item/conduit'\nUnable to load model: 'eln:item/new_machine'\nMissing textures in model eln:block/new_machine")

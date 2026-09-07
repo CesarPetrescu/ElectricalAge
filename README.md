@@ -41,6 +41,8 @@ The creative inventory has nine categories: **Wires & Cables**, **Signals & Cont
 
 See the [Create adapter guide](docs/create-shaft-adapters.md) for connections on all three axes, gear selection and signal inputs. For worked circuits, explore the [electrical examples](docs/examples/README.md).
 
+**In-game recipes and help:** press **P** to open the [Electrical Age guide](docs/in-game-guide.md). Search items, scroll through recipes and click ingredients to follow their crafting chains.
+
 ## Installation
 
 ### 1. Create the right Minecraft instance

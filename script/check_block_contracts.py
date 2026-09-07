@@ -6,12 +6,13 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 REQUIRED = ("blocks-place", "blocks-settled", "blocks-restart", "power-behavior", "power-behavior-restart")
+CLIENT_REQUIRED = ("power-client-leds", "wiki-client", "lighting-gallery")
 
 
-def summarize(directory):
+def summarize(directory, suites=REQUIRED):
     errors, rows = [], []
     by_block = defaultdict(Counter)
-    for suite in REQUIRED:
+    for suite in suites:
         try:
             report = json.loads((directory / f"{suite}.json").read_text(encoding="utf-8"))
             if report.get("suite") != suite or report.get("complete") is not True:
@@ -52,8 +53,9 @@ def summarize(directory):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("directory", nargs="?", type=Path, default=Path("build/smoke-artifacts/contracts"))
+    parser.add_argument("--client", action="store_true", help="Also require completed rendered-client contracts")
     args = parser.parse_args()
-    summary, errors = summarize(args.directory)
+    summary, errors = summarize(args.directory, REQUIRED + CLIENT_REQUIRED if args.client else REQUIRED)
     args.directory.mkdir(parents=True, exist_ok=True)
     (args.directory / "summary.md").write_text(summary, encoding="utf-8")
     if os.environ.get("GITHUB_STEP_SUMMARY"):
