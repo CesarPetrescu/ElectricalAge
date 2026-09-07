@@ -125,6 +125,7 @@ class GridLink : INBTTReady {
 
         spanThermal?.disconnect()
         Eln.simulator.removeElectricalComponent(ab)
+        ab?.breakConnection()
         ab = null
 
         a?.let { updateElement(it) }

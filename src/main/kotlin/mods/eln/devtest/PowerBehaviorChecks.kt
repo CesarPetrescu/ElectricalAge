@@ -9,6 +9,9 @@ import mods.eln.node.NodeBase
 import mods.eln.node.transparent.TransparentNode
 import mods.eln.node.transparent.TransparentNodeElement
 import mods.eln.sim.mna.RootSystem
+import mods.eln.sim.ElectricalLoad
+import mods.eln.sim.ElectricalConnection
+import mods.eln.sixnode.electricalcable.*
 import mods.eln.sim.mna.component.Resistor
 import mods.eln.sim.mna.component.VoltageSource
 import mods.eln.sim.mna.state.State
@@ -43,6 +46,38 @@ object PowerBehaviorChecks {
         voltageSource.voltage = batteryProcess.u
     }
 
+    /** Actual source circuit -> 26 AWG -> return. Keeps thermal integration coupled to solved I²R. */
+    private class FaultWire(val root: RootSystem, supply: ElectricalLoad, returnPin: State?) {
+        val thermal=WireThermalLoad("fault",WireThermalPhysics(UtilityCableMaterial.COPPER,.1288))
+        val wire=ElectricalLoad()
+        val end=ElectricalLoad().apply { serialResistance=0.0 }
+        val feed=ElectricalConnection(supply,wire)
+        var interrupted=false
+        var inputJoules=0.0
+        var coolingJoules=0.0
+        init {
+            thermal.updateProperties(20.0,20.0,false)
+            wire.serialResistance=WirePhysics.resistance(UtilityCableMaterial.COPPER,.1288)/2
+            root.addState(wire);root.addState(end)
+            root.addComponent(feed);root.addComponent(ElectricalConnection(wire,end))
+            root.addComponent(Resistor(end,returnPin).apply { resistance=.000001 })
+        }
+        fun step() {
+            val heating=wire.serialPower*DT
+            inputJoules+=heating
+            thermal.updateProperties(20.0,20.0,false)
+            val cooling=thermal.temperatureCelsius/thermal.Rp*DT
+            coolingJoules+=cooling
+            thermal.integrateEnergy(heating-cooling)
+            wire.serialResistance=WirePhysics.resistance(UtilityCableMaterial.COPPER,.1288,celsius=thermal.absoluteCelsius)/2
+            if(thermal.failed && !interrupted) { root.removeComponent(feed);feed.breakConnection();interrupted=true }
+        }
+        fun checkBalance() {
+            check(abs(inputJoules-thermal.storedJoules-coolingJoules)<maxOf(.001,inputJoules*1e-7))
+            if(interrupted)check(abs(wire.current)<1e-6) { "Fault wire retained ghost current" }
+        }
+    }
+
     /** Runs immediately after real placement (all supported directions), before the simulator steps. */
     fun checkPlaced(node: NodeBase?) {
         val b = (node as? TransparentNode)?.element as? BatteryElement ?: return
@@ -59,6 +94,26 @@ object PowerBehaviorChecks {
         val descriptors = Eln.transparentNodeItem.subItemList.values.filterNotNull()
         for (d in descriptors.filterIsInstance<GeneratorDescriptor>()) {
             val key = BuiltInRegistries.ITEM.getKey(d.parentItem).toString()
+            report.test(key,"wire-short-pays-for-heat-and-depletes-finite-shaft-energy") {
+                val g=GeneratorElement(node(world),d);g.shaft._mass=d.shaftMass;g.shaft.rads=d.nominalRads.toDouble()
+                val r=root(g)
+                val negative=if(d.bipolarTerminals)g.negativeLoad else null
+                reference(r,negative)
+                val fault=FaultWire(r,g.inputLoad,negative)
+                val initial=g.shaft.energy
+                r.generate()
+                repeat(1200) {
+                    g.electricalProcess.process(DT);r.step()
+                    val before=g.shaft.energy
+                    g.thermal.PcTemp=0.0;g.shaftProcess.process(DT)
+                    check(abs((before-g.shaft.energy)/DT-g.electricalPowerSource.power-g.thermal.PcTemp)<.05)
+                    check(abs(g.electricalPowerSource.current)<=d.regulatorCurrentLimit*1.001)
+                    check(g.shaft.energy>=0 && g.shaft.energy<=initial+1e-6)
+                    fault.step()
+                }
+                check(fault.inputJoules>0 && g.shaft.energy<initial)
+                fault.checkBalance()
+            }
             report.test(key, "small-load-and-stop-led-publication") {
                 val g = GeneratorElement(node(world), d)
                 g.electricalPowerSource.voltage = 10.0
@@ -184,6 +239,16 @@ object PowerBehaviorChecks {
         }
         for (d in descriptors.filterIsInstance<BatteryDescriptor>()) {
             val key = BuiltInRegistries.ITEM.getKey(d.parentItem).toString()
+            report.test(key,"wire-short-drains-charge-and-heats-real-conductor") {
+                val b=battery(world,d);val r=root(b)
+                val fault=FaultWire(r,b.positiveLoad,b.negativeLoad)
+                val before=b.batteryProcess.Q
+                r.generate()
+                repeat(1200) { r.step();b.batteryProcess.process(DT);fault.step() }
+                check(b.batteryProcess.Q<before && fault.inputJoules>0)
+                check(b.batteryProcess.charge in 0.0..1.0)
+                fault.checkBalance()
+            }
             report.test(key, "discharge-recharge-full-empty-save") {
                 val b = battery(world, d); val r = root(b)
                 val load = resistor(r, b.positiveLoad, b.negativeLoad, d.electricalU * d.electricalU / d.electricalStdP)

@@ -254,8 +254,9 @@ class GeneratorElement(node: TransparentNode, desc_: TransparentNodeDescriptor) 
             powerFraction = (electricalPower / desc.nominalP).toFloat()
             maybePublishE(electricalPower)
 
-            val dragPower = defaultDrag * Math.max(shaft.rads, 1.0)
             val transfer = ShaftElectricalMath.transfer(electricalPower, desc.generationEfficiency, desc.motoringEfficiency)
+            val dragPower = ShaftElectricalMath.frictionPower(shaft.energy, transfer.shaftPower,
+                defaultDrag * Math.max(shaft.rads, 1.0), time)
             shaft.energy += (transfer.shaftPower - dragPower) * time
             thermal.movePowerTo(transfer.heatPower + dragPower)
         }

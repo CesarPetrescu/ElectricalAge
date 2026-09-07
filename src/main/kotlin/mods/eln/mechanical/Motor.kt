@@ -390,7 +390,8 @@ class MotorElement(node: TransparentNode, desc_: TransparentNodeDescriptor) :
         override fun process(time: Double) {
             val p = powerSource.power
             val transfer = ShaftElectricalMath.transfer(p, desc.generationEfficiency, desc.efficiency)
-            val dragPower = defaultDrag * Math.max(shaft.rads, 1.0)
+            val dragPower = ShaftElectricalMath.frictionPower(shaft.energy, transfer.shaftPower,
+                defaultDrag * Math.max(shaft.rads, 1.0), time)
             maybePublishP(-p)
             shaft.energy += (transfer.shaftPower - dragPower) * time
             thermal.movePowerTo(transfer.heatPower + dragPower)

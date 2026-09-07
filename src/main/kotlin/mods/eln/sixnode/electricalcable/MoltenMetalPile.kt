@@ -45,6 +45,8 @@ class MoltenMetalPileElement(
 
     private val material = (descriptor as MoltenMetalPileDescriptor).material
     private var thermal = WireThermalLoad("scrap", WireThermalPhysics(material, 1.0))
+    private var publishCountdown=0.0
+    private var publishedTemperature=Double.NaN
     init {
         thermal.setAsSlow()
         thermalLoadList.add(thermal)
@@ -52,7 +54,16 @@ class MoltenMetalPileElement(
             val air = getAmbientTemperatureCelsius()
             thermal.updateProperties(air, air, false)
         })
-        slowProcessList.add(IProcess { needPublish() })
+        slowProcessList.add(IProcess { dt ->
+            publishCountdown-=dt
+            if(publishCountdown<=0) {
+                publishCountdown=.5
+                val t=thermal.absoluteCelsius
+                if(publishedTemperature.isNaN() || kotlin.math.abs(t-publishedTemperature)>2 || (t>550)!=(publishedTemperature>550)) {
+                    publishedTemperature=t;needPublish()
+                }
+            }
+        })
     }
     private fun geometry(area: Double) {
         thermalLoadList.remove(thermal)

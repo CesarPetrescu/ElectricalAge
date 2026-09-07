@@ -7,6 +7,12 @@ import kotlin.math.sqrt
 object ShaftElectricalMath {
     data class Transfer(val shaftPower: Double, val heatPower: Double)
 
+    /** Friction consumes remaining kinetic/input energy; a stopped, unpowered shaft emits no heat. */
+    fun frictionPower(energy: Double, shaftPower: Double, requested: Double, dt: Double): Double {
+        require(dt.isFinite() && dt > 0)
+        return minOf(requested.coerceAtLeast(0.0), (energy / dt + shaftPower).coerceAtLeast(0.0))
+    }
+
     fun transfer(sourcePower: Double, generatingEfficiency: Double, motoringEfficiency: Double): Transfer {
         require(generatingEfficiency > 0.0 && generatingEfficiency <= 1.0)
         require(motoringEfficiency > 0.0 && motoringEfficiency <= 1.0)

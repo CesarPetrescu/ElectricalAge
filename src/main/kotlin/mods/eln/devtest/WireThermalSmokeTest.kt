@@ -153,7 +153,7 @@ class WireThermalSmokeTest(private val restart: Boolean) {
     private fun finish() {
         if(finished)return
         finished=true;report.write(true)
-        val path=Path.of("build/smoke-artifacts/wire-world-${if(restart) "restart" else "place"}.csv")
+        val path=Path.of("../../build/smoke-artifacts/wire-world-${if(restart) "restart" else "place"}.csv")
         Files.createDirectories(path.parent);Files.writeString(path,trace)
         val server=w.server
         if(report.failures>0)Thread({server.runningThread.join();kotlin.system.exitProcess(1)},"wire-thermal-failed").start()

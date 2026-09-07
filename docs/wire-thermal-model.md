@@ -48,7 +48,8 @@ and fusion energy. The final nonconductive pile retains the conductor's mass and
 cools down, and no longer glows after it is cold. Its simple cooling geometry is the former
 conductor's equivalent surface, not a detailed puddle geometry.
 
-Existing ambient-relative temperature NBT remains readable. Phase energy and scrap conductor area
+Existing ambient-relative temperature NBT remains readable. New saves also retain the ambient
+reference, so a changing room/biome reference does not instantaneously create heat. Phase energy and scrap conductor area
 are additive fields. Item IDs and sub-IDs are unchanged. Old overloaded installations can now fail:
 back up important worlds before updating and inspect wire gauge, load and protection.
 
@@ -69,8 +70,14 @@ original paid length. No unloaded chunk is force-loaded to sample ambient.
   balance. These are numerical integration contracts, not a claim that every variant is placed.
 - Dedicated `wire-world-place` / `wire-world-restart` launch actual server JVMs and saved worlds:
   26 AWG 50 A and voltage-fed shorts, damage, interruption, normal load, power-off cooling and restart.
+- Pole-eligible descriptors also exercise actual span process registration/disconnection, pending
+  energy delivery, paid-length mass, saved damage and restored hot resistance in an isolated circuit.
+  This does not replace a future full in-world pole-span burning/reloading scenario.
 - Temperature/current/energy traces are CSV artifacts. Missing, incomplete or failing reports
   block release publication. Existing generator/battery, Create and companion suites remain required.
+- Generator and battery circuits also feed a real MNA-connected 26 AWG fault fixture. Checks
+  require paid electrical heat, bounded current/charge and depletion of a finite shaft's energy.
+  Friction cannot emit heat after the available mechanical energy is exhausted.
 - The EC-240 evaporative cooler's independent server/restart/client contracts also gate the same release.
 
 Minecraft test execution belongs on GitHub runners; local development needs only code/compilation.

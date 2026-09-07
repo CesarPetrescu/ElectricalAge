@@ -12,6 +12,11 @@ import net.minecraft.nbt.CompoundTag
 import kotlin.math.*
 
 class WireThermalTest {
+    @Test fun stoppedShaftCannotGenerateFrictionHeatWithoutEnergy() {
+        assertEquals(0.0,mods.eln.mechanical.ShaftElectricalMath.frictionPower(0.0,0.0,5.0,.05))
+        assertEquals(2.0,mods.eln.mechanical.ShaftElectricalMath.frictionPower(.1,0.0,5.0,.05))
+        assertEquals(3.0,mods.eln.mechanical.ShaftElectricalMath.frictionPower(0.0,3.0,5.0,.05))
+    }
     private fun physics(area: Double = .1288, meters: Double = 1.0, material: UtilityCableMaterial = UtilityCableMaterial.COPPER) =
         WireThermalPhysics(material, area, meters)
     private fun load(p: WireThermalPhysics = physics()) = WireThermalLoad("wire", p).apply { updateProperties(20.0, 20.0, false) }
@@ -95,6 +100,18 @@ class WireThermalTest {
         val intact=load();intact.temperatureCelsius=300.0
         val damaged=load();damaged.inheritHeat(intact)
         assertEquals(intact.storedJoules,damaged.storedJoules,1e-9)
+    }
+    @Test fun ambientReferenceChangesDoNotCreateHeatIncludingAfterRestart() {
+        val l=load(); l.integrateEnergy(100.0)
+        val energy=l.storedJoules; val temperature=l.absoluteCelsius
+        l.updateProperties(40.0,40.0,false)
+        assertEquals(energy,l.storedJoules,1e-9)
+        assertEquals(temperature,l.absoluteCelsius,1e-9)
+        val tag=CompoundTag();l.writeToNBT(tag,"")
+        val restored=load();restored.readFromNBT(tag,"")
+        restored.updateProperties(-10.0,-10.0,false)
+        assertEquals(energy,restored.storedJoules,1e-5)
+        assertEquals(temperature,restored.absoluteCelsius,1e-5)
     }
     @Test fun coolingIsSignedAndGeometryDependent() {
         val p=physics()

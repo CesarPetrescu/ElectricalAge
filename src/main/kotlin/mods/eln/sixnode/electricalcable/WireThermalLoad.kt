@@ -6,6 +6,8 @@ import net.minecraft.nbt.CompoundTag
 /** Retains the existing ambient-relative NBT temperature and persists phase-change energy. */
 class WireThermalLoad(private val key: String, val physics: WireThermalPhysics) : NbtThermalLoad(key) {
     var ambientCelsius = 20.0
+        private set
+    private var ambientInitialized = false
     var phaseJoules = 0.0
         private set
     val absoluteCelsius get() = temperatureCelsius + ambientCelsius
@@ -14,7 +16,11 @@ class WireThermalLoad(private val key: String, val physics: WireThermalPhysics) 
 
     fun updateProperties(ambient: Double, surrounding: Double, insulated: Boolean) {
         require(ambient.isFinite() && surrounding.isFinite())
+        // A changed biome/room reference must not add energy to the metal instantaneously.
+        // First initialization preserves legacy ambient-relative saves and fresh ambient wires.
+        if (ambientInitialized) temperatureCelsius += ambientCelsius - ambient
         ambientCelsius = ambient
+        ambientInitialized = true
         heatCapacity = physics.capacity(absoluteCelsius)
         Rs = physics.endpointThermalResistance
         Rp = 1.0 / physics.coolingConductance(absoluteCelsius, surrounding, insulated)
@@ -31,16 +37,21 @@ class WireThermalLoad(private val key: String, val physics: WireThermalPhysics) 
 
     fun inheritHeat(from: WireThermalLoad) {
         ambientCelsius = from.ambientCelsius
+        ambientInitialized = from.ambientInitialized
         temperatureCelsius = from.temperatureCelsius
         phaseJoules = from.phaseJoules
     }
 
     override fun readFromNBT(nbt: CompoundTag, prefix: String) {
         super.readFromNBT(nbt, prefix)
+        val savedAmbient = nbt.getDouble(prefix + key + "AmbientC")
+        ambientInitialized = nbt.contains(prefix + key + "AmbientC", 99) && savedAmbient.isFinite()
+        ambientCelsius = if (ambientInitialized) savedAmbient else 20.0
         phaseJoules = nbt.getDouble(prefix + key + "FusionJ").takeIf { it.isFinite() && it >= 0 } ?: 0.0
     }
     override fun writeToNBT(nbt: CompoundTag, prefix: String) {
         super.writeToNBT(nbt, prefix)
+        nbt.putDouble(prefix + key + "AmbientC", ambientCelsius)
         nbt.putDouble(prefix + key + "FusionJ", phaseJoules)
     }
 }

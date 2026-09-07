@@ -79,8 +79,41 @@ object WireThermalChecks {
                 check(thermal.absoluteCelsius in 20.0..<220.0)
                 check(abs(start-thermal.storedJoules-removed)<maxOf(1e-6,abs(start)*1e-8))
             }
+            if (d.poleEligible) report.test(id,"span-length-heat-disconnect-and-restored-resistance") {
+                val a=ElectricalLoad().apply { serialResistance=.01 }
+                val b=ElectricalLoad().apply { serialResistance=.01 }
+                val connection=mods.eln.gridnode.WireSpanConnection(a,b,d.resistanceOhms(32.0))
+                val root=RootSystem(.01,1)
+                root.addState(a);root.addState(b);root.addComponent(connection)
+                root.addComponent(mods.eln.sim.mna.component.VoltageSource("span",a,null).setVoltage(10.0))
+                root.addComponent(Resistor(b,null).apply { resistance=10.0 })
+                val span=mods.eln.gridnode.WireSpanThermal(d,32.0)
+                val existing=mods.eln.Eln.simulator.electricalProcessList.toSet()
+                var joules=0.0
+                try {
+                    span.connect(connection,{20.0},{ error("Unexpected span failure") })
+                    val sampler=(mods.eln.Eln.simulator.electricalProcessList.toSet()-existing).single()
+                    root.generate()
+                    repeat(5) { root.step();joules+=connection.current*connection.current*connection.spanOhms*.01;sampler.process(.01) }
+                } finally { span.disconnect() }
+                check(mods.eln.Eln.simulator.electricalProcessList.toSet()==existing) { "Leaked span heating process" }
+                check(joules>0 && abs(span.load.storedJoules-joules)<1e-7) { "Disconnect discarded pending span heat" }
+                check(abs(span.load.physics.massKg-WirePhysics.massKg(d.material,d.conductorAreaMm2,32.0))<1e-10)
+                span.insulationDamaged=true
+                val nbt=CompoundTag();span.write(nbt)
+                val restored=mods.eln.gridnode.WireSpanThermal(d,32.0);restored.read(nbt)
+                try {
+                    restored.connect(connection,{30.0},{ error("Unexpected restored span failure") })
+                    check(restored.insulationDamaged)
+                    check(abs(restored.load.storedJoules-joules)<.01)
+                    check(abs(connection.resistance-d.resistanceOhms(32.0,restored.load.absoluteCelsius)-.02)<1e-8)
+                } finally { restored.disconnect() }
+                root.removeComponent(connection);connection.breakConnection()
+                check(connection !in a.connectedComponents && connection !in b.connectedComponents)
+                check(mods.eln.Eln.simulator.electricalProcessList.toSet()==existing)
+            }
         }
-        val path=Path.of("build/smoke-artifacts/$suite.csv")
+        val path=Path.of("../../build/smoke-artifacts/$suite.csv")
         Files.createDirectories(path.parent);Files.writeString(path,traces)
         report.write(true)
         return report.failures

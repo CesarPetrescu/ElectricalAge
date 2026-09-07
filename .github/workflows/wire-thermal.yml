@@ -42,6 +42,8 @@ jobs:
               d=json.loads(pathlib.Path(f'build/smoke-artifacts/contracts/{suite}.json').read_text())
               assert d['suite']==suite and d['complete'] and d['results'] and d['failures']==0,suite
               assert all(r['status']=='passed' for r in d['results']),suite
+              trace=pathlib.Path(f'build/smoke-artifacts/{suite}.csv')
+              assert trace.is_file() and trace.stat().st_size>0,trace
               print(suite,len(d['results']),'passed')
           PY
       - uses: actions/upload-artifact@v4
