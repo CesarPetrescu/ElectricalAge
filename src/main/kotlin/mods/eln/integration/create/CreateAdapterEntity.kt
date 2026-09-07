@@ -25,6 +25,7 @@ class CreateAdapterEntity(type: BlockEntityType<*>, pos: BlockPos, state: BlockS
     var autoRetry = false; private set
     var fault = 0; private set // 1: stress, 2: speed
     var deliveredPower = 0.0; private set
+    var brakingPower = 0.0; private set
     var requestedImpact = 0.0; private set
     var outputAngle = 0.0; private set
     private var shaft: ShaftNetwork? = null
@@ -91,13 +92,25 @@ class CreateAdapterEntity(type: BlockEntityType<*>, pos: BlockPos, state: BlockS
         redstone = powered
         if (fault != 0 && autoRetry && ++retryTicks >= 100) resetFault()
         deliveredPower = 0.0
+        brakingPower = 0.0
         val rpm = theoreticalSpeed.toDouble()
         val model = mechanics()
         if (engaged && fault == 0 && model.target(rpm, ratio) > AdapterDrive.MAX_SPEED) trip(2)
         if (engaged && fault == 0 && isOverStressed && abs(rpm) > 0) trip(1)
-        if (!engaged || fault != 0 || !hasNetwork() || abs(speed) < 1e-6) { reserve(0.0); publishPeriodically(); return }
+        if (!engaged || fault != 0 || !hasNetwork()) { reserve(0.0); publishPeriodically(); return }
         val net = shaft ?: return
         val inertia = net.mass * Eln.config.getDoubleOrElse("balance.mechanics.shaftEnergyFactor", 0.05)
+        val brake = model.brakingPower(rpm, ratio, net.rads, inertia, 0.05)
+        if (brake > 0) {
+            reserve(0.0)
+            val energy = net.energy
+            val removed = min(energy.coerceAtLeast(0.0), brake * 0.05)
+            net.energy = energy - removed
+            brakingPower = removed / 0.05
+            publishPeriodically()
+            return
+        }
+        if (abs(speed) < 1e-6) { reserve(0.0); publishPeriodically(); return }
         val power = model.requestedPower(rpm, ratio, net.rads, inertia, 0.05)
         val wanted = model.stressImpact(power, rpm)
         // Reserve on Create's real network before releasing any energy into ELN.
@@ -165,7 +178,7 @@ class CreateAdapterEntity(type: BlockEntityType<*>, pos: BlockPos, state: BlockS
         super.write(tag, registries, clientPacket)
         tag.putInt("Ratio", ratio); tag.putBoolean("Engaged", engaged); tag.putBoolean("AutoRetry", autoRetry); tag.putInt("Fault", fault)
         tag.putDouble("OutputSpeed", outputSpeed)
-        if (clientPacket) { tag.putDouble("OutputPower", deliveredPower); tag.putDouble("Impact", requestedImpact) }
+        if (clientPacket) { tag.putDouble("OutputPower", deliveredPower); tag.putDouble("BrakePower", brakingPower); tag.putDouble("Impact", requestedImpact) }
     }
     override fun read(tag: CompoundTag, registries: HolderLookup.Provider, clientPacket: Boolean) {
         super.read(tag, registries, clientPacket)
@@ -175,6 +188,7 @@ class CreateAdapterEntity(type: BlockEntityType<*>, pos: BlockPos, state: BlockS
         savedRads = tag.getDouble("OutputSpeed").takeIf { it.isFinite() && it >= 0 } ?: 0.0
         requestedImpact = if (clientPacket) tag.getDouble("Impact") else 0.0
         deliveredPower = if (clientPacket) tag.getDouble("OutputPower") else 0.0
+        brakingPower = if (clientPacket) tag.getDouble("BrakePower") else 0.0
     }
     override fun getDisplayName(): Component = Component.literal(if (industrial) tr("Industrial Create Shaft Adapter") else tr("Create Shaft Adapter"))
     override fun createMenu(id: Int, inventory: Inventory, player: Player): AbstractContainerMenu = CreateAdapterMenu(id, inventory, this)

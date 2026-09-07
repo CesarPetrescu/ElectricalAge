@@ -21,6 +21,15 @@ class AdapterDrive(val maxPower: Double, val maxTorque: Double, val efficiency: 
     fun stressImpact(outputPower: Double, rpm: Double): Double =
         if (rpm.isFinite() && abs(rpm) > 1e-6) outputPower.coerceIn(0.0, maxPower) / (efficiency * wattsPerSu * abs(rpm)) else 0.0
 
+    /** Dissipative clutch brake, not regeneration into Create. Never crosses the selected target. */
+    fun brakingPower(rpm: Double, ratio: Int, omega: Double, inertia: Double, dt: Double): Double {
+        if (!listOf(rpm, omega, inertia, dt).all { it.isFinite() } || inertia <= 0 || dt <= 0 || ratio !in RATIOS) return 0.0
+        val target = target(rpm, ratio)
+        if (target > MAX_SPEED || omega <= target || omega < 0) return 0.0
+        val next = max(target, omega - min((omega - target) / RESPONSE, maxTorque / inertia) * dt)
+        return min(maxPower, max(0.0, inertia * (omega - next) * (omega + next) / (2 * dt)))
+    }
+
     fun permittedEnergy(requestedPower: Double, acceptedImpact: Double, rpm: Double, dt: Double): Double {
         if (!listOf(requestedPower, acceptedImpact, rpm, dt).all { it.isFinite() } || dt <= 0) return 0.0
         return min(requestedPower.coerceIn(0.0, maxPower), max(0.0, acceptedImpact) * abs(rpm) * wattsPerSu * efficiency) * dt

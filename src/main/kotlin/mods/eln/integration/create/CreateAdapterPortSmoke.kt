@@ -57,6 +57,41 @@ internal object CreateAdapterPortSmoke {
             (world.getBlockEntity(position(i).relative(facing.opposite)) as CreativeMotorBlockEntity).generatedSpeed.setValue(64)
         }
     }
+    fun lowerInput(world: ServerLevel) {
+        for ((i, facing) in Direction.values().withIndex()) {
+            val a = world.getBlockEntity(position(i)) as CreateAdapterEntity
+            val before = a.outputSpeed
+            (world.getBlockEntity(position(i).relative(facing.opposite)) as CreativeMotorBlockEntity).generatedSpeed.setValue(16)
+            check(a.outputSpeed == before) { "Input change reset shaft speed instantly" }
+        }
+    }
+    fun lowerGear(world: ServerLevel) {
+        for (i in Direction.values().indices) {
+            val a = world.getBlockEntity(position(i)) as CreateAdapterEntity
+            check(a.outputSpeed in 13.0..13.5) { "Input reduction did not brake output: ${a.outputSpeed}" }
+            a.command(0)
+            val before = a.outputSpeed
+            check(a.command(4) && a.ratio == 1)
+            check(a.outputSpeed == before) { "Downshift erased stored kinetic energy" }
+        }
+    }
+    fun engageLowerGear(world: ServerLevel) {
+        for (i in Direction.values().indices) {
+            val a = world.getBlockEntity(position(i)) as CreateAdapterEntity
+            check(a.brakingPower == 0.0 && a.deliveredPower == 0.0) { "Open clutch applied torque" }
+            a.command(0)
+        }
+    }
+    fun verifyBrakingAndRestore(world: ServerLevel) {
+        for ((i, facing) in Direction.values().withIndex()) {
+            val a = world.getBlockEntity(position(i)) as CreateAdapterEntity
+            check(a.outputSpeed in 1.3..1.8) { "Downshift did not brake output: ${a.outputSpeed}" }
+            check(a.fault == 0 && a.requestedImpact >= 0) { "Brake produced Create capacity or tripped" }
+            a.command(0); a.command(7); a.command(0)
+            Eln.logger.info("CREATE BRAKE PASS {}: reduced input, downshift, open clutch and bounded settling", facing)
+        }
+        start(world)
+    }
     fun verify(world: ServerLevel) {
         val player = FakePlayerFactory.getMinecraft(world)
         for ((i, facing) in Direction.values().withIndex()) {

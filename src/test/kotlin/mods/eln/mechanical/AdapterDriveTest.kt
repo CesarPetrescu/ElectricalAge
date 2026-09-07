@@ -30,12 +30,49 @@ class AdapterDriveTest {
         assertEquals(0.0, drive.permittedEnergy(4000.0, 0.0, 128.0, 0.05))
         assertEquals(0.0, drive.permittedEnergy(4000.0, impact, 0.0, 0.05))
     }
-    @Test fun freewheelOverspeedAndInvalidInputs() {
+    @Test fun driveDoesNotAddPowerAboveTargetOrForInvalidInputs() {
         val d = AdapterDrive(4000.0, 40.0)
         assertEquals(0.0, d.requestedPower(256.0, 8, 230.0, 10.0, 0.05))
         assertEquals(0.0, d.requestedPower(512.0, 8, 0.0, 10.0, 0.05))
         for (rpm in listOf(0.0, Double.NaN, Double.POSITIVE_INFINITY)) assertEquals(0.0, d.requestedPower(rpm, 8, 0.0, 10.0, 0.05))
         assertEquals(0.0, d.requestedPower(128.0, 8, 0.0, 0.0, 0.05))
+    }
+    @Test fun brakeIsLimitedConservesEnergyAndSettlesEveryRatio() {
+        for ((power, torque) in listOf(4000.0 to 40.0, 16000.0 to 160.0))
+            for (rpm in listOf(-256.0, 256.0, 0.0)) for (ratio in AdapterDrive.RATIOS) {
+                val d = AdapterDrive(power, torque)
+                val inertia = 3.0; val dt = .05; val target = d.target(rpm, ratio)
+                var omega = 230.0
+                var removed = 0.0
+                val initial = .5 * inertia * omega * omega
+                repeat(3000) {
+                    val brake = d.brakingPower(rpm, ratio, omega, inertia, dt)
+                    val energy = .5 * inertia * omega * omega
+                    val next = kotlin.math.sqrt(2 * (energy - brake * dt).coerceAtLeast(0.0) / inertia)
+                    assertTrue(brake in 0.0..power)
+                    assertTrue(next >= target - 1e-8 && next <= omega + 1e-8)
+                    assertTrue((omega - next) * inertia / dt <= torque + 1e-7)
+                    removed += brake * dt
+                    omega = next
+                }
+                assertEquals(target, omega, 1e-5)
+                assertEquals(initial, removed + .5 * inertia * omega * omega, 1e-6)
+            }
+    }
+    @Test fun brakeRejectsInvalidInputsAndCannotOvershootWithLongTicks() {
+        val d = AdapterDrive(4000.0, 40.0)
+        for (bad in listOf(Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY)) {
+            assertEquals(0.0, d.brakingPower(bad, 1, 200.0, 3.0, .05))
+            assertEquals(0.0, d.brakingPower(256.0, 1, bad, 3.0, .05))
+            assertEquals(0.0, d.brakingPower(256.0, 1, 200.0, bad, .05))
+        }
+        assertEquals(0.0, d.brakingPower(256.0, 3, 200.0, 3.0, .05))
+        assertEquals(0.0, d.brakingPower(256.0, 1, 20.0, 3.0, .05))
+        assertEquals(0.0, d.brakingPower(256.0, 1, 200.0, 0.0, .05))
+        assertEquals(0.0, d.brakingPower(256.0, 1, 200.0, 3.0, -1.0))
+        val target = d.target(256.0, 1)
+        val watts = d.brakingPower(256.0, 1, 200.0, 3.0, 100.0)
+        assertEquals(.5 * 3 * (200 * 200 - target * target), watts * 100, 1e-6)
     }
     @Test fun startupCoastsAndRecoversUnderLoad() {
         val d = AdapterDrive(4000.0, 40.0)

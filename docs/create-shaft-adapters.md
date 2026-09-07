@@ -33,8 +33,13 @@ The screen reports input RPM, target and actual output speed, output watts, and 
 
 At 256 RPM, the 8:1 setting targets about 214.5 rad/s. The target is not a guarantee: heavy loads
 slow the ELN network, and its inertia takes time to accelerate. Gearing changes target speed,
-not the adapter's power limit. A shaft already turning faster than the target freewheels;
-the adapter does not brake it or feed energy back into Create.
+not the adapter's power limit. While engaged, a shaft faster than the target is slowed by a
+dissipative clutch brake, limited by the adapter's rated torque and power. The screen shows
+**Braking to selected gear** and braking watts. Heavy flywheels take longer to slow down.
+The removed kinetic energy is dissipated; it is not converted into Create stress capacity or
+returned as electrical power. This models a regulated coupling, not a rigid ideal gearbox.
+Disengaged, disconnected and faulted adapters coast instead. Other attached motors can oppose
+the brake, so use matching ratios when several adapters drive the same shaft.
 
 ## Stress and overloads
 

@@ -71,12 +71,13 @@ private class AdapterScreen(menu: CreateAdapterMenu, inventory: Inventory, title
         g.drawString(font, title, 10, 11, 0xFFFFFF, false)
         val d = menu.values
         val rpm = d.get(4); val omega = d.get(5) / 10.0
-        val state = when { d.get(3) == 1 -> tr("Tripped: Create overstressed"); d.get(3) == 2 -> tr("Tripped: target exceeds 240 rad/s"); d.get(1) == 0 -> tr("Disengaged"); rpm == 0 -> tr("Waiting for Create rotation"); else -> tr("Engaged") }
+        val state = when { d.get(3) == 1 -> tr("Tripped: Create overstressed"); d.get(3) == 2 -> tr("Tripped: target exceeds 240 rad/s"); d.get(1) == 0 -> tr("Disengaged - coasting"); d.get(9) > 0 -> tr("Braking to selected gear"); rpm == 0 -> tr("Waiting for Create rotation"); else -> tr("Engaged") }
         val lines = listOf(state,
             tr("Input: %1$ RPM | Gear: %2$:1", rpm, d.get(0)),
             tr("Target: %1$ rad/s", String.format(java.util.Locale.ROOT, "%.1f", abs(rpm) * PI / 30 * d.get(0))),
             tr("Output: %1$ rad/s (%2$ RPM)", omega, (omega * 30 / PI).toInt()),
-            tr("Power: %1$ W | Stress: %2$ SU", d.get(6), d.get(7)))
+            if (d.get(9) > 0) tr("Braking: %1$ W | Stress: %2$ SU", d.get(9), d.get(7))
+            else tr("Power: %1$ W | Stress: %2$ SU", d.get(6), d.get(7)))
         lines.forEachIndexed { i, text -> g.drawString(font, text, 10, 35 + i * 15, 0xEEEEEE, false) }
         g.drawString(font, tr("Selected gear: %1$:1", d.get(0)), 10, 114, 0x73C9AE, false)
         g.drawString(font, if (d.get(1) != 0) tr("Disengage to change gear.") else tr("Select a ratio, then engage."),

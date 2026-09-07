@@ -91,6 +91,7 @@ public final class SmokeTest {
         } else if (ticks == 80) {
             try {
                 verify();
+                if (everything || (!placing && BlockContracts.hasManifest(world()))) check(BlockContracts.verify(world(), !placing) == 0, "strict block identities after ticking/restart");
             } catch (Throwable t) {
                 fail("verification threw", t);
             }
@@ -746,6 +747,7 @@ public final class SmokeTest {
         }
         // the grid cannot satisfy every placement rule (walls, ceilings, water); an exception is the failure
         check(threw == 0, "ALL placed {} of {} descriptors ({} not placed, {} threw)", placed, descriptors.size(), failed, threw);
+        check(BlockContracts.place(world) == 0, "strict per-descriptor placement and removal contracts");
     }
 
     /** A transparent node stands on the block; the item's placement path creates node and block. */

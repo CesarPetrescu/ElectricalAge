@@ -9,6 +9,25 @@ class CreateAdapterModelTest {
         JsonParser.parseReader(it).asJsonObject
     }
 
+    @Test fun noOverlappingCoplanarOutwardFaces() {
+        for (kind in listOf("block", "item")) {
+            val elements = model("$kind/create_shaft_adapter").getAsJsonArray("elements").map { it.asJsonObject }
+            for ((axis, faces) in listOf(listOf("west", "east"), listOf("down", "up"), listOf("north", "south")).withIndex()) {
+                for ((end, face) in faces.withIndex()) for (i in elements.indices) for (j in i + 1 until elements.size) {
+                    val a = elements[i]; val b = elements[j]
+                    if (!a.getAsJsonObject("faces").has(face) || !b.getAsJsonObject("faces").has(face)) continue
+                    val edge = if (end == 0) "from" else "to"
+                    if (a.getAsJsonArray(edge)[axis].asDouble != b.getAsJsonArray(edge)[axis].asDouble) continue
+                    val overlap = (0..2).filter { it != axis }.all { k ->
+                        minOf(a.getAsJsonArray("to")[k].asDouble, b.getAsJsonArray("to")[k].asDouble) >
+                            maxOf(a.getAsJsonArray("from")[k].asDouble, b.getAsJsonArray("from")[k].asDouble)
+                    }
+                    assertFalse(overlap, "$kind: overlapping $face faces on elements $i and $j")
+                }
+            }
+        }
+    }
+
     @Test fun coversAreConsistentAndDoNotRestoreExposedControls() {
         val block = model("block/create_shaft_adapter")
         val item = model("item/create_shaft_adapter")

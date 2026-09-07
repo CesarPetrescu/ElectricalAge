@@ -114,13 +114,17 @@ class CreateAdapterSmoke {
                 a.orCreateNetwork.updateCapacityFor(world.getBlockEntity(base.offset(-1, 0, i * 8)) as CreativeMotorBlockEntity, 0f)
                 a.getShaft(ShaftDirection.XP)!!.energy = 0.0
             }
+            if (ticks == 210) CreateAdapterPortSmoke.lowerInput(world)
+            if (ticks == 280) CreateAdapterPortSmoke.lowerGear(world)
+            if (ticks == 285) CreateAdapterPortSmoke.engageLowerGear(world)
+            if (ticks == 360) CreateAdapterPortSmoke.verifyBrakingAndRestore(world)
             if (ticks == 220) for (i in 0..1) {
                 val a = adapter(i)
                 check(a.fault == 1)
                 val motor = world.getBlockEntity(base.offset(-1, 0, i * 8)) as CreativeMotorBlockEntity
                 a.orCreateNetwork.updateCapacityFor(motor, motor.calculateAddedStressCapacity())
             }
-            if (ticks == 350) {
+            if (ticks == 420) {
                 for (i in 0..1) check(adapter(i).outputSpeed > 0 && adapter(i).fault == 0)
                 Eln.logger.info("CREATE SMOKE PASS overload/redstone reset/automatic retry and both tiers; restart={}", verify)
                 event.server.halt(false)

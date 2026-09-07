@@ -9,8 +9,8 @@ import net.minecraft.world.item.ItemStack
 import kotlin.math.roundToInt
 
 class CreateAdapterMenu(id: Int, inventory: Inventory, private val adapter: CreateAdapterEntity? = null) : AbstractContainerMenu(CreateIntegration.menu.get(), id) {
-    val values: ContainerData = if (adapter == null) SimpleContainerData(9) else object : ContainerData {
-        override fun getCount() = 9
+    val values: ContainerData = if (adapter == null) SimpleContainerData(10) else object : ContainerData {
+        override fun getCount() = 10
         override fun get(index: Int): Int = when (index) {
             0 -> adapter.ratio
             1 -> if (adapter.engaged) 1 else 0
@@ -21,6 +21,7 @@ class CreateAdapterMenu(id: Int, inventory: Inventory, private val adapter: Crea
             6 -> adapter.deliveredPower.roundToInt()
             7 -> (adapter.requestedImpact * kotlin.math.abs(adapter.theoreticalSpeed)).roundToInt()
             8 -> if (adapter.industrial) 1 else 0
+            9 -> adapter.brakingPower.roundToInt()
             else -> 0
         }
         override fun set(index: Int, value: Int) {}
@@ -28,7 +29,7 @@ class CreateAdapterMenu(id: Int, inventory: Inventory, private val adapter: Crea
     // Vanilla menu data packets carry signed 16-bit words. Split values so server-configured
     // power ratings and negative input RPM survive synchronization without wrapping.
     init { addDataSlots(object : ContainerData {
-        override fun getCount() = 18
+        override fun getCount() = 20
         override fun get(index: Int) = (values.get(index / 2) ushr ((index % 2) * 16)) and 0xffff
         override fun set(index: Int, value: Int) {
             if (adapter != null) return

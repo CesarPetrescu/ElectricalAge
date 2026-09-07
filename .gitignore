@@ -37,4 +37,4 @@ src/main/resources/mixins.*([!.]).json
 .kotlin/
 .codex
 .gradle-home/
-
+__pycache__/

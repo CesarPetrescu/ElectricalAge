@@ -40,6 +40,7 @@ public final class ClientSmokeTest {
     private Phase phase = Phase.OPEN;
     private int wait;
     private int failures;
+    private final BlockGallery blockGallery = "1".equals(System.getenv("ELN_FULL_GALLERY")) ? new BlockGallery() : null;
 
     /** One check: a PASS/FAIL log line, and the run's exit status. */
     private boolean check(boolean ok, String what, Object... args) {
@@ -372,8 +373,24 @@ public final class ClientSmokeTest {
                 }
                 if (adapterGearStep < 4) pressAdapterButton(mc, ratios[adapterGearStep] + ":1");
                 else if (adapterGearStep == 4) pressAdapterButton(mc, "Engage");
-                else {
+                else if (adapterGearStep == 5) {
                     check(menu.getValues().get(1) == 1, "Clutch re-engaged through GUI");
+                    pressAdapterButton(mc, "Disengage");
+                } else if (adapterGearStep == 6) pressAdapterButton(mc, "1:1");
+                else if (adapterGearStep == 7) {
+                    check(menu.getValues().get(0) == 1, "Downshift synchronized before engaging");
+                    pressAdapterButton(mc, "Engage");
+                } else if (adapterGearStep == 8) {
+                    check(menu.getValues().get(1) == 1 && menu.getValues().get(9) > 0 && menu.getValues().get(6) == 0,
+                        "Engaged downshift reports braking power rather than drive power");
+                    shot(mc, "smoke-create-braking-" + adapterIndex);
+                } else {
+                    double target = Math.abs(menu.getValues().get(4)) * Math.PI / 30;
+                    double actual = menu.getValues().get(5) / 10.0;
+                    // This fixture includes a flywheel; bounded braking must dissipate its energy.
+                    if (Math.abs(actual - target) > 2 && wait < 1200) return;
+                    check(Math.abs(actual - target) <= 2, "GUI downshift settles to 1:1: target={} actual={}", target, actual);
+                    shot(mc, "smoke-create-downshift-settled-" + adapterIndex);
                     adapterIndex++;
                     mc.player.closeContainer();
                     phase = adapterIndex < 2 ? Phase.ADAPTER_GUI : Phase.ADAPTER_DETAILS;
@@ -416,6 +433,7 @@ public final class ClientSmokeTest {
                 wait = 0;
             }
             case DONE -> {
+                if (blockGallery != null && !blockGallery.tick(mc)) return;
                 if (wait++ < 10) return;
                 // the game's own exit is System.exit(0); a failed check leaves through exit 1 so a script can tell
                 if (failures > 0) {
