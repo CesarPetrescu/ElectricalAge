@@ -1,5 +1,7 @@
 # Porting Electrical Age to Minecraft 1.21.1 (NeoForge)
 
+> **Historical migration notes.** The maintained 1.21.1 port now lives on `main` in `CesarPetrescu/ElectricalAge`. Use the [README](README.md) for current installation/build instructions and the [block-contract guide](docs/block-contracts.md) for current test coverage. Branch names, counts and smoke results below describe the original migration snapshot, not the latest CI run.
+
 Branch `port/1.21.1`, based on `port/1.12.2` (which is upstream `main` @ `6a8cd0df` plus the 1.12.2
 port). The 1.12.2 branch is the base because it already did the API modernisation that 1.21 also
 needs (BlockPos, ItemStack.EMPTY, capabilities, deferred registration, lowercase assets, model

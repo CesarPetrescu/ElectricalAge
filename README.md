@@ -1,73 +1,167 @@
-# Electrical Age — Minecraft 1.21.1
+<p align="center">
+  <img src="src/main/resources/assets/eln/logo.png" alt="Electrical Age — large-scale electrical simulation" width="600">
+</p>
 
-[![CI](https://github.com/CesarPetrescu/ElectricalAge/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/CesarPetrescu/ElectricalAge/actions/workflows/ci.yml)
+<h1 align="center">Electrical Age · Minecraft 1.21.1</h1>
 
-Electrical Age brings electrical simulation, wiring, lighting, and industrial machines to Minecraft. This repository contains CesarPetrescu's **Minecraft 1.21.1 / NeoForge port** on `main`, based on the [Age Series Electrical Age project](https://github.com/age-series/ElectricalAge).
+<p align="center">
+  Build circuits. Generate power. Drive machinery.<br>
+  A community NeoForge port of the <a href="https://github.com/age-series/ElectricalAge">Age Series Electrical Age project</a>, maintained here on <code>main</code>.
+</p>
 
-The port includes generators and turbines, shaft networks, large motors and generators, batteries, meters, lamps, and processing machines, with optional Jade and CC: Tweaked integrations. See the [port status and known differences](PORT-1.21.md) for implemented features, excluded legacy integrations, and verification evidence.
+<p align="center">
+  <a href="https://github.com/CesarPetrescu/ElectricalAge/actions/workflows/ci.yml"><img src="https://github.com/CesarPetrescu/ElectricalAge/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI status"></a>
+  <img src="https://img.shields.io/badge/Minecraft-1.21.1-62B47A" alt="Minecraft 1.21.1">
+  <img src="https://img.shields.io/badge/Loader-NeoForge-E89C54" alt="NeoForge">
+  <img src="https://img.shields.io/badge/Java-21-669CC4" alt="Java 21">
+</p>
 
-## Download and install
+<p align="center">
+  <a href="https://github.com/CesarPetrescu/ElectricalAge/releases/tag/latest-1.21.1"><strong>Download the mod</strong></a> ·
+  <a href="#installation">Installation</a> ·
+  <a href="#build-from-source">Build from source</a> ·
+  <a href="#contributing">Contribute</a> ·
+  <a href="https://github.com/CesarPetrescu/ElectricalAge/issues">Report a bug</a>
+</p>
 
-**Required dependency: [Kotlin for Forge by thedarkcolour](https://modrinth.com/mod/kotlin-for-forge/versions), version 5.12.0 for Minecraft 1.21.1 / NeoForge.** Install it alongside Electrical Age on both the client and dedicated server. Electrical Age's JAR does not include this dependency.
+> [!WARNING]
+> **This is a development port, not a stable release.** Back up your worlds and start with a fresh test world. Saves from Electrical Age 1.7.10 and 1.12.2 are not migrated. This JAR targets **Minecraft 1.21.1 + NeoForge**, not Fabric or legacy Forge.
 
-**KotlinLangForge by btwonion is a different mod and is not required by Electrical Age.** It does not replace the `kotlinforforge` loader this port declares. You do not need both Kotlin mods for Electrical Age; other mods in your pack may have their own requirements.
+## What you can build
 
-Get the [latest tested 1.21.1 development build](https://github.com/CesarPetrescu/ElectricalAge/releases/tag/latest-1.21.1), or [download the mod JAR directly](https://github.com/CesarPetrescu/ElectricalAge/releases/download/latest-1.21.1/ElectricalAge-1.21.1-latest.jar).
+Electrical Age brings electrical simulation, wiring, lighting and industrial machinery to Minecraft:
 
-1. Create a **Minecraft 1.21.1** instance with **NeoForge 21.1.249** and **Java 21**.
-2. Download **[Kotlin for Forge 5.12.0 by thedarkcolour](https://modrinth.com/mod/kotlin-for-forge/versions)**, using its Minecraft 1.21.1 / NeoForge-compatible build, and put its JAR in the instance's `mods` folder.
-3. Put `ElectricalAge-1.21.1-latest.jar` in the same `mods` folder. Install it and Kotlin for Forge on both the client and dedicated server when playing multiplayer.
-4. Start with a fresh world. Saves from the 1.7.10 and 1.12.2 versions are not migrated by this port.
+- **Power networks:** cables, batteries, generators, turbines, transformers and meters.
+- **Mechanical systems:** motors, generators, shafts, flywheels and large machines.
+- **Automation:** processing machines, signal wiring and optional computer control.
+- **Lighting:** lamps, sockets and floodlights for your builds.
+- **Create integration:** optional 4 kW and 16 kW shaft adapters with gearing, load-dependent stress, overload protection and controlled braking.
 
-These are development builds, published as the repository's rolling Latest release. Keep backups of worlds used for testing. Jade and CC: Tweaked are optional; use their Minecraft 1.21.1 / NeoForge builds if you want their integrations. Development dependency versions are recorded in [gradle.properties](gradle.properties).
+The creative inventory has nine categories: **Wires & Cables**, **Signals & Control**, **Power**, **Mechanics**, **Processing**, **Lighting**, **Materials**, **Tools & Armor**, and **Creative Only**. Ground Cable belongs in Wires & Cables.
 
-## Build and test
+See the [Create adapter guide](docs/create-shaft-adapters.md) for connections on all three axes, gear selection and signal inputs. For worked circuits, explore the [electrical examples](docs/examples/README.md).
 
-### Inventory and Create integration
+## Installation
 
-Items are organized into **Wires & Cables, Signals & Control, Power, Mechanics, Processing,
-Lighting, Materials, Tools & Armor, and Creative Only**. Ground Cable is in Wires & Cables.
+### 1. Create the right Minecraft instance
 
-With **Create 6.0.10 for Minecraft 1.21.1 / NeoForge** installed, the Mechanics tab also contains
-4 kW and 16 kW **Create shaft adapters**. They drive ELN machinery from Create rotation using
-load-dependent stress, selectable gearing, and overload protection. See the
-[connection, crafting, and controls guide](docs/create-shaft-adapters.md).
+Use **Minecraft 1.21.1**, **[NeoForge 21.1.249](https://neoforged.net/)** and **Java 21**. These are the versions targeted by this repository. In a modpack launcher, select the Minecraft version first, then NeoForge; with the standard launcher, install the matching NeoForge profile.
 
-### Compile from source
+### 2. Download the mod and its required dependency
 
-Use JDK 21 and the included Gradle wrapper. On Linux/macOS:
+| Mod | Required? | Version used by this port | Purpose |
+|---|---|---|---|
+| [Electrical Age](https://github.com/CesarPetrescu/ElectricalAge/releases/tag/latest-1.21.1) | **Yes** | Latest passing 1.21.1 development build | The mod itself |
+| [Kotlin for Forge — thedarkcolour](https://modrinth.com/mod/kotlin-for-forge/versions) | **Yes** | **5.12.0**, Minecraft 1.21.1 / NeoForge build | Required Kotlin language loader and runtime |
+| [Create](https://modrinth.com/mod/create/versions) | Optional | **6.0.10**, Minecraft 1.21.1 / NeoForge build | Enables the Create shaft adapters and their recipes |
+| [Jade](https://modrinth.com/mod/jade/versions) | Optional | **15.10.6+neoforge** | Block names and measurement overlays |
+| [CC: Tweaked](https://modrinth.com/mod/cc-tweaked/versions) | Optional | **1.120.2**, Minecraft 1.21.1 / NeoForge build | Computer Probe integration |
+
+Always select each dependency's **Minecraft 1.21.1 / NeoForge-compatible file**. Installing an unrelated newer version is not the same as installing the matching build. ELN works without Create, Jade or CC: Tweaked.
+
+> [!IMPORTANT]
+> **Kotlin for Forge by thedarkcolour is required and is not bundled in the ELN JAR.**
+> **KotlinLangForge by btwonion is a different mod and is not required by Electrical Age.** It does not replace this port's `kotlinforforge` loader. You do not need both Kotlin mods for ELN; other mods in your pack may have their own requirements.
+
+**[Download ElectricalAge-1.21.1-latest.jar directly](https://github.com/CesarPetrescu/ElectricalAge/releases/download/latest-1.21.1/ElectricalAge-1.21.1-latest.jar)** — or open the [release page](https://github.com/CesarPetrescu/ElectricalAge/releases/tag/latest-1.21.1) for its source commit, passing CI run and SHA-256 checksum.
+
+### 3. Put the JARs in `mods` and launch
+
+Open your instance's folder and put **Electrical Age + Kotlin for Forge** in its `mods` directory. Add any optional integrations you want alongside them. Download the actual mod JAR, **not** GitHub's “Source code” ZIP or a `-sources.jar`.
+
+Launch the NeoForge instance, confirm Electrical Age appears in the Mods list, and create a fresh world. For multiplayer, install Electrical Age and Kotlin for Forge on **both the client and dedicated server**; keep gameplay mod versions in sync. Back up worlds before replacing an older ELN JAR, and avoid leaving two ELN versions in the same folder.
+
+<details>
+<summary><strong>Installation troubleshooting</strong></summary>
+
+- **Missing `kotlinforforge` / Kotlin loader:** install the required Kotlin for Forge file above, not KotlinLangForge.
+- **Incompatible loader or Minecraft version:** check that the instance and every downloaded file target 1.21.1 / NeoForge.
+- **No Create adapters:** install the matching Create build, restart Minecraft, and check **ELN — Mechanics**.
+- **Crash after an update:** keep your backup, note the exact mod versions, and attach the relevant `logs/latest.log` and crash report to a [bug report](https://github.com/CesarPetrescu/ElectricalAge/issues). Do not delete your world to diagnose a crash.
+
+</details>
+
+## Build from source
+
+You need **Git**, an internet connection and a **full JDK 21**. A game launcher's Java runtime/JRE alone is not enough to compile. Set `JAVA_HOME` to the JDK installation directory and use the included Gradle wrapper; a separate Gradle installation is unnecessary.
 
 ```sh
-./gradlew build
-./gradlew benchmarkTest
+git clone --branch main https://github.com/CesarPetrescu/ElectricalAge.git
+cd ElectricalAge
 ```
 
-On Windows PowerShell:
+**Windows — PowerShell**
 
 ```powershell
+java -version
+javac -version
+.\gradlew.bat --version
 .\gradlew.bat build
-.\gradlew.bat benchmarkTest
 ```
 
-`build` compiles the mod, runs the unit tests through NeoForge's JUnit launcher, and produces JARs in `build/libs/`. `benchmarkTest` runs the separate benchmark and profiling suite.
+**Linux / macOS**
 
-The [headless test guide](tools/port/headless.md) explains the Linux server/restart/client smoke suite (`tools/port/smoke.sh`), including its software-rendered screenshots. See [docs/port](docs/port) for saved visual evidence.
+```sh
+java -version
+javac -version
+./gradlew --version
+./gradlew build
+```
 
-## Automated builds and releases
+Check that the compiler and Gradle JVM use **Java 21**. The first build downloads Gradle, Minecraft tooling and dependencies, so it takes longer than later builds.
 
-[GitHub Actions](https://github.com/CesarPetrescu/ElectricalAge/actions/workflows/ci.yml) checks pushes to `main` and `port/**`, tags, pull requests, and manual runs:
+The compiled mod is **`build/libs/ElectricalAge-3.0.0-port.jar`**. `build` also runs unit tests. Install that JAR like the release JAR, including Kotlin for Forge separately. The rolling release renames the published artifact to `ElectricalAge-1.21.1-latest.jar`.
 
-- **Build and unit tests:** compile the mod and upload the JAR and test reports.
-- **MNA benchmarks:** run benchmark tests and upload statistics and reports.
-- **In-world smoke tests:** place machines and circuits, verify a saved-world restart, run the client, and upload screenshots and logs.
-- **Publish latest mod:** after build, benchmarks, and smoke tests both with and without Create succeed on the current `main` commit, update the `latest-1.21.1` release with the tested JAR and its SHA-256 checksum. Pull requests and other branches do not publish releases.
+### Useful development commands
 
-The release notes identify the exact source commit and CI run. The download URL stays the same as newer passing builds replace it. Failed checks leave the previous release available. Individual build artifacts can also be downloaded from an Actions run; those artifacts may exist before the full suite finishes.
+Run these from the repository root. On Windows, replace `./gradlew` with `.\gradlew.bat`.
 
-To run the pipeline manually, open **Actions → CI → Run workflow** and select `main`. Publishing uses GitHub's automatic workflow token; no personal access token is needed.
+| Command | What it does |
+|---|---|
+| `./gradlew runClient` | Launch a development client; Gradle supplies its development dependencies |
+| `./gradlew runClient -PwithCreate` | Launch with Create enabled for adapter development |
+| `./gradlew runServer` | Launch a development dedicated server; review and accept the Minecraft EULA in `run/server/eula.txt` yourself |
+| `./gradlew test` | Run the unit tests through NeoForge's test launcher |
+| `./gradlew benchmarkTest` | Run the separate simulation benchmark suite |
+| `./gradlew generateLangFiles` | Regenerate translation keys after adding translatable strings |
+| `./gradlew runData` | Regenerate recipes, tags, loot, models and worldgen data; review the resulting diff |
+| `./gradlew portStatus` | Show which source files the 1.21.1 build includes |
 
-## Credits and license
+Development files live in `run/client/` and `run/server/`. Create is added to development runs with `-PwithCreate`; that flag is **not** needed to compile adapter support into the distributable JAR.
 
-This port builds on Electrical Age and the work of the Age Series maintainers and contributors. See [credits](docs/credits.md) and the [upstream contributor history](https://github.com/age-series/ElectricalAge/graphs/contributors).
+## Testing and automated releases
 
-Source and asset licensing is described in [LICENSE.md](LICENSE.md), with additional notices alongside individual assets.
+[GitHub Actions](https://github.com/CesarPetrescu/ElectricalAge/actions/workflows/ci.yml) runs build/unit tests, simulation benchmarks and separate **standalone / Create-enabled** game jobs.
+
+| When | What runs |
+|---|---|
+| Pushes and pull requests | Build, unit tests, benchmarks, strict descriptor placement/removal contracts, saved-world restart checks and targeted client/GUI checks |
+| Nightly or manual **extended** run | The above, plus two additional restart replays and a named per-block screenshot gallery |
+| Passing eligible `main` build | Publish the build artifact and checksum to the rolling `latest-1.21.1` release |
+
+Per-block results are available as **JSON, JUnit XML and a GitHub job summary**. Logs and screenshots upload even on failure. A missing or failing required contract report blocks publication; skipped checks remain visibly untested.
+
+**Coverage is not complete.** Generic placement does not prove every machine's behavior, inventory conservation or visual correctness. See [what is tested and what remains](docs/block-contracts.md), and the [Linux headless testing guide](tools/port/headless.md) for running the full suite locally. Only use disposable test worlds: smoke runs intentionally replace test saves and break test machines.
+
+The rolling download URL stays the same as newer passing builds replace it. Failed checks leave the previous release available. Actions artifacts can appear before the whole run passes, so **use the release page for the latest fully gated build**. Nightly, extended, pull-request and non-`main` runs do not publish releases.
+
+## Contributing
+
+Bug reports, regression tests, translations, documentation, models and code improvements are welcome.
+
+1. **Report or discuss the change** in [this repository's issue tracker](https://github.com/CesarPetrescu/ElectricalAge/issues), especially for large features.
+2. **Fork this repository**, branch from `main`, and keep the change focused.
+3. **Add tests and verify your changes.** Run `build`; include in-game screenshots for model/GUI work and relevant smoke checks for gameplay changes.
+4. **Open a pull request against `CesarPetrescu/ElectricalAge:main`**, explaining the change, how you tested it and any remaining limitations.
+
+Read the [contribution guide](CONTRIBUTING.md) for setup, translation rules, registry-ID safety and a PR checklist. Report bugs in **this port** here rather than sending port-specific issues to the upstream project.
+
+## Documentation and credits
+
+- [Create shaft adapters](docs/create-shaft-adapters.md) — connections, gearing, braking and controls.
+- [Test coverage](docs/block-contracts.md) — per-block reports, nightly runs and known gaps.
+- [Circuit examples](docs/examples/README.md) — worked electrical examples.
+- [Porting notes](PORT-1.21.md) — historical migration decisions and known differences.
+- [Credits](docs/credits.md) — the people and projects behind Electrical Age.
+
+This port builds on the work of the **Age Series Electrical Age maintainers and contributors**. Source code is licensed under **LGPL v3.0**; graphics and models have separate **CC BY-NC-SA 3.0** terms and asset-specific exceptions. See [LICENSE.md](LICENSE.md) and the notices alongside individual assets.
