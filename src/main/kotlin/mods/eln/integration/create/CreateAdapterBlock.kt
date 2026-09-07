@@ -18,11 +18,15 @@ import net.minecraft.world.level.block.state.StateDefinition
 import net.minecraft.world.level.block.state.properties.BlockStateProperties
 import net.minecraft.world.phys.BlockHitResult
 
-class CreateAdapterBlock(val industrial: Boolean) : KineticBlock(BlockBehaviour.Properties.of().strength(3.0f).sound(SoundType.METAL)), IBE<CreateAdapterEntity> {
+class CreateAdapterBlock(val industrial: Boolean) : KineticBlock(BlockBehaviour.Properties.of().strength(3.0f).sound(SoundType.METAL).noOcclusion()), IBE<CreateAdapterEntity>, mods.eln.generic.SignalWireSupport {
     init { registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH)) }
     override fun createBlockStateDefinition(builder: StateDefinition.Builder<Block, BlockState>) { builder.add(FACING) }
-    override fun getStateForPlacement(context: BlockPlaceContext): BlockState = defaultBlockState().setValue(FACING, context.clickedFace)
+    override fun getStateForPlacement(context: BlockPlaceContext): BlockState = defaultBlockState().setValue(FACING,
+        if (context.player?.isShiftKeyDown == true) context.clickedFace.opposite else context.clickedFace)
+    override fun canConnectRedstone(state: BlockState, world: net.minecraft.world.level.BlockGetter, pos: BlockPos, side: Direction?): Boolean =
+        side != null && side.axis != state.getValue(FACING).axis
     override fun getRotationAxis(state: BlockState): Direction.Axis = state.getValue(FACING).axis
+    override fun acceptsSignalWire(state: BlockState, face: Direction) = face.axis != state.getValue(FACING).axis
     override fun hasShaftTowards(world: LevelReader, pos: BlockPos, state: BlockState, face: Direction): Boolean = face == state.getValue(FACING).opposite
     override fun getBlockEntityClass(): Class<CreateAdapterEntity> = CreateAdapterEntity::class.java
     override fun getBlockEntityType(): BlockEntityType<out CreateAdapterEntity> = if (industrial) CreateIntegration.industrialType.get() else CreateIntegration.basicType.get()

@@ -31,6 +31,7 @@ class CreateAdapterSmoke {
         try {
             if (ticks == 10) {
                 for (x in 39..41) for (z in 39..41) world.setChunkForced(x, z, true)
+                if (!verify) CreateAdapterPortSmoke.place(world)
                 if (!verify) for (i in 0..1) {
                     val p = base.offset(0, 0, i * 8)
                     for (x in -1..3) { world.setBlockAndUpdate(p.offset(x, -1, 0), Blocks.STONE.defaultBlockState()); world.removeBlock(p.offset(x, 0, 0), false) }
@@ -62,11 +63,13 @@ class CreateAdapterSmoke {
                     }
                 }
             }
+            if (ticks == 20) CreateAdapterPortSmoke.start(world)
             if (ticks == 20) for (i in 0..1) {
                 if (verify) check(adapter(i).autoRetry && adapter(i).ratio == 8) { "Adapter settings did not survive restart" }
                 val motor = world.getBlockEntity(base.offset(-1, 0, i * 8)) as CreativeMotorBlockEntity
                 motor.generatedSpeed.setValue(if (i == 0) 256 else -256)
             }
+            if (ticks == 160) CreateAdapterPortSmoke.verify(world)
             if (ticks == 160) for (i in 0..1) {
                 val a = adapter(i)
                 check(a.hasNetwork() && a.outputSpeed > 10 && a.fault == 0) { "Adapter $i did not drive the shaft: ${a.outputSpeed}, fault ${a.fault}" }

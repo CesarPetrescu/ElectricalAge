@@ -113,6 +113,10 @@ class SixNodeItem(b: Supplier<Block>) : GenericItemBlockUsingDamage<SixNodeDescr
         val vect = intArrayOf(pos.x, pos.y, pos.z)
         fromFacing(side).applyTo(vect, 1)
         val descriptor = getDescriptor(stack) ?: return false
+        val supportState = world.getBlockState(pos)
+        val support = supportState.block as? mods.eln.generic.SignalWireSupport
+        if (support != null && (!support.acceptsSignalWire(supportState, side) ||
+            descriptor !is mods.eln.sixnode.electricalcable.ElectricalCableDescriptor || !descriptor.signalWire)) return false
         if (!descriptor.canBePlacedOnSide(player, Coordinate(pos.x, pos.y, pos.z, world), fromFacing(side).inverse)) {
             return false
         }

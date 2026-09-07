@@ -129,10 +129,13 @@ class VerticalHubElement(node: TransparentNode, desc_: TransparentNodeDescriptor
 
     override fun connectedOnSide(direction: Direction, net: ShaftNetwork) {
         connectedSides.add(direction)
+        standingSides.remove(direction)
+        needPublish()
     }
 
     override fun disconnectedOnSide(direction: Direction, net: ShaftNetwork?) {
         connectedSides.remove(direction)
+        needPublish()
     }
 
     override fun networkSerialize(stream: DataOutputStream) {
@@ -159,6 +162,7 @@ class VerticalHubElement(node: TransparentNode, desc_: TransparentNodeDescriptor
 
     override fun onNeighborBlockChange() {
         scanStandingSides()
+        needPublish()
     }
 }
 

@@ -1,3 +1,6 @@
 {
-  "parent": "eln:block/industrial_create_shaft_adapter"
+  "parent": "eln:item/create_shaft_adapter",
+  "textures": {
+    "create": "create:block/brass_casing"
+  }
 }

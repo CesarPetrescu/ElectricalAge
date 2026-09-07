@@ -34,8 +34,9 @@ class CreateAdapterEntity(type: BlockEntityType<*>, pos: BlockPos, state: BlockS
     private var age = 0
     private var drive: AdapterDrive? = null
     private var savedRads = 0.0
+    private var shaftFacing = state.getValue(CreateAdapterBlock.FACING)
     override val shaftMass = if (industrial) 4.0 else 1.0
-    override val shaftConnectivity get() = arrayOf(ShaftDirection.fromFacing(blockState.getValue(CreateAdapterBlock.FACING)))
+    override val shaftConnectivity get() = arrayOf(ShaftDirection.fromFacing(shaftFacing))
     override fun coordonate() = Coordinate(this)
     override fun getShaft(dir: ShaftDirection) = if (dir in shaftConnectivity) shaft else null
     override fun setShaft(dir: ShaftDirection, net: ShaftNetwork?) { if (dir in shaftConnectivity) shaft = net }
@@ -75,9 +76,17 @@ class CreateAdapterEntity(type: BlockEntityType<*>, pos: BlockPos, state: BlockS
         val world = level ?: return
         if (world.isClientSide) { outputAngle = (outputAngle + outputSpeed * 0.05) % (2 * PI); return }
         age++
+        val facing = blockState.getValue(CreateAdapterBlock.FACING)
+        if (facing != shaftFacing) {
+            detachOutput()
+            shaftFacing = facing
+            disconnecting = false
+            shaft = ShaftNetwork(this, shaftConnectivity.iterator()).also { it.rads = savedRads }
+            shaft?.connectShaft(this, shaftConnectivity[0])
+        }
         if (shaft == null) return
         if (age % 20 == 0) shaft?.connectShaft(this, shaftConnectivity[0])
-        val powered = world.hasNeighborSignal(worldPosition)
+        val powered = controlPowered()
         if (powered && !redstone) resetFault()
         redstone = powered
         if (fault != 0 && autoRetry && ++retryTicks >= 100) resetFault()
@@ -101,6 +110,19 @@ class CreateAdapterEntity(type: BlockEntityType<*>, pos: BlockPos, state: BlockS
     }
 
     private fun publishPeriodically() { if (age % 5 == 0) needPublish() }
+    /** Four radial faces are high-impedance reset inputs, never mechanical/power ports. */
+    internal fun controlPowered(): Boolean {
+        val world = level ?: return false
+        val axis = blockState.getValue(CreateAdapterBlock.FACING).axis
+        return net.minecraft.core.Direction.values().filter { it.axis != axis }.any { side ->
+            val pos = worldPosition.relative(side)
+            if (!world.hasChunkAt(pos)) return@any false
+            if (world.getSignal(pos, side) > 0) return@any true
+            val node = mods.eln.node.NodeManager.instance?.getNodeFromCoordonate(Coordinate(pos.x, pos.y, pos.z, world)) as? mods.eln.node.six.SixNode
+            val wire = node?.getElement(ShaftDirection.fromFacing(side.opposite)) as? mods.eln.sixnode.electricalcable.ElectricalCableElement
+            wire?.descriptor?.signalWire == true && wire.electricalLoad.voltage.isFinite() && wire.electricalLoad.voltage >= Eln.SVU * 0.5
+        }
+    }
     private fun reserve(value: Double) {
         val safe = if (value.isFinite()) value.coerceAtLeast(0.0) else 0.0
         if (safe == requestedImpact) return

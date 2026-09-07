@@ -37,7 +37,7 @@ private class AdapterScreen(menu: CreateAdapterMenu, inventory: Inventory, title
         button(10, 147, 0, tr("Engage / disengage"))
         button(134, 147, 1, tr("Change gear"))
         button(10, 173, 2, tr("Reset fault"))
-        button(134, 173, 3, tr("Toggle automatic retry"))
+        button(134, 173, 3, tr("Automatic retry"))
     }
     override fun renderBg(graphics: GuiGraphics, partial: Float, mouseX: Int, mouseY: Int) {
         graphics.fill(leftPos, topPos, leftPos + imageWidth, topPos + imageHeight, 0xFF242D35.toInt())
@@ -69,9 +69,35 @@ private class AdapterRenderer : BlockEntityRenderer<CreateAdapterEntity> {
             val angle = if (input) ((be.level?.gameTime ?: 0L) % 1200 + partial) * be.speed * 0.3
                 else (be.outputAngle + be.outputSpeed * partial * 0.05) * 180 / PI
             pose.mulPose(Axis.YP.rotationDegrees(angle.toFloat()))
-            pose.translate(-0.125, if (input) -0.5 else 0.25, -0.125)
-            pose.scale(0.25f, 0.25f, 0.25f)
-            Minecraft.getInstance().blockRenderer.renderSingleBlock((if (input) Blocks.IRON_BLOCK else Blocks.COPPER_BLOCK).defaultBlockState(), pose, buffers, light, overlay)
+            if (input) {
+                // Real Create shaft mesh/texture. No stationary duplicate in the block model.
+                pose.translate(-0.5, -0.5, -0.5)
+                pose.scale(1f, 0.25f, 1f)
+                val state = net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(
+                    net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("create", "shaft")).defaultBlockState()
+                    .setValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.AXIS, net.minecraft.core.Direction.Axis.Y)
+                Minecraft.getInstance().blockRenderer.renderSingleBlock(state, pose, buffers, light, overlay)
+            } else {
+                // ELN's steel texture on an octagonal output spindle, separate from its teal bearing.
+                val sprite = Minecraft.getInstance().getTextureAtlas(net.minecraft.world.inventory.InventoryMenu.BLOCK_ATLAS)
+                    .apply(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("eln", "block/create_adapter_steel"))
+                val consumer = buffers.getBuffer(net.minecraft.client.renderer.RenderType.solid())
+                val radius = 0.125
+                fun vertex(x: Double, y: Double, z: Double, u: Float, v: Float, nx: Float, ny: Float, nz: Float) {
+                    consumer.addVertex(pose.last(), x.toFloat(), y.toFloat(), z.toFloat()).setColor(255, 255, 255, 255)
+                        .setUv(sprite.getU(u), sprite.getV(v)).setOverlay(overlay).setLight(light).setNormal(pose.last(), nx, ny, nz)
+                }
+                for (i in 0..7) {
+                    val a = i * PI / 4; val b = (i + 1) * PI / 4
+                    val x0 = kotlin.math.cos(a) * radius; val z0 = kotlin.math.sin(a) * radius
+                    val x1 = kotlin.math.cos(b) * radius; val z1 = kotlin.math.sin(b) * radius
+                    val nx = kotlin.math.cos((a+b)/2).toFloat(); val nz = kotlin.math.sin((a+b)/2).toFloat()
+                    vertex(x0, .34, z0, 0f, 0f, nx, 0f, nz); vertex(x0, .5, z0, 0f, 1f, nx, 0f, nz)
+                    vertex(x1, .5, z1, 1f, 1f, nx, 0f, nz); vertex(x1, .34, z1, 1f, 0f, nx, 0f, nz)
+                    vertex(0.0, .5, 0.0, .5f, .5f, 0f, 1f, 0f); vertex(x1, .5, z1, 1f, 1f, 0f, 1f, 0f)
+                    vertex(x0, .5, z0, 0f, 1f, 0f, 1f, 0f); vertex(0.0, .5, 0.0, .5f, .5f, 0f, 1f, 0f)
+                }
+            }
             pose.popPose()
         }
         shaft(true); shaft(false)

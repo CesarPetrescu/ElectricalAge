@@ -27,6 +27,11 @@ object CreateIntegration {
         val industrialName = I18N.TR_NAME(I18N.Type.NONE, "Industrial Create Shaft Adapter")
         fun item(block: Block, name: String) = object : BlockItem(block, Item.Properties()) {
             override fun getName(stack: ItemStack): Component = Component.literal(tr(name))
+            override fun appendHoverText(stack: ItemStack, context: Item.TooltipContext, lines: MutableList<Component>, flag: net.minecraft.world.item.TooltipFlag) {
+                lines.add(Component.literal(tr("Create casing: input. Teal bearing: ELN output.")))
+                lines.add(Component.literal(tr("Output follows the clicked face; sneak to reverse.")))
+                lines.add(Component.literal(tr("Four side terminals: redstone or signal reset pulse.")))
+            }
         }
         basic = ElnRegistry.registerBlock("create_shaft_adapter", { CreateAdapterBlock(false) }, { item(it, basicName) })
         industrial = ElnRegistry.registerBlock("industrial_create_shaft_adapter", { CreateAdapterBlock(true) }, { item(it, industrialName) })

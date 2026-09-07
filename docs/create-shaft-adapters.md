@@ -6,15 +6,22 @@ ELN still works without Create. The adapters appear under **ELN - Mechanics**.
 
 | Adapter | Maximum mechanical output | Maximum output torque | Housing |
 | --- | --- | --- | --- |
-| Create Shaft Adapter | 4 kW | 40 N·m | Iron |
-| Industrial Create Shaft Adapter | 16 kW | 160 N·m | Gold |
+| Create Shaft Adapter | 4 kW | 40 N·m | Create andesite / ELN teal |
+| Industrial Create Shaft Adapter | 16 kW | 160 N·m | Create brass / ELN teal |
 
 ## Connecting and operating
 
-The gray port takes rotation from a Create shaft. The copper port on the opposite face connects to
-an ELN shaft, joint, flywheel, or shaft machine. Placement points the copper port toward the face
-you clicked. Vertical connections are supported. Both Create rotation directions work; ELN's
+The Create-cased end takes rotation from a Create shaft. The teal ELN bearing on the opposite face
+connects to an ELN shaft, joint hub, flywheel, or shaft machine. Placement points the ELN output
+toward the face you clicked; sneak while placing to reverse it. All six directions are supported:
+north/south, east/west and up/down. Use a Joint hub for vertical ELN connections. Both Create rotation directions work; ELN's
 current shaft model records speed without a direction sign.
+
+The remaining four faces are control terminals, not mechanical ports. They accept redstone and
+ELN Signal Cable mounted directly on the face; power cables and other ELN surface components
+cannot be mounted on this housing. A rising redstone signal or signal-wire voltage of at least
+half the normal ELN signal voltage resets a fault. The wire input is high-impedance and does not
+transfer electrical power. Signals on either shaft end are ignored. The controls remain optional.
 
 Right-click the adapter to open its controls. It starts engaged with an 8:1 step-up ratio.
 Disengage before changing between 1:1, 2:1, 4:1, and 8:1. Re-engagement accelerates the attached

@@ -860,6 +860,7 @@ Right=右
 Transfer=转换
 
 # src/main/kotlin/mods/eln/integration/create/CreateAdapterClient.kt
+Automatic_retry=Automatic retry
 Automatic_retry\:_off=Automatic retry: off
 Automatic_retry\:_on_(5_seconds)=Automatic retry: on (5 seconds)
 Change_gear=Change gear
@@ -871,7 +872,6 @@ Output\:_%1$_rad/s_(%2$_RPM)=Output: %1$ rad/s (%2$ RPM)
 Power\:_%1$_W_|_Stress\:_%2$_SU=Power: %1$ W | Stress: %2$ SU
 Reset_fault=Reset fault
 Target\:_%1$_rad/s=Target: %1$ rad/s
-Toggle_automatic_retry=Toggle automatic retry
 Tripped\:_Create_overstressed=Tripped: Create overstressed
 Tripped\:_target_exceeds_240_rad/s=Tripped: target exceeds 240 rad/s
 Waiting_for_Create_rotation=Waiting for Create rotation
@@ -882,7 +882,10 @@ Industrial_Create_Shaft_Adapter=Industrial Create Shaft Adapter
 
 # src/main/kotlin/mods/eln/integration/create/CreateIntegration.kt
 Create_Shaft_Adapter.name=Create Shaft Adapter
+Create_casing\:_input._Teal_bearing\:_ELN_output.=Create casing: input. Teal bearing: ELN output.
+Four_side_terminals\:_redstone_or_signal_reset_pulse.=Four side terminals: redstone or signal reset pulse.
 Industrial_Create_Shaft_Adapter.name=Industrial Create Shaft Adapter
+Output_follows_the_clicked_face;_sneak_to_reverse.=Output follows the clicked face; sneak to reverse.
 
 # src/main/kotlin/mods/eln/item/BrushDescriptor.kt
 Brush_is_dry=刷子干了

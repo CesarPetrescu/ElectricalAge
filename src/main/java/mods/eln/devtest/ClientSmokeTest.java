@@ -34,7 +34,7 @@ public final class ClientSmokeTest {
     /** The server test's mechanical rows (SmokeTest.MECH_Z, LARGE_Z). */
     private static final int MECH_Z = Z + 14, LARGE_Z = Z + 21, GALLERY_Z = Z + 28;
 
-    private enum Phase { OPEN, JOIN, SETUP, WORLD_SHOT, NIGHT_SHOT, GRID_SHOT, MECH_SHOT, MECH_SPIN_SHOT, TACHOMETER_GUI, TACHOMETER_GUI_SHOT, LARGE_SHOT, GALLERY_SHOT, THIRD_PERSON_SHOT, HAND_THIRD_SHOT, HAND_FIRST_SHOT, HAND_CABLE_SHOT, GUI, GUI_SHOT, MACHINE_GUI, MACHINE_GUI_SHOT, INVENTORY, INVENTORY_SHOT, CREATIVE_TAB, CREATIVE_SHOT, CREATIVE_TAB_POWER, CREATIVE_POWER_SHOT, ADAPTER_VIEW, ADAPTER_GUI, ADAPTER_GUI_SHOT, DONE }
+    private enum Phase { OPEN, JOIN, SETUP, WORLD_SHOT, NIGHT_SHOT, GRID_SHOT, MECH_SHOT, MECH_SPIN_SHOT, TACHOMETER_GUI, TACHOMETER_GUI_SHOT, LARGE_SHOT, GALLERY_SHOT, THIRD_PERSON_SHOT, HAND_THIRD_SHOT, HAND_FIRST_SHOT, HAND_CABLE_SHOT, GUI, GUI_SHOT, MACHINE_GUI, MACHINE_GUI_SHOT, INVENTORY, INVENTORY_SHOT, CREATIVE_TAB, CREATIVE_SHOT, CREATIVE_TAB_POWER, CREATIVE_POWER_SHOT, ADAPTER_VIEW, ADAPTER_GUI, ADAPTER_GUI_SHOT, ADAPTER_DETAILS, DONE }
 
     private final String save;
     private Phase phase = Phase.OPEN;
@@ -355,7 +355,26 @@ public final class ClientSmokeTest {
                 shot(mc, "smoke-create-adapter-menu-" + adapterIndex);
                 adapterIndex++;
                 mc.player.closeContainer();
-                phase = adapterIndex < 2 ? Phase.ADAPTER_GUI : Phase.DONE;
+                phase = adapterIndex < 2 ? Phase.ADAPTER_GUI : Phase.ADAPTER_DETAILS;
+                wait = 0;
+            }
+            case ADAPTER_DETAILS -> {
+                if (wait == 0) {
+                    mc.setScreen(null);
+                    mc.getSingleplayerServer().execute(() -> {
+                        var player = mc.getSingleplayerServer().getPlayerList().getPlayers().get(0);
+                        var face = Direction.values()[adapterViewIndex];
+                        var center = new Vec3(652.5, 69.5, 638.5 + adapterViewIndex * 5);
+                        var camera = center.add(Vec3.atLowerCornerOf(face.getNormal()).scale(4))
+                            .add(face.getAxis().isVertical() ? new Vec3(2, -1, 2) : new Vec3(1, 1, 1));
+                        player.teleportTo(player.serverLevel(), camera.x, camera.y, camera.z, 0f, 0f);
+                        player.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES, center);
+                        player.serverLevel().setDayTime(1000);
+                    });
+                }
+                if (wait++ < 60) return;
+                shot(mc, "smoke-create-port-" + Direction.values()[adapterViewIndex].getName());
+                if (++adapterViewIndex == Direction.values().length) phase = Phase.DONE;
                 wait = 0;
             }
             case DONE -> {
@@ -424,6 +443,7 @@ public final class ClientSmokeTest {
     }
 
     private double mechAngle = Double.NaN;
+    private int adapterViewIndex = 0;
     private int creativeCategory = 0;
     private int adapterIndex = 0;
     private static final String[] CREATIVE_CATEGORIES = {"Wires & Cables", "Signals & Control", "Power", "Mechanics", "Processing", "Lighting", "Materials", "Tools & Armor", "Creative Only"};

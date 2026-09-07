@@ -352,6 +352,8 @@ class SixNodeBlock : NodeBlock(nodeProperties().strength(0.3f, 1.0f), 0) {
         val other = BlockPos(vect[0], vect[1], vect[2])
         val state = world.getBlockState(other)
         if (state.isAir) return false
+        val controlSupport = state.block as? mods.eln.generic.SignalWireSupport
+        if (controlSupport != null) return controlSupport.acceptsSignalWire(state, direction.inverse.toFacing())
         return state.isSolidRender(world, other)
     }
 
