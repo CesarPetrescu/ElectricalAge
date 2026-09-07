@@ -1,0 +1,27 @@
+{
+  "base_commit": "6a4046f20db037b98ab0283cc254c3dc3978dd35",
+  "tested_implementation_commit": "f9271f67787db3a94c7b36774dfb913f38e80f61",
+  "workflow_run": 34141690352,
+  "artifact_id": 10026300964,
+  "counts_source": "Downloaded JUnit XML and complete native contract JSON reports, not the console summary",
+  "unit_tests": {"tests": 389, "failures": 0, "errors": 0, "skipped": 0},
+  "native_tests": {
+    "evaporative-place": {"tests": 17, "failures": 0, "complete": true},
+    "evaporative-restart": {"tests": 3, "failures": 0, "complete": true},
+    "evaporative-client": {"tests": 16, "failures": 0, "complete": true}
+  },
+  "model": {"triangles": 444, "previous_triangles": 5932, "vertices": 296, "parts": 5, "atlas_pixels": [64, 64], "icon_pixels": [32, 32]},
+  "visual_review": {
+    "blender_family_comparison": "inspected",
+    "native_family_comparison": "inspected",
+    "native_main_controls": "inspected",
+    "native_details": "inspected",
+    "native_640x480_window": "inspected",
+    "native_four_orientations": "inspected",
+    "captured_native_screenshots": 12
+  },
+  "unchanged_protected_files_checked": 16,
+  "compatibility": "Thermal model, controls, tank, menu protocol, connection rules, saved state and old passive/active assets unchanged. The cooler element change only removes the obsolete LED part from held-item drawing.",
+  "scope": "Presentation redesign; not a thermal rebalance. Does not establish compatibility with every third-party modpack.",
+  "cleanup": "Temporary asset-generation/staging workflow removed after verification; permanent feature tests retain all 12 screenshot requirements. Final PR CI is a separate run."
+}
