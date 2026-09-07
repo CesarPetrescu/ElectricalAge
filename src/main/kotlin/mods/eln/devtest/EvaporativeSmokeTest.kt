@@ -71,6 +71,7 @@ class EvaporativeSmokeTest(private val restart: Boolean) {
                 if (restart) test("saved-water-film-settings-and-temperature") {
                     val e = element(w, SAVED)
                     near(e.water.availableMb, 1233.625)
+                    check(e.surfaceCelsius.isFinite() && e.surfaceCelsius > 45)
                     check(e.controls.mode() == 2 && e.controls.targetCelsius() == 55 && e.controls.fanPercent() == 70 && e.controls.redstoneMode() == 1)
                 } else contracts()
             }

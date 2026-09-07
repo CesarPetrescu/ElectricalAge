@@ -191,9 +191,13 @@ jobs:
     name: Companion mod contracts
     uses: ./.github/workflows/compatibility.yml
 
+  evaporative:
+    name: Evaporative cooler contracts
+    uses: ./.github/workflows/evaporative-cooler.yml
+
   release:
     name: Publish latest 1.21.1 mod
-    needs: [build, benchmark, smoke, compatibility]
+    needs: [build, benchmark, smoke, compatibility, evaporative]
     if: >-
       github.repository == 'CesarPetrescu/ElectricalAge' &&
       github.ref == 'refs/heads/main' &&

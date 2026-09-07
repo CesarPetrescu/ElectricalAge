@@ -67,7 +67,22 @@ bash tools/evaporative/test-core.sh
 ./gradlew generateLangFiles runData build
 ```
 
-The 26 pure regression cases are also exposed as JUnit dynamic tests. They exercise conservation, wet/dry behavior, saturated air, water exhaustion, fractional accounting, timestep sensitivity, invalid inputs, mode hysteresis and redstone/command limits. In-world validation additionally needs real fluid capabilities, native menu routing, source wiring, asset loading, persistence and failure behavior; see the final feature test reports rather than assuming numerical tests cover those.
+The 26 pure regression cases are also exposed as JUnit parameterized tests. They exercise conservation, wet/dry behavior, saturated air, water exhaustion, fractional accounting, timestep sensitivity, invalid inputs, mode hysteresis and redstone/command limits. The opt-in dedicated `evaporative-place` and `evaporative-restart` suites exercise real registered blocks, a 240 V source through an MV cable, copper thermal connections, NeoForge fluid capability calls, water/empty buckets, bounded menu commands, fractional-film NBT and item drops, power loss, undervoltage, blocked airflow, indoor inhibition, water exhaustion and refilling. Restart uses a separate JVM and the saved world, not a serialized mock.
+
+`-PsmokeClient=evaporative` loads that saved world, checks actual renderer parts and changing fan angle, right-clicks the block, checks synchronized telemetry, presses the real UI buttons and captures wet/dry/interlock screenshots. The 320x238 control panel fits the minimum ordinary vanilla scaled viewport. Client tests are never enabled during normal play.
+
+The reusable evaporative workflow is a required dependency of the repository's release job, alongside existing build, benchmarks, standalone/Create and companion-mod checks. Missing, skipped or failing feature reports prevent that job from publishing.
+
+Disposable-world commands (the feature workflow sets up the directories, flat world, EULA and headless display):
+
+```
+./gradlew runServer -PsmokeTest=evaporative-place
+cp -r run/server/world run/client/saves/evaporative
+./gradlew runServer -PsmokeTest=evaporative-restart
+./gradlew runClient -PsmokeClient=evaporative
+```
+
+These tests validate the native fluid capability used by pipes. They are not a claim to have tested every third-party pipe implementation, biome mod or multiplayer modpack.
 
 ## References
 

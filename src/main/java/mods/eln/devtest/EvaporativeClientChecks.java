@@ -41,7 +41,7 @@ public final class EvaporativeClientChecks {
                 if (mc.player==null || mc.level==null || mc.screen!=null) return;
                 if (++ticks < 40) return;
                 mc.getTutorial().setStep(net.minecraft.client.tutorial.TutorialSteps.NONE);
-                // A 360x260 native panel must fit. This is a test display setting, not a global gameplay change.
+                // Use a typical scaled viewport for native layout validation. This is a test display setting, not a global gameplay change.
                 mc.options.guiScale().set(2); mc.resizeDisplay();
                 mc.getSingleplayerServer().execute(() -> {
                     var server=mc.getSingleplayerServer(); var p=server.getPlayerList().getPlayers().get(0);
@@ -72,6 +72,20 @@ public final class EvaporativeClientChecks {
                     if(Math.abs(value(renderer(mc),"angle")-previousAngle)<.01) throw new AssertionError("Fan angle is static");
                 });
                 shot(mc,"evaporative-world-spin");
+                mc.getSingleplayerServer().execute(() -> mc.getSingleplayerServer().getPlayerList().getPlayers().get(0)
+                    .setItemInHand(InteractionHand.MAIN_HAND,Eln.findItemStack(EvaporativeSmokeTest.NAME,1)));
+                phase=9; ticks=0;
+            } else if (phase == 9) {
+                if (++ticks<30) return;
+                check("native-held-item-model", () -> {
+                    if(mc.player.getMainHandItem().isEmpty()) throw new AssertionError("No real held item for rendering");
+                });
+                shot(mc,"evaporative-held-model");
+                mc.getSingleplayerServer().execute(() -> mc.getSingleplayerServer().getPlayerList().getPlayers().get(0)
+                    .setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY));
+                phase=10; ticks=0;
+            } else if (phase == 10) {
+                if (++ticks<20) return;
                 BlockPos pos=EvaporativeSmokeTest.ACTIVE;
                 var hit=new BlockHitResult(new Vec3(pos.getX(),pos.getY()+.5,pos.getZ()+.5),Direction.WEST,pos,false);
                 mc.gameMode.useItemOn(mc.player,InteractionHand.MAIN_HAND,hit);
@@ -80,6 +94,10 @@ public final class EvaporativeClientChecks {
                 if (++ticks<50) return;
                 check("native-menu-open-and-server-telemetry", () -> {
                     var menu=menu(mc);
+                    for (var child : mc.screen.children()) {
+                        if (child instanceof Button b && (b.getX()<0 || b.getY()<0 || b.getX()+b.getWidth()>mc.screen.width || b.getY()+b.getHeight()>mc.screen.height))
+                            throw new AssertionError("UI button clipped outside the viewport");
+                    }
                     if (menu.getValues().get(0)!=3 || menu.getValues().get(9)<=0 || menu.getValues().get(10)<100 || menu.getValues().get(15)<500)
                         throw new AssertionError("Telemetry not synchronized from live machine");
                 });

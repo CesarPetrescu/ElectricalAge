@@ -1,11 +1,10 @@
 name: Evaporative cooler
 
 on:
+  workflow_call:
   push:
-    branches: [feature/evaporative-cooler-20260907, main]
+    branches: [feature/evaporative-cooler-20260907]
     paths: ['.github/workflows/evaporative-cooler.yml', 'src/**', 'tools/evaporative/**']
-  pull_request:
-    paths: ['.github/workflows/evaporative-cooler.yml', 'src/**/evaporative/**', 'src/**/devtest/Evaporative*', 'tools/evaporative/**']
   workflow_dispatch:
 
 permissions:
@@ -92,7 +91,7 @@ jobs:
               assert data['complete'] and data['results'] and data['failures']==0, suite
               assert all(r['status']=='passed' for r in data['results']), suite
               print(suite, len(data['results']), 'passed')
-          for name in ['world','world-spin','ui-wet','ui-dry','ui-interlock']:
+          for name in ['world','world-spin','held-model','ui-wet','ui-dry','ui-interlock']:
               assert pathlib.Path(f'run/client/screenshots/evaporative-{name}.png').stat().st_size>10000,name
           PY
       - name: Export source identity

@@ -1,6 +1,7 @@
 package mods.eln.transparentnode.evaporative
 
 import mods.eln.Eln
+import mods.eln.client.itemrender.IItemRenderer
 import mods.eln.environment.BiomeClimateService
 import mods.eln.environment.RoomThermalManager
 import mods.eln.i18n.I18N.tr
@@ -33,7 +34,20 @@ import kotlin.math.*
 class EvaporativeCoolerDescriptor(name: String) : TransparentNodeDescriptor(
     name, EvaporativeCoolerElement::class.java, EvaporativeCoolerRender::class.java, EntityMetaTag.Fluid
 ) {
-    init { voltageLevelColor = VoltageLevelColor.fromCable(Eln.instance.meduimVoltageCableDescriptor) }
+    init {
+        voltageLevelColor = VoltageLevelColor.fromCable(Eln.instance.meduimVoltageCableDescriptor)
+        mods.eln.wiki.Data.addThermal { newItemStack() }
+    }
+    override fun handleRenderType(item: ItemStack, type: IItemRenderer.ItemRenderType) = true
+    override fun shouldUseRenderHelper(type: IItemRenderer.ItemRenderType, item: ItemStack, helper: IItemRenderer.ItemRendererHelper) =
+        type != IItemRenderer.ItemRenderType.INVENTORY
+    override fun renderItem(type: IItemRenderer.ItemRenderType, item: ItemStack, vararg data: Any) {
+        if (type == IItemRenderer.ItemRenderType.INVENTORY) super.renderItem(type, item, *data)
+        else {
+            val obj = Eln.obj.getObj("evaporativecooler")
+            for (part in arrayOf("main", "pad_dry", "rotor", "led_off")) obj.getPart(part)?.draw()
+        }
+    }
     override fun mustHaveFloor() = false
     override fun addInformation(itemStack: ItemStack?, entityPlayer: Player?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
