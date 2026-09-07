@@ -446,7 +446,7 @@ class MotorElement(node: TransparentNode, desc_: TransparentNodeDescriptor) :
 
     override fun networkSerialize(stream: DataOutputStream) {
         super.networkSerialize(stream)
-        stream.writeDouble(lastP)
+        stream.writeDouble(-powerSource.power)
         stream.writeDouble((-powerSource.current).coerceAtLeast(0.0))
     }
 

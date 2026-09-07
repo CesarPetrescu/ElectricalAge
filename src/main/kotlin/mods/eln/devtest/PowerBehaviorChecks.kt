@@ -19,6 +19,9 @@ import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.server.level.ServerLevel
 import kotlin.math.abs
+import java.io.ByteArrayOutputStream
+import java.io.DataOutputStream
+import java.nio.ByteBuffer
 
 /** Real registered machines and MNA circuits; invoked only by the GitHub/dev smoke server. */
 object PowerBehaviorChecks {
@@ -56,6 +59,20 @@ object PowerBehaviorChecks {
         val descriptors = Eln.transparentNodeItem.subItemList.values.filterNotNull()
         for (d in descriptors.filterIsInstance<GeneratorDescriptor>()) {
             val key = BuiltInRegistries.ITEM.getKey(d.parentItem).toString()
+            report.test(key, "small-load-and-stop-led-publication") {
+                val g = GeneratorElement(node(world), d)
+                g.electricalPowerSource.voltage = 10.0
+                g.electricalPowerSource.currentState.state = -.1
+                g.node!!.needPublish = false
+                g.maybePublishE(g.electricalPowerSource.power)
+                check(g.node!!.needPublish) { "Small load never published its LED state" }
+                val bytes = ByteArrayOutputStream()
+                g.networkSerialize(DataOutputStream(bytes))
+                check(ByteBuffer.wrap(bytes.toByteArray()).getDouble(bytes.size() - 8) == 1.0)
+                g.node!!.needPublish = false
+                g.maybePublishE(0.0)
+                check(g.node!!.needPublish) { "Stopped LED state not published" }
+            }
             for (loadFraction in listOf(0.0, .1, .5, 1.0, 4.0)) report.test(key, "load-$loadFraction") {
                 val g = GeneratorElement(node(world), d)
                 g.shaft._mass = d.shaftMass
@@ -109,6 +126,25 @@ object PowerBehaviorChecks {
         }
         for (d in descriptors.filterIsInstance<MotorDescriptor>()) {
             val key = BuiltInRegistries.ITEM.getKey(d.parentItem).toString()
+            report.test(key, "shaft-driven-motor-powers-load-and-stops") {
+                val m = MotorElement(node(world), d); m.shaft._mass = d.shaftMass
+                val r = root(m)
+                val negative = if (d.bipolarTerminals) m.negativeLoad else null
+                reference(r, negative)
+                val load = resistor(r, m.wireLoad, negative, d.nominalU.toDouble() * d.nominalU / (d.nominalP * .1))
+                r.generate()
+                repeat(300) {
+                    m.shaft.rads = d.nominalRads.toDouble()
+                    m.electricalProcess.process(DT); r.step(); m.shaftProcess.process(DT)
+                }
+                check(load.power > d.nominalP * .075) { "Driven shaft motor produced no usable current: ${load.power} W" }
+                val bytes = ByteArrayOutputStream()
+                m.networkSerialize(DataOutputStream(bytes))
+                check(ByteBuffer.wrap(bytes.toByteArray()).getDouble(bytes.size() - 16) < 0.0) { "Client was not told about reverse power" }
+                m.shaft.rads = 0.0
+                m.electricalProcess.process(DT); r.step()
+                check(abs(load.power) < 1e-6) { "Stopped motor still exports power" }
+            }
             for (offset in if (d.bipolarTerminals) listOf(0.0, 150.0, -150.0) else listOf(0.0)) {
                 report.test(key, "motoring-and-regeneration-common-mode-$offset") {
                     val m = MotorElement(node(world), d); m.shaft._mass = d.shaftMass
@@ -148,12 +184,16 @@ object PowerBehaviorChecks {
                 val restored = battery(world, d); restored.batteryProcess.readFromNBT(saved, "test")
                 check(restored.batteryProcess.Q == b.batteryProcess.Q && restored.batteryProcess.life == b.batteryProcess.life)
                 r.removeComponent(load)
+                load.breakConnection()
+                check(load !in b.positiveLoad.connectedComponents) { "Discharge load remained connected during charger test" }
                 val bus = VoltageState(); r.addState(bus)
                 r.addComponent(VoltageSource("charger", bus, b.negativeLoad).setVoltage(d.electricalU * 1.1))
                 resistor(r, bus, b.positiveLoad, d.electricalU / d.electricalStdI)
                 val depleted = b.batteryProcess.Q
                 repeat(100) { r.step(); b.batteryProcess.process(DT) }
-                if (d.isRechargable) check(b.batteryProcess.Q > depleted)
+                if (d.isRechargable) check(b.batteryProcess.Q > depleted) {
+                    "Battery failed to recharge: before=$depleted after=${b.batteryProcess.Q} current=${b.voltageSource.current}"
+                }
                 else check(b.batteryProcess.Q <= depleted) { "Single-use battery gained charge" }
                 b.batteryProcess.charge = 1.0
                 repeat(100) { r.step(); b.batteryProcess.process(DT) }

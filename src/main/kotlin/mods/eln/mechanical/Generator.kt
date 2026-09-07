@@ -263,7 +263,8 @@ class GeneratorElement(node: TransparentNode, desc_: TransparentNodeDescriptor) 
 
     var lastE = 0.0
     fun maybePublishE(E: Double) {
-        if (Math.abs(E - lastE) / desc.nominalP > 0.01) {
+        val threshold = maxOf(1.0, minOf(desc.nominalP * .01, maxOf(Math.abs(E), Math.abs(lastE)) * .05))
+        if (Math.abs(E - lastE) > threshold || (E > 0.0) != (lastE > 0.0) || (E < 0.0) != (lastE < 0.0)) {
             lastE = E
             needPublish()
         }
@@ -307,7 +308,7 @@ class GeneratorElement(node: TransparentNode, desc_: TransparentNodeDescriptor) 
 
     override fun networkSerialize(stream: DataOutputStream) {
         super.networkSerialize(stream)
-        stream.writeDouble(lastE)
+        stream.writeDouble(electricalPowerSource.power)
     }
 
     override fun getWaila(): Map<String, String> {
