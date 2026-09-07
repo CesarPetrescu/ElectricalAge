@@ -25,7 +25,11 @@ object ComputerCraftIntegration {
 
     @JvmStatic
     fun register(event: RegisterCapabilitiesEvent) {
-        event.registerBlockEntity(PeripheralCapability.get(), ComputerProbeEntity.TYPE.get()) { entity, _ -> ComputerProbePeripheral(entity) }
+        event.registerBlockEntity(PeripheralCapability.get(), ComputerProbeEntity.TYPE.get()) { entity, _ ->
+            if (net.neoforged.fml.ModList.get().isLoaded("opencomputers"))
+                mods.eln.integration.opencomputers.OcAwareComputerProbePeripheral(entity)
+            else ComputerProbePeripheral(entity)
+        }
         Eln.LOGGER.info("CC: Tweaked found: the computer probe is a peripheral")
     }
 
@@ -65,7 +69,7 @@ object ComputerCraftIntegration {
  * Every method runs on the server thread ([LuaFunction.mainThread]): the node's state belongs
  * to the simulation, which the computer thread must not touch.
  */
-class ComputerProbePeripheral(private val entity: ComputerProbeEntity) : IPeripheral {
+open class ComputerProbePeripheral(private val entity: ComputerProbeEntity) : IPeripheral {
     override fun getType(): String = "ElnProbe"
 
     override fun getTarget(): Any = entity

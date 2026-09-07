@@ -1,0 +1,72 @@
+{
+  "minecraft": "1.21.1",
+  "loader": "neoforge",
+  "profiles": {
+    "fluids": [
+      "pneumaticcraft-repressurized",
+      "railcraft-reborn",
+      "immersiveengineering",
+      "pipez"
+    ],
+    "opencomputers": [
+      "opencomputers-rebooted",
+      "scalablecatsforce"
+    ],
+    "combined": [
+      "pneumaticcraft-repressurized",
+      "railcraft-reborn",
+      "immersiveengineering",
+      "pipez",
+      "opencomputers-rebooted",
+      "scalablecatsforce"
+    ]
+  },
+  "mods": [
+    {
+      "url": "https://cdn.modrinth.com/data/ncAcdgk7/versions/TNzeuLH3/pneumaticcraft-repressurized-8.2.23%2Bmc1.21.1.jar",
+      "version": "8.2.23",
+      "sha512": "1863243c4e76ecdef60c541e332808df48f50e01d7f75f5b1bd52e38f086925aa715a199775cf885746e3869cfc78ee5ac463fd33a1ac55cccab5394d19e2bfa",
+      "filename": "pneumaticcraft-repressurized-8.2.23+mc1.21.1.jar",
+      "version_id": "TNzeuLH3",
+      "project": "pneumaticcraft-repressurized"
+    },
+    {
+      "url": "https://cdn.modrinth.com/data/rO6kKst6/versions/BrIwB6GH/railcraft-reborn-1.21.1-1.2.10.jar",
+      "version": "1.2.10",
+      "sha512": "0b35792a295d5c6ba9487b5a02d292871bb8d6a5bbe8a255ae82f8e62f00d0e106039b93d2ffbb2749c40dc5e92fcc86688ca6b688465e1b2432707570101049",
+      "filename": "railcraft-reborn-1.21.1-1.2.10.jar",
+      "version_id": "BrIwB6GH",
+      "project": "railcraft-reborn"
+    },
+    {
+      "url": "https://cdn.modrinth.com/data/tIm2nV03/versions/uNRARSH2/ImmersiveEngineering-1.21.1-12.4.2-194.jar",
+      "version": "12.4.2-194",
+      "sha512": "862523e84747a8b7eaa65f9b3c337fa832ef9efd0545c27f68e350e01f482c7a1242d0e4bdc2caff3d7eb033508b43a353fcd7150c9b544d0c05765ca2a551b3",
+      "filename": "ImmersiveEngineering-1.21.1-12.4.2-194.jar",
+      "version_id": "uNRARSH2",
+      "project": "immersiveengineering"
+    },
+    {
+      "url": "https://cdn.modrinth.com/data/iRmWy6ga/versions/BPGKb8pi/pipez-neoforge-1.21.1-1.2.31.jar",
+      "version": "neoforge-1.21.1-1.2.31",
+      "sha512": "7291230b62104b73b04564d6d39ba18d11134a5713ee79242c7ae8885d07c4efb5f5d0ab75b8ff9aba3119ed8163d0c5488ad603a2db21b92dc35715b723ce5e",
+      "filename": "pipez-neoforge-1.21.1-1.2.31.jar",
+      "version_id": "BPGKb8pi",
+      "project": "pipez"
+    },
+    {
+      "project": "opencomputers-rebooted",
+      "version": "1.9.4-3",
+      "url": "https://cursemaven.com/curse/maven/opencomputers-rebooted-1634364/8721690/opencomputers-rebooted-1634364-8721690.jar",
+      "filename": "opencomputers-1.9.4-3.jar",
+      "sha512": "6a189c815f254385bc175895e9a7f1a346706dde5f88f7a5a5a271077cefaf3dcff2e6e87ef30f5034f326c3983ef7645cec8bcdfb110beb81c15ad4f2927786"
+    },
+    {
+      "project": "scalablecatsforce",
+      "version": "3.3.3-build-15",
+      "url": "https://maven.kotori316.com/com/kotori316/scalablecatsforce-neoforge/3.3.3-build-15/scalablecatsforce-neoforge-3.3.3-build-15-with-library.jar",
+      "filename": "scalablecatsforce-neoforge-3.3.3-build-15-with-library.jar",
+      "sha512": "bd3f41806937d58f4bfb7ddacfdd2bc1ef60648b7d2077a65b8fb08a14966bc4c1918f6e8c25c28aecbda4f96e263c97ba041b0ec360538b5d59bb3580a0f127"
+    }
+  ]
+}

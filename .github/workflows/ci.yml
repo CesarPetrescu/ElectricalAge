@@ -187,9 +187,13 @@ jobs:
             run/server/crash-reports/**
             /tmp/xorg.log
 
+  compatibility:
+    name: Companion mod contracts
+    uses: ./.github/workflows/compatibility.yml
+
   release:
     name: Publish latest 1.21.1 mod
-    needs: [build, benchmark, smoke]
+    needs: [build, benchmark, smoke, compatibility]
     if: >-
       github.repository == 'CesarPetrescu/ElectricalAge' &&
       github.ref == 'refs/heads/main' &&

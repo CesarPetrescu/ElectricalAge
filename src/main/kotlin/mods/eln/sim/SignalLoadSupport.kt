@@ -8,6 +8,10 @@ import mods.eln.sim.nbt.NbtElectricalGateInputOutput
 import mods.eln.sim.process.destruct.IDestructible
 
 object SignalLoadSupport {
+    /** The input's own pull-down is not an attached cable or controller. */
+    @JvmStatic
+    fun hasExternalConnection(load: State): Boolean = load.connectedComponents.any { it !is SignalRp }
+
     @JvmStatic
     fun clampSignalVoltage(voltage: Double): Double {
         if (voltage.isNaN()) return 0.0

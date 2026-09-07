@@ -1,0 +1,49 @@
+name: Companion compatibility
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  companions:
+    name: Minecraft 1.21.1 / ${{ matrix.profile }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [fluids, opencomputers, combined]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - uses: actions/cache@v4
+        with:
+          path: build/compat-cache
+          key: companions-${{ hashFiles('tools/port/companions.lock.json') }}
+      - name: Check report validator
+        run: python3 script/test_companions.py
+      - name: Test actual mods and restart the saved world
+        run: python3 script/run_companions.py '${{ matrix.profile }}'
+      - name: Require named compatibility assertions
+        if: always()
+        run: python3 script/check_companions.py '${{ matrix.profile }}'
+      - name: Upload per-mod results and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: companion-results-${{ matrix.profile }}
+          if-no-files-found: warn
+          path: |
+            tools/port/companions.lock.json
+            build/companion-artifacts/**
+            build/smoke-artifacts/contracts/companions-*.json
+            build/smoke-artifacts/contracts/companions-*.xml
+            run/compat-*/logs/**
+            run/compat-*/crash-reports/**

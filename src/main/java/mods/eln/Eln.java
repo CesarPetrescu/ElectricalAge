@@ -462,6 +462,9 @@ public class Eln {
 
     /** What used to be init. Registries are complete here. */
     private void commonSetup(FMLCommonSetupEvent event) {
+        if (computerProbeRegistered && net.neoforged.fml.ModList.get().isLoaded("opencomputers")) {
+            event.enqueueWork(mods.eln.integration.opencomputers.OpenComputersIntegration::register);
+        }
         TR_GROUP("Eln", "Electrical Age");
         TR_GROUP("ElnPowerElectronics", "ELN - Power");
         TR_GROUP("ElnSignalProcessing", "ELN - Signals & Control");

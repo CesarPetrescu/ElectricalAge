@@ -24,9 +24,9 @@ import mods.eln.misc.rand
 
 /**
  * The node behind the computer probe. It knows nothing of any computer mod: the operations a
- * computer may call are plain methods here, and `mods.eln.integration.computercraft` exposes
- * them as a peripheral when CC: Tweaked is present. (1.7.10 had the node implement
- * ComputerCraft's and OpenComputers' interfaces directly; OpenComputers has no 1.21 release.)
+ * computer may call are plain methods here. Optional integration packages expose them as a
+ * CC: Tweaked peripheral or an OpenComputers: Rebooted component, without coupling this node
+ * to either mod's API or maintaining a second copy of its settings.
  */
 class ComputerProbeNode : SimpleNode() {
     @JvmField
@@ -41,7 +41,9 @@ class ComputerProbeNode : SimpleNode() {
     private val txStrength = HashMap<IWirelessSignalTx, Double>()
     private val wirelessTxMap = HashMap<String, WirelessTx>()
 
-    override fun initialize() {
+    // SimpleNode restores its lists BEFORE initializeFromNBT. Build the gates now so saved
+    // directions/voltages have real components to load into, then connect without resetting them.
+    init {
         slowProcessList.add(SlowProcess())
 
         for (idx in 0 until 6) {
@@ -55,8 +57,9 @@ class ComputerProbeNode : SimpleNode() {
 
             process.isHighImpedance = true
         }
-        connect()
     }
+
+    override fun initialize() = connect()
 
     private inner class SlowProcess : IProcess {
         override fun process(time: Double) {
@@ -181,6 +184,11 @@ class ComputerProbeNode : SimpleNode() {
 
     override fun readFromNBT(nbt: CompoundTag) {
         super.readFromNBT(nbt)
+        unregister()
+        wirelessTxMap.clear()
+        spot = null
+        txSet.clear()
+        txStrength.clear()
         val wirelessTxCount = nbt.getInt("wirelessTxCount")
         for (idx in 0 until wirelessTxCount) {
             val tx = WirelessTx()
@@ -196,7 +204,7 @@ class ComputerProbeNode : SimpleNode() {
         var signalValue = 0.0
 
         override fun getCoordinate(): Coordinate {
-            return coordinate
+            return this@ComputerProbeNode.coordinate
         }
 
         override fun getRange(): Int {

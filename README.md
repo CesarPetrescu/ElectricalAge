@@ -56,8 +56,11 @@ Use **Minecraft 1.21.1**, **[NeoForge 21.1.249](https://neoforged.net/)** and **
 | [Create](https://modrinth.com/mod/create/versions) | Optional | **6.0.10**, Minecraft 1.21.1 / NeoForge build | Enables the Create shaft adapters and their recipes |
 | [Jade](https://modrinth.com/mod/jade/versions) | Optional | **15.10.6+neoforge** | Block names and measurement overlays |
 | [CC: Tweaked](https://modrinth.com/mod/cc-tweaked/versions) | Optional | **1.120.2**, Minecraft 1.21.1 / NeoForge build | Computer Probe integration |
+| [OpenComputers: Rebooted](https://www.curseforge.com/minecraft/mc-mods/opencomputers-rebooted) | Optional | **1.9.4-3** + **ScalableCatsForce 3.3.3-build-15** | Native `eln_probe` component through an OC Adapter; CC is not needed |
 
 Always select each dependency's **Minecraft 1.21.1 / NeoForge-compatible file**. Installing an unrelated newer version is not the same as installing the matching build. ELN works without Create, Jade or CC: Tweaked.
+
+OpenComputers is optional too. Its pinned release additionally requires [ScalableCatsForce](https://www.curseforge.com/minecraft/mc-mods/scalable-cats-force), a Scala loader, **not** a replacement for Kotlin for Forge. Install both OC dependencies on clients and servers when using that integration.
 
 > [!IMPORTANT]
 > **Kotlin for Forge by thedarkcolour is required and is not bundled in the ELN JAR.**
@@ -80,6 +83,17 @@ Launch the NeoForge instance, confirm Electrical Age appears in the Mods list, a
 - **Crash after an update:** keep your backup, note the exact mod versions, and attach the relevant `logs/latest.log` and crash report to a [bug report](https://github.com/CesarPetrescu/ElectricalAge/issues). Do not delete your world to diagnose a crash.
 
 </details>
+
+## Companion mods and fuels
+
+| Companion | How it connects to Electrical Age |
+|---|---|
+| [PneumaticCraft: Repressurized](https://modrinth.com/mod/pneumaticcraft-repressurized) | Gasoline, kerosene, LPG and ethanol for gas turbines/radial motors; diesel and biodiesel for the fuel heat furnace |
+| [Railcraft Reborn](https://modrinth.com/mod/railcraft-reborn) | Standard steam fluid for steam turbines; creosote for the fuel heat furnace |
+| [Immersive Engineering](https://modrinth.com/mod/immersiveengineering) | Ethanol for gas turbines/radial motors; biodiesel for the fuel heat furnace |
+| [Pipez](https://modrinth.com/mod/pipez) | Fluid pipes feeding ELN's NeoForge fluid ports |
+
+These are optional companions, not bundled dependencies. See the [compatibility guide](docs/companion-compatibility.md) for pinned versions, native OpenComputers examples, test coverage and limitations. Fuel names in a configuration file alone are **not** proof that an old mod has a 1.21.1 release. Mekanism chemical steam is not a standard fluid and has no direct ELN bridge here.
 
 ## Build from source
 
@@ -132,6 +146,8 @@ Development files live in `run/client/` and `run/server/`. Create is added to de
 ## Testing and automated releases
 
 [GitHub Actions](https://github.com/CesarPetrescu/ElectricalAge/actions/workflows/ci.yml) runs build/unit tests, simulation benchmarks and separate **standalone / Create-enabled** game jobs.
+
+Three additional **companion compatibility** jobs load the actual pinned mods: **fluids**, **OpenComputers without CC**, and **combined**. Named assertions verify fuel behavior, pipe transfer and computer callbacks, followed by a separate-JVM restart. Missing or skipped required checks fail CI, and release publishing waits for these jobs too.
 
 | When | What runs |
 |---|---|

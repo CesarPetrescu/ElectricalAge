@@ -211,7 +211,7 @@ class TurbineElement(node: TransparentNode, desc_: TransparentNodeDescriptor) :
             val computedEfficiency = Math.pow(Math.cos((shaft.rads - desc.optimalRads) / (desc.optimalRads * desc.efficiencyCurve) * Math.PI / 2), 3.0)
             if (computedEfficiency >= desc.efficiencyCutoff) {
                 efficiency = computedEfficiency.toFloat()
-                val th = if (throttle.connectedComponents.count() > 0) throttle.normalized else 1.0
+                val th = if (mods.eln.sim.SignalLoadSupport.hasExternalConnection(throttle)) throttle.normalized else 1.0
                 target = (desc.fluidConsumption * th).toFloat()
             } else {
                 efficiency = 0f

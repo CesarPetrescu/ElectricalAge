@@ -9,6 +9,11 @@ plugins {
 group = properties["modGroup"] as String
 version = "3.0.0-port"
 
+val companionProfile = providers.gradleProperty("companionProfile").orNull
+require(companionProfile == null || companionProfile in setOf("fluids", "opencomputers", "combined")) {
+    "companionProfile must be fluids, opencomputers, or combined"
+}
+
 // ---------------------------------------------------------------- toolchains
 // Minecraft 1.21.1 runs on Java 21; the mod compiles and runs on the same toolchain.
 java {
@@ -111,9 +116,12 @@ neoForge {
         }
         configureEach {
             // One game directory per run type: the server keeps its world, the client its options.
-            gameDirectory.set(file("run/$name"))
+            val runDirectory = if (companionProfile != null && name in setOf("server", "client")) {
+                "compat-$companionProfile" + if (name == "client") "-client" else ""
+            } else name
+            gameDirectory.set(file("run/$runDirectory"))
             systemProperty("forge.logging.markers", "REGISTRIES")
-            logLevel = org.slf4j.event.Level.DEBUG
+            logLevel = if (companionProfile != null) org.slf4j.event.Level.INFO else org.slf4j.event.Level.DEBUG
             jvmArgument("-ea:${project.group}")
             if (project.hasProperty("traceClasses")) jvmArgument("-verbose:class")
             if (project.hasProperty("dumpRegistry")) systemProperty("eln.dumpRegistry", "true")
@@ -213,6 +221,11 @@ tasks.processResources {
 
 // --------------------------------------------------------------- dependencies
 repositories {
+    maven {
+        name = "CurseMaven"
+        url = uri("https://cursemaven.com")
+        content { includeGroup("curse.maven") }
+    }
     maven { url = uri("https://maven.createmod.net") }
     maven {
         name = "Kotlin for Forge"
@@ -232,6 +245,8 @@ repositories {
 }
 
 dependencies {
+    // Native OC callbacks are optional. Runtime mods are installed from the verified companion lock.
+    compileOnly("curse.maven:opencomputers-rebooted-1634364:8721690") { isTransitive = false }
     compileOnly("maven.modrinth:create:6.0.10+mc1.21.1")
     compileOnly("net.createmod.ponder:ponder-neoforge:1.0.82+mc1.21.1")
     if (project.hasProperty("withCreate")) runtimeOnly("maven.modrinth:create:6.0.10+mc1.21.1")

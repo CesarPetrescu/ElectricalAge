@@ -202,7 +202,7 @@ object FuelRegistry {
     }
 
     fun fluidListToFluids(fluidNames: Array<String>) =
-        fluidNames.map { FluidRegistry.getFluid(it) }.filterNotNull().toTypedArray()
+        fluidNames.flatMap { FluidRegistry.getFluids(it) }.distinct().toTypedArray()
 
     fun heatEnergyPerMilliBucket(fuelName: String): Double =
         config.getDoubleOrElse(heatValueFactorPath, defaultHeatValueFactor) * baseHeatValueForFuel(fuelName)

@@ -3,7 +3,7 @@
 mods/eln/**
 # --- not yet ported: packets and the sided proxies (phase 2)
 # --- not yet ported: content registration and recipes (phase 2)
-# --- not yet ported: commands (brigadier) and cross-mod integrations (phase 4); IC2/OC are gone on 1.21
+# --- legacy IC2/OC energy exporters remain excluded; native OC Rebooted probe support is in integration/opencomputers
 # (the hover overlay is mods/eln/integration/jade on Jade; the Waila data carriers the packets share stay)
 !mods/eln/transparentnode/computercraftio/**
 !mods/eln/simplenode/energyconverter/*Ic2*

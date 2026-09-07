@@ -27,6 +27,13 @@ object FluidRegistry {
         return BuiltInRegistries.FLUID.entrySet().firstOrNull { it.key.location().path == name }?.value
     }
 
+    /** Fuel aliases accept every namespace, not whichever mod happened to register first. */
+    fun getFluids(name: String): List<Fluid> = if (name.contains(':')) {
+        listOfNotNull(ResourceLocation.tryParse(name)?.let { BuiltInRegistries.FLUID.getOptional(it).orElse(null) })
+    } else {
+        BuiltInRegistries.FLUID.entrySet().filter { it.key.location().path == name }.map { it.value }
+    }
+
     @JvmStatic
     fun getFluidName(fluid: Fluid?): String? = fluid?.let { BuiltInRegistries.FLUID.getKey(it).toString() }
 

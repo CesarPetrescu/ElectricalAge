@@ -9,6 +9,19 @@ import org.junit.Test
 
 class SignalLoadSupportTest {
     @Test
+    fun internalPullDownIsNotAnExternalThrottleConnection() {
+        val load = ElectricalLoad()
+        assertFalse(SignalLoadSupport.hasExternalConnection(load))
+        SignalRp(load)
+        assertFalse(SignalLoadSupport.hasExternalConnection(load))
+        val wire = ElectricalConnection(load, ElectricalLoad())
+        wire.onAddToRootSystem()
+        assertTrue(SignalLoadSupport.hasExternalConnection(load))
+        wire.onRemoveFromRootSystem()
+        assertFalse(SignalLoadSupport.hasExternalConnection(load))
+    }
+
+    @Test
     fun clampsExternalSignalVoltagesIntoInternalRange() {
         assertEquals(0.0, SignalLoadSupport.clampSignalVoltage(Eln.signalVoltageAcceptNegative), 1e-12)
         assertEquals(Eln.SVU, SignalLoadSupport.clampSignalVoltage(Eln.signalVoltageAcceptPositive), 1e-12)

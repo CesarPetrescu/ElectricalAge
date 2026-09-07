@@ -114,7 +114,7 @@ class RadialMotorElement(node: TransparentNode, transparentNodeDescriptor: Trans
                 0.25
             }
             efficiency = computedEfficiency.toFloat()
-            val th = if (throttle.connectedComponents.isNotEmpty()) throttle.normalized else 1.0
+            val th = if (mods.eln.sim.SignalLoadSupport.hasExternalConnection(throttle)) throttle.normalized else 1.0
             target = (desc.fluidConsumption * th).toFloat()
 
             val drained = tank.drain(target * time).toFloat()

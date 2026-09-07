@@ -49,24 +49,11 @@ public class ElementFluidHandler implements ISidedFluidHandler, INBTTReady {
 
     @Override
     public int fill(Direction from, FluidStack resource, boolean doFill) {
-        if (tank.getFluidAmount() > 0) {
-            // No change in type of fluid.
-            return tank.fill(resource, action(doFill));
-        } else if (whitelist == null) {
-            // May have a different fluid.
-            setHeatEnergyPerMilliBucket(resource.getFluid());
-            return tank.fill(resource, action(doFill));
-        } else {
-            // 1.12.2: fluids have no integer id; FluidRegistry hands out singletons, so compare instances.
-            Fluid resourceFluid = resource.getFluid();
-            for (int i = 0; i < whitelist.length; i++) {
-                if (whitelist[i] == resourceFluid) {
-                    setHeatEnergyPerMilliBucket(resource.getFluid());
-                    return tank.fill(resource, action(doFill));
-                }
-            }
-            return 0;
-        }
+        if (resource == null || resource.isEmpty() || !canFill(from, resource.getFluid())) return 0;
+        int filled = tank.fill(resource, action(doFill));
+        // SIMULATE must leave both contents and the persisted fuel-energy cache unchanged.
+        if (doFill && filled > 0) setHeatEnergyPerMilliBucket(resource.getFluid());
+        return filled;
     }
 
     @Override
@@ -84,9 +71,11 @@ public class ElementFluidHandler implements ISidedFluidHandler, INBTTReady {
 
     @Override
     public boolean canFill(Direction from, Fluid fluid) {
+        if (fluid == null) return false;
         if (tank.getFluidAmount() > 0) {
             return tank.getFluid().getFluid() == fluid;
         } else {
+            if (whitelist == null) return true;
             for (int i = 0; i < whitelist.length; i++) {
                 if (whitelist[i] == fluid) {
                     return true;

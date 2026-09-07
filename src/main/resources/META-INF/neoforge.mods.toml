@@ -37,6 +37,14 @@ versionRange="[${minecraftVersion}]"
 ordering="NONE"
 side="BOTH"
 
+# Native Computer Probe driver, independent of CC: Tweaked. Other OC forks are not verified.
+[[dependencies.${modId}]]
+modId="opencomputers"
+type="optional"
+versionRange="[1.9.4-3,1.10)"
+ordering="AFTER"
+side="BOTH"
+
 [[dependencies.${modId}]]
 modId="kotlinforforge"
 type="required"

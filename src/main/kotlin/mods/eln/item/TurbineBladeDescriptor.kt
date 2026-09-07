@@ -1,7 +1,7 @@
 package mods.eln.item
 
 import mods.eln.Eln
-import mods.eln.generic.GenericItemUsingDamage
+import mods.eln.generic.GenericItemUsingDamageDescriptor
 import mods.eln.i18n.I18N.tr
 import mods.eln.wiki.Data
 import net.minecraft.world.entity.player.Player
@@ -146,8 +146,7 @@ class TurbineBladeDescriptor(
     companion object {
         fun getDescriptor(stack: ItemStack?): TurbineBladeDescriptor? {
             if (stack.isNothing()) return null
-            val item = stack.item as? GenericItemUsingDamage<*> ?: return null
-            return item.getDescriptor(stack) as? TurbineBladeDescriptor
+            return GenericItemUsingDamageDescriptor.getDescriptor(stack) as? TurbineBladeDescriptor
         }
     }
 }

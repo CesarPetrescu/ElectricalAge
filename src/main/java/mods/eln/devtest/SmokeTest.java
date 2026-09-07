@@ -71,6 +71,10 @@ public final class SmokeTest {
     public static void registerIfRequested() {
         String mode = System.getProperty("eln.smokeTest");
         if (mode == null) return;
+        if (mode.startsWith("companions-")) {
+            CompanionSmokeTest.register(mode);
+            return;
+        }
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.register(new SmokeTest(mode));
         Eln.logger.info("{} armed, mode={}", PREFIX, mode);
     }
