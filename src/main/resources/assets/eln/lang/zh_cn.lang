@@ -206,8 +206,6 @@ Time_per_operation\:_%1$h=每次操作时间: %1$h
 # src/main/java/mods/eln/item/FerromagneticCoreDescriptor.java
 Cable_loss_factor\:_%1$=导线损耗系数: %1$
 
-# src/main/java/mods/eln/item/HeatingCorpElement.java
-
 # src/main/java/mods/eln/item/OverHeatingProtectionDescriptor.java
 Useful_to_prevent_overheating\nof_Batteries=用于防止电池过热
 
@@ -216,8 +214,6 @@ Useful_to_prevent_over-voltage\nof_Batteries=用于防止电池过压
 
 # src/main/java/mods/eln/item/SolarTrackerDescriptor.java
 Solar_panel_upgrade=太阳能板升级
-
-# src/main/java/mods/eln/item/regulator/RegulatorSlot.java
 
 # src/main/java/mods/eln/sixnode/TreeResinCollector/TreeResinCollectorDescriptor.java
 Produces_Tree_Resin_over\ntime_when_put_on_a_tree.=放置在树上后\n会随时间推移产生树脂。
@@ -235,8 +231,6 @@ __*_It_exposes_a_nominal_mains_class_instead_of_wall-plug_details=  * 它暴露�
 
 # src/main/java/mods/eln/sixnode/batterycharger/BatteryChargerElement.java
 Charge_Current=充电电流
-
-# src/main/java/mods/eln/sixnode/batterycharger/BatteryChargerGui.java
 
 # src/main/java/mods/eln/sixnode/diode/DiodeDescriptor.java
 Electrical_current_can_only\nflow_through_the_diode\nfrom_anode_to_cathode=电流只能从正极流向负极
@@ -312,10 +306,6 @@ Displays_signal_value.=显示信号值。
 Max=最大
 Min=最小
 
-# src/main/java/mods/eln/sixnode/electricaldigitaldisplay/ElectricalDigitalDisplayGui.java
-
-# src/main/java/mods/eln/sixnode/electricalentitysensor/ElectricalEntitySensorContainer.java
-
 # src/main/java/mods/eln/sixnode/electricalentitysensor/ElectricalEntitySensorDescriptor.java
 Output_voltage_increases\nif_entities_are_moving_around.=当周围有实体移动时\n输出电压增加。
 
@@ -346,8 +336,6 @@ Provides_an_electrical_voltage\nwhich_is_proportional_to\nthe_intensity_of_dayli
 # src/main/java/mods/eln/sixnode/electricallightsensor/ElectricalLightSensorElement.java
 Light_level=光照等级
 
-# src/main/java/mods/eln/sixnode/electricalmath/ElectricalMathContainer.java
-
 # src/main/java/mods/eln/sixnode/electricalmath/ElectricalMathDescriptor.java
 Applicable_boolean_operators\:=适用的布尔运算符:
 Applicable_functions\:=适用的函数:
@@ -373,8 +361,6 @@ Converts_Redstone_signal\nto_an_electrical_voltage.=将红石信号\n转换为�
 
 # src/main/java/mods/eln/sixnode/electricalredstoneoutput/ElectricalRedstoneOutputDescriptor.java
 Converts_electrical_voltage\ninto_a_Redstone_signal.=将电压\n转换为红石信号。
-
-# src/main/java/mods/eln/sixnode/electricalredstoneoutput/ElectricalRedstoneOutputElement.java
 
 # src/main/java/mods/eln/sixnode/electricalrelay/ElectricalRelayDescriptor.java
 Contact_current_rating\:_%1$A=触点额定电流: %1$A
@@ -511,6 +497,8 @@ It's_a_resistor=这是一个电阻
 
 # src/main/java/mods/eln/sixnode/resistor/ResistorElement.java
 
+# src/main/java/mods/eln/sixnode/resistor/ResistorGui.java
+
 # src/main/java/mods/eln/sixnode/thermalcable/ThermalCableDescriptor.java
 High_parallel_resistance\n_->_Low_power_dissipation.=High parallel resistance\n -> Low power dissipation.
 Low_serial_resistance\n_->_High_conductivity.=Low serial resistance\n -> High conductivity.
@@ -557,10 +545,10 @@ Receive_signal_voltage_on_selected_wireless_signal_channel=接收选定无线信
 
 # src/main/java/mods/eln/sixnode/wirelesssignal/rx/WirelessSignalRxGui.java
 
-# src/main/java/mods/eln/sixnode/wirelesssignal/source/WirelessSignalSourceDescriptor.java
-
 # src/main/java/mods/eln/sixnode/wirelesssignal/tx/WirelessSignalTxDescriptor.java
 Sends_signal_voltage_on_selected_wireless_signal_channel=在选定无线信号频道上发送信号电压
+
+# src/main/java/mods/eln/sixnode/wirelesssignal/tx/WirelessSignalTxElement.java
 
 # src/main/java/mods/eln/transparentnode/autominer/AutoMinerContainer.java
 Drill_slot=钻头
@@ -614,6 +602,8 @@ Actual\:_%1$=实际值: %1$
 Auto_shutdown=自动启停
 Manual_shutdown=手动启停
 Set_point\:_%1$=设定值: %1$
+
+# src/main/java/mods/eln/transparentnode/electricalmachine/ElectricalMachineContainer.java
 
 # src/main/java/mods/eln/transparentnode/electricalmachine/ElectricalMachineDescriptor.java
 
@@ -687,7 +677,9 @@ Fan_cooling_power\:_%1$W=风扇散热功率: %1$W
 Fan_power_consumption\:_%1$W=风扇功率消耗: %1$W
 Fan_voltage\:_%1$V=风扇电压: %1$V
 
-# src/main/java/mods/eln/transparentnode/thermaldissipatoractive/ThermalDissipatorActiveElement.java
+# src/main/java/mods/eln/transparentnode/thermaldissipatorpassive/ThermalDissipatorPassiveDescriptor.java
+
+# src/main/java/mods/eln/transparentnode/thermaldissipatorpassive/ThermalDissipatorPassiveElement.java
 
 # src/main/java/mods/eln/transparentnode/turbine/TurbineDescriptor.java
 Generates_electricity_using_heat.=用热能来发电
@@ -695,6 +687,8 @@ Temperature_difference\:_%1$°C=温度差: %1$°C
 
 # src/main/java/mods/eln/transparentnode/turbine/TurbineElement.java
 Nominal=额定
+
+# src/main/java/mods/eln/transparentnode/turret/TurretContainer.java
 
 # src/main/java/mods/eln/transparentnode/turret/TurretDescriptor.java
 CAUTION\:_Cables_can_get_quite_hot!=注意: 导线可能会变得非常热!
@@ -721,8 +715,6 @@ Recharge_power\:=充能功率:
 # src/main/java/mods/eln/transparentnode/waterturbine/WaterTurbineDescriptor.java
 Generates_energy_using_water_stream.=用流动水来发电
 No_place_for_water_turbine!=没有足够的空间放置水力发电机
-
-# src/main/java/mods/eln/transparentnode/waterturbine/WaterTurbineElement.java
 
 # src/main/java/mods/eln/transparentnode/windturbine/WindTurbineDescriptor.java
 Front\:_%1$=前: %1$ 格
@@ -958,7 +950,7 @@ Remaining\:_%1$_m=剩余: %1$ m
 Right_click_to_cut_utility_wire_in_your_inventory=右键点击剪切物品栏中的实用导线
 Wire_Snips=剪线钳
 
-# src/main/kotlin/mods/eln/item/electricalitem/BatteryItem.kt
+# src/main/kotlin/mods/eln/item/electricalitem/ElectricalArmor.kt
 
 # src/main/kotlin/mods/eln/item/electricalitem/ElectricalAxe.kt
 Cuts_down_trees._Right-click_to_make_it_act_like_a_regular_axe.=砍树，右键切换连锁模式
@@ -969,6 +961,8 @@ Stored_Energy\:_%1$J_(%2$%)=储存能量: %1$J (%2$%)
 
 # src/main/kotlin/mods/eln/item/electricalitem/ElectricalPickaxe.kt
 Opens_holes._Right-click_to_open_smaller_holes.=挖3*3，右键切换1*1模式
+
+# src/main/kotlin/mods/eln/item/electricalitem/PortableOreScannerItem.kt
 
 # src/main/kotlin/mods/eln/item/lampitem/LampDescriptor.kt
 Current_lifetime\:_%1$h=当前寿命: %1$h
@@ -1042,7 +1036,7 @@ Turbine_blade_slot=涡轮叶片
 # src/main/kotlin/mods/eln/misc/Version.kt
 mod.name=电力时代
 
-# src/main/kotlin/mods/eln/node/six/SixNodeDescriptor.kt
+# src/main/kotlin/mods/eln/node/transparent/TransparentNodeDescriptor.kt
 
 # src/main/kotlin/mods/eln/railroad/ElectricMinecartChargeReporter.kt
 Cart_Energy\:_=矿车能量:
@@ -1661,6 +1655,7 @@ XOR_Chip.name=数字集成电路(异或)
 120V_Basic_Floodlight.name=泛光灯(120V)
 240V_Active_Thermal_Dissipator.name=散热器(主动,240V)
 240V_Compressor.name=压缩机(240V)
+240V_Evaporative_Heat_Sink.name=240V Evaporative Heat Sink
 240V_Fuel_Generator.name=发电机(轻油,240V)
 240V_Macerator.name=粉碎机(240V)
 240V_Magnetizer.name=磁化机(240V)
@@ -2118,6 +2113,72 @@ Life\:=寿命:
 No_charge=没有充电
 Power_in\:=输入功率:
 Power_out\:=输出功率:
+
+# src/main/kotlin/mods/eln/transparentnode/evaporative/EvaporativeCooler.kt
+%1$_/_4000_mB=%1$ / 4000 mB
+%1$_percent=%1$ percent
+Airflow_blocked_-_passive_cooling=Airflow blocked - passive cooling
+Copper_sides\:_heat._Front/rear\:_power._Top/bottom\:_water.=Copper sides: heat. Front/rear: power. Top/bottom: water.
+Disabled_-_passive_cooling=Disabled - passive cooling
+Dry_fan_cooling=Dry fan cooling
+Electrical_consumption=Electrical consumption
+Evaporative_cooling=Evaporative cooling
+Fan\:_120_W._Pump\:_15_W._Water\:_4_buckets.=Fan: 120 W. Pump: 15 W. Water: 4 buckets.
+Freeze_protection_-_dry_cooling=Freeze protection - dry cooling
+Low_voltage_-_pump_inhibited=Low voltage - pump inhibited
+Net_heat_rejection=Net heat rejection
+No_power_-_passive_cooling=No power - passive cooling
+Outdoor_exhaust_required_-_dry_cooling=Outdoor exhaust required - dry cooling
+Redstone_interlock_-_passive_cooling=Redstone interlock - passive cooling
+Right-click_for_controls;_use_water_or_empty_buckets_to_transfer_water.=Right-click for controls; use water or empty buckets to transfer water.
+Status=Status
+Surface_too_hot_-_dry_cooling=Surface too hot - dry cooling
+Target_reached_-_passive_cooling=Target reached - passive cooling
+Unsupported_climate_-_dry_cooling=Unsupported climate - dry cooling
+Up_to_8_kW_evaporation;_capacity_depends_on_temperature_and_humidity.=Up to 8 kW evaporation; capacity depends on temperature and humidity.
+Waiting_for_server=Waiting for server
+Water=Water
+Water-assisted_thermal-network_cooling;_240_V.=Water-assisted thermal-network cooling; 240 V.
+Water_empty_-_dry_cooling=Water empty - dry cooling
+Wet_operation_requires_clear_outdoor_intake_and_exhaust.=Wet operation requires clear outdoor intake and exhaust.
+
+# src/main/kotlin/mods/eln/transparentnode/evaporative/EvaporativeCoolerScreen.kt
+%1$%_actual=%1$% actual
+AUTOMATION=AUTOMATION
+Air\:_%1$_C=Air: %1$ C
+Auto=Auto
+Cycle_ignored,_require_signal,_and_require_no_signal.=Cycle ignored, require signal, and require no signal.
+Disable_the_motor_and_pump._Passive_cooling_remains.=Disable the motor and pump. Passive cooling remains.
+Dry=Dry
+EC-240_Evaporative_Heat_Sink=EC-240 Evaporative Heat Sink
+Fan_limit\:_%1$%=Fan limit: %1$%
+Heat\:_copper_sides_|_Power\:_front/rear_|_Water\:_top/bottom=Heat: copper sides | Power: front/rear | Water: top/bottom
+Humidity\:_%1$%=Humidity: %1$%
+Input\:_%1$_W_/_%2$_V=Input: %1$ W / %2$ V
+Lower_maximum_fan_speed_by_10_percent.=Lower maximum fan speed by 10 percent.
+Lower_target_by_1_C.=Lower target by 1 C.
+Lower_target_by_5_C.=Lower target by 5 C.
+Net_cooling\:_%1$_W=Net cooling: %1$ W
+OPERATING_MODE=OPERATING MODE
+Outdoor_airflow_verified._Wet-bulb_value_is_an_estimate.=Outdoor airflow verified. Wet-bulb value is an estimate.
+Raise_maximum_fan_speed_by_10_percent.=Raise maximum fan speed by 10 percent.
+Raise_target_by_1_C.=Raise target by 1 C.
+Raise_target_by_5_C.=Raise target by 5 C.
+Redstone\:_high=Redstone: high
+Redstone\:_ignored=Redstone: ignored
+Redstone\:_low=Redstone: low
+Request_wet_cooling_continuously._Safety_interlocks_still_apply.=Request wet cooling continuously. Safety interlocks still apply.
+Run_the_fan_without_using_water.=Run the fan without using water.
+Sensible\:_%1$_W;_evaporation\:_%2$_W;_motor_heat\:_%3$_W._Negative_net_means_warming.=Sensible: %1$ W; evaporation: %2$ W; motor heat: %3$ W. Negative net means warming.
+Surface\:_%1$_C=Surface: %1$ C
+THERMAL_/_WATER=THERMAL / WATER
+Target\:_%1$_C=Target: %1$ C
+Use\:_%1$_mB/s=Use: %1$ mB/s
+Use_the_fan_above_target_+2_C_and_water_above_target_+5_C.=Use the fan above target +2 C and water above target +5 C.
+Water\:_%1$_mB=Water: %1$ mB
+Wet=Wet
+Wet_bulb\:_%1$_C=Wet bulb: %1$ C
+Wet_mode_needs_an_unobstructed_path_to_sky_within_8_blocks.=Wet mode needs an unobstructed path to sky within 8 blocks.
 
 # src/main/kotlin/mods/eln/transparentnode/festive/FestiveElement.kt
 It_probably_works_if_you_apply_~200v_to_the_xmas_wireless_channel=如果你在"xmas"无线照明频道中输入200V，它可能会工作

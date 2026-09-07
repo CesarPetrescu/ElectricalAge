@@ -1,4 +1,4 @@
-// 1.21.1	2026-09-06T11:57:59.894473036	Item Models: eln
+// 1.21.1	2026-09-07T11:55:54.412453872	Item Models: eln
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/100a_electrical_breaker.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/100a_switch.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/10a_diode.json
@@ -38,6 +38,7 @@ d104bd8ced30aa2f141c66ce964a5c0ae2c38bb4 assets/eln/models/item/240v_carbon_ligh
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/240v_compressor.json
 3635f362acaf2c0965d9b46327f025affb0a7b88 assets/eln/models/item/240v_copper_heating_element.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/240v_emergency_lamp.json
+c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/240v_evaporative_heat_sink.json
 e9c15b8301d2ae394783c785824971af9d0cc8ac assets/eln/models/item/240v_farming_light_bulb.json
 4aa920c9784fc985cbca2153d28c0650d5288612 assets/eln/models/item/240v_fluorescent_light_bulb.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/240v_fuel_generator.json
@@ -127,7 +128,7 @@ c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/aluminum_500_kcm
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/aluminum_750_kcmil_cable_1000v.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/aluminum_750_kcmil_cable_bare.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/aluminum_750_kcmil_cable_melted.json
-a2b23c3c751a8755b918e3065b7eefce745d2a8f assets/eln/models/item/aluminum_molten_metal_pile.json
+c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/aluminum_molten_metal_pile.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/aluminum_quadruplex_1_0_cable_600v.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/aluminum_quadruplex_1_0_cable_melted.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/aluminum_quadruplex_4_0_cable_600v.json
@@ -288,7 +289,7 @@ f6d6255a299ed2df5c6b6da80252479f667dec4e assets/eln/models/item/copper_cable.jso
 9828cac1b2f0d10e6ad8e61681326aa62c7059a1 assets/eln/models/item/copper_clutch_plate.json
 cccc5dbe1554fd40c6976de5664dd54c74e522ad assets/eln/models/item/copper_dust.json
 6a3f4c81f8c460c7cf87e70f7c916b73dc5ba32e assets/eln/models/item/copper_ingot.json
-a2b23c3c751a8755b918e3065b7eefce745d2a8f assets/eln/models/item/copper_molten_metal_pile.json
+c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/copper_molten_metal_pile.json
 173d8e28779805493fef537c2e659d01ee253d22 assets/eln/models/item/copper_ore.json
 211e4624393ff74fc02ef2d6b21231c1b7db716d assets/eln/models/item/copper_plate.json
 c0841affb6c5c9886af74507b9962f2fefa35c29 assets/eln/models/item/copper_quadruplex_1_0_cable_600v.json

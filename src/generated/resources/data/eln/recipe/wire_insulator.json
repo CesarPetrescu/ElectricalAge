@@ -2,20 +2,20 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "I": {
-      "item": "minecraft:iron_ingot"
-    },
-    "R": {
-      "item": "minecraft:redstone"
-    },
-    "M": {
-      "item": "eln:machine_block"
-    },
     "B": {
       "item": "minecraft:bucket"
     },
     "C": {
       "item": "eln:copper_cable"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "M": {
+      "item": "eln:machine_block"
+    },
+    "R": {
+      "item": "minecraft:redstone"
     }
   },
   "pattern": [

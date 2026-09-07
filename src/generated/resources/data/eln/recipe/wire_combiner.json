@@ -2,17 +2,17 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
+    "C": {
+      "item": "eln:electrical_motor"
+    },
     "I": {
       "item": "minecraft:iron_ingot"
-    },
-    "R": {
-      "item": "minecraft:redstone"
     },
     "M": {
       "item": "eln:machine_block"
     },
-    "C": {
-      "item": "eln:electrical_motor"
+    "R": {
+      "item": "minecraft:redstone"
     },
     "W": {
       "item": "eln:iron_roller_wheel"

@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "minecraft:bucket"
+    },
+    "C": {
+      "item": "eln:copper_thermal_cable"
+    },
+    "D": {
+      "item": "eln:240v_active_thermal_dissipator"
+    },
+    "I": {
+      "tag": "c:ingots/iron"
+    },
+    "S": {
+      "item": "minecraft:sponge"
+    }
+  },
+  "pattern": [
+    "ISI",
+    "CDC",
+    "IBI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:240v_evaporative_heat_sink"
+  }
+}

@@ -1,4 +1,4 @@
-// 1.21.1	2026-09-06T11:59:09.048521775	Recipes
+// 1.21.1	2026-09-07T11:55:54.403133288	Recipes
 c45ab92bbdd9de0dab6c23fed31d9bcc1fda2fb0 data/eln/advancement/recipes/misc/100a_electrical_breaker.json
 af52ea42900df2bf3acdcf235f7428450d1fd083 data/eln/advancement/recipes/misc/100a_switch.json
 38ca3c6c63f437a5255f40208e37e8d84ea1924e data/eln/advancement/recipes/misc/10a_diode.json
@@ -41,6 +41,7 @@ d39967eab97ceea8b8d58df7d2aad2cc52b59534 data/eln/advancement/recipes/misc/240v_
 528ef0a0b08e451cd7e053a20648c665ccce26a6 data/eln/advancement/recipes/misc/240v_compressor.json
 f1f052a41f57710f5554aa024581df67a8485b6b data/eln/advancement/recipes/misc/240v_copper_heating_element.json
 bb20c4a49f232675de04dc2c5c2af96a4158dc88 data/eln/advancement/recipes/misc/240v_emergency_lamp.json
+dc09261bea09e3c1e2500f339540abab94667721 data/eln/advancement/recipes/misc/240v_evaporative_heat_sink.json
 b413cc10814f3689bbe9d82ea54da4cdc49f1f9b data/eln/advancement/recipes/misc/240v_farming_light_bulb.json
 45d375e094bd72b86c712c8d36c1d2ad235a3d83 data/eln/advancement/recipes/misc/240v_fluorescent_light_bulb.json
 db24f47fac38bad5b052ff7b44c951e953be81df data/eln/advancement/recipes/misc/240v_fuel_generator.json
@@ -112,6 +113,7 @@ da1cbe85a5d1d5420453d373d8d4606b38a75532 data/eln/advancement/recipes/misc/advan
 db2e376a2de42779070aceee3f295f3fc7c97d95 data/eln/advancement/recipes/misc/alloy_dust.json
 214b1da9cf66292ad2a214faa9d47086960a015e data/eln/advancement/recipes/misc/alloy_ingot_from_smelting_alloy_dust.json
 2a7bd1677c3ce3b9d64b9840eefddd3b69800898 data/eln/advancement/recipes/misc/alloy_turbine_blade.json
+c2303aec64129c9d00b627c8aa8228bd3a060513 data/eln/advancement/recipes/misc/aluminum_roller_wheel.json
 1bd1815a164388538bb437eed6485d57b6ef95c2 data/eln/advancement/recipes/misc/amplifier.json
 8d5c88e680aebe7a37cc7954f3a452638993295f data/eln/advancement/recipes/misc/analog_vumeter.json
 d8c85041b90dcbbbb295121d360d3bee67b3afd6 data/eln/advancement/recipes/misc/analog_watch.json
@@ -228,6 +230,7 @@ ee9823acb63f4cd591df4ab4e1f6bc2d047e596f data/eln/advancement/recipes/misc/impro
 5677795156b1575df7600a2807b25c40c56aedf0 data/eln/advancement/recipes/misc/iron_cable.json
 c1aab03862f9dcd5e47c1031dabd8732dd7886a8 data/eln/advancement/recipes/misc/iron_clutch_plate.json
 4a5c3cfcd54a1dcfab29d64e32628ce0c52d98c2 data/eln/advancement/recipes/misc/iron_ingot_from_smelting_iron_dust.json
+8a91cedea2abcb1b48d69a355b643e9b05d94ce3 data/eln/advancement/recipes/misc/iron_roller_wheel.json
 5c0bd1d42767a81cdfdd7d31c13602575698341c data/eln/advancement/recipes/misc/iron_turbine_blade.json
 f134111da8ed25b7f12f0d2c05703557bdefb298 data/eln/advancement/recipes/misc/irresponsible_electrical_drill.json
 8fc6605e7fa24580b6272ae9ec838077b1b13162 data/eln/advancement/recipes/misc/jk_flip_flop_chip.json
@@ -360,6 +363,7 @@ c2958d709e27a22074c036117b8e24e124d29c92 data/eln/advancement/recipes/misc/small
 06bf0bba6b36e9bea4796e96609ac7d6e3ab1701 data/eln/advancement/recipes/misc/spot_lamp_socket.json
 60fb3c5eb527f615b93b5eaa4cbd09dde576f7d4 data/eln/advancement/recipes/misc/standard_alarm.json
 b11ada9722a88d7ec5854083704a5a46b3a0a5c8 data/eln/advancement/recipes/misc/steam_turbine.json
+7e82d4618feb0313fcc05cc3c0d43079c6b37941 data/eln/advancement/recipes/misc/steel_roller_wheel.json
 febc14b945dcce513f776b08bf7d121ac828ca5a data/eln/advancement/recipes/misc/steel_turbine_blade.json
 87196a40daef805b130d076113ded6b8d23c1016 data/eln/advancement/recipes/misc/stone_heat_furnace.json
 7f5e231316a402aa5e5c87798e37114ccc7b6bba data/eln/advancement/recipes/misc/streetlight.json
@@ -418,6 +422,9 @@ a658d04394abbefe92fa711a5eed5a9399bfe40a data/eln/advancement/recipes/misc/white
 c8d2146b2460981236cefcc67dfa320e23cb9c4e data/eln/advancement/recipes/misc/white_brush_8.json
 0eddc64cb34f33247129e34f9b297a915e5ccb2c data/eln/advancement/recipes/misc/white_brush_9.json
 4b16b410fb5f60eb0713117e22054243f0f2a25f data/eln/advancement/recipes/misc/wind_turbine.json
+a0c221dde4b8dd9d1cb0e71a417ad2e5fa8bab29 data/eln/advancement/recipes/misc/wire_combiner.json
+512083c451c29a347f49c3796a17a5ee1ff76441 data/eln/advancement/recipes/misc/wire_insulator.json
+e1646c516f39a34d77f5b5c4d683ebabfb83201c data/eln/advancement/recipes/misc/wire_roller.json
 0fc5ed8a3b035b2f7f338871057e7d9632094c5e data/eln/advancement/recipes/misc/wireless_analyser.json
 653708de83ef5fb19f9db7e12c1b6a51e39795de data/eln/advancement/recipes/misc/wireless_button.json
 e93fbdcadce8e977cedb8ff18779b06f20564101 data/eln/advancement/recipes/misc/wireless_signal_receiver.json
@@ -471,6 +478,7 @@ b19ee96f5478aba9cf3ff83746ab3c1a563cf42b data/eln/recipe/240v_battery_charger.js
 74171b06dd9eeb61a7ea8ba069a037298128f6dc data/eln/recipe/240v_compressor.json
 c467d81e6dccfa47704a5cb5de23c0b951c24446 data/eln/recipe/240v_copper_heating_element.json
 c328447882180ca3c105dfdc49b6ce34d135d5f5 data/eln/recipe/240v_emergency_lamp.json
+9ca1ac76bb7ede50be159157aede10d456bad12e data/eln/recipe/240v_evaporative_heat_sink.json
 cc10b1fbb38dde469b937766b3496bd360fed4b1 data/eln/recipe/240v_farming_light_bulb.json
 0259f016e03c010c14993ff8c0dd5e18e39c80cd data/eln/recipe/240v_fluorescent_light_bulb.json
 d24cd12df15f16b319df2a77e692b9df49aac527 data/eln/recipe/240v_fuel_generator.json
@@ -542,6 +550,7 @@ dc2261a37bc08217b778a835251cb877dc28bfde data/eln/recipe/advanced_energy_meter.j
 b1c0c77faba285a6828bed0273678e894bf9a788 data/eln/recipe/alloy_dust.json
 44af12df9ac8de3cb08dcde567023590645a1bdf data/eln/recipe/alloy_ingot_from_smelting_alloy_dust.json
 add68570f0f8823eb5240d5d9b763e149ba7c98a data/eln/recipe/alloy_turbine_blade.json
+d0b5518163e784cc5cfbf720b3a664f30985d035 data/eln/recipe/aluminum_roller_wheel.json
 e611226696126abc39f4648dd59a0b170f5ad609 data/eln/recipe/amplifier.json
 c943cd2919c99e333ec3ee4ca7baf78dd887041c data/eln/recipe/analog_vumeter.json
 924a06fed3a155c4290d2e3a3a81aaa5fac66e5b data/eln/recipe/analog_watch.json
@@ -658,6 +667,7 @@ b75f3ccd9a167242b1eaa4a3c3f72696f71b2408 data/eln/recipe/inert_canister.json
 a42a4f75ab100b7d8d8bbd1755a9e6c3d57ff0d2 data/eln/recipe/iron_cable.json
 ee33c1b9eb1c54593f4d2177c0fcff29bec53899 data/eln/recipe/iron_clutch_plate.json
 cb36b6c9c4e9dc5322d0892e1cfdd78bf7b6d77e data/eln/recipe/iron_ingot_from_smelting_iron_dust.json
+fcda6babcf91036de06ed76169737a6b52bba339 data/eln/recipe/iron_roller_wheel.json
 e8e16b100eac5b4111dceab4524f0f8c12497b68 data/eln/recipe/iron_turbine_blade.json
 1bf647d05c26dd2587494372168e42ee82e0526f data/eln/recipe/irresponsible_electrical_drill.json
 e9f6929d1acf2b23f076762e7fb93b5ab9395fc5 data/eln/recipe/jk_flip_flop_chip.json
@@ -790,6 +800,7 @@ f20378fb405753f1f7b220e3ebd4824493454ca1 data/eln/recipe/small_solar_panel.json
 d7bd1d5442f74983c04e120026a207e7be9a7bfe data/eln/recipe/spot_lamp_socket.json
 c744308d36d62bddf4e428bc1d72be2b64c56501 data/eln/recipe/standard_alarm.json
 3d6e0809c610f62a7dc37a5fe8b1c99edb96570a data/eln/recipe/steam_turbine.json
+8d925d380fb0973184ac010b9c7a196468acf2de data/eln/recipe/steel_roller_wheel.json
 f8c884abdf13ae2e7acd5ff4136dffb6dc84f1b9 data/eln/recipe/steel_turbine_blade.json
 84827cbf36c43e2f254c16c053930e45de80889a data/eln/recipe/stone_heat_furnace.json
 8d5ced1ded734d26ff1dbffb6dc8b646a0b3f879 data/eln/recipe/streetlight.json
@@ -848,6 +859,9 @@ dd28919aa36de082de3bc5643d662b30e1e211f6 data/eln/recipe/white_brush_3.json
 a360c30a8e89e3dac9bd507a8b50336bce8e4830 data/eln/recipe/white_brush_8.json
 567171277c31ca9f2d0099df1e9b62010c8c3b16 data/eln/recipe/white_brush_9.json
 a863adf85a48129096d2e7b15bc540671bbd79d5 data/eln/recipe/wind_turbine.json
+aa5bec5673aed3aa5a203ee3763b392a9559bddb data/eln/recipe/wire_combiner.json
+744fc790b057abd100767a2b18c05731fb7f7867 data/eln/recipe/wire_insulator.json
+af5eb5c941709d3e004e7c56ffcc1ec6bb65e3ba data/eln/recipe/wire_roller.json
 37d96f0d9b30c60740b8c70390e6d824e2f15ac7 data/eln/recipe/wireless_analyser.json
 8c17ce0e55bb5715192300d66cc830e042d33031 data/eln/recipe/wireless_button.json
 d69fc4560218b714390eea5131b1c2ac1b64fc9f data/eln/recipe/wireless_signal_receiver.json
