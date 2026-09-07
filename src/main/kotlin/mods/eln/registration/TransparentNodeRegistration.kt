@@ -1360,6 +1360,13 @@ object TransparentNodeRegistration {
     }
 
     private fun registerThermalDissipatorPassiveAndActive(id: Int) {
+        // New stable ID 4132. Never renumber existing descriptors: worlds persist these IDs.
+        run {
+            val desc = mods.eln.transparentnode.evaporative.EvaporativeCoolerDescriptor(
+                TR_NAME(I18N.Type.NONE, "240V Evaporative Heat Sink"))
+            desc.setDefaultIcon("evaporativecooler")
+            transparentNodeItem.addDescriptor(36 + (id shl 6), desc)
+        }
         var subId: Int
         var name: String?
         run {

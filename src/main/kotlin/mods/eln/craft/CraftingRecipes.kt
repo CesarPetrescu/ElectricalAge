@@ -1041,6 +1041,10 @@ object CraftingRecipes {
     }
 
     private fun recipeThermalDissipatorPassiveAndActive() {
+        addRecipe(findItemStack("240V Evaporative Heat Sink"), "ISI", "CDC", "IBI",
+            'I', "ingotIron", 'S', Blocks.SPONGE,
+            'C', findItemStack("Copper Thermal Cable"),
+            'D', findItemStack("240V Active Thermal Dissipator"), 'B', Items.BUCKET)
         addRecipe(
             findItemStack("Small Passive Thermal Dissipator"), "I I", "III", "CIC", 'I', "ingotCopper", 'C',
             findItemStack("Copper Thermal Cable")

@@ -1,0 +1,33 @@
+{
+  "blender": "5.2.0 LTS",
+  "triangles": 5932,
+  "vertices": 3520,
+  "parts": {
+    "led_off": 36,
+    "led_ready": 36,
+    "led_warning": 36,
+    "main": 4996,
+    "pad_dry": 304,
+    "pad_wet": 304,
+    "rotor": 208,
+    "water": 12
+  },
+  "bounds_min": [
+    -0.49000000953674316,
+    -0.5,
+    -0.5
+  ],
+  "bounds_max": [
+    0.4300000071525574,
+    0.5,
+    0.5
+  ],
+  "rotor_pivot_mc": [
+    -0.326,
+    0.124,
+    0
+  ],
+  "generator_sha256": "70a5af7b574063aaec6a904896f8e8b80e74523caf6f3f69739bf43435873988",
+  "obj_sha256": "0f91a6c19f4fdc0c287a618c8da57b36a19a55dd27a56510851f37aa31ad9736",
+  "atlas_sha256": "e444cc74bee0d8ee41a189eb99c0161a5dcb41d229be0e3c8b2933aeae74565f"
+}
