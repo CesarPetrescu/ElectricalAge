@@ -55,11 +55,10 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           p=Path('.github/workflows/evaporative-cooler.yml')
-          t=p.read_text()
-          t=t.replace("['world','world-spin','held-model','ui-wet','ui-dry','ui-interlock']", "['world','world-spin','held-model','ui-wet','ui-dry','ui-interlock','ui-details','ui-small','ui-scale1','ui-scale3','family','orientations']")
+          t=p.read_text().replace("['world','world-spin','held-model','ui-wet','ui-dry','ui-interlock']", "['world','world-spin','held-model','ui-wet','ui-dry','ui-interlock','ui-details','ui-small','ui-scale1','ui-scale3','family','orientations']")
           p.write_text(t)
           PY
-      - name: Generate actual Blender source, game assets and family comparison
+      - name: Generate Blender assets and family comparison
         run: |
           python -m pip install bpy==5.2.0
           python tools/evaporative/build_model.py --root . 2>&1 | tee build/evaporative-model.log
@@ -67,20 +66,10 @@ jobs:
           python tools/evaporative/verify_assets.py | tee build/evaporative-asset-check.log
           mkdir -p artwork/evaporative_cooler/review
           cp build/evaporative-renders/*.png artwork/evaporative_cooler/review/
-      - name: Build with regenerated translations and data
+      - name: Build and numerical regression
         run: |
           bash tools/evaporative/test-core.sh | tee build/evaporative-core-tests.log
           ./gradlew generateLangFiles runData build --stacktrace 2>&1 | tee build/evaporative-build.log
-      - name: Commit generated implementation to isolated design branch
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          find artwork/evaporative_cooler -type f -name '*.blend[0-9]*' -delete
-          git add -A -- src tools/evaporative artwork/evaporative_cooler docs .github
-          if ! git diff --cached --quiet; then
-            git commit -m 'Restyle evaporative cooling as classic ELN heatsink family with compact native controls'
-            git push origin HEAD:refs/heads/design/evaporative-eln-family
-          fi
       - name: Headless native-client display
         run: |
           sudo apt-get update
@@ -123,15 +112,15 @@ jobs:
           generator-settings={"layers":[{"block":"minecraft:bedrock","height":1},{"block":"minecraft:stone","height":63}],"biome":"minecraft:plains"}
           PROPS
           printf 'onboardAccessibility:false\nnarrator:0\nguiScale:2\n' > run/client/options.txt
-      - name: Live server cooling, water, capabilities and fault regressions
+      - name: Live server cooling and fault regressions
         run: timeout --signal=TERM --kill-after=30s 12m ./gradlew runServer -PsmokeTest=evaporative-place -q 2>&1 | tee build/smoke-artifacts/evaporative-server-place.log
       - name: Saved-world restart in a separate JVM
         run: |
           cp -r run/server/world run/client/saves/evaporative
           timeout --signal=TERM --kill-after=30s 12m ./gradlew runServer -PsmokeTest=evaporative-restart -q 2>&1 | tee build/smoke-artifacts/evaporative-server-restart.log
-      - name: Native client controls, viewport sizes and cooler-family gallery
+      - name: Native client controls, viewports and family gallery
         run: timeout --signal=TERM --kill-after=30s 12m ./gradlew runClient -PsmokeClient=evaporative -q 2>&1 | tee build/smoke-artifacts/evaporative-client.log
-      - name: Require complete runtime checks and visual evidence
+      - name: Require complete runtime checks and screenshots
         run: |
           python - <<'PY'
           import json,pathlib
@@ -143,7 +132,21 @@ jobs:
           for name in ['world','world-spin','held-model','ui-wet','ui-dry','ui-interlock','ui-details','ui-small','ui-scale1','ui-scale3','family','orientations']:
               assert pathlib.Path(f'run/client/screenshots/evaporative-{name}.png').stat().st_size>10000,name
           PY
-      - name: Export reviewable working source and identity
+      - name: Commit reviewed files after successful runtime validation
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          find artwork/evaporative_cooler -type f -name '*.blend[0-9]*' -delete
+          git add -u
+          test -f docs/evaporative-redesign.md
+          git add -f -- docs/evaporative-redesign.md
+          find artwork/evaporative_cooler/review -maxdepth 1 -type f -name '*.png' -print0 | xargs -0 -r git add -f --
+          git diff --cached --stat
+          if ! git diff --cached --quiet; then
+            git commit -m 'Restyle evaporative cooling as classic ELN heatsink family with tested native controls'
+            git push origin HEAD:refs/heads/design/evaporative-eln-family
+          fi
+      - name: Export source and identity
         if: always()
         run: |
           mkdir -p build/evaporative-artifacts
