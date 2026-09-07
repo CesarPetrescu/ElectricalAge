@@ -184,3 +184,4 @@ Read the [contribution guide](CONTRIBUTING.md) for setup, translation rules, reg
 - [Credits](docs/credits.md) — the people and projects behind Electrical Age.
 
 This port builds on the work of the **Age Series Electrical Age maintainers and contributors**. Source code is licensed under **LGPL v3.0**; graphics and models have separate **CC BY-NC-SA 3.0** terms and asset-specific exceptions. See [LICENSE.md](LICENSE.md) and the notices alongside individual assets.
+- [Wire production and resistance](docs/wire-production.md) — roller/insulator/combiner recipes, multicore cables, spool lengths and electrical properties.

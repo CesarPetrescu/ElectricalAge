@@ -89,6 +89,7 @@ public final class SmokeTest {
                 if (placing) place();
                 if (everything) placeEverything();
                 check(PowerBehaviorChecks.run(world(), !placing) == 0, "generator, motor and battery behavior contracts");
+                check(WireBehaviorChecks.run(world(), !placing) == 0, "wire production, recipes and resistance contracts");
             } catch (Throwable t) {
                 fail("placement threw", t);
                 shutdown();

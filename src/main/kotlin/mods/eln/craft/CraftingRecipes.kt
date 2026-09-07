@@ -113,6 +113,7 @@ object CraftingRecipes {
         recipeCompressor()
         recipePlateMachine()
         recipeMagnetizer()
+        recipeWireMachines()
         recipeFuelBurnerItem()
         recipeTurbineBlades()
         recipeDisplays()
@@ -133,6 +134,23 @@ object CraftingRecipes {
 
     private fun findItemStack(name: String): ItemStack {
         return Eln.findItemStack(name, 1)
+    }
+
+    private fun recipeWireMachines() {
+        // Bootstrap with legacy raw wire / motor parts, never the utility wire these machines produce.
+        for ((name, metal) in listOf("Iron Roller Wheel" to "ingotIron", "Steel Roller Wheel" to "ingotSteel",
+                "Aluminum Roller Wheel" to "ingotAluminum")) {
+            addRecipe(Eln.findItemStack(name, 2), " M ", "MIM", " M ", 'M', metal, 'I', ItemStack(Items.IRON_INGOT))
+        }
+        addRecipe(findItemStack("Wire Roller"), "IRI", "WMW", "ICI", 'I', ItemStack(Items.IRON_INGOT),
+            'R', ItemStack(Items.REDSTONE), 'W', findItemStack("Iron Roller Wheel"),
+            'M', findItemStack("Machine Block"), 'C', findItemStack("Electrical Motor"))
+        addRecipe(findItemStack("Wire Insulator"), "IRI", "BMB", "ICI", 'I', ItemStack(Items.IRON_INGOT),
+            'R', ItemStack(Items.REDSTONE), 'B', ItemStack(Items.BUCKET),
+            'M', findItemStack("Machine Block"), 'C', findItemStack("Copper Cable"))
+        addRecipe(findItemStack("Wire Combiner"), "IRI", "CMC", "IWI", 'I', ItemStack(Items.IRON_INGOT),
+            'R', ItemStack(Items.REDSTONE), 'C', findItemStack("Electrical Motor"),
+            'M', findItemStack("Machine Block"), 'W', findItemStack("Iron Roller Wheel"))
     }
 
     /** The first of these names the mod itself provides an item for; else the first name (a tag another mod may fill). */

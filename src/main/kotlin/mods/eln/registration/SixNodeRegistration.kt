@@ -33,6 +33,7 @@ import mods.eln.sixnode.electricalcable.UtilityCableElement
 import mods.eln.sixnode.electricalcable.UtilityCableMaterial
 import mods.eln.sixnode.electricalcable.UtilityCablePalette
 import mods.eln.sixnode.electricalcable.UtilityCableRender
+import mods.eln.sixnode.electricalcable.WirePhysics
 import mods.eln.sixnode.electricaldatalogger.ElectricalDataLoggerDescriptor
 import mods.eln.sixnode.electricaldigitaldisplay.ElectricalDigitalDisplayDescriptor
 import mods.eln.sixnode.electricalentitysensor.ElectricalEntitySensorDescriptor
@@ -478,12 +479,10 @@ object SixNodeRegistration {
         }
 
         fun configureElectricalConstants(desc: UtilityCableDescriptor, area: Double, ampacity: Double, nominalVoltage: Double, maxTemperature: Double) {
-            val baseAreaMm2 = 0.14
-            val baseTotalResistanceOhms = 0.001
-            val minimumTotalResistanceOhms = 0.00001
-            val totalResistanceOhms = (baseTotalResistanceOhms * (baseAreaMm2 / area.coerceAtLeast(baseAreaMm2)))
-                .coerceAtLeast(minimumTotalResistanceOhms)
-            val dropFactor = (totalResistanceOhms * ampacity / nominalVoltage).coerceAtLeast(1.0e-6)
+            // One placed segment is one metre. Each MNA endpoint contributes half its resistance.
+            // Intact multicore cables have independent cores, not conductors in parallel.
+            val totalResistanceOhms = desc.resistanceOhms()
+            val dropFactor = totalResistanceOhms * ampacity / nominalVoltage
             val nominalPower = nominalVoltage * ampacity
             desc.setPhysicalConstantLikeNormalCable(
                 nominalVoltage,
@@ -497,6 +496,11 @@ object SixNodeRegistration {
                 Eln.cableHeatingTime,
                 Eln.cableThermalConductionTao
             )
+            // Shared jacket: sum heat capacity and cooling for all independent cores.
+            desc.thermalC *= desc.conductorCount
+            desc.thermalRp /= desc.conductorCount
+            desc.thermalRs /= desc.conductorCount
+            desc.electricalRsPerCelcius = desc.electricalRs * WirePhysics.temperatureCoefficient(desc.material)
             desc.ElementClass = UtilityCableElement::class.java
             desc.RenderClass = UtilityCableRender::class.java
         }

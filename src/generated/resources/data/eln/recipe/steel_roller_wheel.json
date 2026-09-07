@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "M": {
+      "tag": "c:ingots/steel"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "pattern": [
+    " M ",
+    "MIM",
+    " M "
+  ],
+  "result": {
+    "count": 2,
+    "id": "eln:steel_roller_wheel"
+  }
+}

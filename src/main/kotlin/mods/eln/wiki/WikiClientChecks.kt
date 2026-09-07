@@ -197,6 +197,20 @@ class WikiClientChecks {
                     }
                 }
                 shot(mc, "clip-contract")
+                val wire = mods.eln.sixnode.electricalcable.UtilityCableDescriptor.allDescriptors()
+                    .first { it.insulated && !it.melted && it.conductorCount == 8 }
+                mc.setScreen(ItemDefault(wire.newItemStack(), root))
+                step++
+            }
+            8 -> {
+                test("wire-page-shows-machine-inputs-and-output") {
+                    val page = mc.screen as ItemDefault
+                    val icons = page.extender.objectList.filterIsInstance<GuiItemStack>()
+                    val machine = Eln.findItemStack("Wire Insulator", 1)
+                    check(icons.any { net.minecraft.world.item.ItemStack.isSameItem(it.stack, machine) })
+                    check(page.extender.maxScroll() > 0)
+                }
+                shot(mc, "wire-production")
                 mc.setScreen(null)
                 mc.options.guiScale().set(originalScale)
                 mc.options.hideGui = originalHideGui

@@ -6,6 +6,8 @@ import mods.eln.misc.McRegistries
 import mods.eln.misc.Recipe
 import mods.eln.misc.RecipesList
 import mods.eln.misc.Utils
+import mods.eln.transparentnode.WireProductionRecipes
+import mods.eln.transparentnode.WireMachineKind
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.crafting.CraftingRecipe
 import net.minecraft.world.item.crafting.RecipeType
@@ -23,7 +25,8 @@ object WikiRecipes {
         val recipes = McRecipes.manager()?.getAllRecipesFor(RecipeType.CRAFTING).orEmpty()
             .map { it.value() }.filter { !it.getResultItem(McRegistries.access()).isEmpty }
         val outputs = recipes.filter { ItemStack.isSameItem(it.getResultItem(McRegistries.access()), stack) }
-        y = text(view, y, if (outputs.isEmpty()) tr("No crafting-table recipe.") else tr("Recipe:"))
+        y = text(view, y, if (outputs.isNotEmpty()) tr("Recipe:") else if (WireProductionRecipes.outputs(stack).isNotEmpty())
+            tr("Made in wire processing machines (see below).") else tr("No crafting-table recipe."))
         for (recipe in outputs) y = crafting(view, y, recipe)
         val uses = recipes.filter { recipe -> recipe.ingredients.any { it.test(stack) } }
         if (uses.isNotEmpty()) {
@@ -46,6 +49,12 @@ object WikiRecipes {
 
     @JvmStatic fun addProcessing(view: GuiVerticalExtender, start: Int, stack: ItemStack): Int {
         var y = start
+        for ((label, steps) in listOf(tr("Created by:") to WireProductionRecipes.outputs(stack),
+                tr("Wire processing uses:") to WireProductionRecipes.uses(stack))) {
+            if (steps.isEmpty()) continue
+            y = text(view, y + 6, label)
+            for (step in steps) y = wireProcessing(view, y, step)
+        }
         for ((label, recipes) in listOf(
             tr("Created by:") to RecipesList.getGlobalRecipeWithOutput(stack),
             tr("Can create:") to RecipesList.getGlobalRecipeWithInput(stack)
@@ -55,6 +64,33 @@ object WikiRecipes {
             for (recipe in recipes) y = processing(view, y, recipe)
         }
         return y
+    }
+
+    private fun wireProcessing(view: GuiVerticalExtender, start: Int, step: WireProductionRecipes.Step): Int {
+        var y = text(view, start, tr("%1$: example output 32 m", step.kind.displayName))
+        view.add(GuiItemStack(8, y, step.machine, view.helper))
+        y += 24
+        y = text(view, y, tr("Inputs:"))
+        fun items(stacks: List<ItemStack>) {
+            var x = 8
+            for (item in stacks) {
+                if (x + 18 > view.contentWidth() - 8) { x = 8; y += 22 }
+                view.add(GuiItemStack(x, y, item, view.helper)); x += 22
+            }
+            y += 24
+        }
+        items(step.inputs)
+        if (step.catalysts.isNotEmpty()) {
+            y = text(view, y, tr("Reusable roller wheels (not consumed):")); items(step.catalysts)
+        }
+        y = text(view, y, tr("Output:")); items(listOf(step.output))
+        y = text(view, y, tr("Power: %1$ W; example energy: %2$ J", Utils.plotValue(step.kind.nominalPowerWatts), Utils.plotValue(step.energyJoules)))
+        y = text(view, y, when (step.kind) {
+            WireMachineKind.ROLLER -> tr("Choose gauge and length. 1 ingot supplies 1 kg; this output uses %1$ kg. Unused metal stays buffered.", Utils.plotValue(step.metalKg))
+            WireMachineKind.INSULATOR -> tr("1 rubber insulates 32 m. The whole input spool is coated; unused rubber stays buffered.")
+            WireMachineKind.COMBINER -> tr("Use equal-gauge, same-metal insulated cores. Choose the bundle; the shortest input sets its length. Longer inputs keep the remainder. Insulate the bundle afterward.")
+        })
+        return y + 8
     }
 
     @JvmStatic fun processing(view: GuiVerticalExtender, start: Int, recipe: Recipe): Int {

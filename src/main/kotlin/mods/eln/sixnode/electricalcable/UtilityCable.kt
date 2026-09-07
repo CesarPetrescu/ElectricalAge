@@ -228,6 +228,18 @@ class UtilityCableDescriptor(
     val actsAsSingleConductor: Boolean
         get() = melted || conductorCount <= 1
 
+    val conductorAreaMm2: Double get() = totalConductorAreaMm2 / conductorCount
+
+    fun resistanceOhms(meters: Double = 1.0, celsius: Double = 20.0): Double =
+        WirePhysics.resistance(material, conductorAreaMm2, meters, celsius)
+
+    override fun addRealismContext(list: MutableList<String>): mods.eln.misc.RealisticEnum {
+        list.add(tr("DC resistance uses conductor material, cross-section, length and temperature."))
+        list.add(tr("Each placed cable segment is 1 m; each core has its own resistance."))
+        list.add(tr("Contact resistance and AC skin effect are not modeled; current limits are gameplay ratings."))
+        return mods.eln.misc.RealisticEnum.REALISTIC
+    }
+
     init {
         registry.add(this)
     }
@@ -292,6 +304,8 @@ class UtilityCableDescriptor(
 
     override fun addInformation(itemStack: ItemStack, entityPlayer: Player?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
+        list.add(tr("Resistance per core at 20 C: %1$ ohm/m", Utils.plotValue(resistanceOhms())))
+        list.add(tr("Spool resistance per core at 20 C: %1$ ohm", Utils.plotValue(resistanceOhms(getRemainingLengthMeters(itemStack)))))
         list.add(tr("Conductor: %1$ %2$", material.label, sizeLabel))
         list.add(tr("Equivalent area: %1$ mm2", metricSizeLabel))
         list.add(tr("Nearest EU-style name: %1$", nearestEuStyleName))
@@ -545,6 +559,7 @@ class UtilityCableElement(
 
     override fun getWaila(): Map<String, String> {
         val info = linkedMapOf<String, String>()
+        info[tr("Resistance per core")] = Utils.plotValue(conductorLoads[0].serialResistance * 2.0, "ohm")
         info[tr("Temperature")] = plotAmbientCelsius("", thermalLoad.temperatureCelsius)
         if (descriptor.actsAsSingleConductor || conductorsBound) {
             val power = abs(conductorLoads[0].voltage * conductorLoads[0].current)
@@ -851,6 +866,11 @@ class UtilityCableElement(
         override fun process(time: Double) {
             shockCooldown = (shockCooldown - time).coerceAtLeast(0.0)
             val absoluteTemperatureCelsius = thermalLoad.temperatureCelsius + getAmbientTemperatureCelsius()
+            val rs = descriptor.resistanceOhms(celsius = absoluteTemperatureCelsius) / 2.0
+            conductorLoads.forEach {
+                // Avoid rebuilding the MNA matrix for imperceptible thermal drift.
+                if (abs(it.serialResistance - rs) > rs * 0.001) it.serialResistance = rs
+            }
             maybePublishTemperature(absoluteTemperatureCelsius)
             if (absoluteTemperatureCelsius >= descriptor.material.meltingPointCelsius) {
                 meltConductor()

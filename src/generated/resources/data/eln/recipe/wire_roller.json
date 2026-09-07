@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "M": {
+      "item": "eln:machine_block"
+    },
+    "W": {
+      "item": "eln:iron_roller_wheel"
+    },
+    "C": {
+      "item": "eln:electrical_motor"
+    }
+  },
+  "pattern": [
+    "IRI",
+    "WMW",
+    "ICI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:wire_roller"
+  }
+}
