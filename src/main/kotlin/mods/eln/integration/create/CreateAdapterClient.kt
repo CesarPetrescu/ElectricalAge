@@ -68,36 +68,41 @@ private class AdapterRenderer : BlockEntityRenderer<CreateAdapterEntity> {
             val angle = if (input) ((be.level?.gameTime ?: 0L) % 1200 + partial) * be.speed * 0.3
                 else (be.outputAngle + be.outputSpeed * partial * 0.05) * 180 / PI
             pose.mulPose(Axis.YP.rotationDegrees(angle.toFloat()))
-            if (input) {
-                // Real Create shaft mesh/texture. No stationary duplicate in the block model.
-                pose.translate(-0.5, -0.5, -0.5)
-                pose.scale(1f, 0.25f, 1f)
-                val state = net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(
-                    net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("create", "shaft")).defaultBlockState()
-                    .setValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.AXIS, net.minecraft.core.Direction.Axis.Y)
-                // Create shafts use ENTITYBLOCK_ANIMATED: renderSingleBlock skips their mesh.
-                val renderer = Minecraft.getInstance().blockRenderer
-                renderer.modelRenderer.renderModel(pose.last(), buffers.getBuffer(net.minecraft.client.renderer.RenderType.solid()),
-                    state, renderer.getBlockModel(state), 1f, 1f, 1f, light, overlay)
-            } else {
-                // ELN's steel texture on an octagonal output spindle, separate from its teal bearing.
-                val sprite = Minecraft.getInstance().getTextureAtlas(net.minecraft.world.inventory.InventoryMenu.BLOCK_ATLAS)
-                    .apply(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("eln", "block/create_adapter_steel"))
+            run {
+                // Draw explicit geometry: Create's runtime baked shaft model can be empty.
+                // Input matches Create's 4-pixel square shaft; output is a 2-pixel ELN spindle.
+                val sideSprite = Minecraft.getInstance().getTextureAtlas(net.minecraft.world.inventory.InventoryMenu.BLOCK_ATLAS)
+                    .apply(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
+                        if (input) "create" else "eln", if (input) "block/axis" else "block/create_adapter_steel"))
+                val endSprite = if (input) Minecraft.getInstance().getTextureAtlas(net.minecraft.world.inventory.InventoryMenu.BLOCK_ATLAS)
+                    .apply(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("create", "block/axis_top")) else sideSprite
+                var sprite = sideSprite
                 val consumer = buffers.getBuffer(net.minecraft.client.renderer.RenderType.solid())
-                val radius = 0.0625
+                val radius = if (input) kotlin.math.sqrt(2.0) * .125 else .0625
+                val sides = if (input) 4 else 8
+                val start = if (input) PI / 4 else 0.0
+                val bottom = if (input) -.5 else .34
+                val top = if (input) -.25 else .5
                 fun vertex(x: Double, y: Double, z: Double, u: Float, v: Float, nx: Float, ny: Float, nz: Float) {
                     consumer.addVertex(pose.last(), x.toFloat(), y.toFloat(), z.toFloat()).setColor(255, 255, 255, 255)
                         .setUv(sprite.getU(u), sprite.getV(v)).setOverlay(overlay).setLight(light).setNormal(pose.last(), nx, ny, nz)
                 }
-                for (i in 0..7) {
-                    val a = i * PI / 4; val b = (i + 1) * PI / 4
+                for (i in 0 until sides) {
+                    sprite = sideSprite
+                    val a = start + i * 2 * PI / sides; val b = start + (i + 1) * 2 * PI / sides
                     val x0 = kotlin.math.cos(a) * radius; val z0 = kotlin.math.sin(a) * radius
                     val x1 = kotlin.math.cos(b) * radius; val z1 = kotlin.math.sin(b) * radius
                     val nx = kotlin.math.cos((a+b)/2).toFloat(); val nz = kotlin.math.sin((a+b)/2).toFloat()
-                    vertex(x0, .34, z0, 0f, 0f, nx, 0f, nz); vertex(x0, .5, z0, 0f, 1f, nx, 0f, nz)
-                    vertex(x1, .5, z1, 1f, 1f, nx, 0f, nz); vertex(x1, .34, z1, 1f, 0f, nx, 0f, nz)
-                    vertex(0.0, .5, 0.0, .5f, .5f, 0f, 1f, 0f); vertex(x1, .5, z1, 1f, 1f, 0f, 1f, 0f)
-                    vertex(x0, .5, z0, 0f, 1f, 0f, 1f, 0f); vertex(0.0, .5, 0.0, .5f, .5f, 0f, 1f, 0f)
+                    val u0 = if (input) .375f else 0f; val u1 = if (input) .625f else 1f
+                    vertex(x0, bottom, z0, u0, 0f, nx, 0f, nz); vertex(x0, top, z0, u0, 1f, nx, 0f, nz)
+                    vertex(x1, top, z1, u1, 1f, nx, 0f, nz); vertex(x1, bottom, z1, u1, 0f, nx, 0f, nz)
+                    val end = if (input) bottom else top
+                    sprite = endSprite
+                    val sign = if (input) -1f else 1f
+                    vertex(0.0, end, 0.0, .5f, .5f, 0f, sign, 0f)
+                    vertex(if (input) x0 else x1, end, if (input) z0 else z1, u1, 1f, 0f, sign, 0f)
+                    vertex(if (input) x1 else x0, end, if (input) z1 else z0, u0, 1f, 0f, sign, 0f)
+                    vertex(0.0, end, 0.0, .5f, .5f, 0f, sign, 0f)
                 }
             }
             pose.popPose()
