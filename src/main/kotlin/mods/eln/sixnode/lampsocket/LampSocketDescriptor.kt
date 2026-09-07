@@ -2,6 +2,7 @@ package mods.eln.sixnode.lampsocket
 
 import mods.eln.i18n.I18N
 import mods.eln.item.lampitem.BoilerplateLampData
+import mods.eln.item.lampitem.LampLists
 import mods.eln.misc.RealisticEnum
 import mods.eln.misc.VoltageLevelColor
 import mods.eln.node.six.SixNodeDescriptor
@@ -17,8 +18,13 @@ import mods.eln.client.gl.GL11
 import java.util.Collections
 import kotlin.text.split
 
-class LampSocketDescriptor(itemName: String, val renderType: ILampSocketObjRender, val range: Int, val acceptedLampTypes: Array<BoilerplateLampData>) :
+class LampSocketDescriptor(itemName: String, val renderType: ILampSocketObjRender, val range: Int, acceptedLampTypes: Array<BoilerplateLampData>) :
     SixNodeDescriptor(itemName, LampSocketElement::class.java, LampSocketRender::class.java) {
+
+    // These fixtures already accept retrofit LED bulbs. Halogen replacements must work
+    // through both the menu and direct insertion, with the same voltage/lifetime rules.
+    val acceptedLampTypes = (acceptedLampTypes.toList() + LampLists.getLampData("halogen")!!)
+        .distinctBy { it.lampType }.toTypedArray()
 
     var paintable: Boolean = false
     var enableProjectionRotation: Boolean = false
@@ -31,9 +37,9 @@ class LampSocketDescriptor(itemName: String, val renderType: ILampSocketObjRende
     init {
         voltageLevelColor = VoltageLevelColor.Neutral
 
-        for (lampData in acceptedLampTypes) {
+        for (lampData in this.acceptedLampTypes) {
             acceptedLampTypesString += lampData.translatedLampType
-            if (acceptedLampTypes.indexOf(lampData) < (acceptedLampTypes.size - 1)) acceptedLampTypesString += "/"
+            if (this.acceptedLampTypes.indexOf(lampData) < (this.acceptedLampTypes.size - 1)) acceptedLampTypesString += "/"
         }
     }
 

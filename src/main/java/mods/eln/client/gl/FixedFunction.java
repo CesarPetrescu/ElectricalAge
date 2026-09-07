@@ -16,6 +16,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import org.joml.Matrix4f;
+import org.joml.Matrix3f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -413,14 +414,17 @@ public final class FixedFunction {
                     lineVertex(vc, model, p, b, dir);
                 }
             } else {
+                Matrix3f normals = MeshNormals.matrix(p.normal(), extra);
+                Vector3f normal = new Vector3f();
                 for (float[] vtx : prims) {
                     Vector4f pos = new Vector4f(vtx[0], vtx[1], vtx[2], 1f).mul(model);
+                    MeshNormals.transform(normals, vtx[5], vtx[6], vtx[7], normal);
                     vc.addVertex(pos.x, pos.y, pos.z)
                         .setColor(vtx[8], vtx[9], vtx[10], vtx[11])
                         .setUv(vtx[3], vtx[4])
                         .setOverlay(packedOverlay)
                         .setLight(light)
-                        .setNormal(p, vtx[5], vtx[6], vtx[7]);
+                        .setNormal(normal.x, normal.y, normal.z);
                 }
             }
         } else {

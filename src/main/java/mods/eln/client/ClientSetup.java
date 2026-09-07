@@ -45,6 +45,9 @@ public final class ClientSetup {
     /** The mod's fluids: still/flowing sprites and tint, what 1.7.10's Fluid carried itself. Node items: their descriptor draws them. */
     @SubscribeEvent
     public static void onRegisterClientExtensions(net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent event) {
+        event.registerBlock(NodeParticles.INSTANCE, mods.eln.registration.ElnRegistry.getRegisteredBlocks().values().stream()
+            .filter(block -> block instanceof mods.eln.node.NodeBlock)
+            .toArray(net.minecraft.world.level.block.Block[]::new));
         var nodeItems = mods.eln.registration.ElnRegistry.getRegisteredItems().values().stream()
             .filter(item -> item instanceof mods.eln.generic.DescriptorBlockItem<?> d && d.descriptor instanceof mods.eln.client.itemrender.IItemRenderer)
             .toArray(net.minecraft.world.item.Item[]::new);

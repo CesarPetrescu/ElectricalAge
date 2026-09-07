@@ -3,7 +3,6 @@ package mods.eln.node
 import mods.eln.generic.GenericItemBlockUsingDamageDescriptor
 import mods.eln.generic.GenericItemUsingDamageDescriptor
 import mods.eln.item.ItemMovingHelper
-import mods.eln.item.electricalinterface.IItemEnergyBattery
 import mods.eln.sixnode.electricalcable.IUtilityCableInventory
 import mods.eln.sixnode.electricalcable.UtilityCableDescriptor
 import net.minecraft.world.entity.player.Inventory
@@ -36,8 +35,8 @@ class AutoAcceptInventoryProxy(val inventory: Container) {
                 if (!itemStack.isNothing() ) {
                     GenericItemUsingDamageDescriptor.getDescriptor(itemStack)?.let { desc ->
                         if (acceptedItems.any { it.isAssignableFrom(desc.javaClass) }) {
-                            val newItemStack = desc.newItemStack()
-                            (desc as? IItemEnergyBattery)?.let { it.setEnergy(newItemStack, it.getEnergy(itemStack)) }
+                            // Preserve bulb lifetime (and all other components) on insertion.
+                            val newItemStack = itemStack.copyWithCount(1)
                             if (!creativeFreeInsert) itemStack.count -= 1
                             inventory.setItem(index, newItemStack)
                             return true

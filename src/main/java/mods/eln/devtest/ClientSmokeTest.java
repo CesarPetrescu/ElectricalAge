@@ -41,6 +41,7 @@ public final class ClientSmokeTest {
     private int wait;
     private int failures;
     private final BlockGallery blockGallery = "1".equals(System.getenv("ELN_FULL_GALLERY")) ? new BlockGallery() : null;
+    private final BlockGallery lightingGallery = new BlockGallery(true);
 
     /** One check: a PASS/FAIL log line, and the run's exit status. */
     private boolean check(boolean ok, String what, Object... args) {
@@ -82,6 +83,10 @@ public final class ClientSmokeTest {
     private void tick(Minecraft mc) {
         switch (phase) {
             case OPEN -> {
+                if (mc.screen instanceof net.minecraft.client.gui.screens.AccessibilityOnboardingScreen onboarding) {
+                    onboarding.onClose();
+                    return;
+                }
                 if (!(mc.screen instanceof TitleScreen) || mc.getOverlay() != null) return;
                 if (wait++ < 20) return;
                 Eln.LOGGER.info("{} opening world '{}'", PREFIX, save);
@@ -111,6 +116,7 @@ public final class ClientSmokeTest {
                     mc.player.onUpdateAbilities();
                 }
                 if (wait++ < 100) return;
+                check(LightingClientChecks.checkAssets(mc) == 0, "real-atlas block particles, hit/break hooks and removed-BE fallback");
                 shot(mc, "smoke-world");
                 // the same view at midnight: the lit lamp socket and the spot it projects are the block light
                 var server = mc.getSingleplayerServer();
@@ -433,6 +439,7 @@ public final class ClientSmokeTest {
                 wait = 0;
             }
             case DONE -> {
+                if (!lightingGallery.tick(mc)) return;
                 if (blockGallery != null && !blockGallery.tick(mc)) return;
                 if (wait++ < 10) return;
                 // the game's own exit is System.exit(0); a failed check leaves through exit 1 so a script can tell

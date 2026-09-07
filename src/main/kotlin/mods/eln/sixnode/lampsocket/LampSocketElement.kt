@@ -245,6 +245,7 @@ class LampSocketElement(sixNode: SixNode, side: Direction, sixNodeDescriptor: Si
     }
 
     override fun getElectricalLoad(lrdu: LRDU, mask: Int): ElectricalLoad? {
+        if (!descriptor.renderSideCables && lrdu != front && lrdu != front.inverse()) return null
         return when {
             inventory.getItem(LampSocketContainer.CABLE_SLOT_ID).isNothing() -> null
             poweredByLampSupply -> null
@@ -258,6 +259,7 @@ class LampSocketElement(sixNode: SixNode, side: Direction, sixNodeDescriptor: Si
     }
 
     override fun getConnectionMask(lrdu: LRDU): Int {
+        if (!descriptor.renderSideCables && lrdu != front && lrdu != front.inverse()) return 0
         return when {
             inventory.getItem(LampSocketContainer.CABLE_SLOT_ID).isNothing() -> 0
             poweredByLampSupply -> 0

@@ -14,6 +14,12 @@ internal object SourceCodeParser {
     fun parseSourceFolder(file: File): Map<String, Set<TranslationItem>> {
         val strings = TreeMap<String, MutableSet<TranslationItem>>()
         strings[MULTIPLE_LOCATIONS] = TreeSet()
+        // Jade owns these keys; they are not produced by ELN's tr()/TR_NAME() encoding.
+        strings["Jade integration settings"] = sortedSetOf(
+            TranslationItem("config.jade.plugin_eln.six_node", "Surface-mounted devices"),
+            TranslationItem("config.jade.plugin_eln.transparent_node", "Machines"),
+            TranslationItem("config.jade.plugin_eln.ghost_node", "Multiblock parts")
+        )
         parseSourceFolderRecursive(file, strings)
         return strings
     }

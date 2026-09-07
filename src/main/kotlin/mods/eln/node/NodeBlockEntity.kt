@@ -226,10 +226,15 @@ abstract class NodeBlockEntity(type: BlockEntityType<*>, pos: BlockPos, state: B
     }
 
     /**
-     * The node's publish payload is not a vanilla NBT sync, so it travels on the mod's own
-     * channel (see [buildPublishPayload]); vanilla gets no update packet.
+     * Vanilla sends this after the changed block state, so newly placed nodes receive
+     * their initial renderer even if the custom publish frame arrived before the BE.
      */
-    override fun getUpdatePacket(): Packet<ClientGamePacketListener>? = null
+    override fun getUpdatePacket(): Packet<ClientGamePacketListener> =
+        net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this)
+
+    override fun onDataPacket(connection: net.minecraft.network.Connection,
+                              packet: net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket,
+                              registries: HolderLookup.Provider) = PublishSync.handle(packet.tag, this)
 
     /** The node's publish packet bytes, for the client that just started watching this chunk. */
     fun buildPublishPayload(): ByteArray? {

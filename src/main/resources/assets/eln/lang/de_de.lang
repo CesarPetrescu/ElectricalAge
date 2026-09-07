@@ -173,6 +173,11 @@ __Optimal_rads\:_=Optimale rad/s:
 __Power_out\:_=Ausgangsleistung:
 empty=empty
 
+# Jade integration settings
+config.jade.plugin_eln.ghost_node=Multiblock parts
+config.jade.plugin_eln.six_node=Surface-mounted devices
+config.jade.plugin_eln.transparent_node=Machines
+
 # src/main/java/mods/eln/Eln.java
 itemGroup.Eln=Electrical Age
 itemGroup.ElnCables=Electrical Age - Kabel

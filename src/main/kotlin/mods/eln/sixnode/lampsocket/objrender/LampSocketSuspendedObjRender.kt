@@ -20,6 +20,9 @@ class LampSocketSuspendedObjRender(obj: Obj3D, val onOffModel: Boolean, val leng
     private val chainFactor = chain.getFloat("factor").toDouble()
     private val baseLength = base.getFloat("length").toDouble()
 
+    override fun connectionEdges(front: LRDU, offset: Double) =
+        mods.eln.sixnode.lampsocket.LampConnections.edges(base, front, offset, rotateFront = false)
+
     override fun draw(descriptor: LampSocketDescriptor, type: ItemRenderType, distanceToPlayer: Double) {
         if (type == ItemRenderType.INVENTORY) {
             GL11.glRotated(90.0, 0.0, 0.0, 1.0) // Undo initial rotation

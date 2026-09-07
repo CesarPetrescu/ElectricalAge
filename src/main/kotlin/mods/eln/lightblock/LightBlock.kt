@@ -27,7 +27,9 @@ import net.minecraft.world.phys.shapes.VoxelShape
  * replaceable, no drops.
  */
 class LightBlock : Block(
-    Properties.of().air().replaceable().noCollission().noOcclusion().noLootTable().instabreak()
+    // Do not mark this as air: LevelChunk discards air states in empty sections,
+    // including their block entity and light emission. Remain replaceable and shapeless.
+    Properties.of().replaceable().noCollission().noOcclusion().noLootTable().instabreak()
         .pushReaction(PushReaction.DESTROY).lightLevel { it.getValue(LIGHT) }
 ), EntityBlock, IMetaBlock {
 

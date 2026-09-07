@@ -21,6 +21,9 @@ class LampSocketStandardObjRender(obj: Obj3D, val onOffModel: Boolean) : ILampSo
     private val tOff = obj.getModelResourceLocation(obj.getString("tOff"))
     private val tOn = obj.getModelResourceLocation(obj.getString("tOn"))
 
+    override fun connectionEdges(front: LRDU, offset: Double) =
+        mods.eln.sixnode.lampsocket.LampConnections.edges(socketUnlightable ?: socket ?: socketLightable, front, offset)
+
     override fun draw(descriptor: LampSocketDescriptor, type: ItemRenderType, distanceToPlayer: Double) {
         if (type == ItemRenderType.INVENTORY) {
             if (descriptor.hasGhostGroup()) {

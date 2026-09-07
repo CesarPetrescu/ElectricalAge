@@ -118,8 +118,20 @@ class LampSocketRender(tileEntity: SixNodeEntity, side: Direction, sixNodeDescri
     override fun draw() {
         super.draw() // Only for colored cables
 
+        val edges = descriptor.renderType.connectionEdges(front!!, descriptor.initialRenderAngleOffset)
+        for (port in LRDU.entries) {
+            val cable = getCableRender(port) ?: continue
+            if (connectedSide[port]) LampConnectionRender.draw(port, edges[port.dir], cable.width, cable.height)
+        }
+        GL11.glPushMatrix()
         GL11.glRotated(descriptor.initialRenderAngleOffset, 1.0, 0.0, 0.0)
         descriptor.renderType.draw(this, UtilsClient.distanceFromClientPlayer(this.tileEntity).toDouble())
+        GL11.glPopMatrix()
+    }
+
+    override fun newConnectionType(connectionType: mods.eln.cable.CableRenderType?) {
+        val edges = descriptor.renderType.connectionEdges(front!!, descriptor.initialRenderAngleOffset)
+        for (port in LRDU.entries) connectionType?.startAt?.set(port.dir, LampConnections.cableEnd(edges[port.dir]))
     }
 
     override fun newGuiDraw(side: Direction, player: Player): Screen {

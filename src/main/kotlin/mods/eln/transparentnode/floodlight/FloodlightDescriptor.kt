@@ -103,11 +103,11 @@ class FloodlightDescriptor(val itemName: String, val obj: Obj3D, val motorized: 
         GL11.glTranslated(-0.5, -0.5, 0.5)
         head.draw()
 
-        if (bulb1 != null) {
+        if (bulb1 != null && !bulb1.isEmpty) {
             if (powered) bulb1on.draw()
             else bulb1off.draw()
         }
-        if (bulb2 != null) {
+        if (bulb2 != null && !bulb2.isEmpty) {
             if (powered) bulb2on.draw()
             else bulb2off.draw()
         }

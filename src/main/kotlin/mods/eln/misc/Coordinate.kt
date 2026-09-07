@@ -187,9 +187,9 @@ class Coordinate : INBTTReady {
     }
 
     fun setPosition(vp: DoubleArray) {
-        x = vp[0].toInt()
-        y = vp[1].toInt()
-        z = vp[2].toInt()
+        x = floor(vp[0]).toInt()
+        y = floor(vp[1]).toInt()
+        z = floor(vp[2]).toInt()
     }
 
     // Emulates the default Minecraft behavior for determining block coordinates

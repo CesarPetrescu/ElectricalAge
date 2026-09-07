@@ -176,20 +176,6 @@ class FloodlightElement(transparentNode: TransparentNode, transparentNodeDescrip
         }
     }
 
-    override fun connectJob() {
-        electricalLoadList.add(electricalLoad)
-        electricalComponentList.add(lamp1Resistor)
-        electricalComponentList.add(lamp2Resistor)
-        super.connectJob()
-    }
-
-    override fun disconnectJob() {
-        super.disconnectJob()
-        electricalLoadList.remove(electricalLoad)
-        electricalComponentList.remove(lamp1Resistor)
-        electricalComponentList.remove(lamp2Resistor)
-    }
-
     override fun inventoryChange(inventory: Container?) {
         computeInventory()
         reconnect()
@@ -213,7 +199,7 @@ class FloodlightElement(transparentNode: TransparentNode, transparentNodeDescrip
     }
 
     override fun getElectricalLoad(side: Direction, lrdu: LRDU): ElectricalLoad? {
-        if (lrdu.toHybridNodeLRDU().normalizeLRDU(rotationAxis, side) != HybridNodeLRDU.Down) return null
+        if (!FloodlightOptics.isMountingPlanePort(rotationAxis, side, lrdu)) return null
 
         return if (motorized) when (side.toHybridNodeDirection()) {
             blockFacing.back() -> electricalLoad
@@ -232,7 +218,7 @@ class FloodlightElement(transparentNode: TransparentNode, transparentNodeDescrip
     }
 
     override fun getConnectionMask(side: Direction, lrdu: LRDU): Int {
-        if (lrdu.toHybridNodeLRDU().normalizeLRDU(rotationAxis, side) != HybridNodeLRDU.Down) return 0
+        if (!FloodlightOptics.isMountingPlanePort(rotationAxis, side, lrdu)) return 0
 
         return if (motorized) when (side.toHybridNodeDirection()) {
             blockFacing.back() -> NodeBase.maskElectricalPower

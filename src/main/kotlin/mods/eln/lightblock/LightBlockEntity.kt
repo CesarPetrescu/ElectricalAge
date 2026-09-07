@@ -4,7 +4,6 @@ import mods.eln.Eln
 import mods.eln.misc.Coordinate
 import mods.eln.misc.INBTTReady
 import mods.eln.misc.Utils
-import net.minecraft.world.level.block.Blocks
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.core.BlockPos
@@ -42,7 +41,7 @@ class LightBlockEntity(pos: BlockPos, state: BlockState) : BlockEntity(TYPE.get(
             val block = w.getBlock(x, y, z)
 
             if (block !== Eln.lightBlock) {
-                if (block !== Blocks.AIR) return
+                if (!w.getBlockState(x, y, z).isAir) return
                 w.setBlock(x, y, z, Eln.lightBlock, light, 2)
             }
 

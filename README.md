@@ -34,7 +34,7 @@ Electrical Age brings electrical simulation, wiring, lighting and industrial mac
 - **Power networks:** cables, batteries, generators, turbines, transformers and meters.
 - **Mechanical systems:** motors, generators, shafts, flywheels and large machines.
 - **Automation:** processing machines, signal wiring and optional computer control.
-- **Lighting:** lamps, sockets and floodlights for your builds.
+- **Lighting:** lamps, sockets and floodlights for your builds. See the [bulb, wiring and floodlight guide](docs/lighting-tests.md).
 - **Create integration:** optional 4 kW and 16 kW shaft adapters with gearing, load-dependent stress, overload protection and controlled braking.
 
 The creative inventory has nine categories: **Wires & Cables**, **Signals & Control**, **Power**, **Mechanics**, **Processing**, **Lighting**, **Materials**, **Tools & Armor**, and **Creative Only**. Ground Cable belongs in Wires & Cables.

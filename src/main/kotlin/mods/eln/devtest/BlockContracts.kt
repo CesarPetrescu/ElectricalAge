@@ -79,6 +79,7 @@ object BlockContracts {
             // Each supported mounting face is exercised, then one representative is retained for restart.
             val mounts = when {
                 d is SixNodeDescriptor -> Direction.values().map { Mount(it) }
+                d is mods.eln.transparentnode.floodlight.FloodlightDescriptor -> Direction.values().map { Mount(it) }
                 (d as TransparentNodeDescriptor).frontType == TransparentNode.FrontType.PlayerViewHorizontal ->
                     listOf(0f, 90f, 180f, 270f).map { Mount(Direction.UP, it, label = "yaw-$it") }
                 d.frontType == TransparentNode.FrontType.PlayerView ->
@@ -119,6 +120,11 @@ object BlockContracts {
                     check(identity(world, entry)) { "Wrong or missing descriptor/entity at $p (${d.name})" }
                 }
                 if (ok) {
+                    if (d is mods.eln.sixnode.lampsocket.LampSocketDescriptor || d is mods.eln.transparentnode.floodlight.FloodlightDescriptor) {
+                        report.test(key, "lighting/${mount.label}") {
+                            LightingChecks.check(node(world, p), player, ElnDirection.fromFacing(face).inverse)
+                        }
+                    }
                     report.test(key, "remove/${mount.label}") {
                         world.removeBlock(p, false)
                         check(node(world, p) == null && world.isEmptyBlock(p)) { "Node or block left behind after removal" }
