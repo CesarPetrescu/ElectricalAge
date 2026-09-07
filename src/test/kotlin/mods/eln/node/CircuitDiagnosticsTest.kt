@@ -12,7 +12,12 @@ class CircuitDiagnosticsTest {
         assertEquals(0.0, CircuitDiagnostics.difference(6.0, 6.0))
     }
     @Test fun unsolvedValuesAreNotReportedAsRealVoltages() {
-        assertFailsWith<IllegalArgumentException> { CircuitDiagnostics.difference(Double.NaN, 1.0) }
-        assertFailsWith<IllegalArgumentException> { CircuitDiagnostics.difference(0.0, Double.POSITIVE_INFINITY) }
+        // kotlin.test.assertFailsWith uses reflection across NeoForge's plugin/app classloaders.
+        // Catch the JVM exception directly while retaining the exact expected exception type.
+        for ((a, b) in listOf(Double.NaN to 1.0, 0.0 to Double.POSITIVE_INFINITY)) {
+            var rejected = false
+            try { CircuitDiagnostics.difference(a, b) } catch (_: IllegalArgumentException) { rejected = true }
+            assertTrue(rejected)
+        }
     }
 }

@@ -37,6 +37,20 @@ object CircuitDiagnosticsChecks {
         battery.electricalComponentList.forEach(root::addComponent)
         root.step()
         try {
+            report.test("eln:multimeter", "surface-terminals-and-ambiguous-center-on-six-mounts") {
+                val d = Eln.sixNodeItem.getDescriptor(Eln.findItemStack("Creative Power Resistor", 1))!!
+                for (side in Direction.entries) {
+                    val six = mods.eln.node.six.SixNode().apply { coordinate = node.coordinate }
+                    val resistor = mods.eln.sixnode.CreativePowerResistorElement(six, side, d).apply { front = LRDU.Left }
+                    six.sideElementList[side.int] = resistor
+                    check(CircuitDiagnostics.terminal(six, side, .5f, .5f, .5f) == null)
+                    for (port in listOf(LRDU.Left, LRDU.Right)) {
+                        val face = side.applyLRDU(port).toFacing()
+                        val selected = CircuitDiagnostics.terminal(six, side, .5f + .4f * face.stepX, .5f + .4f * face.stepY, .5f + .4f * face.stepZ)
+                        check(selected?.port == port) { "Wrong port for mounting $side / $port" }
+                    }
+                }
+            }
             report.test("eln:multimeter", "real-battery-terminal-mapping-and-floating-voltage") {
                 check(CircuitDiagnostics.load(node, battery.front.left(), LRDU.Down) === battery.positiveLoad)
                 check(CircuitDiagnostics.load(node, battery.front.right(), LRDU.Down) === battery.negativeLoad)
@@ -80,10 +94,10 @@ object CircuitDiagnosticsChecks {
                 root.addComponent(load); root.step()
                 check(abs(load.current - 1.0) < .001)
                 check(abs(load.power - 12.0) < .001)
-                root.removeComponent(load); root.step()
+                root.removeComponent(load); load.breakConnection(); root.step()
                 check(abs(battery.positiveLoad.voltage - battery.negativeLoad.voltage - 12) < .001)
                 // Source voltage persists even with the useful load path removed.
-                check(abs(battery.voltageSource.current) < 1e-5)
+                check(abs(battery.voltageSource.current) < 1e-5) { "Open-return source current ${battery.voltageSource.current} A" }
             }
         } finally {
             manager.removeNode(node)

@@ -100,7 +100,7 @@ public class DataLogs implements INBTTReady {
         final String yTop = textHeader + " " + getYstring(1f, maxValue, minValue, unitType);
         final String yMid = textHeader + " " + getYstring(0.5f, maxValue, minValue, unitType);
         final String yBottom = textHeader + " " + getYstring(0.0f, maxValue, minValue, unitType);
-        final String tStart = textHeader + Utils.plotTime(size * samplingPeriod);
+        final String tStart = textHeader + Utils.plotTime((size - 1) * (double) samplingPeriod);
         final String tEnd = textHeader + Utils.plotTime(0);
 
         // Keep axis near the original right edge position so the graph keeps full width.

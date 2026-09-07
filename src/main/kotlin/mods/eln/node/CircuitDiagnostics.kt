@@ -38,13 +38,18 @@ object CircuitDiagnostics {
         return if (node is SixNode) element?.getElectricalLoad(port, mask) else node.getElectricalLoad(side, port, mask)
     }
 
-    fun terminal(node: NodeBase, side: Direction, x: Float, y: Float, z: Float): Terminal? = LRDU.entries
-        .mapNotNull { port -> load(node, side, port)?.let { Terminal(port, it) } }
-        .minByOrNull { terminal ->
+    fun terminal(node: NodeBase, side: Direction, x: Float, y: Float, z: Float): Terminal? {
+        fun distance(terminal: Terminal): Double {
             val direction = side.applyLRDU(terminal.port).toFacing()
             val tx = .5 + .4 * direction.stepX; val ty = .5 + .4 * direction.stepY; val tz = .5 + .4 * direction.stepZ
-            (x - tx) * (x - tx) + (y - ty) * (y - ty) + (z - tz) * (z - tz)
+            return (x - tx) * (x - tx) + (y - ty) * (y - ty) + (z - tz) * (z - tz)
         }
+        val candidates = LRDU.entries.mapNotNull { port -> load(node, side, port)?.let { Terminal(port, it) } }.sortedBy(::distance)
+        val first = candidates.firstOrNull() ?: return null
+        // Clicking midway between different terminals must not silently choose one of them.
+        if (candidates.any { it.load !== first.load && distance(it) - distance(first) < .04 }) return null
+        return first
+    }
 
     private fun identity(node: NodeBase, side: Direction) = when (node) {
         is SixNode -> node.getElement(side)?.sixNodeElementDescriptor?.name ?: ""
