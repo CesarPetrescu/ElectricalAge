@@ -40,14 +40,19 @@ object CircuitDiagnosticsChecks {
             report.test("eln:multimeter", "surface-terminals-and-ambiguous-center-on-six-mounts") {
                 val d = Eln.sixNodeItem.getDescriptor(Eln.findItemStack("Creative Power Resistor", 1))!!
                 for (side in Direction.entries) {
-                    val six = mods.eln.node.six.SixNode().apply { coordinate = node.coordinate }
-                    val resistor = mods.eln.sixnode.CreativePowerResistorElement(six, side, d).apply { front = LRDU.Left }
-                    six.sideElementList[side.int] = resistor
-                    check(CircuitDiagnostics.terminal(six, side, .5f, .5f, .5f) == null)
-                    for (port in listOf(LRDU.Left, LRDU.Right)) {
-                        val face = side.applyLRDU(port).toFacing()
-                        val selected = CircuitDiagnostics.terminal(six, side, .5f + .4f * face.stepX, .5f + .4f * face.stepY, .5f + .4f * face.stepZ)
-                        check(selected?.port == port) { "Wrong port for mounting $side / $port" }
+                    for (rotation in LRDU.entries) {
+                        val six = mods.eln.node.six.SixNode().apply { coordinate = node.coordinate }
+                        val resistor = mods.eln.sixnode.CreativePowerResistorElement(six, side, d).apply { front = rotation }
+                        six.sideElementList[side.int] = resistor
+                        check(CircuitDiagnostics.terminal(six, side, .5f, .5f, .5f) == null)
+                        // The resistor's two poles are perpendicular to its front, not always Left/Right.
+                        for (port in listOf(rotation.left(), rotation.right())) {
+                            val face = side.applyLRDU(port).toFacing()
+                            val selected = CircuitDiagnostics.terminal(six, side, .5f + .4f * face.stepX, .5f + .4f * face.stepY, .5f + .4f * face.stepZ)
+                            check(selected?.port == port) { "Wrong port for mounting $side / rotation $rotation / $port: $selected" }
+                            check(selected.load === resistor.getElectricalLoad(port, NodeBase.maskElectricalPower))
+                        }
+                        check(CircuitDiagnostics.load(six, side, rotation) == null)
                     }
                 }
             }
