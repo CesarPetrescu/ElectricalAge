@@ -19,7 +19,8 @@ import java.io.DataInputStream
 
 /** Real monitor print packet, inventory transaction and persistent in-world print fixture. */
 object MonitorPrintChecks {
-    private val fixture = BlockPos(640, 65, 640)
+    // Reserved monitor cell, outside CreateAdapterSmoke's (640,65,640) placement/cleanup area.
+    private val fixture = BlockPos(704, 65, 704)
     fun sampleTag() = CompoundTag().apply {
         putByteArray("log", byteArrayOf(127, 0, -128))
         putFloat("samplingPeriod", 2f); putFloat("maxValue", 12f); putFloat("minValue", -12f)
@@ -73,8 +74,10 @@ object MonitorPrintChecks {
                 player.setItemInHand(InteractionHand.MAIN_HAND, stack)
                 check(Eln.sixNodeItem.placeBlockAt(stack, player, world, fixture, net.minecraft.core.Direction.UP, .5f, .5f, .5f))
             }
-            val node = NodeManager.instance!!.getNodeFromCoordonate(Coordinate(fixture.x, fixture.y, fixture.z, world)) as SixNode
-            val e = node.getElement(Direction.YN) as ElectricalDataLoggerElement
+            val node = NodeManager.instance!!.getNodeFromCoordonate(Coordinate(fixture.x, fixture.y, fixture.z, world)) as? SixNode
+            check(node != null) { "Saved monitor node missing at $fixture; block=${world.getBlockState(fixture)}" }
+            val e = node.getElement(Direction.YN) as? ElectricalDataLoggerElement
+            check(e != null) { "Saved monitor descriptor missing from the floor face at $fixture" }
             if (!restart) {
                 e.pause = true; e.logs.readFromNBT(sampleTag(), "")
                 e.inventory.setItem(0, ItemStack(Items.PAPER, 2)); print(e)
