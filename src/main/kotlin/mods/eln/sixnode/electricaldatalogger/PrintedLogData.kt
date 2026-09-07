@@ -1,6 +1,7 @@
 package mods.eln.sixnode.electricaldatalogger
 
 import net.minecraft.nbt.CompoundTag
+import mods.eln.misc.Utils
 
 /** Bounded immutable presentation snapshot; also accepts old print NBT without migration. */
 class PrintedLogData(tag: CompoundTag?) {
@@ -16,4 +17,9 @@ class PrintedLogData(tag: CompoundTag?) {
     fun value(index: Int) = minimum + fraction(index) * (maximum.toDouble() - minimum)
     fun age(index: Int) = index * period.toDouble()
     fun label(fraction: Float) = DataLogs.getYstring(fraction, maximum, minimum, unit)
+
+    companion object {
+        /** Unlike the legacy whole-second formatter, this preserves sub-second sampling periods. */
+        fun timeLabel(seconds: Double) = Utils.plotValue(seconds, "s")
+    }
 }

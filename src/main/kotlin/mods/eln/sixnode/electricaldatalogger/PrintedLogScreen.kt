@@ -2,7 +2,6 @@ package mods.eln.sixnode.electricaldatalogger
 
 import mods.eln.i18n.I18N.tr
 import mods.eln.misc.tagCompound
-import mods.eln.misc.Utils
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.Button
@@ -43,7 +42,7 @@ class PrintedLogScreen(val chart: PrintedLogData) : Screen(Component.literal(tr(
         g.fill(left - 1, top - 1, left + panelWidth + 1, top + panelHeight + 1, 0xFF6D6757.toInt())
         g.fill(left, top, left + panelWidth, top + panelHeight, 0xFFF3EAD2.toInt())
         g.drawString(font, title, left + 12, top + 12, 0xFF292B2E.toInt(), false)
-        val summary = tr("%1$ samples | %2$ per sample", chart.size, Utils.plotTime(chart.period.toDouble()))
+        val summary = tr("%1$ samples | %2$ per sample", chart.size, PrintedLogData.timeLabel(chart.period.toDouble()))
         g.drawString(font, font.plainSubstrByWidth(summary, panelWidth - 24), left + 12, top + 29, 0xFF55534D.toInt(), false)
         g.fill(plotLeft, plotTop, plotLeft + plotWidth + 1, plotTop + plotHeight + 1, 0xFFFFFBEE.toInt())
         for (n in 0..4) {
@@ -76,14 +75,17 @@ class PrintedLogScreen(val chart: PrintedLogData) : Screen(Component.literal(tr(
                 }
             }
         } finally { g.disableScissor() }
-        if (chart.size == 0) g.drawCenteredString(font, tr("No recorded samples"), plotLeft + plotWidth / 2, plotTop + plotHeight / 2, 0xFF343B40.toInt())
-        g.drawString(font, Utils.plotTime(chart.duration), plotLeft, plotTop + plotHeight + 7, 0xFF343B40.toInt(), false)
+        if (chart.size == 0) {
+            val empty = tr("No recorded samples")
+            g.drawString(font, empty, plotLeft + (plotWidth - font.width(empty)) / 2, plotTop + plotHeight / 2, 0xFF343B40.toInt(), false)
+        }
+        g.drawString(font, PrintedLogData.timeLabel(chart.duration), plotLeft, plotTop + plotHeight + 7, 0xFF343B40.toInt(), false)
         val latest = tr("Latest")
         g.drawString(font, latest, plotLeft + plotWidth - font.width(latest), plotTop + plotHeight + 7, 0xFF343B40.toInt(), false)
         super.render(g, mouseX, mouseY, partial)
         if (chart.size > 0 && mouseX in plotLeft..plotLeft + plotWidth && mouseY in plotTop..plotTop + plotHeight) {
             val i = ((plotLeft + plotWidth - mouseX).toDouble() / plotWidth * (chart.size - 1)).roundToInt().coerceIn(0, chart.size - 1)
-            g.renderTooltip(font, Component.literal(tr("%1$ ago: %2$", Utils.plotTime(chart.age(i)), chart.label(chart.fraction(i).toFloat()))), mouseX, mouseY)
+            g.renderTooltip(font, Component.literal(tr("%1$ ago: %2$", PrintedLogData.timeLabel(chart.age(i)), chart.label(chart.fraction(i).toFloat()))), mouseX, mouseY)
         }
         renderedFrames++
     }

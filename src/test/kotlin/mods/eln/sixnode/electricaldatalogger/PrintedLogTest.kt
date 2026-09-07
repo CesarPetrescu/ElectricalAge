@@ -4,6 +4,12 @@ import net.minecraft.nbt.CompoundTag
 import kotlin.test.*
 
 class PrintedLogTest {
+    @Test fun subSecondTimeLabelsAreNotBlankOrRoundedToZero() {
+        assertTrue(PrintedLogData.timeLabel(.5).contains("500"))
+        assertTrue(PrintedLogData.timeLabel(.5).endsWith("ms"))
+        assertTrue(PrintedLogData.timeLabel(0.0).contains("0"))
+        assertTrue(PrintedLogData.timeLabel(2.0).endsWith("s"))
+    }
     @Test fun boundedHistoryKeepsNewestSamples() {
         val logs = DataLogs(3)
         repeat(10) { logs.write(it.toByte()) }

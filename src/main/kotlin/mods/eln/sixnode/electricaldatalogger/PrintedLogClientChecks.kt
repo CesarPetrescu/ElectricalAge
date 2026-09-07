@@ -16,6 +16,9 @@ class PrintedLogClientChecks {
     private var step = 0
     private var scale = 1
     private var oldScale = 0
+    private var oldWidth = 0
+    private var oldHeight = 0
+    private var resizeTicks = 0
     private var oldStack = ItemStack.EMPTY
     private var finished = false
     private var page: PrintedLogScreen? = null
@@ -24,6 +27,15 @@ class PrintedLogClientChecks {
     fun tick(mc: Minecraft): Boolean {
         if (finished) return true
         if (step == 0) {
+            if (oldWidth == 0) {
+                oldWidth = mc.window.width; oldHeight = mc.window.height
+                mc.window.setWindowed(1280, 960)
+                return false // let GLFW deliver the resize before measuring GUI pixels
+            }
+            if (mc.window.width < 1280 || mc.window.height < 960) {
+                check(++resizeTicks < 100) { "Client window did not resize for three distinct GUI scales" }
+                return false
+            }
             oldScale = mc.options.guiScale().get()
             oldStack = mc.player!!.mainHandItem.copy()
             print = Eln.instance.dataLogsPrintDescriptor.newItemStack()
@@ -49,6 +61,7 @@ class PrintedLogClientChecks {
         if (current.renderedFrames < 3) return false
         val name = if (step == 1) "scale-$scale" else "empty"
         report.test("eln:data_logger_print", "rendered-chart-$name") {
+            if (step == 1) check(mc.window.guiScale == scale.toDouble()) { "Requested scale $scale was clamped to ${mc.window.guiScale}" }
             check(current.plotLeft >= 0 && current.plotTop >= 0)
             check(current.plotLeft + current.plotWidth < current.width)
             check(current.plotTop + current.plotHeight < current.height)
@@ -76,6 +89,7 @@ class PrintedLogClientChecks {
         } else {
             mc.setScreen(null)
             mc.player!!.setItemInHand(InteractionHand.MAIN_HAND, oldStack)
+            mc.window.setWindowed(oldWidth, oldHeight)
             mc.options.guiScale().set(oldScale); mc.resizeDisplay()
             report.write(true); finished = true
             check(report.failures == 0) { "Printed chart contracts failed: ${report.failures}" }
