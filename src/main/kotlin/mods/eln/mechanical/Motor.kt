@@ -402,7 +402,8 @@ class MotorElement(node: TransparentNode, desc_: TransparentNodeDescriptor) :
     fun maybePublishP(P: Double) {
         val current = (-powerSource.current).coerceAtLeast(0.0)
         val currentChanged = Math.abs(current - lastDriveCurrent) / desc.driveCurrentLimit > 0.01
-        if(Math.abs(P - lastP) / desc.nominalP > 0.01 || currentChanged) {
+        val threshold = maxOf(1.0, minOf(desc.nominalP * .01, maxOf(Math.abs(P), Math.abs(lastP)) * .05))
+        if(Math.abs(P - lastP) > threshold || currentChanged || (P > 0.0) != (lastP > 0.0) || (P < 0.0) != (lastP < 0.0)) {
             lastP = P
             lastDriveCurrent = current
             needPublish()

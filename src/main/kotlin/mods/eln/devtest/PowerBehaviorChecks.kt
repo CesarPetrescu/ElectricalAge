@@ -126,6 +126,16 @@ object PowerBehaviorChecks {
         }
         for (d in descriptors.filterIsInstance<MotorDescriptor>()) {
             val key = BuiltInRegistries.ITEM.getKey(d.parentItem).toString()
+            report.test(key, "small-load-and-stop-led-publication") {
+                val m = MotorElement(node(world), d)
+                m.powerSource.voltage = 10.0; m.powerSource.currentState.state = .1
+                m.node!!.needPublish = false
+                m.maybePublishP(-m.powerSource.power)
+                check(m.node!!.needPublish) { "Small motor load never published its LED state" }
+                m.node!!.needPublish = false
+                m.powerSource.currentState.state = 0.0; m.maybePublishP(0.0)
+                check(m.node!!.needPublish) { "Stopped motor LED state not published" }
+            }
             report.test(key, "shaft-driven-motor-powers-load-and-stops") {
                 val m = MotorElement(node(world), d); m.shaft._mass = d.shaftMass
                 val r = root(m)
