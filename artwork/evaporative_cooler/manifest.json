@@ -1,33 +1,49 @@
 {
   "blender": "5.2.0 LTS",
-  "triangles": 5932,
-  "vertices": 3520,
+  "design": "classic-eln-family-v2",
+  "triangles": 444,
+  "vertices": 296,
   "parts": {
-    "led_off": 36,
-    "led_ready": 36,
-    "led_warning": 36,
-    "main": 4996,
-    "pad_dry": 304,
-    "pad_wet": 304,
-    "rotor": 208,
+    "main": 340,
+    "pad_dry": 12,
+    "pad_wet": 12,
+    "rotor": 68,
     "water": 12
   },
   "bounds_min": [
-    -0.49000000953674316,
+    -0.5019999742507935,
     -0.5,
-    -0.5
+    -0.5019999742507935
   ],
   "bounds_max": [
-    0.4300000071525574,
+    0.5019999742507935,
     0.5,
-    0.5
+    0.5034999847412109
   ],
   "rotor_pivot_mc": [
-    -0.326,
-    0.124,
-    0
+    -0.375,
+    0.125,
+    0.0
   ],
-  "generator_sha256": "70a5af7b574063aaec6a904896f8e8b80e74523caf6f3f69739bf43435873988",
-  "obj_sha256": "0f91a6c19f4fdc0c287a618c8da57b36a19a55dd27a56510851f37aa31ad9736",
-  "atlas_sha256": "e444cc74bee0d8ee41a189eb99c0161a5dcb41d229be0e3c8b2933aeae74565f"
+  "gauge_bottom_mc": -0.4375,
+  "atlas_size": [
+    64,
+    64
+  ],
+  "icon_size": [
+    32,
+    32
+  ],
+  "reference_sha256": {
+    "src/main/resources/assets/eln/model/passivethermaldissipatora/passivethermaldissipatora.obj": "691a5487a63d398313887976ccb2adadd826e2ba5181b3b0afb4f6ce9d14b32a",
+    "src/main/resources/assets/eln/model/200vactivethermaldissipatora/200vactivethermaldissipatora.obj": "020c709855b122727643fdab9b30d818fb45f8695c404dc7f4066f9d7640192b",
+    "src/main/resources/assets/eln/model/200vactivethermaldissipatora/tex.png": "2b3b32095e0ab499b0d3e21da665744423afdedf74b7df395724571ba5a9b6f6",
+    "src/main/resources/assets/eln/model/passivethermaldissipatora/tex.png": "93dfe8630918d291ec06c682390e0b68000b4c42abc9e3d1bdd1cde6d2403511"
+  },
+  "generator_sha256": "4533603253a57bbfadafefa59b48eb7ed6cf1952c68cbcb5e3a52f8c452e3fd8",
+  "obj_sha256": "fc0bcb532937becdcb79780bbbb7f46aab7d17597ad36a78a25deb45374ec865",
+  "atlas_sha256": "a96d491c7db03732d74efadaa827c463d8039a9347c631483a41e7b6e90c958a",
+  "icon_sha256": "86a486271baa5d52ae28efe89f626f43e381c11e3011873eccd142214a951de4",
+  "blend_sha256": "8bc3324eff16e30617a29e5b518f29c01da025af05b1b6af539c60efc316ee05",
+  "glb_sha256": "09634be3e6df629138c7ab7386ecc0a1ad8e423d8836e9665c6d2d2c7ddac44e"
 }

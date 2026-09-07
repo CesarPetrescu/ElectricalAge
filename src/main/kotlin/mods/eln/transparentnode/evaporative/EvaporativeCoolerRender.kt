@@ -19,20 +19,18 @@ class EvaporativeCoolerRender(entity: TransparentNodeEntity, descriptor: Transpa
     private var angle = 0f
     private var waterLevel = 0f
     private var wet = false
-    private var status = EvaporativeStatus.IDLE
     private var particleTimer = 0f
     override fun draw() {
         front?.glRotateXnRef()
         obj.getPart("main")?.draw()
         obj.getPart(if (wet) "pad_wet" else "pad_dry")?.draw()
         obj.getPart("rotor")?.draw(angle, 1f, 0f, 0f)
-        obj.getPart(when { status >= 4 -> "led_warning"; speed > .01 -> "led_ready"; else -> "led_off" })?.draw()
         if (waterLevel > .001) {
             GL11.glPushMatrix()
-            // Gauge bottom is at Y=-.40 in model coordinates; scale level upwards from that point.
-            GL11.glTranslated(0.0, -.40, 0.0)
+            // Gauge bottom is at Y=-.4375 in model coordinates; scale level upwards from that point.
+            GL11.glTranslated(0.0, -.4375, 0.0)
             GL11.glScalef(1f, waterLevel, 1f)
-            GL11.glTranslated(0.0, .40, 0.0)
+            GL11.glTranslated(0.0, .4375, 0.0)
             obj.getPart("water")?.draw()
             GL11.glPopMatrix()
         }
@@ -56,7 +54,7 @@ class EvaporativeCoolerRender(entity: TransparentNodeEntity, descriptor: Transpa
         super.networkUnserialize(stream)
         targetSpeed = stream.readFloat().let { if (it.isFinite()) it.coerceIn(0f, 1f) else 0f }
         waterLevel = stream.readFloat().let { if (it.isFinite()) it.coerceIn(0f, 1f) else 0f }
-        wet = stream.readBoolean(); status = stream.readInt()
+        wet = stream.readBoolean(); stream.readInt() // Status remains in the wire protocol for compatibility.
     }
     override fun newGuiDraw(side: Direction, player: Player) = EvaporativeCoolerScreen(EvaporativeCoolerMenu(player), player.inventory)
 }

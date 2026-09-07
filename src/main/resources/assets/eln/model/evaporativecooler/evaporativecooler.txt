@@ -1,4 +1,4 @@
 o rotor
-f originX -0.326
-f originY 0.124
+f originX -0.375
+f originY 0.125
 f originZ 0.0

@@ -52,6 +52,40 @@ class EvaporativeSmokeTest(private val restart: Boolean) {
             e.thermal.temperatureCelsius = 70 - e.getAmbientTemperatureCelsius()
             e.sampleEnvironment(); e.updateDemand(); e.needPublish()
         }
+        /** Visual regression fixture only; normal gameplay never creates this gallery. */
+        @JvmStatic fun prepareGallery(w: ServerLevel) {
+            val player = FakePlayerFactory.getMinecraft(w)
+            fun place(name: String, pos: BlockPos, facing: ElnDirection): TransparentNode {
+                for (dx in -1..1) for (dz in -1..1) {
+                    w.setBlockAndUpdate(pos.offset(dx,-1,dz), Blocks.STONE.defaultBlockState())
+                    for (dy in 0..2) w.removeBlock(pos.offset(dx,dy,dz), false)
+                }
+                check(Eln.transparentNodeItem.placeBlockAt(checkNotNull(Eln.findItemStack(name,1)), player,w,pos,Direction.UP))
+                val node = NodeManager.instance!!.getNodeFromCoordonate(Coordinate(pos.x,pos.y,pos.z,w)) as TransparentNode
+                node.element!!.front=facing
+                node.element!!.reconnect()
+                node.element!!.needPublish()
+                return node
+            }
+            place("Small Passive Thermal Dissipator",BlockPos(48,80,32),ElnDirection.XN)
+            place("240V Active Thermal Dissipator",BlockPos(50,80,32),ElnDirection.XN)
+            val wet=place(NAME,BlockPos(52,80,32),ElnDirection.XN).element as EvaporativeCoolerElement
+            wet.water.fill(null,FluidStack(Fluids.WATER,3000),true)
+            wet.controls.restore(3,40,100,0)
+            wet.thermal.temperatureCelsius=70-wet.getAmbientTemperatureCelsius()
+            val powerPos=BlockPos(51,80,32)
+            val stack=checkNotNull(Eln.findItemStack("Electrical Source",1))
+            player.setItemInHand(InteractionHand.MAIN_HAND,stack)
+            Eln.sixNodeItem.onItemUse(stack,player,w,powerPos,InteractionHand.MAIN_HAND,Direction.UP,.5f,1f,.5f)
+            val source=(NodeManager.instance!!.getNodeFromCoordonate(Coordinate(51,80,32,w)) as SixNode).getElement(ElnDirection.YN) as ElectricalSourceElement
+            source.readConfigTool(CompoundTag().apply { putDouble("voltage",240.0) },player)
+            wet.sampleEnvironment();wet.updateDemand();wet.needPublish()
+            for ((i,dir) in listOf(ElnDirection.XN,ElnDirection.ZP,ElnDirection.XP,ElnDirection.ZN).withIndex()) {
+                val e=place(NAME,BlockPos(48+i*2,80,24),dir).element as EvaporativeCoolerElement
+                e.water.fill(null,FluidStack(Fluids.WATER,(i+1)*1000),true)
+                e.controls.restore(0,40,100,0);e.sampleEnvironment();e.updateDemand();e.needPublish()
+            }
+        }
     }
     private val report = ContractReport("evaporative-${if (restart) "restart" else "place"}")
     private var ticks = 0

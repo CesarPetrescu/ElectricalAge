@@ -47,6 +47,7 @@ End_of_life=Konec životnosti
 Energy=Energie
 Engaged=Aktivováno
 Entity_filter_slot=Slot pro filtr entit
+Evaporative_cooling=Evaporative cooling
 External_control=Externí ovládání
 Falstad_import\:_clipboard_is_not_valid_Falstad_data.=Import Falstad: schránka neobsahuje platná data Falstad.
 Ferromagnetic_core_slot=Slot pro feromagnetické jádro
@@ -207,8 +208,6 @@ Time_per_operation\:_%1$h=Čas na operaci: %1$h
 # src/main/java/mods/eln/item/FerromagneticCoreDescriptor.java
 Cable_loss_factor\:_%1$=Faktor ztrát kabelu: %1$
 
-# src/main/java/mods/eln/item/HeatingCorpElement.java
-
 # src/main/java/mods/eln/item/OverHeatingProtectionDescriptor.java
 Useful_to_prevent_overheating\nof_Batteries=Užitečné pro prevenci přehřátí\nbaterií
 
@@ -217,8 +216,6 @@ Useful_to_prevent_over-voltage\nof_Batteries=Užitečné pro prevenci přepětí
 
 # src/main/java/mods/eln/item/SolarTrackerDescriptor.java
 Solar_panel_upgrade=Vylepšení solárního panelu
-
-# src/main/java/mods/eln/item/regulator/RegulatorSlot.java
 
 # src/main/java/mods/eln/sixnode/TreeResinCollector/TreeResinCollectorDescriptor.java
 Produces_Tree_Resin_over\ntime_when_put_on_a_tree.=Produkuje pryskyřici\nv průběhu času po umístění na strom.
@@ -236,8 +233,6 @@ __*_It_exposes_a_nominal_mains_class_instead_of_wall-plug_details=  * Namísto d
 
 # src/main/java/mods/eln/sixnode/batterycharger/BatteryChargerElement.java
 Charge_Current=Nabíjecí proud
-
-# src/main/java/mods/eln/sixnode/batterycharger/BatteryChargerGui.java
 
 # src/main/java/mods/eln/sixnode/diode/DiodeDescriptor.java
 Electrical_current_can_only\nflow_through_the_diode\nfrom_anode_to_cathode=Elektrický proud může diodou\nprocházet pouze\nod anody ke katodě
@@ -313,10 +308,6 @@ Displays_signal_value.=Zobrazuje hodnotu signálu.
 Max=Max
 Min=Min
 
-# src/main/java/mods/eln/sixnode/electricaldigitaldisplay/ElectricalDigitalDisplayGui.java
-
-# src/main/java/mods/eln/sixnode/electricalentitysensor/ElectricalEntitySensorContainer.java
-
 # src/main/java/mods/eln/sixnode/electricalentitysensor/ElectricalEntitySensorDescriptor.java
 Output_voltage_increases\nif_entities_are_moving_around.=Výstupní napětí se zvyšuje,\npokud se entity pohybují v okolí.
 
@@ -347,8 +338,6 @@ Provides_an_electrical_voltage\nwhich_is_proportional_to\nthe_intensity_of_dayli
 # src/main/java/mods/eln/sixnode/electricallightsensor/ElectricalLightSensorElement.java
 Light_level=Úroveň osvětlení
 
-# src/main/java/mods/eln/sixnode/electricalmath/ElectricalMathContainer.java
-
 # src/main/java/mods/eln/sixnode/electricalmath/ElectricalMathDescriptor.java
 Applicable_boolean_operators\:=Použitelné booleovské operátory:
 Applicable_functions\:=Použitelné funkce:
@@ -374,8 +363,6 @@ Converts_Redstone_signal\nto_an_electrical_voltage.=Převádí redstonový sign�
 
 # src/main/java/mods/eln/sixnode/electricalredstoneoutput/ElectricalRedstoneOutputDescriptor.java
 Converts_electrical_voltage\ninto_a_Redstone_signal.=Převádí elektrické napětí\nna redstonový signál.
-
-# src/main/java/mods/eln/sixnode/electricalredstoneoutput/ElectricalRedstoneOutputElement.java
 
 # src/main/java/mods/eln/sixnode/electricalrelay/ElectricalRelayDescriptor.java
 Contact_current_rating\:_%1$A=Jmenovitý proud kontaktu: %1$A
@@ -512,6 +499,8 @@ It's_a_resistor=Je to rezistor
 
 # src/main/java/mods/eln/sixnode/resistor/ResistorElement.java
 
+# src/main/java/mods/eln/sixnode/resistor/ResistorGui.java
+
 # src/main/java/mods/eln/sixnode/thermalcable/ThermalCableDescriptor.java
 High_parallel_resistance\n_->_Low_power_dissipation.=High parallel resistance\n -> Low power dissipation.
 Low_serial_resistance\n_->_High_conductivity.=Low serial resistance\n -> High conductivity.
@@ -558,10 +547,10 @@ Receive_signal_voltage_on_selected_wireless_signal_channel=Přijímá signálov�
 
 # src/main/java/mods/eln/sixnode/wirelesssignal/rx/WirelessSignalRxGui.java
 
-# src/main/java/mods/eln/sixnode/wirelesssignal/source/WirelessSignalSourceDescriptor.java
-
 # src/main/java/mods/eln/sixnode/wirelesssignal/tx/WirelessSignalTxDescriptor.java
 Sends_signal_voltage_on_selected_wireless_signal_channel=Odesílá signálové napětí na vybraném bezdrátovém signálovém kanálu
+
+# src/main/java/mods/eln/sixnode/wirelesssignal/tx/WirelessSignalTxElement.java
 
 # src/main/java/mods/eln/transparentnode/autominer/AutoMinerContainer.java
 Drill_slot=Slot pro vrták
@@ -615,6 +604,8 @@ Actual\:_%1$=Skutečná: %1$
 Auto_shutdown=Automatické vypnutí
 Manual_shutdown=Ruční vypnutí
 Set_point\:_%1$=Nastavená hodnota: %1$
+
+# src/main/java/mods/eln/transparentnode/electricalmachine/ElectricalMachineContainer.java
 
 # src/main/java/mods/eln/transparentnode/electricalmachine/ElectricalMachineDescriptor.java
 
@@ -688,7 +679,9 @@ Fan_cooling_power\:_%1$W=Chladicí výkon ventilátoru: %1$W
 Fan_power_consumption\:_%1$W=Spotřeba ventilátoru: %1$W
 Fan_voltage\:_%1$V=Napětí ventilátoru: %1$V
 
-# src/main/java/mods/eln/transparentnode/thermaldissipatoractive/ThermalDissipatorActiveElement.java
+# src/main/java/mods/eln/transparentnode/thermaldissipatorpassive/ThermalDissipatorPassiveDescriptor.java
+
+# src/main/java/mods/eln/transparentnode/thermaldissipatorpassive/ThermalDissipatorPassiveElement.java
 
 # src/main/java/mods/eln/transparentnode/turbine/TurbineDescriptor.java
 Generates_electricity_using_heat.=Vyrábí elektřinu pomocí tepla.
@@ -696,6 +689,8 @@ Temperature_difference\:_%1$°C=Teplotní rozdíl: %1$°C
 
 # src/main/java/mods/eln/transparentnode/turbine/TurbineElement.java
 Nominal=Jmenovitý
+
+# src/main/java/mods/eln/transparentnode/turret/TurretContainer.java
 
 # src/main/java/mods/eln/transparentnode/turret/TurretDescriptor.java
 CAUTION\:_Cables_can_get_quite_hot!=POZOR: Kabely se mohou velmi zahřát!
@@ -722,8 +717,6 @@ Recharge_power\:=Nabíjecí výkon:
 # src/main/java/mods/eln/transparentnode/waterturbine/WaterTurbineDescriptor.java
 Generates_energy_using_water_stream.=Vyrábí energii pomocí vodního proudu.
 No_place_for_water_turbine!=Není místo pro vodní turbínu!
-
-# src/main/java/mods/eln/transparentnode/waterturbine/WaterTurbineElement.java
 
 # src/main/java/mods/eln/transparentnode/windturbine/WindTurbineDescriptor.java
 Front\:_%1$=Přední: %1$
@@ -959,7 +952,7 @@ Remaining\:_%1$_m=Zbývá: %1$ m
 Right_click_to_cut_utility_wire_in_your_inventory=Klikněte pravým tlačítkem pro odstřižení instalačního drátu v inventáři
 Wire_Snips=Štípací kleště
 
-# src/main/kotlin/mods/eln/item/electricalitem/BatteryItem.kt
+# src/main/kotlin/mods/eln/item/electricalitem/ElectricalArmor.kt
 
 # src/main/kotlin/mods/eln/item/electricalitem/ElectricalAxe.kt
 Cuts_down_trees._Right-click_to_make_it_act_like_a_regular_axe.=Kácí stromy. Klikněte pravým tlačítkem, aby se chovala jako běžná sekera.
@@ -970,6 +963,8 @@ Stored_Energy\:_%1$J_(%2$%)=Uložená energie: %1$J (%2$%)
 
 # src/main/kotlin/mods/eln/item/electricalitem/ElectricalPickaxe.kt
 Opens_holes._Right-click_to_open_smaller_holes.=Vytváří otvory. Klikněte pravým tlačítkem pro vytvoření menších otvorů.
+
+# src/main/kotlin/mods/eln/item/electricalitem/PortableOreScannerItem.kt
 
 # src/main/kotlin/mods/eln/item/lampitem/LampDescriptor.kt
 Current_lifetime\:_%1$h=Aktuální životnost: %1$h
@@ -1043,7 +1038,7 @@ Turbine_blade_slot=Slot pro lopatku turbíny
 # src/main/kotlin/mods/eln/misc/Version.kt
 mod.name=Electrical Age
 
-# src/main/kotlin/mods/eln/node/six/SixNodeDescriptor.kt
+# src/main/kotlin/mods/eln/node/transparent/TransparentNodeDescriptor.kt
 
 # src/main/kotlin/mods/eln/railroad/ElectricMinecartChargeReporter.kt
 Cart_Energy\:_=Energie vozíku: 
@@ -2133,7 +2128,6 @@ Copper_sides\:_heat._Front/rear\:_power._Top/bottom\:_water.=Copper sides: heat.
 Disabled_-_passive_cooling=Disabled - passive cooling
 Dry_fan_cooling=Dry fan cooling
 Electrical_consumption=Electrical consumption
-Evaporative_cooling=Evaporative cooling
 Fan\:_120_W._Pump\:_15_W._Water\:_4_buckets.=Fan: 120 W. Pump: 15 W. Water: 4 buckets.
 Freeze_protection_-_dry_cooling=Freeze protection - dry cooling
 Low_voltage_-_pump_inhibited=Low voltage - pump inhibited
@@ -2154,24 +2148,29 @@ Water_empty_-_dry_cooling=Water empty - dry cooling
 Wet_operation_requires_clear_outdoor_intake_and_exhaust.=Wet operation requires clear outdoor intake and exhaust.
 
 # src/main/kotlin/mods/eln/transparentnode/evaporative/EvaporativeCoolerScreen.kt
-%1$%_actual=%1$% actual
-AUTOMATION=AUTOMATION
-Air\:_%1$_C=Air: %1$ C
+%1$_/_4000_mB._Fill_or_drain_with_a_main-hand_bucket.=%1$ / 4000 mB. Fill or drain with a main-hand bucket.
+Actual_fan_speed=Actual fan speed
 Auto=Auto
+Back=Back
 Cycle_ignored,_require_signal,_and_require_no_signal.=Cycle ignored, require signal, and require no signal.
+Details=Details
 Disable_the_motor_and_pump._Passive_cooling_remains.=Disable the motor and pump. Passive cooling remains.
 Dry=Dry
-EC-240_Evaporative_Heat_Sink=EC-240 Evaporative Heat Sink
+Enabled=Enabled
+Evaporative_Heat_Sink=Evaporative Heat Sink
 Fan_limit\:_%1$%=Fan limit: %1$%
 Heat\:_copper_sides_|_Power\:_front/rear_|_Water\:_top/bottom=Heat: copper sides | Power: front/rear | Water: top/bottom
-Humidity\:_%1$%=Humidity: %1$%
-Input\:_%1$_W_/_%2$_V=Input: %1$ W / %2$ V
+Hover_for_connections.=Hover for connections.
+Inhibited=Inhibited
+Input\:_%1$=Input: %1$
+Intake_temperature=Intake temperature
 Lower_maximum_fan_speed_by_10_percent.=Lower maximum fan speed by 10 percent.
 Lower_target_by_1_C.=Lower target by 1 C.
 Lower_target_by_5_C.=Lower target by 5 C.
-Net_cooling\:_%1$_W=Net cooling: %1$ W
-OPERATING_MODE=OPERATING MODE
-Outdoor_airflow_verified._Wet-bulb_value_is_an_estimate.=Outdoor airflow verified. Wet-bulb value is an estimate.
+Motor_heat_/_input=Motor heat / input
+Net_cooling\:_%1$=Net cooling: %1$
+Not_verified=Not verified
+Outdoor_airflow=Outdoor airflow
 Raise_maximum_fan_speed_by_10_percent.=Raise maximum fan speed by 10 percent.
 Raise_target_by_1_C.=Raise target by 1 C.
 Raise_target_by_5_C.=Raise target by 5 C.
@@ -2181,15 +2180,19 @@ Redstone\:_low=Redstone: low
 Request_wet_cooling_continuously._Safety_interlocks_still_apply.=Request wet cooling continuously. Safety interlocks still apply.
 Run_the_fan_without_using_water.=Run the fan without using water.
 Sensible\:_%1$_W;_evaporation\:_%2$_W;_motor_heat\:_%3$_W._Negative_net_means_warming.=Sensible: %1$ W; evaporation: %2$ W; motor heat: %3$ W. Negative net means warming.
-Surface\:_%1$_C=Surface: %1$ C
-THERMAL_/_WATER=THERMAL / WATER
+Sensible_cooling=Sensible cooling
+Supply_voltage=Supply voltage
 Target\:_%1$_C=Target: %1$ C
-Use\:_%1$_mB/s=Use: %1$ mB/s
+Temperature\:_%1$_C=Temperature: %1$ C
 Use_the_fan_above_target_+2_C_and_water_above_target_+5_C.=Use the fan above target +2 C and water above target +5 C.
-Water\:_%1$_mB=Water: %1$ mB
+Verified=Verified
+Water\:_%1$_/_4.0_B=Water: %1$ / 4.0 B
+Water_use=Water use
 Wet=Wet
-Wet_bulb\:_%1$_C=Wet bulb: %1$ C
+Wet-bulb_value_is_an_estimate,_not_a_guaranteed_surface_temperature.=Wet-bulb value is an estimate, not a guaranteed surface temperature.
+Wet_bulb_(estimate)=Wet bulb (estimate)
 Wet_mode_needs_an_unobstructed_path_to_sky_within_8_blocks.=Wet mode needs an unobstructed path to sky within 8 blocks.
+Wet_operation=Wet operation
 
 # src/main/kotlin/mods/eln/transparentnode/festive/FestiveElement.kt
 It_probably_works_if_you_apply_~200v_to_the_xmas_wireless_channel=Pravděpodobně to funguje, pokud přivedete ~200V na vánoční bezdrátový kanál

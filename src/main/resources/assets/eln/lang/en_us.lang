@@ -47,6 +47,7 @@ End_of_life=End of life
 Energy=Energy
 Engaged=Engaged
 Entity_filter_slot=Entity filter slot
+Evaporative_cooling=Evaporative cooling
 External_control=External control
 Falstad_import\:_clipboard_is_not_valid_Falstad_data.=Falstad import: clipboard is not valid Falstad data.
 Ferromagnetic_core_slot=Ferromagnetic core slot
@@ -207,8 +208,6 @@ Time_per_operation\:_%1$h=Time per operation: %1$h
 # src/main/java/mods/eln/item/FerromagneticCoreDescriptor.java
 Cable_loss_factor\:_%1$=Cable loss factor: %1$
 
-# src/main/java/mods/eln/item/HeatingCorpElement.java
-
 # src/main/java/mods/eln/item/OverHeatingProtectionDescriptor.java
 Useful_to_prevent_overheating\nof_Batteries=Useful to prevent overheating\nof Batteries
 
@@ -217,8 +216,6 @@ Useful_to_prevent_over-voltage\nof_Batteries=Useful to prevent over-voltage\nof 
 
 # src/main/java/mods/eln/item/SolarTrackerDescriptor.java
 Solar_panel_upgrade=Solar panel upgrade
-
-# src/main/java/mods/eln/item/regulator/RegulatorSlot.java
 
 # src/main/java/mods/eln/sixnode/TreeResinCollector/TreeResinCollectorDescriptor.java
 Produces_Tree_Resin_over\ntime_when_put_on_a_tree.=Produces Tree Resin over\ntime when put on a tree.
@@ -236,8 +233,6 @@ __*_It_exposes_a_nominal_mains_class_instead_of_wall-plug_details=  * It exposes
 
 # src/main/java/mods/eln/sixnode/batterycharger/BatteryChargerElement.java
 Charge_Current=Charge Current
-
-# src/main/java/mods/eln/sixnode/batterycharger/BatteryChargerGui.java
 
 # src/main/java/mods/eln/sixnode/diode/DiodeDescriptor.java
 Electrical_current_can_only\nflow_through_the_diode\nfrom_anode_to_cathode=Electrical current can only\nflow through the diode\nfrom anode to cathode
@@ -313,10 +308,6 @@ Displays_signal_value.=Displays signal value.
 Max=Max
 Min=Min
 
-# src/main/java/mods/eln/sixnode/electricaldigitaldisplay/ElectricalDigitalDisplayGui.java
-
-# src/main/java/mods/eln/sixnode/electricalentitysensor/ElectricalEntitySensorContainer.java
-
 # src/main/java/mods/eln/sixnode/electricalentitysensor/ElectricalEntitySensorDescriptor.java
 Output_voltage_increases\nif_entities_are_moving_around.=Output voltage increases\nif entities are moving around.
 
@@ -347,8 +338,6 @@ Provides_an_electrical_voltage\nwhich_is_proportional_to\nthe_intensity_of_dayli
 # src/main/java/mods/eln/sixnode/electricallightsensor/ElectricalLightSensorElement.java
 Light_level=Light level
 
-# src/main/java/mods/eln/sixnode/electricalmath/ElectricalMathContainer.java
-
 # src/main/java/mods/eln/sixnode/electricalmath/ElectricalMathDescriptor.java
 Applicable_boolean_operators\:=Applicable boolean operators:
 Applicable_functions\:=Applicable functions:
@@ -374,8 +363,6 @@ Converts_Redstone_signal\nto_an_electrical_voltage.=Converts Redstone signal\nto
 
 # src/main/java/mods/eln/sixnode/electricalredstoneoutput/ElectricalRedstoneOutputDescriptor.java
 Converts_electrical_voltage\ninto_a_Redstone_signal.=Converts electrical voltage\ninto a Redstone signal.
-
-# src/main/java/mods/eln/sixnode/electricalredstoneoutput/ElectricalRedstoneOutputElement.java
 
 # src/main/java/mods/eln/sixnode/electricalrelay/ElectricalRelayDescriptor.java
 Contact_current_rating\:_%1$A=Contact current rating: %1$A
@@ -512,6 +499,8 @@ It's_a_resistor=It's a resistor
 
 # src/main/java/mods/eln/sixnode/resistor/ResistorElement.java
 
+# src/main/java/mods/eln/sixnode/resistor/ResistorGui.java
+
 # src/main/java/mods/eln/sixnode/thermalcable/ThermalCableDescriptor.java
 High_parallel_resistance\n_->_Low_power_dissipation.=High parallel resistance\n -> Low power dissipation.
 Low_serial_resistance\n_->_High_conductivity.=Low serial resistance\n -> High conductivity.
@@ -558,10 +547,10 @@ Receive_signal_voltage_on_selected_wireless_signal_channel=Receive signal voltag
 
 # src/main/java/mods/eln/sixnode/wirelesssignal/rx/WirelessSignalRxGui.java
 
-# src/main/java/mods/eln/sixnode/wirelesssignal/source/WirelessSignalSourceDescriptor.java
-
 # src/main/java/mods/eln/sixnode/wirelesssignal/tx/WirelessSignalTxDescriptor.java
 Sends_signal_voltage_on_selected_wireless_signal_channel=Sends signal voltage on selected wireless signal channel
+
+# src/main/java/mods/eln/sixnode/wirelesssignal/tx/WirelessSignalTxElement.java
 
 # src/main/java/mods/eln/transparentnode/autominer/AutoMinerContainer.java
 Drill_slot=Drill slot
@@ -615,6 +604,8 @@ Actual\:_%1$=Actual: %1$
 Auto_shutdown=Auto shutdown
 Manual_shutdown=Manual shutdown
 Set_point\:_%1$=Set point: %1$
+
+# src/main/java/mods/eln/transparentnode/electricalmachine/ElectricalMachineContainer.java
 
 # src/main/java/mods/eln/transparentnode/electricalmachine/ElectricalMachineDescriptor.java
 
@@ -688,7 +679,9 @@ Fan_cooling_power\:_%1$W=Fan cooling power: %1$W
 Fan_power_consumption\:_%1$W=Fan power consumption: %1$W
 Fan_voltage\:_%1$V=Fan voltage: %1$V
 
-# src/main/java/mods/eln/transparentnode/thermaldissipatoractive/ThermalDissipatorActiveElement.java
+# src/main/java/mods/eln/transparentnode/thermaldissipatorpassive/ThermalDissipatorPassiveDescriptor.java
+
+# src/main/java/mods/eln/transparentnode/thermaldissipatorpassive/ThermalDissipatorPassiveElement.java
 
 # src/main/java/mods/eln/transparentnode/turbine/TurbineDescriptor.java
 Generates_electricity_using_heat.=Generates electricity using heat.
@@ -696,6 +689,8 @@ Temperature_difference\:_%1$°C=Temperature difference: %1$°C
 
 # src/main/java/mods/eln/transparentnode/turbine/TurbineElement.java
 Nominal=Nominal
+
+# src/main/java/mods/eln/transparentnode/turret/TurretContainer.java
 
 # src/main/java/mods/eln/transparentnode/turret/TurretDescriptor.java
 CAUTION\:_Cables_can_get_quite_hot!=CAUTION: Cables can get quite hot!
@@ -722,8 +717,6 @@ Recharge_power\:=Recharge power:
 # src/main/java/mods/eln/transparentnode/waterturbine/WaterTurbineDescriptor.java
 Generates_energy_using_water_stream.=Generates energy using water stream.
 No_place_for_water_turbine!=No place for water turbine!
-
-# src/main/java/mods/eln/transparentnode/waterturbine/WaterTurbineElement.java
 
 # src/main/java/mods/eln/transparentnode/windturbine/WindTurbineDescriptor.java
 Front\:_%1$=Front: %1$
@@ -959,7 +952,7 @@ Remaining\:_%1$_m=Remaining: %1$ m
 Right_click_to_cut_utility_wire_in_your_inventory=Right click to cut utility wire in your inventory
 Wire_Snips=Wire Snips
 
-# src/main/kotlin/mods/eln/item/electricalitem/BatteryItem.kt
+# src/main/kotlin/mods/eln/item/electricalitem/ElectricalArmor.kt
 
 # src/main/kotlin/mods/eln/item/electricalitem/ElectricalAxe.kt
 Cuts_down_trees._Right-click_to_make_it_act_like_a_regular_axe.=Cuts down trees. Right-click to make it act like a regular axe.
@@ -970,6 +963,8 @@ Stored_Energy\:_%1$J_(%2$%)=Stored Energy: %1$J (%2$%)
 
 # src/main/kotlin/mods/eln/item/electricalitem/ElectricalPickaxe.kt
 Opens_holes._Right-click_to_open_smaller_holes.=Opens holes. Right-click to open smaller holes.
+
+# src/main/kotlin/mods/eln/item/electricalitem/PortableOreScannerItem.kt
 
 # src/main/kotlin/mods/eln/item/lampitem/LampDescriptor.kt
 Current_lifetime\:_%1$h=Current lifetime: %1$h
@@ -1043,7 +1038,7 @@ Turbine_blade_slot=Turbine blade slot
 # src/main/kotlin/mods/eln/misc/Version.kt
 mod.name=Electrical Age
 
-# src/main/kotlin/mods/eln/node/six/SixNodeDescriptor.kt
+# src/main/kotlin/mods/eln/node/transparent/TransparentNodeDescriptor.kt
 
 # src/main/kotlin/mods/eln/railroad/ElectricMinecartChargeReporter.kt
 Cart_Energy\:_=Cart Energy: 
@@ -2133,7 +2128,6 @@ Copper_sides\:_heat._Front/rear\:_power._Top/bottom\:_water.=Copper sides: heat.
 Disabled_-_passive_cooling=Disabled - passive cooling
 Dry_fan_cooling=Dry fan cooling
 Electrical_consumption=Electrical consumption
-Evaporative_cooling=Evaporative cooling
 Fan\:_120_W._Pump\:_15_W._Water\:_4_buckets.=Fan: 120 W. Pump: 15 W. Water: 4 buckets.
 Freeze_protection_-_dry_cooling=Freeze protection - dry cooling
 Low_voltage_-_pump_inhibited=Low voltage - pump inhibited
@@ -2154,24 +2148,29 @@ Water_empty_-_dry_cooling=Water empty - dry cooling
 Wet_operation_requires_clear_outdoor_intake_and_exhaust.=Wet operation requires clear outdoor intake and exhaust.
 
 # src/main/kotlin/mods/eln/transparentnode/evaporative/EvaporativeCoolerScreen.kt
-%1$%_actual=%1$% actual
-AUTOMATION=AUTOMATION
-Air\:_%1$_C=Air: %1$ C
+%1$_/_4000_mB._Fill_or_drain_with_a_main-hand_bucket.=%1$ / 4000 mB. Fill or drain with a main-hand bucket.
+Actual_fan_speed=Actual fan speed
 Auto=Auto
+Back=Back
 Cycle_ignored,_require_signal,_and_require_no_signal.=Cycle ignored, require signal, and require no signal.
+Details=Details
 Disable_the_motor_and_pump._Passive_cooling_remains.=Disable the motor and pump. Passive cooling remains.
 Dry=Dry
-EC-240_Evaporative_Heat_Sink=EC-240 Evaporative Heat Sink
+Enabled=Enabled
+Evaporative_Heat_Sink=Evaporative Heat Sink
 Fan_limit\:_%1$%=Fan limit: %1$%
 Heat\:_copper_sides_|_Power\:_front/rear_|_Water\:_top/bottom=Heat: copper sides | Power: front/rear | Water: top/bottom
-Humidity\:_%1$%=Humidity: %1$%
-Input\:_%1$_W_/_%2$_V=Input: %1$ W / %2$ V
+Hover_for_connections.=Hover for connections.
+Inhibited=Inhibited
+Input\:_%1$=Input: %1$
+Intake_temperature=Intake temperature
 Lower_maximum_fan_speed_by_10_percent.=Lower maximum fan speed by 10 percent.
 Lower_target_by_1_C.=Lower target by 1 C.
 Lower_target_by_5_C.=Lower target by 5 C.
-Net_cooling\:_%1$_W=Net cooling: %1$ W
-OPERATING_MODE=OPERATING MODE
-Outdoor_airflow_verified._Wet-bulb_value_is_an_estimate.=Outdoor airflow verified. Wet-bulb value is an estimate.
+Motor_heat_/_input=Motor heat / input
+Net_cooling\:_%1$=Net cooling: %1$
+Not_verified=Not verified
+Outdoor_airflow=Outdoor airflow
 Raise_maximum_fan_speed_by_10_percent.=Raise maximum fan speed by 10 percent.
 Raise_target_by_1_C.=Raise target by 1 C.
 Raise_target_by_5_C.=Raise target by 5 C.
@@ -2181,15 +2180,19 @@ Redstone\:_low=Redstone: low
 Request_wet_cooling_continuously._Safety_interlocks_still_apply.=Request wet cooling continuously. Safety interlocks still apply.
 Run_the_fan_without_using_water.=Run the fan without using water.
 Sensible\:_%1$_W;_evaporation\:_%2$_W;_motor_heat\:_%3$_W._Negative_net_means_warming.=Sensible: %1$ W; evaporation: %2$ W; motor heat: %3$ W. Negative net means warming.
-Surface\:_%1$_C=Surface: %1$ C
-THERMAL_/_WATER=THERMAL / WATER
+Sensible_cooling=Sensible cooling
+Supply_voltage=Supply voltage
 Target\:_%1$_C=Target: %1$ C
-Use\:_%1$_mB/s=Use: %1$ mB/s
+Temperature\:_%1$_C=Temperature: %1$ C
 Use_the_fan_above_target_+2_C_and_water_above_target_+5_C.=Use the fan above target +2 C and water above target +5 C.
-Water\:_%1$_mB=Water: %1$ mB
+Verified=Verified
+Water\:_%1$_/_4.0_B=Water: %1$ / 4.0 B
+Water_use=Water use
 Wet=Wet
-Wet_bulb\:_%1$_C=Wet bulb: %1$ C
+Wet-bulb_value_is_an_estimate,_not_a_guaranteed_surface_temperature.=Wet-bulb value is an estimate, not a guaranteed surface temperature.
+Wet_bulb_(estimate)=Wet bulb (estimate)
 Wet_mode_needs_an_unobstructed_path_to_sky_within_8_blocks.=Wet mode needs an unobstructed path to sky within 8 blocks.
+Wet_operation=Wet operation
 
 # src/main/kotlin/mods/eln/transparentnode/festive/FestiveElement.kt
 It_probably_works_if_you_apply_~200v_to_the_xmas_wireless_channel=It probably works if you apply ~200v to the xmas wireless channel
