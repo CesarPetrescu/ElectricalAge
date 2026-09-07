@@ -113,7 +113,8 @@ object WireBehaviorChecks {
                 cable.initialize()
                 val loads = cable.electricalLoadList.filterIsInstance<ElectricalLoad>()
                 check(loads.size == d.conductorCount)
-                loads.forEach { near(it.serialResistance * 2, d.resistanceOhms(), 1e-12) }
+                val initialR = d.resistanceOhms(celsius = cable.thermalLoad.absoluteCelsius)
+                loads.forEach { near(it.serialResistance * 2, initialR, 1e-12) }
                 val r = RootSystem(DT, 1)
                 val sourceLoad = ElectricalLoad().apply { serialResistance = 0.0 }
                 val end = ElectricalLoad().apply { serialResistance = 0.0 }
@@ -123,7 +124,7 @@ object WireBehaviorChecks {
                 r.addComponent(source); r.addComponent(sink)
                 r.addComponent(ElectricalConnection(sourceLoad, loads[0])); r.addComponent(ElectricalConnection(loads[0], end))
                 r.generate(); repeat(5) { r.step() }
-                near(sink.current, 10.0 / (10.0 + d.resistanceOhms()), 1e-6)
+                near(sink.current, 10.0 / (10.0 + initialR), 1e-6)
                 check(end.voltage < 10.0) { "Cable is lossless" }
                 val hot = d.resistanceOhms(celsius = 80.0)
                 loads[0].serialResistance = hot / 2; repeat(5) { r.step() }
@@ -179,6 +180,6 @@ object WireBehaviorChecks {
             check(result.inventory.containerSize == 9)
         }
         report.write(true)
-        return report.failures
+        return report.failures + WireThermalChecks.run(world, restart)
     }
 }

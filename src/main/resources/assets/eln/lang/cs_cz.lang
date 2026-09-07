@@ -3,6 +3,7 @@
 # Appearing in multiple source files
 %1$,_%2$,_%3$=%1$, %2$, %3$
 %1$_is_not_in_range!=%1$ není v rozsahu!
+%1$_percent=%1$ percent
 (Increases_capacity)=(Zvyšuje kapacitu)
 (Increases_inductance)=(Zvyšuje indukčnost)
 *_Missing_an_inductive_voltage_spike_on_field_collapse=* Chybí indukční napěťová špička při zániku pole
@@ -206,6 +207,8 @@ Time_per_operation\:_%1$h=Čas na operaci: %1$h
 # src/main/java/mods/eln/item/FerromagneticCoreDescriptor.java
 Cable_loss_factor\:_%1$=Faktor ztrát kabelu: %1$
 
+# src/main/java/mods/eln/item/HeatingCorpElement.java
+
 # src/main/java/mods/eln/item/OverHeatingProtectionDescriptor.java
 Useful_to_prevent_overheating\nof_Batteries=Užitečné pro prevenci přehřátí\nbaterií
 
@@ -214,6 +217,8 @@ Useful_to_prevent_over-voltage\nof_Batteries=Užitečné pro prevenci přepětí
 
 # src/main/java/mods/eln/item/SolarTrackerDescriptor.java
 Solar_panel_upgrade=Vylepšení solárního panelu
+
+# src/main/java/mods/eln/item/regulator/RegulatorSlot.java
 
 # src/main/java/mods/eln/sixnode/TreeResinCollector/TreeResinCollectorDescriptor.java
 Produces_Tree_Resin_over\ntime_when_put_on_a_tree.=Produkuje pryskyřici\nv průběhu času po umístění na strom.
@@ -231,6 +236,8 @@ __*_It_exposes_a_nominal_mains_class_instead_of_wall-plug_details=  * Namísto d
 
 # src/main/java/mods/eln/sixnode/batterycharger/BatteryChargerElement.java
 Charge_Current=Nabíjecí proud
+
+# src/main/java/mods/eln/sixnode/batterycharger/BatteryChargerGui.java
 
 # src/main/java/mods/eln/sixnode/diode/DiodeDescriptor.java
 Electrical_current_can_only\nflow_through_the_diode\nfrom_anode_to_cathode=Elektrický proud může diodou\nprocházet pouze\nod anody ke katodě
@@ -306,6 +313,10 @@ Displays_signal_value.=Zobrazuje hodnotu signálu.
 Max=Max
 Min=Min
 
+# src/main/java/mods/eln/sixnode/electricaldigitaldisplay/ElectricalDigitalDisplayGui.java
+
+# src/main/java/mods/eln/sixnode/electricalentitysensor/ElectricalEntitySensorContainer.java
+
 # src/main/java/mods/eln/sixnode/electricalentitysensor/ElectricalEntitySensorDescriptor.java
 Output_voltage_increases\nif_entities_are_moving_around.=Výstupní napětí se zvyšuje,\npokud se entity pohybují v okolí.
 
@@ -336,6 +347,8 @@ Provides_an_electrical_voltage\nwhich_is_proportional_to\nthe_intensity_of_dayli
 # src/main/java/mods/eln/sixnode/electricallightsensor/ElectricalLightSensorElement.java
 Light_level=Úroveň osvětlení
 
+# src/main/java/mods/eln/sixnode/electricalmath/ElectricalMathContainer.java
+
 # src/main/java/mods/eln/sixnode/electricalmath/ElectricalMathDescriptor.java
 Applicable_boolean_operators\:=Použitelné booleovské operátory:
 Applicable_functions\:=Použitelné funkce:
@@ -361,6 +374,8 @@ Converts_Redstone_signal\nto_an_electrical_voltage.=Převádí redstonový sign�
 
 # src/main/java/mods/eln/sixnode/electricalredstoneoutput/ElectricalRedstoneOutputDescriptor.java
 Converts_electrical_voltage\ninto_a_Redstone_signal.=Převádí elektrické napětí\nna redstonový signál.
+
+# src/main/java/mods/eln/sixnode/electricalredstoneoutput/ElectricalRedstoneOutputElement.java
 
 # src/main/java/mods/eln/sixnode/electricalrelay/ElectricalRelayDescriptor.java
 Contact_current_rating\:_%1$A=Jmenovitý proud kontaktu: %1$A
@@ -497,8 +512,6 @@ It's_a_resistor=Je to rezistor
 
 # src/main/java/mods/eln/sixnode/resistor/ResistorElement.java
 
-# src/main/java/mods/eln/sixnode/resistor/ResistorGui.java
-
 # src/main/java/mods/eln/sixnode/thermalcable/ThermalCableDescriptor.java
 High_parallel_resistance\n_->_Low_power_dissipation.=High parallel resistance\n -> Low power dissipation.
 Low_serial_resistance\n_->_High_conductivity.=Low serial resistance\n -> High conductivity.
@@ -545,10 +558,10 @@ Receive_signal_voltage_on_selected_wireless_signal_channel=Přijímá signálov�
 
 # src/main/java/mods/eln/sixnode/wirelesssignal/rx/WirelessSignalRxGui.java
 
+# src/main/java/mods/eln/sixnode/wirelesssignal/source/WirelessSignalSourceDescriptor.java
+
 # src/main/java/mods/eln/sixnode/wirelesssignal/tx/WirelessSignalTxDescriptor.java
 Sends_signal_voltage_on_selected_wireless_signal_channel=Odesílá signálové napětí na vybraném bezdrátovém signálovém kanálu
-
-# src/main/java/mods/eln/sixnode/wirelesssignal/tx/WirelessSignalTxElement.java
 
 # src/main/java/mods/eln/transparentnode/autominer/AutoMinerContainer.java
 Drill_slot=Slot pro vrták
@@ -602,8 +615,6 @@ Actual\:_%1$=Skutečná: %1$
 Auto_shutdown=Automatické vypnutí
 Manual_shutdown=Ruční vypnutí
 Set_point\:_%1$=Nastavená hodnota: %1$
-
-# src/main/java/mods/eln/transparentnode/electricalmachine/ElectricalMachineContainer.java
 
 # src/main/java/mods/eln/transparentnode/electricalmachine/ElectricalMachineDescriptor.java
 
@@ -677,9 +688,7 @@ Fan_cooling_power\:_%1$W=Chladicí výkon ventilátoru: %1$W
 Fan_power_consumption\:_%1$W=Spotřeba ventilátoru: %1$W
 Fan_voltage\:_%1$V=Napětí ventilátoru: %1$V
 
-# src/main/java/mods/eln/transparentnode/thermaldissipatorpassive/ThermalDissipatorPassiveDescriptor.java
-
-# src/main/java/mods/eln/transparentnode/thermaldissipatorpassive/ThermalDissipatorPassiveElement.java
+# src/main/java/mods/eln/transparentnode/thermaldissipatoractive/ThermalDissipatorActiveElement.java
 
 # src/main/java/mods/eln/transparentnode/turbine/TurbineDescriptor.java
 Generates_electricity_using_heat.=Vyrábí elektřinu pomocí tepla.
@@ -687,8 +696,6 @@ Temperature_difference\:_%1$°C=Teplotní rozdíl: %1$°C
 
 # src/main/java/mods/eln/transparentnode/turbine/TurbineElement.java
 Nominal=Jmenovitý
-
-# src/main/java/mods/eln/transparentnode/turret/TurretContainer.java
 
 # src/main/java/mods/eln/transparentnode/turret/TurretDescriptor.java
 CAUTION\:_Cables_can_get_quite_hot!=POZOR: Kabely se mohou velmi zahřát!
@@ -715,6 +722,8 @@ Recharge_power\:=Nabíjecí výkon:
 # src/main/java/mods/eln/transparentnode/waterturbine/WaterTurbineDescriptor.java
 Generates_energy_using_water_stream.=Vyrábí energii pomocí vodního proudu.
 No_place_for_water_turbine!=Není místo pro vodní turbínu!
+
+# src/main/java/mods/eln/transparentnode/waterturbine/WaterTurbineElement.java
 
 # src/main/java/mods/eln/transparentnode/windturbine/WindTurbineDescriptor.java
 Front\:_%1$=Přední: %1$
@@ -950,7 +959,7 @@ Remaining\:_%1$_m=Zbývá: %1$ m
 Right_click_to_cut_utility_wire_in_your_inventory=Klikněte pravým tlačítkem pro odstřižení instalačního drátu v inventáři
 Wire_Snips=Štípací kleště
 
-# src/main/kotlin/mods/eln/item/electricalitem/ElectricalArmor.kt
+# src/main/kotlin/mods/eln/item/electricalitem/BatteryItem.kt
 
 # src/main/kotlin/mods/eln/item/electricalitem/ElectricalAxe.kt
 Cuts_down_trees._Right-click_to_make_it_act_like_a_regular_axe.=Kácí stromy. Klikněte pravým tlačítkem, aby se chovala jako běžná sekera.
@@ -961,8 +970,6 @@ Stored_Energy\:_%1$J_(%2$%)=Uložená energie: %1$J (%2$%)
 
 # src/main/kotlin/mods/eln/item/electricalitem/ElectricalPickaxe.kt
 Opens_holes._Right-click_to_open_smaller_holes.=Vytváří otvory. Klikněte pravým tlačítkem pro vytvoření menších otvorů.
-
-# src/main/kotlin/mods/eln/item/electricalitem/PortableOreScannerItem.kt
 
 # src/main/kotlin/mods/eln/item/lampitem/LampDescriptor.kt
 Current_lifetime\:_%1$h=Aktuální životnost: %1$h
@@ -1036,7 +1043,7 @@ Turbine_blade_slot=Slot pro lopatku turbíny
 # src/main/kotlin/mods/eln/misc/Version.kt
 mod.name=Electrical Age
 
-# src/main/kotlin/mods/eln/node/transparent/TransparentNodeDescriptor.kt
+# src/main/kotlin/mods/eln/node/six/SixNodeDescriptor.kt
 
 # src/main/kotlin/mods/eln/railroad/ElectricMinecartChargeReporter.kt
 Cart_Energy\:_=Energie vozíku: 
@@ -1873,29 +1880,32 @@ Deprecated_legacy_relay._Prefer_relays_that_follow_the_AWG/mm_cable_system.=Zast
 
 # src/main/kotlin/mods/eln/sixnode/electricalcable/MoltenMetalPile.kt
 A_puddle_of_molten_%1$_from_an_overheated_cable.=Louže roztaveného %1$ z přehřátého kabelu.
-Molten_metal=Roztavený kov
+Broken_conductor=Broken conductor
 
 # src/main/kotlin/mods/eln/sixnode/electricalcable/UtilityCable.kt
 %1$V=%1$V
 Bare=Holý
+Bare_conductor=Bare conductor
 Black=Černá
 Blue=Modrá
 Brown=Hnědá
 Brush\:_paint_conductor_color=Štětec: barvení vodiče
-Cable_loss=Cable loss
-Conductor=Vodič
 Conductor\:_%1$_%2$=Vodič: %1$ %2$
 Conductor_colors\:_%1$=Barvy vodičů: %1$
+Conductor_melting=Conductor melting
 Conductors\:_%1$=Vodiče: %1$
 Contact_resistance_and_AC_skin_effect_are_not_modeled;_current_limits_are_gameplay_ratings.=Contact resistance and AC skin effect are not modeled; current limits are gameplay ratings.
 Cyan=Azurowá
 DC_resistance_uses_conductor_material,_cross-section,_length_and_temperature.=DC resistance uses conductor material, cross-section, length and temperature.
+Damaged_-_exposed_conductor=Damaged - exposed conductor
 Each_placed_cable_segment_is_1_m;_each_core_has_its_own_resistance.=Each placed cable segment is 1 m; each core has its own resistance.
 Equivalent_area\:_%1$_mm2=Ekvivalentní plocha: %1$ mm2
 Gray=Šedá
 Green=Zelená
 Ground=Zem
 Insulation\:_%1$=Izolace: %1$
+Insulation_condition=Insulation condition
+Intact=Intact
 Light_Blue=Světle modrá
 Lime=Limetková
 Magenta=Purpurová
@@ -1910,8 +1920,10 @@ Red=Červená
 Remaining_length\:_%1$_m=Zbývající délka: %1$ m
 Resistance_per_core=Resistance per core
 Resistance_per_core_at_20_C\:_%1$_ohm/m=Resistance per core at 20 C: %1$ ohm/m
+Segment_heating=Segment heating
 Silver=Stříbrná
 Spool_resistance_per_core_at_20_C\:_%1$_ohm=Spool resistance per core at 20 C: %1$ ohm
+Voltage_to_ground=Voltage to ground
 White=Bílá
 Wire_color_care_%1$=Péče o barvu vodiče %1$
 Wrench\:_cycle_conductor_colors=Klíč: cyklovat barvy vodičů
@@ -2116,7 +2128,6 @@ Power_out\:=Výkon:
 
 # src/main/kotlin/mods/eln/transparentnode/evaporative/EvaporativeCooler.kt
 %1$_/_4000_mB=%1$ / 4000 mB
-%1$_percent=%1$ percent
 Airflow_blocked_-_passive_cooling=Airflow blocked - passive cooling
 Copper_sides\:_heat._Front/rear\:_power._Top/bottom\:_water.=Copper sides: heat. Front/rear: power. Top/bottom: water.
 Disabled_-_passive_cooling=Disabled - passive cooling

@@ -3,6 +3,7 @@
 # Appearing in multiple source files
 %1$,_%2$,_%3$=%1$, %2$, %3$
 %1$_is_not_in_range!=%1$ não está na faixa!
+%1$_percent=%1$ percent
 (Increases_capacity)=(Aumenta a capacitância)
 (Increases_inductance)=(Aumenta a indutância)
 *_Missing_an_inductive_voltage_spike_on_field_collapse=* Ausência de pico de tensão indutiva no colapso do campo
@@ -206,6 +207,8 @@ Time_per_operation\:_%1$h=Tempo por operação: %1$h
 # src/main/java/mods/eln/item/FerromagneticCoreDescriptor.java
 Cable_loss_factor\:_%1$=Fator de perda do cabo: %1$
 
+# src/main/java/mods/eln/item/HeatingCorpElement.java
+
 # src/main/java/mods/eln/item/OverHeatingProtectionDescriptor.java
 Useful_to_prevent_overheating\nof_Batteries=Útil para prevenir superaquecimento\nde Baterias
 
@@ -214,6 +217,8 @@ Useful_to_prevent_over-voltage\nof_Batteries=Útil para prevenir sobretensão\nd
 
 # src/main/java/mods/eln/item/SolarTrackerDescriptor.java
 Solar_panel_upgrade=Melhoria de painel solar
+
+# src/main/java/mods/eln/item/regulator/RegulatorSlot.java
 
 # src/main/java/mods/eln/sixnode/TreeResinCollector/TreeResinCollectorDescriptor.java
 Produces_Tree_Resin_over\ntime_when_put_on_a_tree.=Produz Resina de Árvore ao longo\ndo tempo quando colocado em uma árvore.
@@ -231,6 +236,8 @@ __*_It_exposes_a_nominal_mains_class_instead_of_wall-plug_details=  * Expõe uma
 
 # src/main/java/mods/eln/sixnode/batterycharger/BatteryChargerElement.java
 Charge_Current=Corrente de Carga
+
+# src/main/java/mods/eln/sixnode/batterycharger/BatteryChargerGui.java
 
 # src/main/java/mods/eln/sixnode/diode/DiodeDescriptor.java
 Electrical_current_can_only\nflow_through_the_diode\nfrom_anode_to_cathode=A corrente elétrica só pode\nfluir pelo diodo\ndo ânodo para o cátodo
@@ -306,6 +313,10 @@ Displays_signal_value.=Exibe o valor do sinal.
 Max=Máx
 Min=Mín
 
+# src/main/java/mods/eln/sixnode/electricaldigitaldisplay/ElectricalDigitalDisplayGui.java
+
+# src/main/java/mods/eln/sixnode/electricalentitysensor/ElectricalEntitySensorContainer.java
+
 # src/main/java/mods/eln/sixnode/electricalentitysensor/ElectricalEntitySensorDescriptor.java
 Output_voltage_increases\nif_entities_are_moving_around.=A tensão de saída aumenta\nse houver entidades se movendo por perto.
 
@@ -336,6 +347,8 @@ Provides_an_electrical_voltage\nwhich_is_proportional_to\nthe_intensity_of_dayli
 # src/main/java/mods/eln/sixnode/electricallightsensor/ElectricalLightSensorElement.java
 Light_level=Nível de luz
 
+# src/main/java/mods/eln/sixnode/electricalmath/ElectricalMathContainer.java
+
 # src/main/java/mods/eln/sixnode/electricalmath/ElectricalMathDescriptor.java
 Applicable_boolean_operators\:=Operadores booleanos aplicáveis:
 Applicable_functions\:=Funções aplicáveis:
@@ -361,6 +374,8 @@ Converts_Redstone_signal\nto_an_electrical_voltage.=Converte sinal Redstone\nem 
 
 # src/main/java/mods/eln/sixnode/electricalredstoneoutput/ElectricalRedstoneOutputDescriptor.java
 Converts_electrical_voltage\ninto_a_Redstone_signal.=Converte tensão elétrica\nem um sinal Redstone.
+
+# src/main/java/mods/eln/sixnode/electricalredstoneoutput/ElectricalRedstoneOutputElement.java
 
 # src/main/java/mods/eln/sixnode/electricalrelay/ElectricalRelayDescriptor.java
 Contact_current_rating\:_%1$A=Classificação de corrente do contato: %1$A
@@ -497,8 +512,6 @@ It's_a_resistor=É um resistor
 
 # src/main/java/mods/eln/sixnode/resistor/ResistorElement.java
 
-# src/main/java/mods/eln/sixnode/resistor/ResistorGui.java
-
 # src/main/java/mods/eln/sixnode/thermalcable/ThermalCableDescriptor.java
 High_parallel_resistance\n_->_Low_power_dissipation.=High parallel resistance\n -> Low power dissipation.
 Low_serial_resistance\n_->_High_conductivity.=Low serial resistance\n -> High conductivity.
@@ -545,10 +558,10 @@ Receive_signal_voltage_on_selected_wireless_signal_channel=Recebe tensão de sin
 
 # src/main/java/mods/eln/sixnode/wirelesssignal/rx/WirelessSignalRxGui.java
 
+# src/main/java/mods/eln/sixnode/wirelesssignal/source/WirelessSignalSourceDescriptor.java
+
 # src/main/java/mods/eln/sixnode/wirelesssignal/tx/WirelessSignalTxDescriptor.java
 Sends_signal_voltage_on_selected_wireless_signal_channel=Envia tensão de sinal no canal de sinal sem fio selecionado
-
-# src/main/java/mods/eln/sixnode/wirelesssignal/tx/WirelessSignalTxElement.java
 
 # src/main/java/mods/eln/transparentnode/autominer/AutoMinerContainer.java
 Drill_slot=Espaço de broca
@@ -602,8 +615,6 @@ Actual\:_%1$=Real: %1$
 Auto_shutdown=Desligamento automático
 Manual_shutdown=Desligamento manual
 Set_point\:_%1$=Ponto definido: %1$
-
-# src/main/java/mods/eln/transparentnode/electricalmachine/ElectricalMachineContainer.java
 
 # src/main/java/mods/eln/transparentnode/electricalmachine/ElectricalMachineDescriptor.java
 
@@ -677,9 +688,7 @@ Fan_cooling_power\:_%1$W=Potência de resfriamento do ventilador: %1$W
 Fan_power_consumption\:_%1$W=Consumo de energia do ventilador: %1$W
 Fan_voltage\:_%1$V=Tensão do ventilador: %1$V
 
-# src/main/java/mods/eln/transparentnode/thermaldissipatorpassive/ThermalDissipatorPassiveDescriptor.java
-
-# src/main/java/mods/eln/transparentnode/thermaldissipatorpassive/ThermalDissipatorPassiveElement.java
+# src/main/java/mods/eln/transparentnode/thermaldissipatoractive/ThermalDissipatorActiveElement.java
 
 # src/main/java/mods/eln/transparentnode/turbine/TurbineDescriptor.java
 Generates_electricity_using_heat.=Gera eletricidade usando calor.
@@ -687,8 +696,6 @@ Temperature_difference\:_%1$°C=Diferença de temperatura: %1$°C
 
 # src/main/java/mods/eln/transparentnode/turbine/TurbineElement.java
 Nominal=Nominal
-
-# src/main/java/mods/eln/transparentnode/turret/TurretContainer.java
 
 # src/main/java/mods/eln/transparentnode/turret/TurretDescriptor.java
 CAUTION\:_Cables_can_get_quite_hot!=CUIDADO: Os cabos podem ficar bem quentes!
@@ -715,6 +722,8 @@ Recharge_power\:=Potência de recarga:
 # src/main/java/mods/eln/transparentnode/waterturbine/WaterTurbineDescriptor.java
 Generates_energy_using_water_stream.=Gera energia usando fluxo de água.
 No_place_for_water_turbine!=Sem espaço para turbina hidráulica!
+
+# src/main/java/mods/eln/transparentnode/waterturbine/WaterTurbineElement.java
 
 # src/main/java/mods/eln/transparentnode/windturbine/WindTurbineDescriptor.java
 Front\:_%1$=Frente: %1$
@@ -950,7 +959,7 @@ Remaining\:_%1$_m=Restante: %1$ m
 Right_click_to_cut_utility_wire_in_your_inventory=Clique direito para cortar fio utilitário no seu inventário
 Wire_Snips=Cortador de Fios
 
-# src/main/kotlin/mods/eln/item/electricalitem/ElectricalArmor.kt
+# src/main/kotlin/mods/eln/item/electricalitem/BatteryItem.kt
 
 # src/main/kotlin/mods/eln/item/electricalitem/ElectricalAxe.kt
 Cuts_down_trees._Right-click_to_make_it_act_like_a_regular_axe.=Derruba árvores. Clique direito para fazê-lo agir como um machado comum.
@@ -961,8 +970,6 @@ Stored_Energy\:_%1$J_(%2$%)=Energia Armazenada: %1$J (%2$%)
 
 # src/main/kotlin/mods/eln/item/electricalitem/ElectricalPickaxe.kt
 Opens_holes._Right-click_to_open_smaller_holes.=Abre buracos. Clique direito para abrir buracos menores.
-
-# src/main/kotlin/mods/eln/item/electricalitem/PortableOreScannerItem.kt
 
 # src/main/kotlin/mods/eln/item/lampitem/LampDescriptor.kt
 Current_lifetime\:_%1$h=Vida útil atual: %1$h
@@ -1036,7 +1043,7 @@ Turbine_blade_slot=Espaço de lâmina de turbina
 # src/main/kotlin/mods/eln/misc/Version.kt
 mod.name=Electrical Age
 
-# src/main/kotlin/mods/eln/node/transparent/TransparentNodeDescriptor.kt
+# src/main/kotlin/mods/eln/node/six/SixNodeDescriptor.kt
 
 # src/main/kotlin/mods/eln/railroad/ElectricMinecartChargeReporter.kt
 Cart_Energy\:_=Energia do Carrinho: 
@@ -1873,29 +1880,32 @@ Deprecated_legacy_relay._Prefer_relays_that_follow_the_AWG/mm_cable_system.=Rel�
 
 # src/main/kotlin/mods/eln/sixnode/electricalcable/MoltenMetalPile.kt
 A_puddle_of_molten_%1$_from_an_overheated_cable.=Uma poça de %1$ fundido de um cabo superaquecido.
-Molten_metal=Metal fundido
+Broken_conductor=Broken conductor
 
 # src/main/kotlin/mods/eln/sixnode/electricalcable/UtilityCable.kt
 %1$V=%1$V
 Bare=Nu
+Bare_conductor=Bare conductor
 Black=Preto
 Blue=Azul
 Brown=Marrom
 Brush\:_paint_conductor_color=Pincel: pintar cor do condutor
-Cable_loss=Cable loss
-Conductor=Condutor
 Conductor\:_%1$_%2$=Condutor: %1$ %2$
 Conductor_colors\:_%1$=Cores do condutor: %1$
+Conductor_melting=Conductor melting
 Conductors\:_%1$=Condutores: %1$
 Contact_resistance_and_AC_skin_effect_are_not_modeled;_current_limits_are_gameplay_ratings.=Contact resistance and AC skin effect are not modeled; current limits are gameplay ratings.
 Cyan=Ciano
 DC_resistance_uses_conductor_material,_cross-section,_length_and_temperature.=DC resistance uses conductor material, cross-section, length and temperature.
+Damaged_-_exposed_conductor=Damaged - exposed conductor
 Each_placed_cable_segment_is_1_m;_each_core_has_its_own_resistance.=Each placed cable segment is 1 m; each core has its own resistance.
 Equivalent_area\:_%1$_mm2=Área equivalente: %1$ mm2
 Gray=Cinza
 Green=Verde
 Ground=Terra
 Insulation\:_%1$=Isolação: %1$
+Insulation_condition=Insulation condition
+Intact=Intact
 Light_Blue=Azul Claro
 Lime=Lima
 Magenta=Magenta
@@ -1910,8 +1920,10 @@ Red=Vermelho
 Remaining_length\:_%1$_m=Comprimento restante: %1$ m
 Resistance_per_core=Resistance per core
 Resistance_per_core_at_20_C\:_%1$_ohm/m=Resistance per core at 20 C: %1$ ohm/m
+Segment_heating=Segment heating
 Silver=Prateado
 Spool_resistance_per_core_at_20_C\:_%1$_ohm=Spool resistance per core at 20 C: %1$ ohm
+Voltage_to_ground=Voltage to ground
 White=Branco
 Wire_color_care_%1$=Cor do fio %1$
 Wrench\:_cycle_conductor_colors=Chave inglesa: alternar cores do condutor
@@ -2116,7 +2128,6 @@ Power_out\:=Potência de saída:
 
 # src/main/kotlin/mods/eln/transparentnode/evaporative/EvaporativeCooler.kt
 %1$_/_4000_mB=%1$ / 4000 mB
-%1$_percent=%1$ percent
 Airflow_blocked_-_passive_cooling=Airflow blocked - passive cooling
 Copper_sides\:_heat._Front/rear\:_power._Top/bottom\:_water.=Copper sides: heat. Front/rear: power. Top/bottom: water.
 Disabled_-_passive_cooling=Disabled - passive cooling

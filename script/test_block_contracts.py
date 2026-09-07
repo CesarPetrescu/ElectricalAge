@@ -31,8 +31,10 @@ class ReportsTest(unittest.TestCase):
     def test_wire_reports_are_required(self):
         self.assertIn("wire-behavior", REQUIRED)
         self.assertIn("wire-behavior-restart", REQUIRED)
+        self.assertIn("wire-thermal", REQUIRED)
+        self.assertIn("wire-thermal-restart", REQUIRED)
         self.write(suites=tuple(s for s in REQUIRED if not s.startswith("wire-")))
-        self.assertEqual(len(summarize(self.path)[1]), 2)
+        self.assertEqual(len(summarize(self.path)[1]), 4)
 
     def test_incomplete_empty_failed_and_unknown(self):
         for changes in [dict(complete=False), dict(results=[]), dict(failures=1),

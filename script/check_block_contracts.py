@@ -5,7 +5,7 @@ import os
 from collections import Counter, defaultdict
 from pathlib import Path
 
-REQUIRED = ("blocks-place", "blocks-settled", "blocks-restart", "power-behavior", "power-behavior-restart", "wire-behavior", "wire-behavior-restart")
+REQUIRED = ("blocks-place", "blocks-settled", "blocks-restart", "power-behavior", "power-behavior-restart", "wire-behavior", "wire-behavior-restart", "wire-thermal", "wire-thermal-restart")
 CLIENT_REQUIRED = ("power-client-leds", "wiki-client", "lighting-gallery")
 
 

@@ -25,7 +25,7 @@ class ElectricalLoadHeatThermalLoadTest {
     }
 
     @Test
-    fun limitTemperatureRateClampsPower() {
+    fun legacyLimitMustNotDiscardElectricalEnergy() {
         val load = ElectricalLoad()
         val subSystem = SubSystem(null, 0.1)
         subSystem.addState(load)
@@ -37,7 +37,7 @@ class ElectricalLoadHeatThermalLoadTest {
         val process = ElectricalLoadHeatThermalLoad(load, thermal).limitTemperatureRate(0.1)
         process.process(1.0)
 
-        assertEquals(1.0, thermal.PcTemp)
+        assertEquals(4.0, thermal.PcTemp)
     }
 
     @Test

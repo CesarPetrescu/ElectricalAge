@@ -3,6 +3,7 @@
 # Appearing in multiple source files
 %1$,_%2$,_%3$=%1$, %2$, %3$
 %1$_is_not_in_range!=%1$ 不在范围内!
+%1$_percent=%1$ percent
 (Increases_capacity)=(增大电容)
 (Increases_inductance)=(增大电感)
 *_Missing_an_inductive_voltage_spike_on_field_collapse=* 磁场崩溃时缺少感应电压尖峰
@@ -206,6 +207,8 @@ Time_per_operation\:_%1$h=每次操作时间: %1$h
 # src/main/java/mods/eln/item/FerromagneticCoreDescriptor.java
 Cable_loss_factor\:_%1$=导线损耗系数: %1$
 
+# src/main/java/mods/eln/item/HeatingCorpElement.java
+
 # src/main/java/mods/eln/item/OverHeatingProtectionDescriptor.java
 Useful_to_prevent_overheating\nof_Batteries=用于防止电池过热
 
@@ -214,6 +217,8 @@ Useful_to_prevent_over-voltage\nof_Batteries=用于防止电池过压
 
 # src/main/java/mods/eln/item/SolarTrackerDescriptor.java
 Solar_panel_upgrade=太阳能板升级
+
+# src/main/java/mods/eln/item/regulator/RegulatorSlot.java
 
 # src/main/java/mods/eln/sixnode/TreeResinCollector/TreeResinCollectorDescriptor.java
 Produces_Tree_Resin_over\ntime_when_put_on_a_tree.=放置在树上后\n会随时间推移产生树脂。
@@ -231,6 +236,8 @@ __*_It_exposes_a_nominal_mains_class_instead_of_wall-plug_details=  * 它暴露�
 
 # src/main/java/mods/eln/sixnode/batterycharger/BatteryChargerElement.java
 Charge_Current=充电电流
+
+# src/main/java/mods/eln/sixnode/batterycharger/BatteryChargerGui.java
 
 # src/main/java/mods/eln/sixnode/diode/DiodeDescriptor.java
 Electrical_current_can_only\nflow_through_the_diode\nfrom_anode_to_cathode=电流只能从正极流向负极
@@ -306,6 +313,10 @@ Displays_signal_value.=显示信号值。
 Max=最大
 Min=最小
 
+# src/main/java/mods/eln/sixnode/electricaldigitaldisplay/ElectricalDigitalDisplayGui.java
+
+# src/main/java/mods/eln/sixnode/electricalentitysensor/ElectricalEntitySensorContainer.java
+
 # src/main/java/mods/eln/sixnode/electricalentitysensor/ElectricalEntitySensorDescriptor.java
 Output_voltage_increases\nif_entities_are_moving_around.=当周围有实体移动时\n输出电压增加。
 
@@ -336,6 +347,8 @@ Provides_an_electrical_voltage\nwhich_is_proportional_to\nthe_intensity_of_dayli
 # src/main/java/mods/eln/sixnode/electricallightsensor/ElectricalLightSensorElement.java
 Light_level=光照等级
 
+# src/main/java/mods/eln/sixnode/electricalmath/ElectricalMathContainer.java
+
 # src/main/java/mods/eln/sixnode/electricalmath/ElectricalMathDescriptor.java
 Applicable_boolean_operators\:=适用的布尔运算符:
 Applicable_functions\:=适用的函数:
@@ -361,6 +374,8 @@ Converts_Redstone_signal\nto_an_electrical_voltage.=将红石信号\n转换为�
 
 # src/main/java/mods/eln/sixnode/electricalredstoneoutput/ElectricalRedstoneOutputDescriptor.java
 Converts_electrical_voltage\ninto_a_Redstone_signal.=将电压\n转换为红石信号。
+
+# src/main/java/mods/eln/sixnode/electricalredstoneoutput/ElectricalRedstoneOutputElement.java
 
 # src/main/java/mods/eln/sixnode/electricalrelay/ElectricalRelayDescriptor.java
 Contact_current_rating\:_%1$A=触点额定电流: %1$A
@@ -497,8 +512,6 @@ It's_a_resistor=这是一个电阻
 
 # src/main/java/mods/eln/sixnode/resistor/ResistorElement.java
 
-# src/main/java/mods/eln/sixnode/resistor/ResistorGui.java
-
 # src/main/java/mods/eln/sixnode/thermalcable/ThermalCableDescriptor.java
 High_parallel_resistance\n_->_Low_power_dissipation.=High parallel resistance\n -> Low power dissipation.
 Low_serial_resistance\n_->_High_conductivity.=Low serial resistance\n -> High conductivity.
@@ -545,10 +558,10 @@ Receive_signal_voltage_on_selected_wireless_signal_channel=接收选定无线信
 
 # src/main/java/mods/eln/sixnode/wirelesssignal/rx/WirelessSignalRxGui.java
 
+# src/main/java/mods/eln/sixnode/wirelesssignal/source/WirelessSignalSourceDescriptor.java
+
 # src/main/java/mods/eln/sixnode/wirelesssignal/tx/WirelessSignalTxDescriptor.java
 Sends_signal_voltage_on_selected_wireless_signal_channel=在选定无线信号频道上发送信号电压
-
-# src/main/java/mods/eln/sixnode/wirelesssignal/tx/WirelessSignalTxElement.java
 
 # src/main/java/mods/eln/transparentnode/autominer/AutoMinerContainer.java
 Drill_slot=钻头
@@ -602,8 +615,6 @@ Actual\:_%1$=实际值: %1$
 Auto_shutdown=自动启停
 Manual_shutdown=手动启停
 Set_point\:_%1$=设定值: %1$
-
-# src/main/java/mods/eln/transparentnode/electricalmachine/ElectricalMachineContainer.java
 
 # src/main/java/mods/eln/transparentnode/electricalmachine/ElectricalMachineDescriptor.java
 
@@ -677,9 +688,7 @@ Fan_cooling_power\:_%1$W=风扇散热功率: %1$W
 Fan_power_consumption\:_%1$W=风扇功率消耗: %1$W
 Fan_voltage\:_%1$V=风扇电压: %1$V
 
-# src/main/java/mods/eln/transparentnode/thermaldissipatorpassive/ThermalDissipatorPassiveDescriptor.java
-
-# src/main/java/mods/eln/transparentnode/thermaldissipatorpassive/ThermalDissipatorPassiveElement.java
+# src/main/java/mods/eln/transparentnode/thermaldissipatoractive/ThermalDissipatorActiveElement.java
 
 # src/main/java/mods/eln/transparentnode/turbine/TurbineDescriptor.java
 Generates_electricity_using_heat.=用热能来发电
@@ -687,8 +696,6 @@ Temperature_difference\:_%1$°C=温度差: %1$°C
 
 # src/main/java/mods/eln/transparentnode/turbine/TurbineElement.java
 Nominal=额定
-
-# src/main/java/mods/eln/transparentnode/turret/TurretContainer.java
 
 # src/main/java/mods/eln/transparentnode/turret/TurretDescriptor.java
 CAUTION\:_Cables_can_get_quite_hot!=注意: 导线可能会变得非常热!
@@ -715,6 +722,8 @@ Recharge_power\:=充能功率:
 # src/main/java/mods/eln/transparentnode/waterturbine/WaterTurbineDescriptor.java
 Generates_energy_using_water_stream.=用流动水来发电
 No_place_for_water_turbine!=没有足够的空间放置水力发电机
+
+# src/main/java/mods/eln/transparentnode/waterturbine/WaterTurbineElement.java
 
 # src/main/java/mods/eln/transparentnode/windturbine/WindTurbineDescriptor.java
 Front\:_%1$=前: %1$ 格
@@ -950,7 +959,7 @@ Remaining\:_%1$_m=剩余: %1$ m
 Right_click_to_cut_utility_wire_in_your_inventory=右键点击剪切物品栏中的实用导线
 Wire_Snips=剪线钳
 
-# src/main/kotlin/mods/eln/item/electricalitem/ElectricalArmor.kt
+# src/main/kotlin/mods/eln/item/electricalitem/BatteryItem.kt
 
 # src/main/kotlin/mods/eln/item/electricalitem/ElectricalAxe.kt
 Cuts_down_trees._Right-click_to_make_it_act_like_a_regular_axe.=砍树，右键切换连锁模式
@@ -961,8 +970,6 @@ Stored_Energy\:_%1$J_(%2$%)=储存能量: %1$J (%2$%)
 
 # src/main/kotlin/mods/eln/item/electricalitem/ElectricalPickaxe.kt
 Opens_holes._Right-click_to_open_smaller_holes.=挖3*3，右键切换1*1模式
-
-# src/main/kotlin/mods/eln/item/electricalitem/PortableOreScannerItem.kt
 
 # src/main/kotlin/mods/eln/item/lampitem/LampDescriptor.kt
 Current_lifetime\:_%1$h=当前寿命: %1$h
@@ -1036,7 +1043,7 @@ Turbine_blade_slot=涡轮叶片
 # src/main/kotlin/mods/eln/misc/Version.kt
 mod.name=电力时代
 
-# src/main/kotlin/mods/eln/node/transparent/TransparentNodeDescriptor.kt
+# src/main/kotlin/mods/eln/node/six/SixNodeDescriptor.kt
 
 # src/main/kotlin/mods/eln/railroad/ElectricMinecartChargeReporter.kt
 Cart_Energy\:_=矿车能量:
@@ -1873,29 +1880,32 @@ Deprecated_legacy_relay._Prefer_relays_that_follow_the_AWG/mm_cable_system.=已�
 
 # src/main/kotlin/mods/eln/sixnode/electricalcable/MoltenMetalPile.kt
 A_puddle_of_molten_%1$_from_an_overheated_cable.=过热导线产生的%1$熔融金属。
-Molten_metal=熔融金属
+Broken_conductor=Broken conductor
 
 # src/main/kotlin/mods/eln/sixnode/electricalcable/UtilityCable.kt
 %1$V=%1$V
 Bare=裸线
+Bare_conductor=Bare conductor
 Black=黑
 Blue=蓝
 Brown=棕
 Brush\:_paint_conductor_color=使用刷子给导线涂色
-Cable_loss=Cable loss
-Conductor=导体
 Conductor\:_%1$_%2$=导体: %1$ %2$
 Conductor_colors\:_%1$=导体颜色: %1$
+Conductor_melting=Conductor melting
 Conductors\:_%1$=导体数: %1$
 Contact_resistance_and_AC_skin_effect_are_not_modeled;_current_limits_are_gameplay_ratings.=Contact resistance and AC skin effect are not modeled; current limits are gameplay ratings.
 Cyan=青
 DC_resistance_uses_conductor_material,_cross-section,_length_and_temperature.=DC resistance uses conductor material, cross-section, length and temperature.
+Damaged_-_exposed_conductor=Damaged - exposed conductor
 Each_placed_cable_segment_is_1_m;_each_core_has_its_own_resistance.=Each placed cable segment is 1 m; each core has its own resistance.
 Equivalent_area\:_%1$_mm2=等效截面积: %1$ mm²
 Gray=灰
 Green=绿
 Ground=接地
 Insulation\:_%1$=绝缘层: %1$
+Insulation_condition=Insulation condition
+Intact=Intact
 Light_Blue=淡蓝
 Lime=黄绿
 Magenta=品红
@@ -1910,8 +1920,10 @@ Red=红
 Remaining_length\:_%1$_m=剩余长度: %1$ m
 Resistance_per_core=Resistance per core
 Resistance_per_core_at_20_C\:_%1$_ohm/m=Resistance per core at 20 C: %1$ ohm/m
+Segment_heating=Segment heating
 Silver=淡灰
 Spool_resistance_per_core_at_20_C\:_%1$_ohm=Spool resistance per core at 20 C: %1$ ohm
+Voltage_to_ground=Voltage to ground
 White=白
 Wire_color_care_%1$=导线颜色维护 %1$
 Wrench\:_cycle_conductor_colors=使用扳手:切换导线颜色
@@ -2116,7 +2128,6 @@ Power_out\:=输出功率:
 
 # src/main/kotlin/mods/eln/transparentnode/evaporative/EvaporativeCooler.kt
 %1$_/_4000_mB=%1$ / 4000 mB
-%1$_percent=%1$ percent
 Airflow_blocked_-_passive_cooling=Airflow blocked - passive cooling
 Copper_sides\:_heat._Front/rear\:_power._Top/bottom\:_water.=Copper sides: heat. Front/rear: power. Top/bottom: water.
 Disabled_-_passive_cooling=Disabled - passive cooling

@@ -35,8 +35,8 @@ import mods.eln.sim.ElectricalLoad
 import mods.eln.sim.IProcess
 import mods.eln.sim.ThermalLoad
 import mods.eln.sim.nbt.NbtElectricalLoad
-import mods.eln.sim.nbt.NbtThermalLoad
-import mods.eln.sim.process.heater.ElectricalLoadHeatThermalLoad
+import mods.eln.sim.process.heater.ElectricalHeatAccumulator
+import mods.eln.environment.RoomThermalManager
 import net.minecraft.client.Minecraft
 import mods.eln.client.gl.RenderHelper
 import net.minecraft.world.entity.player.Player
@@ -373,9 +373,9 @@ class UtilityCableElement(
     private var shockCooldown = 0.0
     private var lastPublishedTemperatureCelsius = Double.NaN
 
-    private val thermalLoad = NbtThermalLoad("thermalLoad")
+    val thermalLoad = WireThermalLoad("thermalLoad", WireThermalPhysics(this.descriptor.material, this.descriptor.totalConductorAreaMm2))
     private val conductorLoads: Array<NbtElectricalLoad>
-    private val heaters: List<ElectricalLoadHeatThermalLoad>
+    val heating: ElectricalHeatAccumulator
     private val breakdownConnections = mutableListOf<ElectricalConnection>()
 
     init {
@@ -386,21 +386,28 @@ class UtilityCableElement(
                 electricalLoadList.add(it)
             }
         }
-        heaters = conductorLoads.map { ElectricalLoadHeatThermalLoad(it, thermalLoad).also { heater ->
-            heater.limitTemperatureRate(this.descriptor.thermalSelfHeatingRateLimit)
-            thermalSlowProcessList.add(heater)
-        } }
+        heating = ElectricalHeatAccumulator({ conductorLoads.sumOf { it.serialPower } }, thermalLoad)
+        electricalProcessList.add(heating.sample)
+        thermalSlowProcessList.add(IProcess { updateThermalProperties() })
+        thermalSlowProcessList.add(heating.deliver)
         thermalLoadList.add(thermalLoad)
         thermalLoad.setAsSlow()
         slowProcessList.add(UtilityCableFailureProcess())
     }
 
     override fun initialize() {
-        descriptor.applyTo(thermalLoad)
-        conductorLoads.forEach { descriptor.applyTo(it) }
+        updateThermalProperties()
+        conductorLoads.forEach { it.serialResistance = descriptor.resistanceOhms(celsius = thermalLoad.absoluteCelsius) / 2 }
         if (conductorsBound && conductorLoads.size > 1) {
             bindConductors(force = true)
         }
+    }
+
+    private fun updateThermalProperties() {
+        val ambient = getAmbientTemperatureCelsius()
+        val c = coordinate
+        val roomDelta = if (c != null && c.worldExist) RoomThermalManager.getRoomAt(c)?.temperatureCelsius ?: 0.0 else 0.0
+        thermalLoad.updateProperties(ambient, ambient + roomDelta, descriptor.insulated && !descriptor.melted)
     }
 
     override fun destroy(entityPlayer: ServerPlayer?) {
@@ -420,6 +427,7 @@ class UtilityCableElement(
     }
 
     override fun disconnectJob() {
+        heating.flushIntoLoad()
         super.disconnectJob()
         breakdownConnections.clear()
     }
@@ -562,26 +570,28 @@ class UtilityCableElement(
         info[tr("Resistance per core")] = Utils.plotValue(conductorLoads[0].serialResistance * 2.0, "ohm")
         info[tr("Temperature")] = plotAmbientCelsius("", thermalLoad.temperatureCelsius)
         if (descriptor.actsAsSingleConductor || conductorsBound) {
-            val power = abs(conductorLoads[0].voltage * conductorLoads[0].current)
-            val loss = cableLoss(conductorLoads[0])
-            info[tr("Conductor")] =
-                "${plotVolt("", conductorLoads[0].voltage).trim()}, ${plotAmpere("", conductorLoads[0].current).trim()}, ${Utils.plotPower("", power).trim()}"
-            info[tr("Cable loss")] = Utils.plotPower("", loss)
+            info[tr("Voltage to ground")] = plotVolt("", conductorLoads[0].voltage).trim()
+            info[tr("Current")] = plotAmpere("", conductorLoads[0].current).trim()
         } else {
             info[tr("Palette")] = activePalette().displayName
             conductorLoads.forEachIndexed { idx, load ->
-                val power = abs(load.voltage * load.current)
-                val loss = cableLoss(load)
                 info[conductorLabel(idx)] =
-                    "${plotVolt("", load.voltage).trim()}, ${plotAmpere("", load.current).trim()}, ${Utils.plotPower("", power).trim()}, ${tr("loss")} ${Utils.plotPower("", loss).trim()}"
+                    "${plotVolt("", load.voltage).trim()}, ${plotAmpere("", load.current).trim()}, ${tr("loss")} ${Utils.plotPower("", cableLoss(load)).trim()}"
             }
         }
+        info[tr("Segment heating")] = Utils.plotPower("", heating.lastWatts)
+        info[tr("Insulation condition")] = when {
+            descriptor.melted -> tr("Damaged - exposed conductor")
+            descriptor.insulated -> tr("Intact")
+            else -> tr("Bare conductor")
+        }
+        if (thermalLoad.phaseJoules > 0) info[tr("Conductor melting")] = tr("%1$ percent", (100 * thermalLoad.phaseJoules / thermalLoad.physics.fusionJoules).toInt())
         info[tr("Subsystem Matrix Size")] = renderSubSystemWaila(conductorLoads[0].subSystem)
         return info
     }
 
     private fun cableLoss(load: ElectricalLoad): Double {
-        return load.current * load.current * load.serialResistance * 2.0
+        return load.serialPower
     }
 
     override fun networkSerialize(stream: DataOutputStream) {
@@ -805,9 +815,12 @@ class UtilityCableElement(
         }
         newElement.initialize()
         if (newElement is UtilityCableElement) {
-            newElement.thermalLoad.temperatureCelsius = currentTemperature
+            newElement.thermalLoad.inheritHeat(thermalLoad)
+            newElement.updateThermalProperties()
+            newElement.conductorLoads.forEach { it.serialResistance = newElement.descriptor.resistanceOhms(celsius = thermalLoad.absoluteCelsius) / 2 }
             newElement.lastPublishedTemperatureCelsius = currentTemperature
         }
+        if (newElement is MoltenMetalPileElement) newElement.inheritHeat(thermalLoad)
         node.connect()
         node.needPublish = true
     }
@@ -872,7 +885,7 @@ class UtilityCableElement(
                 if (abs(it.serialResistance - rs) > rs * 0.001) it.serialResistance = rs
             }
             maybePublishTemperature(absoluteTemperatureCelsius)
-            if (absoluteTemperatureCelsius >= descriptor.material.meltingPointCelsius) {
+            if (thermalLoad.failed) {
                 meltConductor()
                 return
             }

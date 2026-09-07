@@ -1,0 +1,55 @@
+name: Wire thermal faults
+on:
+  workflow_call:
+  workflow_dispatch:
+permissions:
+  contents: read
+defaults:
+  run:
+    shell: bash
+jobs:
+  faults:
+    name: Live shorts, cooling and saved-world restart
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Disposable test world
+        run: |
+          mkdir -p run/server build/smoke-artifacts
+          echo eula=true > run/server/eula.txt
+          cat > run/server/server.properties <<'PROPS'
+          online-mode=false
+          max-tick-time=-1
+          level-type=minecraft:flat
+          generator-settings={"layers":[{"block":"minecraft:bedrock","height":1},{"block":"minecraft:stone","height":63}],"biome":"minecraft:plains"}
+          PROPS
+      - name: Actual placed-wire overload and interruption
+        run: timeout --signal=TERM --kill-after=30s 15m ./gradlew runServer -PsmokeTest=wire-thermal-place --console=plain 2>&1 | tee build/smoke-artifacts/wire-world-place.log
+      - name: Separate JVM with the same saved world
+        run: timeout --signal=TERM --kill-after=30s 10m ./gradlew runServer -PsmokeTest=wire-thermal-restart --console=plain 2>&1 | tee build/smoke-artifacts/wire-world-restart.log
+      - name: Require every runtime assertion
+        if: always()
+        run: |
+          python - <<'PY'
+          import json,pathlib
+          for suite in ['wire-world-place','wire-world-restart']:
+              d=json.loads(pathlib.Path(f'build/smoke-artifacts/contracts/{suite}.json').read_text())
+              assert d['suite']==suite and d['complete'] and d['results'] and d['failures']==0,suite
+              assert all(r['status']=='passed' for r in d['results']),suite
+              print(suite,len(d['results']),'passed')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wire-thermal-faults
+          path: |
+            build/smoke-artifacts/**
+            run/server/logs/**
+            run/server/crash-reports/**
+          if-no-files-found: error

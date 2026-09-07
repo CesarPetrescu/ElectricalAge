@@ -33,6 +33,7 @@ Electrical Age brings electrical simulation, wiring, lighting and industrial mac
 
 - **Power networks:** cables, batteries, generators, turbines, transformers and meters.
 - **Mechanical systems:** motors, generators, shafts, flywheels and large machines.
+- **Thermal management:** heat networks and the water-assisted [EC-240 evaporative cooler](docs/evaporative-cooler.md), with fan/pump power, outdoor-air interlocks and saved water/settings.
 - **Automation:** processing machines, signal wiring and optional computer control.
 - **Lighting:** lamps, sockets and floodlights for your builds. See the [bulb, wiring and floodlight guide](docs/lighting-tests.md).
 - **Create integration:** optional 4 kW and 16 kW shaft adapters with gearing, load-dependent stress, overload protection and controlled braking.
@@ -42,6 +43,8 @@ The creative inventory has nine categories: **Wires & Cables**, **Signals & Cont
 See the [Create adapter guide](docs/create-shaft-adapters.md) for connections on all three axes, gear selection and signal inputs. For worked circuits, explore the [electrical examples](docs/examples/README.md).
 
 **In-game recipes and help:** press **P** to open the [Electrical Age guide](docs/in-game-guide.md). Search items, scroll through recipes and click ingredients to follow their crafting chains.
+
+**Wire overloads:** AWG/kcmil conductors now account for electrical heat, material heat capacity and conductor failure. Damaged insulation can still conduct until the metal breaks. See the [thermal model, assumptions and tests](docs/wire-thermal-model.md). Existing overloaded builds may fail after updating; back up your world first.
 
 ## Installation
 

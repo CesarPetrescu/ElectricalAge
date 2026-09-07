@@ -19,6 +19,11 @@ import net.minecraft.client.Minecraft
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import mods.eln.client.gl.GL11
+import mods.eln.sim.IProcess
+import mods.eln.misc.Utils
+import net.minecraft.nbt.CompoundTag
+import java.io.DataInputStream
+import java.io.DataOutputStream
 
 class MoltenMetalPileDescriptor(
     name: String,
@@ -38,6 +43,45 @@ class MoltenMetalPileElement(
     descriptor: SixNodeDescriptor
 ) : SixNodeElement(sixNode!!, side!!, descriptor) {
 
+    private val material = (descriptor as MoltenMetalPileDescriptor).material
+    private var thermal = WireThermalLoad("scrap", WireThermalPhysics(material, 1.0))
+    init {
+        thermal.setAsSlow()
+        thermalLoadList.add(thermal)
+        thermalSlowProcessList.add(IProcess {
+            val air = getAmbientTemperatureCelsius()
+            thermal.updateProperties(air, air, false)
+        })
+        slowProcessList.add(IProcess { needPublish() })
+    }
+    private fun geometry(area: Double) {
+        thermalLoadList.remove(thermal)
+        thermal = WireThermalLoad("scrap", WireThermalPhysics(material, area))
+        thermal.setAsSlow()
+        thermalLoadList.add(thermal)
+    }
+    fun inheritHeat(from: WireThermalLoad) {
+        geometry(from.physics.totalAreaMm2)
+        thermal.inheritHeat(from)
+        thermal.updateProperties(from.ambientCelsius, from.ambientCelsius, false)
+    }
+    override fun initialize() {
+        val air = getAmbientTemperatureCelsius()
+        thermal.updateProperties(air, air, false)
+    }
+    override fun readFromNBT(nbt: CompoundTag) {
+        geometry(nbt.getDouble("scrapAreaMm2").takeIf { it.isFinite() && it > 0 } ?: 1.0)
+        super.readFromNBT(nbt)
+    }
+    override fun writeToNBT(nbt: CompoundTag) {
+        super.writeToNBT(nbt)
+        nbt.putDouble("scrapAreaMm2", thermal.physics.totalAreaMm2)
+    }
+    override fun networkSerialize(stream: DataOutputStream) {
+        super.networkSerialize(stream)
+        stream.writeFloat(thermal.absoluteCelsius.toFloat())
+    }
+
     override fun getElectricalLoad(lrdu: LRDU, mask: Int) = null
 
     override fun getThermalLoad(lrdu: LRDU, mask: Int) = null
@@ -46,9 +90,9 @@ class MoltenMetalPileElement(
 
     override fun multiMeterString() = ""
 
-    override fun thermoMeterString() = ""
+    override fun thermoMeterString() = Utils.plotCelsius("T: ", thermal.absoluteCelsius)
 
-    override fun getWaila() = mapOf(tr("State") to tr("Molten metal"))
+    override fun getWaila() = mapOf(tr("State") to tr("Broken conductor"), tr("Temperature") to Utils.plotCelsius("", thermal.absoluteCelsius))
 }
 
 class MoltenMetalPileRender(
@@ -58,6 +102,11 @@ class MoltenMetalPileRender(
 ) : SixNodeElementRender(tileEntity!!, side!!, descriptor) {
 
     private val descriptor = descriptor as MoltenMetalPileDescriptor
+    private var temperature = 20f
+    override fun publishUnserialize(stream: DataInputStream) {
+        super.publishUnserialize(stream)
+        temperature = stream.readFloat()
+    }
 
     override fun drawCableAuto() = false
 
@@ -77,7 +126,7 @@ class MoltenMetalPileRender(
         }
         bindTexture(descriptor.render.cableTexture)
         glListCall()
-        drawHotGlow()
+        if (temperature > 550f) drawHotGlow()
         GL11.glColor3f(1f, 1f, 1f)
         Minecraft.getInstance().profiler.pop()
     }

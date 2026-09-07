@@ -496,10 +496,12 @@ object SixNodeRegistration {
                 Eln.cableHeatingTime,
                 Eln.cableThermalConductionTao
             )
-            // Shared jacket: sum heat capacity and cooling for all independent cores.
-            desc.thermalC *= desc.conductorCount
-            desc.thermalRp /= desc.conductorCount
-            desc.thermalRs /= desc.conductorCount
+            // Conductor mass and geometry, not nominal ampacity, determine the thermal model.
+            val thermal = mods.eln.sixnode.electricalcable.WireThermalPhysics(desc.material, desc.totalConductorAreaMm2)
+            desc.thermalC = thermal.capacity(20.0)
+            desc.thermalRp = 1.0 / thermal.coolingConductance(20.0, 20.0, desc.insulated)
+            desc.thermalRs = thermal.endpointThermalResistance
+            desc.thermalSelfHeatingRateLimit = Double.POSITIVE_INFINITY
             desc.electricalRsPerCelcius = desc.electricalRs * WirePhysics.temperatureCoefficient(desc.material)
             desc.ElementClass = UtilityCableElement::class.java
             desc.RenderClass = UtilityCableRender::class.java

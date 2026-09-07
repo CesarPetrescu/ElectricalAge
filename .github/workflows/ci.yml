@@ -195,9 +195,13 @@ jobs:
     name: Evaporative cooler contracts
     uses: ./.github/workflows/evaporative-cooler.yml
 
+  wire-thermal:
+    name: Wire overload contracts
+    uses: ./.github/workflows/wire-thermal.yml
+
   release:
     name: Publish latest 1.21.1 mod
-    needs: [build, benchmark, smoke, compatibility, evaporative]
+    needs: [build, benchmark, smoke, compatibility, evaporative, wire-thermal]
     if: >-
       github.repository == 'CesarPetrescu/ElectricalAge' &&
       github.ref == 'refs/heads/main' &&

@@ -43,4 +43,19 @@ public class ElectricalLoad extends VoltageStateLineReady {
         }
         return current * 0.5;
     }
+
+    /** Each incident wire connection contains one endpoint resistance. Sum its actual I²R.
+     * Unlike square(sum(abs(I))/2)*2R, this also conserves power at three/four-way junctions.
+     * Original connections remain available when the MNA solver abstracts a resistor line.
+     */
+    public double getSerialPower() {
+        double watts = 0;
+        for (Component c : getConnectedComponents()) {
+            if (c instanceof ElectricalConnection connection) {
+                double current = connection.getCurrent();
+                watts += current * current * serialResistance;
+            }
+        }
+        return watts;
+    }
 }

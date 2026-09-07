@@ -37,6 +37,7 @@ class GridLink : INBTTReady {
     private var be = Optional.empty<GridElement>()
     private var ab: ElectricalConnection? = null
     private var rs = MnaConst.highImpedance
+    internal var spanThermal: WireSpanThermal? = null
 
     constructor(a: Coordinate, b: Coordinate, `as`: Direction, bs: Direction, cable: ItemStack, rs: Double) {
         this.rs = rs
@@ -84,10 +85,16 @@ class GridLink : INBTTReady {
         ab = if (utility != null) WireSpanConnection(aLoad, bLoad, rs) else ElectricalConnection(aLoad, bLoad)
         Eln.simulator.addElectricalComponent(ab)
         if (utility == null) ab!!.resistance = rs
+        if (utility != null) {
+            val thermal = spanThermal ?: WireSpanThermal(utility, utility.getRemainingLengthMeters(cable)).also { spanThermal = it }
+            thermal.connect(ab as WireSpanConnection,
+                { (a.getAmbientTemperatureCelsius() + b.getAmbientTemperatureCelsius()) * .5 },
+                { onBreakElement() }) // destroyed conductor: no intact spool refund
+        }
 
         // Add link to link lists.
-        a.gridLinkList.add(this)
-        b.gridLinkList.add(this)
+        if (!a.gridLinkList.contains(this)) a.gridLinkList.add(this)
+        if (!b.gridLinkList.contains(this)) b.gridLinkList.add(this)
         updateElement(a)
         updateElement(b)
 
@@ -116,6 +123,7 @@ class GridLink : INBTTReady {
         val a = getElementFromCoordinate(this.a)
         val b = getElementFromCoordinate(this.b)
 
+        spanThermal?.disconnect()
         Eln.simulator.removeElectricalComponent(ab)
         ab = null
 
@@ -145,6 +153,7 @@ class GridLink : INBTTReady {
         // Migrate the old saved, arbitrary resistance using the actual paid length in the cable stack.
         (Eln.sixNodeItem.getDescriptor(cable) as? UtilityCableDescriptor)?.let {
             rs = it.resistanceOhms(it.getRemainingLengthMeters(cable))
+            spanThermal = WireSpanThermal(it, it.getRemainingLengthMeters(cable)).also { thermal -> thermal.read(nbt) }
         }
     }
 
@@ -155,6 +164,7 @@ class GridLink : INBTTReady {
         bs.writeToNBT(nbt, str + "bs")
         nbt.putDouble(str + "rs", rs)
         cable.writeToNBT(nbt)
+        spanThermal?.write(nbt)
     }
 
     fun selfDestroy() {
@@ -164,9 +174,15 @@ class GridLink : INBTTReady {
     fun onBreakElement(): ItemStack {
         val a = getElementFromCoordinate(this.a)
         val b = getElementFromCoordinate(this.b)
-        a!!.gridLinkList.remove(this)
-        b!!.gridLinkList.remove(this)
+        a?.gridLinkList?.remove(this)
+        b?.gridLinkList?.remove(this)
         disconnect()
+        val thermal = spanThermal
+        if (thermal != null && thermal.insulationDamaged) {
+            thermal.descriptor.meltedDescriptor?.let {
+                cable = it.newItemStack().also { stack -> it.setRemainingLengthMeters(stack, thermal.meters) }
+            }
+        }
         return cable
     }
 
@@ -223,7 +239,7 @@ class GridLink : INBTTReady {
 
 /** A span is additional wire, not merely the two pole contacts. Keep it across Rs notifications. */
 internal class WireSpanConnection(private val from: ElectricalLoad, private val to: ElectricalLoad,
-                                  private val spanOhms: Double) : ElectricalConnection(from, to) {
+                                  var spanOhms: Double) : ElectricalConnection(from, to) {
     override fun notifyRsChange() {
         resistance = spanOhms + from.serialResistance + to.serialResistance
     }

@@ -10,8 +10,12 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: evaporative-${{ github.ref }}
-  cancel-in-progress: true
+  group: evaporative-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+defaults:
+  run:
+    shell: bash
 
 jobs:
   verify:
@@ -27,6 +31,8 @@ jobs:
           distribution: temurin
           java-version: '21'
       - uses: gradle/actions/setup-gradle@v4
+      - name: Check committed model integrity without modifying the branch
+        run: python tools/evaporative/verify_assets.py
       - name: Numerical regression and Minecraft build
         run: |
           mkdir -p build

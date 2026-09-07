@@ -5,23 +5,16 @@ import mods.eln.sim.IProcess
 import mods.eln.sim.ThermalLoad
 
 class ElectricalLoadHeatThermalLoad(var resistor: ElectricalLoad, var load: ThermalLoad) : IProcess {
-    private var maxDeltaTPerSecond: Double? = null
-
+    /** Kept for old descriptors/addons. A stability setting must not destroy electrical energy. */
+    @Deprecated("Heat is never clipped; use physical thermal properties and stable integration")
     fun limitTemperatureRate(maxDeltaTPerSecond: Double): ElectricalLoadHeatThermalLoad {
-        this.maxDeltaTPerSecond = maxDeltaTPerSecond
         return this
     }
 
     override fun process(time: Double) {
         if (resistor.isNotSimulated) return
         val current = resistor.current
-        var power = current * current * resistor.serialResistance * 2
-        maxDeltaTPerSecond
-            ?.takeIf { it.isFinite() && it > 0 && load.heatCapacity > 0 }
-            ?.let { limit ->
-                val maxPower = limit * load.heatCapacity
-                power = power.coerceIn(-maxPower, maxPower)
-            }
+        val power = current * current * resistor.serialResistance * 2
         load.movePowerTo(power)
     }
 }

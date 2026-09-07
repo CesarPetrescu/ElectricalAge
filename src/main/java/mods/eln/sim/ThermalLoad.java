@@ -69,6 +69,11 @@ public class ThermalLoad {
         Rs = tao / heatCapacity;
     }
 
+    /** Net energy from the thermal network. Material loads may integrate enthalpy/phase changes. */
+    public void integrateEnergy(double joules) {
+        temperatureCelsius += joules / heatCapacity;
+    }
+
     public void setHighImpedance() {
         Rs = 1000000000.0;
         heatCapacity = 1;

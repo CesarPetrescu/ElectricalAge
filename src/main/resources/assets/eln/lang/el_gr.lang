@@ -3,6 +3,7 @@
 # Appearing in multiple source files
 %1$,_%2$,_%3$=%1$, %2$, %3$
 %1$_is_not_in_range!=Το %1$ είναι εκτός εύρους!
+%1$_percent=%1$ percent
 (Increases_capacity)=(Αυξάνει τη χωρητικότητα)
 (Increases_inductance)=(Αυξάνει την επαγωγή)
 *_Missing_an_inductive_voltage_spike_on_field_collapse=* Απουσία επαγωγικής αιχμής τάσης κατά την κατάρρευση του πεδίου
@@ -206,6 +207,8 @@ Time_per_operation\:_%1$h=Χρόνος ανά λειτουργία: %1$h
 # src/main/java/mods/eln/item/FerromagneticCoreDescriptor.java
 Cable_loss_factor\:_%1$=Συντελεστής απωλειών καλωδίου: %1$
 
+# src/main/java/mods/eln/item/HeatingCorpElement.java
+
 # src/main/java/mods/eln/item/OverHeatingProtectionDescriptor.java
 Useful_to_prevent_overheating\nof_Batteries=Χρήσιμο για την αποτροπή υπερθέρμανσης\nτων Μπαταριών
 
@@ -214,6 +217,8 @@ Useful_to_prevent_over-voltage\nof_Batteries=Χρήσιμο για την απο
 
 # src/main/java/mods/eln/item/SolarTrackerDescriptor.java
 Solar_panel_upgrade=Αναβάθμιση ηλιακού πάνελ
+
+# src/main/java/mods/eln/item/regulator/RegulatorSlot.java
 
 # src/main/java/mods/eln/sixnode/TreeResinCollector/TreeResinCollectorDescriptor.java
 Produces_Tree_Resin_over\ntime_when_put_on_a_tree.=Παράγει Ρητίνη Δέντρου με την\nπάροδο του χρόνου όταν τοποθετηθεί σε δέντρο.
@@ -231,6 +236,8 @@ __*_It_exposes_a_nominal_mains_class_instead_of_wall-plug_details=  * Εκθέτ
 
 # src/main/java/mods/eln/sixnode/batterycharger/BatteryChargerElement.java
 Charge_Current=Ρεύμα Φόρτισης
+
+# src/main/java/mods/eln/sixnode/batterycharger/BatteryChargerGui.java
 
 # src/main/java/mods/eln/sixnode/diode/DiodeDescriptor.java
 Electrical_current_can_only\nflow_through_the_diode\nfrom_anode_to_cathode=Το ηλεκτρικό ρεύμα μπορεί μόνο\nνα ρέει μέσω της διόδου\nαπό την άνοδο προς την κάθοδο
@@ -306,6 +313,10 @@ Displays_signal_value.=Εμφανίζει την τιμή σήματος.
 Max=Μέγ
 Min=Ελάχ
 
+# src/main/java/mods/eln/sixnode/electricaldigitaldisplay/ElectricalDigitalDisplayGui.java
+
+# src/main/java/mods/eln/sixnode/electricalentitysensor/ElectricalEntitySensorContainer.java
+
 # src/main/java/mods/eln/sixnode/electricalentitysensor/ElectricalEntitySensorDescriptor.java
 Output_voltage_increases\nif_entities_are_moving_around.=Η τάση εξόδου αυξάνεται\nεάν οι οντότητες κινούνται γύρω.
 
@@ -336,6 +347,8 @@ Provides_an_electrical_voltage\nwhich_is_proportional_to\nthe_intensity_of_dayli
 # src/main/java/mods/eln/sixnode/electricallightsensor/ElectricalLightSensorElement.java
 Light_level=Επίπεδο φωτός
 
+# src/main/java/mods/eln/sixnode/electricalmath/ElectricalMathContainer.java
+
 # src/main/java/mods/eln/sixnode/electricalmath/ElectricalMathDescriptor.java
 Applicable_boolean_operators\:=Εφαρμόσιμοι λογικοί τελεστές:
 Applicable_functions\:=Εφαρμόσιμες συναρτήσεις:
@@ -361,6 +374,8 @@ Converts_Redstone_signal\nto_an_electrical_voltage.=Μετατρέπει σήμ�
 
 # src/main/java/mods/eln/sixnode/electricalredstoneoutput/ElectricalRedstoneOutputDescriptor.java
 Converts_electrical_voltage\ninto_a_Redstone_signal.=Μετατρέπει ηλεκτρική τάση\nσε σήμα Redstone.
+
+# src/main/java/mods/eln/sixnode/electricalredstoneoutput/ElectricalRedstoneOutputElement.java
 
 # src/main/java/mods/eln/sixnode/electricalrelay/ElectricalRelayDescriptor.java
 Contact_current_rating\:_%1$A=Ονομαστικό ρεύμα επαφής: %1$A
@@ -497,8 +512,6 @@ It's_a_resistor=Είναι ένας αντιστάτης
 
 # src/main/java/mods/eln/sixnode/resistor/ResistorElement.java
 
-# src/main/java/mods/eln/sixnode/resistor/ResistorGui.java
-
 # src/main/java/mods/eln/sixnode/thermalcable/ThermalCableDescriptor.java
 High_parallel_resistance\n_->_Low_power_dissipation.=High parallel resistance\n -> Low power dissipation.
 Low_serial_resistance\n_->_High_conductivity.=Low serial resistance\n -> High conductivity.
@@ -545,10 +558,10 @@ Receive_signal_voltage_on_selected_wireless_signal_channel=Λαμβάνει τά
 
 # src/main/java/mods/eln/sixnode/wirelesssignal/rx/WirelessSignalRxGui.java
 
+# src/main/java/mods/eln/sixnode/wirelesssignal/source/WirelessSignalSourceDescriptor.java
+
 # src/main/java/mods/eln/sixnode/wirelesssignal/tx/WirelessSignalTxDescriptor.java
 Sends_signal_voltage_on_selected_wireless_signal_channel=Στέλνει τάση σήματος στο επιλεγμένο ασύρματο κανάλι σήματος
-
-# src/main/java/mods/eln/sixnode/wirelesssignal/tx/WirelessSignalTxElement.java
 
 # src/main/java/mods/eln/transparentnode/autominer/AutoMinerContainer.java
 Drill_slot=Θέση τρυπανιού
@@ -602,8 +615,6 @@ Actual\:_%1$=Πραγματική: %1$
 Auto_shutdown=Αυτόματη απενεργοποίηση
 Manual_shutdown=Χειροκίνητη απενεργοποίηση
 Set_point\:_%1$=Σημείο ρύθμισης: %1$
-
-# src/main/java/mods/eln/transparentnode/electricalmachine/ElectricalMachineContainer.java
 
 # src/main/java/mods/eln/transparentnode/electricalmachine/ElectricalMachineDescriptor.java
 
@@ -677,9 +688,7 @@ Fan_cooling_power\:_%1$W=Ισχύς ψύξης ανεμιστήρα: %1$W
 Fan_power_consumption\:_%1$W=Κατανάλωση ισχύος ανεμιστήρα: %1$W
 Fan_voltage\:_%1$V=Τάση ανεμιστήρα: %1$V
 
-# src/main/java/mods/eln/transparentnode/thermaldissipatorpassive/ThermalDissipatorPassiveDescriptor.java
-
-# src/main/java/mods/eln/transparentnode/thermaldissipatorpassive/ThermalDissipatorPassiveElement.java
+# src/main/java/mods/eln/transparentnode/thermaldissipatoractive/ThermalDissipatorActiveElement.java
 
 # src/main/java/mods/eln/transparentnode/turbine/TurbineDescriptor.java
 Generates_electricity_using_heat.=Παράγει ηλεκτρισμό χρησιμοποιώντας θερμότητα.
@@ -687,8 +696,6 @@ Temperature_difference\:_%1$°C=Διαφορά θερμοκρασίας: %1$°C
 
 # src/main/java/mods/eln/transparentnode/turbine/TurbineElement.java
 Nominal=Ονομαστικό
-
-# src/main/java/mods/eln/transparentnode/turret/TurretContainer.java
 
 # src/main/java/mods/eln/transparentnode/turret/TurretDescriptor.java
 CAUTION\:_Cables_can_get_quite_hot!=ΠΡΟΣΟΧΗ: Τα καλώδια μπορεί να θερμανθούν πολύ!
@@ -715,6 +722,8 @@ Recharge_power\:=Ισχύς επαναφόρτισης:
 # src/main/java/mods/eln/transparentnode/waterturbine/WaterTurbineDescriptor.java
 Generates_energy_using_water_stream.=Παράγει ενέργεια χρησιμοποιώντας ροή νερού.
 No_place_for_water_turbine!=Δεν υπάρχει χώρος για υδροτουρμπίνα!
+
+# src/main/java/mods/eln/transparentnode/waterturbine/WaterTurbineElement.java
 
 # src/main/java/mods/eln/transparentnode/windturbine/WindTurbineDescriptor.java
 Front\:_%1$=Μπροστά: %1$
@@ -950,7 +959,7 @@ Remaining\:_%1$_m=Απομένουν: %1$ m
 Right_click_to_cut_utility_wire_in_your_inventory=Δεξί κλικ για κοπή σύρματος κοινής ωφέλειας στο απόθεμά σας
 Wire_Snips=Κόφτης Συρμάτων
 
-# src/main/kotlin/mods/eln/item/electricalitem/ElectricalArmor.kt
+# src/main/kotlin/mods/eln/item/electricalitem/BatteryItem.kt
 
 # src/main/kotlin/mods/eln/item/electricalitem/ElectricalAxe.kt
 Cuts_down_trees._Right-click_to_make_it_act_like_a_regular_axe.=Κόβει δέντρα. Δεξί κλικ για να λειτουργήσει σαν κανονικό τσεκούρι.
@@ -961,8 +970,6 @@ Stored_Energy\:_%1$J_(%2$%)=Αποθηκευμένη Ενέργεια: %1$J (%2$
 
 # src/main/kotlin/mods/eln/item/electricalitem/ElectricalPickaxe.kt
 Opens_holes._Right-click_to_open_smaller_holes.=Ανοίγει τρύπες. Δεξί κλικ για να ανοίξει μικρότερες τρύπες.
-
-# src/main/kotlin/mods/eln/item/electricalitem/PortableOreScannerItem.kt
 
 # src/main/kotlin/mods/eln/item/lampitem/LampDescriptor.kt
 Current_lifetime\:_%1$h=Τρέχουσα διάρκεια ζωής: %1$h
@@ -1036,7 +1043,7 @@ Turbine_blade_slot=Θέση λεπίδας τουρμπίνας
 # src/main/kotlin/mods/eln/misc/Version.kt
 mod.name=Electrical Age
 
-# src/main/kotlin/mods/eln/node/transparent/TransparentNodeDescriptor.kt
+# src/main/kotlin/mods/eln/node/six/SixNodeDescriptor.kt
 
 # src/main/kotlin/mods/eln/railroad/ElectricMinecartChargeReporter.kt
 Cart_Energy\:_=Ενέργεια Βαγονιού: 
@@ -1873,29 +1880,32 @@ Deprecated_legacy_relay._Prefer_relays_that_follow_the_AWG/mm_cable_system.=Πα
 
 # src/main/kotlin/mods/eln/sixnode/electricalcable/MoltenMetalPile.kt
 A_puddle_of_molten_%1$_from_an_overheated_cable.=Μια λίμνη λιωμένου %1$ από ένα υπερθερμασμένο καλώδιο.
-Molten_metal=Λιωμένο μέταλλο
+Broken_conductor=Broken conductor
 
 # src/main/kotlin/mods/eln/sixnode/electricalcable/UtilityCable.kt
 %1$V=%1$V
 Bare=Γυμνό
+Bare_conductor=Bare conductor
 Black=Μαύρο
 Blue=Μπλε
 Brown=Καφέ
 Brush\:_paint_conductor_color=Πινέλο: βαφή χρώματος αγωγού
-Cable_loss=Cable loss
-Conductor=Αγωγός
 Conductor\:_%1$_%2$=Αγωγός: %1$ %2$
 Conductor_colors\:_%1$=Χρώματα αγωγών: %1$
+Conductor_melting=Conductor melting
 Conductors\:_%1$=Αγωγοί: %1$
 Contact_resistance_and_AC_skin_effect_are_not_modeled;_current_limits_are_gameplay_ratings.=Contact resistance and AC skin effect are not modeled; current limits are gameplay ratings.
 Cyan=Κυανό
 DC_resistance_uses_conductor_material,_cross-section,_length_and_temperature.=DC resistance uses conductor material, cross-section, length and temperature.
+Damaged_-_exposed_conductor=Damaged - exposed conductor
 Each_placed_cable_segment_is_1_m;_each_core_has_its_own_resistance.=Each placed cable segment is 1 m; each core has its own resistance.
 Equivalent_area\:_%1$_mm2=Ισοδύναμη επιφάνεια: %1$ mm2
 Gray=Γκρι
 Green=Πράσινο
 Ground=Γείωση
 Insulation\:_%1$=Μόνωση: %1$
+Insulation_condition=Insulation condition
+Intact=Intact
 Light_Blue=Ανοιχτό Μπλε
 Lime=Λάιμ
 Magenta=Ματζέντα
@@ -1910,8 +1920,10 @@ Red=Κόκκινο
 Remaining_length\:_%1$_m=Απομένον μήκος: %1$ m
 Resistance_per_core=Resistance per core
 Resistance_per_core_at_20_C\:_%1$_ohm/m=Resistance per core at 20 C: %1$ ohm/m
+Segment_heating=Segment heating
 Silver=Ασημί
 Spool_resistance_per_core_at_20_C\:_%1$_ohm=Spool resistance per core at 20 C: %1$ ohm
+Voltage_to_ground=Voltage to ground
 White=Λευκό
 Wire_color_care_%1$=Φροντίδα χρώματος σύρματος %1$
 Wrench\:_cycle_conductor_colors=Κλειδί: εναλλαγή χρωμάτων αγωγών
@@ -2116,7 +2128,6 @@ Power_out\:=Ισχύς εξόδου:
 
 # src/main/kotlin/mods/eln/transparentnode/evaporative/EvaporativeCooler.kt
 %1$_/_4000_mB=%1$ / 4000 mB
-%1$_percent=%1$ percent
 Airflow_blocked_-_passive_cooling=Airflow blocked - passive cooling
 Copper_sides\:_heat._Front/rear\:_power._Top/bottom\:_water.=Copper sides: heat. Front/rear: power. Top/bottom: water.
 Disabled_-_passive_cooling=Disabled - passive cooling
