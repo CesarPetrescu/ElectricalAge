@@ -363,9 +363,15 @@ public final class ClientSmokeTest {
                     mc.setScreen(null);
                     mc.getSingleplayerServer().execute(() -> {
                         var player = mc.getSingleplayerServer().getPlayerList().getPlayers().get(0);
-                        var face = Direction.values()[adapterViewIndex];
-                        var center = new Vec3(652.5, 69.5, 638.5 + adapterViewIndex * 5);
-                        var camera = center.add(Vec3.atLowerCornerOf(face.getNormal()).scale(4))
+                        int index = adapterViewIndex % Direction.values().length;
+                        var face = Direction.values()[index];
+                        var center = new Vec3(652.5, 69.5, 638.5 + index * 5);
+                        if (adapterViewIndex >= Direction.values().length) {
+                            face = face.getOpposite();
+                            // Expose the input stub after the powered topology checks have finished.
+                            player.serverLevel().removeBlock(BlockPos.containing(center).relative(face), false);
+                        }
+                        var camera = center.add(Vec3.atLowerCornerOf(face.getNormal()).scale(2))
                             .add(face.getAxis().isVertical() ? new Vec3(2, -1, 2) : new Vec3(1, 1, 1));
                         player.teleportTo(player.serverLevel(), camera.x, camera.y, camera.z, 0f, 0f);
                         player.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES, center);
@@ -373,8 +379,9 @@ public final class ClientSmokeTest {
                     });
                 }
                 if (wait++ < 60) return;
-                shot(mc, "smoke-create-port-" + Direction.values()[adapterViewIndex].getName());
-                if (++adapterViewIndex == Direction.values().length) phase = Phase.DONE;
+                shot(mc, "smoke-create-" + (adapterViewIndex < Direction.values().length ? "port-" : "input-")
+                    + Direction.values()[adapterViewIndex % Direction.values().length].getName());
+                if (++adapterViewIndex == Direction.values().length * 2) phase = Phase.DONE;
                 wait = 0;
             }
             case DONE -> {

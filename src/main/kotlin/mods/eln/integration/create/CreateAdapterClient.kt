@@ -11,7 +11,6 @@ import net.minecraft.client.renderer.MultiBufferSource
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer
 import net.minecraft.network.chat.Component
 import net.minecraft.world.entity.player.Inventory
-import net.minecraft.world.level.block.Blocks
 import net.neoforged.neoforge.client.event.EntityRenderersEvent
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent
 import kotlin.math.PI
@@ -76,13 +75,16 @@ private class AdapterRenderer : BlockEntityRenderer<CreateAdapterEntity> {
                 val state = net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(
                     net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("create", "shaft")).defaultBlockState()
                     .setValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.AXIS, net.minecraft.core.Direction.Axis.Y)
-                Minecraft.getInstance().blockRenderer.renderSingleBlock(state, pose, buffers, light, overlay)
+                // Create shafts use ENTITYBLOCK_ANIMATED: renderSingleBlock skips their mesh.
+                val renderer = Minecraft.getInstance().blockRenderer
+                renderer.modelRenderer.renderModel(pose.last(), buffers.getBuffer(net.minecraft.client.renderer.RenderType.solid()),
+                    state, renderer.getBlockModel(state), 1f, 1f, 1f, light, overlay)
             } else {
                 // ELN's steel texture on an octagonal output spindle, separate from its teal bearing.
                 val sprite = Minecraft.getInstance().getTextureAtlas(net.minecraft.world.inventory.InventoryMenu.BLOCK_ATLAS)
                     .apply(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("eln", "block/create_adapter_steel"))
                 val consumer = buffers.getBuffer(net.minecraft.client.renderer.RenderType.solid())
-                val radius = 0.125
+                val radius = 0.0625
                 fun vertex(x: Double, y: Double, z: Double, u: Float, v: Float, nx: Float, ny: Float, nz: Float) {
                     consumer.addVertex(pose.last(), x.toFloat(), y.toFloat(), z.toFloat()).setColor(255, 255, 255, 255)
                         .setUv(sprite.getU(u), sprite.getV(v)).setOverlay(overlay).setLight(light).setNormal(pose.last(), nx, ny, nz)
