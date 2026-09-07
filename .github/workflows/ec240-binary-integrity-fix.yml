@@ -1,0 +1,121 @@
+name: EC-240 binary integrity repair
+on:
+  push:
+    branches: [feature/evaporative-cooler-20260907]
+    paths: [.github/workflows/ec240-binary-integrity-fix.yml]
+permissions:
+  contents: read
+jobs:
+  repair:
+    if: github.repository == 'CesarPetrescu/ElectricalAge' && github.ref == 'refs/heads/feature/evaporative-cooler-20260907'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/evaporative-cooler-20260907
+          fetch-depth: 0
+      - name: Restore only the independently verified original binary
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib,json,struct
+          p=Path('artwork/evaporative_cooler/evaporativecooler.glb')
+          d=p.read_bytes()
+          good='5667c6263e55cd2d20af5b3865d6d86dedbc28e98c50261fe8d44a1108300bf9'
+          bad='6e5a1501feb18e045f907df43b33b35d91f2b2d4819b24e9619973110dc1252e'
+          digest=hashlib.sha256(d).hexdigest()
+          assert digest in (good,bad),'Unexpected asset version: refuse to modify'
+          if digest==bad:
+              assert len(d)==529007 and d[114764]==10
+              d=d[:114764]+b'\r'+d[114764:]
+              assert hashlib.sha256(d).hexdigest()==good
+              p.write_bytes(d)
+          magic,version,total=struct.unpack_from('<4sII',d)
+          assert magic==b'glTF' and version==2 and total==len(d)
+          p=Path('.gitattributes'); t=p.read_text(); rule='*.[gG][lL][bB]          binary'
+          if rule not in t:p.write_text(t.rstrip()+'\n\n# Packed glTF is binary, including embedded PNG signatures.\n'+rule+'\n')
+          PY
+      - name: Install offline integrity check
+        run: |
+          cat > tools/evaporative/verify_assets.py <<'PY'
+          """Validate EC-240 game assets and portable animated GLB without Blender."""
+          from pathlib import Path
+          import hashlib,json,struct,subprocess,zlib
+          ROOT=Path(__file__).resolve().parents[2]
+          def check():
+              art=ROOT/'artwork/evaporative_cooler'
+              game=ROOT/'src/main/resources/assets/eln/model/evaporativecooler'
+              manifest=json.loads((art/'manifest.json').read_text())
+              for p,k in [(game/'evaporativecooler.obj','obj_sha256'),(game/'atlas.png','atlas_sha256'),(ROOT/'tools/evaporative/build_model.py','generator_sha256')]:
+                  assert hashlib.sha256(p.read_bytes()).hexdigest()==manifest[k],str(p)
+              d=(art/'evaporativecooler.glb').read_bytes()
+              magic,version,total=struct.unpack_from('<4sII',d)
+              assert magic==b'glTF' and version==2 and total==len(d)
+              offset=12; chunks=[]
+              while offset<total:
+                  size,kind=struct.unpack_from('<II',d,offset)
+                  assert size%4==0 and offset+8+size<=total
+                  chunks.append((kind,d[offset+8:offset+8+size]));offset+=8+size
+              assert offset==total and len(chunks)==2
+              assert chunks[0][0]==0x4e4f534a and chunks[1][0]==0x004e4942
+              s=json.loads(chunks[0][1]); binary=chunks[1][1]
+              assert s.get('animations') and s.get('meshes')
+              for v in s['bufferViews']:
+                  assert v['buffer']==0 and v.get('byteOffset',0)+v['byteLength']<=len(binary)
+              for image in s.get('images',[]):
+                  assert image['mimeType']=='image/png'
+                  v=s['bufferViews'][image['bufferView']];start=v.get('byteOffset',0)
+                  png=binary[start:start+v['byteLength']]
+                  assert png.startswith(b'\x89PNG\r\n\x1a\n')
+                  off=8;ended=False
+                  while off<len(png):
+                      size=struct.unpack_from('>I',png,off)[0]
+                      assert off+12+size<=len(png)
+                      kind=png[off+4:off+8]; payload=png[off+8:off+8+size]
+                      crc=struct.unpack_from('>I',png,off+8+size)[0]
+                      assert zlib.crc32(kind+payload)&0xffffffff==crc
+                      off+=12+size
+                      if kind==b'IEND':ended=True;break
+                  assert ended
+              if (ROOT/'.git').exists():
+                  a=subprocess.check_output(['git','check-attr','text','--','artwork/evaporative_cooler/evaporativecooler.glb'],cwd=ROOT,text=True)
+                  assert a.strip().endswith(': unset'),a
+              print('EC-240 asset integrity passed:',len(d),'GLB bytes;',len(s['meshes']),'meshes;',len(s['animations']),'animations')
+          if __name__=='__main__':check()
+          PY
+          python tools/evaporative/verify_assets.py
+      - name: Gate feature tests on committed asset integrity
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('.github/workflows/evaporative-cooler.yml')
+          t=p.read_text()
+          if 'python tools/evaporative/verify_assets.py' not in t:
+              marker='      - name: Numerical regression and Minecraft build\n'
+              assert marker in t,'Unknown workflow version: refuse to edit'
+              t=t.replace(marker,'      - name: Check committed Blender and game asset integrity\n        run: python tools/evaporative/verify_assets.py\n'+marker,1)
+              p.write_text(t)
+          PY
+      - name: Commit only the repair on the feature branch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .gitattributes artwork/evaporative_cooler/evaporativecooler.glb tools/evaporative/verify_assets.py .github/workflows/evaporative-cooler.yml
+          if ! git diff --cached --quiet; then
+            git commit -m 'Preserve binary GLB and verify model integrity before feature tests'
+            git push origin HEAD:refs/heads/feature/evaporative-cooler-20260907
+          fi
+          git show HEAD:artwork/evaporative_cooler/evaporativecooler.glb > /tmp/committed.glb
+          echo '5667c6263e55cd2d20af5b3865d6d86dedbc28e98c50261fe8d44a1108300bf9  /tmp/committed.glb' | sha256sum -c -
+          mkdir -p build/ec240-integrity
+          git rev-parse HEAD > build/ec240-integrity/source-commit.txt
+          python tools/evaporative/verify_assets.py > build/ec240-integrity/asset-check.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ec240-binary-integrity
+          path: build/ec240-integrity/
+          if-no-files-found: error
+          retention-days: 14
