@@ -4,10 +4,31 @@ from unittest.mock import Mock, patch
 from pathlib import Path
 
 from multiplayer_plan import plan, validate
-from run_multiplayer import offline_uuid, install_client, run_installer
+from run_multiplayer import offline_uuid, install_client, run_installer, Runner
 
 
 class MultiplayerGateTest(unittest.TestCase):
+    def test_slow_shutdown_captures_diagnostics_without_ignoring_a_hang(self):
+        import subprocess
+        runner = Runner.__new__(Runner)
+        process = Mock()
+        runner.processes = {"server": process}
+        runner.thread_dump = Mock()
+        process.wait.side_effect = subprocess.TimeoutExpired("server", 20)
+        with self.assertRaises(subprocess.TimeoutExpired):
+            runner.wait_for_exit("server")
+        runner.thread_dump.assert_called_once_with("server", "slow-shutdown")
+        self.assertEqual(process.wait.call_count, 2)
+        self.assertLessEqual(process.wait.call_args.kwargs["timeout"], 60)
+
+    def test_normal_shutdown_preserves_the_process_exit_code(self):
+        runner = Runner.__new__(Runner)
+        runner.processes = {"server": Mock()}
+        runner.processes["server"].wait.return_value = 7
+        runner.thread_dump = Mock()
+        self.assertEqual(runner.wait_for_exit("server"), 7)
+        runner.thread_dump.assert_not_called()
+
     def test_pinned_installer_does_not_query_loader_version_listing(self):
         launcher, log = Mock(), Mock()
         runtime, installer = Path("runtime"), Path("installer.jar")

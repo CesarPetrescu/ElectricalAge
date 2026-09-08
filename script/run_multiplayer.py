@@ -158,6 +158,26 @@ class Runner:
         temporary.write_text(json.dumps(command))
         temporary.replace(path)
 
+    def thread_dump(self, role, reason):
+        process = self.processes[role]
+        if process.poll() is not None:
+            return
+        path = self.output / f"{role}-{process.pid}-{reason}-threads.txt"
+        with path.open("w") as log:
+            try:
+                subprocess.run([str(Path(self.java).with_name("jcmd")), str(process.pid), "Thread.print", "-l"],
+                    stdout=log, stderr=subprocess.STDOUT, timeout=15, check=False)
+            except Exception as e:
+                print(f"Thread dump unavailable: {e}", file=log)
+
+    def wait_for_exit(self, role):
+        deadline = time.monotonic() + 60
+        try:
+            return self.processes[role].wait(timeout=20)
+        except subprocess.TimeoutExpired:
+            self.thread_dump(role, "slow-shutdown")
+            return self.processes[role].wait(timeout=max(.1, deadline - time.monotonic()))
+
     def run_group(self, group):
         for command in group:
             if command["id"] == "restarted-packaged-server":
@@ -179,7 +199,7 @@ class Runner:
                     pending.remove(command)
                     print(f"PASS {role}/{name}", flush=True)
                     if command["action"] == "stop":
-                        code = self.processes[role].wait(timeout=60)
+                        code = self.wait_for_exit(role)
                         if code != 0:
                             raise RuntimeError(f"{role} shutdown failed: {code}")
                 elif self.processes[role].poll() is not None:
@@ -190,6 +210,9 @@ class Runner:
                 time.sleep(.2)
 
     def finish(self, error):
+        if error:
+            for role in self.processes:
+                self.thread_dump(role, "failure")
         for process in self.processes.values():
             if process.poll() is None:
                 process.terminate()
@@ -201,6 +224,10 @@ class Runner:
                 process.wait(timeout=10)
         for log in self.logs:
             log.close()
+        failed_world = self.root / "server" / "world"
+        if error and failed_world.exists():
+            # Preserve the synthetic world/seed after processes stop, for a reproducible diagnosis.
+            shutil.make_archive(str(self.output / "failed-server-world"), "zip", failed_world)
         for role in ("server", "alpha", "beta"):
             for sub in ("logs", "crash-reports"):
                 path = self.root / role / sub

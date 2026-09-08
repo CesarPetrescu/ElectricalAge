@@ -36,6 +36,7 @@ Download `multiplayer-standalone` and `multiplayer-create` from the CI run. Each
 - `report.json` and `junit.xml`, with a named result for each client/server contract.
 - The tested JAR/dependency checksums in `runtime.json`.
 - Per-JVM logs, crash reports, and screenshots at client checkpoints.
+- Thread dumps for slow shutdowns/failures and a failed synthetic-world archive when available, so a hang can be investigated instead of silently retried.
 
 Missing results, failures, skipped results, duplicate identities, a wrong JAR, an integrated-server substitute or a missing real restart fail the job. Client inventory totals are checked independently against the expected single print. Screenshots are evidence for review, not a substitute for state assertions.
 
