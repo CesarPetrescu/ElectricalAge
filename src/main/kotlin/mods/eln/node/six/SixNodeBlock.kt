@@ -51,7 +51,8 @@ class SixNodeBlock : NodeBlock(nodeProperties().strength(0.3f, 1.0f), 0) {
     override fun getCloneItemStack(state: BlockState, target: HitResult, world: LevelReader, pos: BlockPos, player: Player): ItemStack {
         val entity = world.getBlockEntity(pos) as SixNodeEntity?
         if (entity != null && target is BlockHitResult) {
-            val render = entity.elementRenderList[fromFacing(target.direction).int]
+            val (vx, vy, vz) = hitFractions(target, pos)
+            val render = entity.elementRenderList[resolveElementSide(world, pos, fromFacing(target.direction), vx, vy, vz).int]
             if (render != null) {
                 findClosestMatchingHotbarStack(player, render.sixNodeDescriptor)?.let { return it.copy() }
                 return render.sixNodeDescriptor.newCreativeTabStack()
@@ -267,18 +268,31 @@ class SixNodeBlock : NodeBlock(nodeProperties().strength(0.3f, 1.0f), 0) {
 
     override fun onBlockActivated(world: Level, pos: BlockPos, state: BlockState, entityPlayer: Player, hand: InteractionHand, side: EnumFacing, vx: Float, vy: Float, vz: Float): Boolean {
         val entity = world.getBlockEntity(pos) as? SixNodeEntity ?: return false
-        val enabled: (Direction) -> Boolean = if (world.isClientSide) entity::getSyncronizedSideEnable
-        else { d -> (entity.node as? SixNode)?.getSideEnable(d) ?: false }
-        val elementSide = if (nodeHasCache(world, pos.x, pos.y, pos.z) || hasVolume(world, pos.x, pos.y, pos.z)) fromFacing(side)
-        else elementSide(fromFacing(side), vx, vy, vz, enabled)
+        val elementSide = resolveElementSide(world, pos, fromFacing(side), vx, vy, vz)
         return entity.onBlockActivated(entityPlayer, elementSide, vx, vy, vz)
+    }
+
+    /** Shared by interaction, pick-block and breaking on both logical sides. */
+    fun resolveElementSide(world: BlockGetter, pos: BlockPos, hitSide: Direction, vx: Float, vy: Float, vz: Float): Direction {
+        val entity = world.getBlockEntity(pos) as? SixNodeEntity ?: return hitSide
+        if (nodeHasCache(world, pos.x, pos.y, pos.z)) return hitSide
+        val serverNode = if (world is Level && !world.isClientSide) entity.node as? SixNode else null
+        val body = SixNodeHitSelection.bodySide(hitSide) { direction ->
+            if (world is Level && !world.isClientSide) serverNode?.getElement(direction)?.sixNodeElementDescriptor?.hasVolume() == true
+            else entity.elementRenderList[direction.int]?.sixNodeDescriptor?.hasVolume() == true
+        }
+        if (body != null) return body
+        return elementSide(hitSide, vx, vy, vz) { direction ->
+            if (world is Level && !world.isClientSide) serverNode?.getSideEnable(direction) == true
+            else entity.getSyncronizedSideEnable(direction)
+        }
     }
 
     private fun resolveBreakDirection(world: Level, pos: BlockPos, entityPlayer: Player, sixNode: SixNode): Direction? {
         val ray = collisionRayTrace(world, pos, entityPlayer)
         val rayDirection = ray?.let {
             val (vx, vy, vz) = NodeBlock.hitFractions(it, pos)
-            elementSide(fromFacing(it.direction), vx, vy, vz) { d -> sixNode.getSideEnable(d) }
+            resolveElementSide(world, pos, fromFacing(it.direction), vx, vy, vz)
         }
         if (rayDirection != null && sixNode.getSideEnable(rayDirection)) {
             return rayDirection

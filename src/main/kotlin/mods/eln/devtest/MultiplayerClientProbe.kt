@@ -64,7 +64,7 @@ class MultiplayerClientProbe(role: String) : MultiplayerProbe(role) {
         val empty = (0..8).firstOrNull { mc.player!!.inventory.getItem(it).isEmpty }
         if (empty != null) mc.player!!.inventory.selected = empty
         mc.gameMode!!.useItemOn(mc.player!!, InteractionHand.MAIN_HAND,
-            BlockHitResult(Vec3(pos.x + .5, pos.y + .08, pos.z + .5), net.minecraft.core.Direction.UP, pos, false))
+            BlockHitResult(Vec3(pos.x + .5, pos.y + 1.0, pos.z + .5), net.minecraft.core.Direction.UP, pos, false))
     }
 
     override fun observe(command: JsonObject): JsonObject? {

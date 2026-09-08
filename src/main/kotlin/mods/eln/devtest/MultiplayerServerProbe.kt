@@ -71,7 +71,7 @@ class MultiplayerServerProbe : MultiplayerProbe("server") {
                     p.setGameMode(GameType.CREATIVE)
                     val level = if (action(command) == "nether") server.getLevel(Level.NETHER)!! else world
                     val x = if (action(command) == "away") 1024.5 else 98.5
-                    val z = if (action(command) == "away") 1024.5 else 102.5
+                    val z = if (action(command) == "away") 1024.5 else 100.5
                     level.setBlockAndUpdate(BlockPos.containing(x, 64.0, z), Blocks.STONE.defaultBlockState())
                     p.teleportTo(level, x, 65.0, z, 180f, 40f)
                     p.abilities.flying = true; p.onUpdateAbilities()
