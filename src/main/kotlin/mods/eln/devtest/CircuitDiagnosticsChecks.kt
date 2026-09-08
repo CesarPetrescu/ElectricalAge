@@ -20,6 +20,7 @@ object CircuitDiagnosticsChecks {
     @JvmStatic fun run(world: ServerLevel, restart: Boolean): Int {
         val report = ContractReport(if (restart) "circuit-diagnostics-restart" else "circuit-diagnostics")
         report.write(false)
+        mods.eln.transparentnode.powercapacitor.PowerCapacitorAuditChecks.run(world, restart, report)
         val messages = mutableListOf<String>()
         val player = object : FakePlayer(world, GameProfile(UUID.fromString("6190c104-6513-46be-bd64-b880ea8b736b"), "ELNMeterTest")) {
             override fun sendSystemMessage(message: Component) { messages.add(message.string) }

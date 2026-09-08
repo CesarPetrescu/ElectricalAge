@@ -1,7 +1,6 @@
 package mods.eln.sim.mna.component;
 
 import mods.eln.Eln;
-import mods.eln.misc.Utils;
 import mods.eln.sim.mna.SubSystem;
 import mods.eln.sim.mna.misc.MnaConst;
 import mods.eln.sim.mna.state.State;
@@ -17,6 +16,7 @@ public class Resistor extends Bipole {
 
     private double resistance = MnaConst.highImpedance;
     private double resistanceInverse = 1 / MnaConst.highImpedance;
+    private String lastRejectedResistance;
 
 
     public double getResistanceInverse() {
@@ -32,20 +32,27 @@ public class Resistor extends Bipole {
     }
 
     public Resistor setResistance(double resistance) {
-        if (!Double.isFinite(resistance)) {
-            Utils.println("Error! Resistor cannot be set to " + resistance);
-            // Call stack for debugging which node type it comes from;
-            // this typically results in a cable going boom! somewhere
-            if (Eln.config.getBooleanOrElse("debug.logging.enabled", false))
-                Eln.LOGGER.error("Error! Resistor cannot be set to {}", resistance, new Throwable());
+        double inverse = 1 / resistance;
+        if (!(resistance > 0) || !Double.isFinite(resistance)
+                || !(inverse > 0) || !Double.isFinite(inverse)) {
+            reportInvalidResistance("value=" + resistance);
             return this;
         }
         if (this.resistance != resistance) {
             this.resistance = resistance;
-            this.resistanceInverse = 1 / resistance;
+            this.resistanceInverse = inverse;
+            lastRejectedResistance = null;
             dirty();
         }
         return this;
+    }
+
+    /** Invalid runtime or saved inputs must not corrupt a valid solver component. */
+    protected void reportInvalidResistance(String reason) {
+        if (!reason.equals(lastRejectedResistance)) {
+            lastRejectedResistance = reason;
+            Eln.LOGGER.warn("Rejected resistance for {}: {}; retaining {} ohms", this, reason, resistance);
+        }
     }
 
     public void highImpedance() {

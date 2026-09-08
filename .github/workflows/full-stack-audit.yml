@@ -1,0 +1,54 @@
+name: Independent full-stack audit
+on:
+  push:
+    branches: [qa/full-stack-2026-09-08]
+    paths: ['.github/workflows/full-stack-audit.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+defaults:
+  run:
+    shell: bash
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
+      - name: Record source for independent review
+        run: |
+          mkdir -p audit
+          git rev-parse HEAD > audit/tested-commit.txt
+          git archive --format=tar.gz -o audit/electricalage-main-source.tar.gz HEAD src tools script gradle gradlew gradlew.bat build.gradle.kts settings.gradle.kts gradle.properties .github README.md
+          tar -czf audit/electricalage-docs.tar.gz --exclude='*.png' --exclude='*.jpg' --exclude='*.pdf' docs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: audit-source
+          path: audit/
+          retention-days: 14
+      - name: Repository verification gates
+        run: |
+          python3 script/test_block_contracts.py 2>&1 | tee audit/block-gate.log
+          python3 script/test_multiplayer.py 2>&1 | tee audit/multiplayer-gate.log
+          python3 script/test_ore_worldgen.py 2>&1 | tee audit/ore-gate.log
+          bash script/test-publish-latest.sh 2>&1 | tee audit/release-gate.log
+      - name: Full Java Kotlin build and tests
+        run: ./gradlew --no-daemon build portStatus 2>&1 | tee audit/build.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: audit-baseline
+          path: |
+            audit/*.log
+            audit/tested-commit.txt
+            build/libs/*.jar
+            build/test-results/
+            build/reports/
+          retention-days: 14
