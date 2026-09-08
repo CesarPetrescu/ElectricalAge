@@ -5,7 +5,6 @@ import mods.eln.Eln;
 import mods.eln.GuiHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
@@ -19,8 +18,8 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Native server-open protocol, screen construction, visible control bounds and screenshots.
- * Does not claim that every control was clicked or every operating state was exercised. */
+/** Real server-open protocol, legacy/vanilla controls, panel and inventory bounds and screenshots.
+ * Opening a menu or preserving its controls does not establish every control's operational semantics. */
 @EventBusSubscriber(modid = Eln.MODID, value = Dist.CLIENT)
 public final class AllMenusClientChecks {
     private static final ContractReport REPORT = new ContractReport("all-menus-client");
@@ -74,13 +73,7 @@ public final class AllMenusClientChecks {
                     if(mc.screen==null || mc.screen instanceof TitleScreen) throw new AssertionError("Advertised GUI did not open");
                     System.out.println("NATIVE_MENU_SCREEN "+t.id+" "+mc.screen.getClass().getName()+" "+mc.screen.width+"x"+mc.screen.height);
                 });
-                check(t.id,"visible-widget-bounds-"+suffix,()->{
-                    if(mc.screen==null) throw new AssertionError("No screen for bounds check");
-                    for(var child:mc.screen.children()) if(child instanceof AbstractWidget w && w.visible) {
-                        if(w.getX()<0 || w.getY()<0 || w.getX()+w.getWidth()>mc.screen.width || w.getY()+w.getHeight()>mc.screen.height)
-                            throw new AssertionError("Visible widget outside "+mc.screen.width+"x"+mc.screen.height+": "+w.getMessage().getString()+" x="+w.getX()+" y="+w.getY()+" width="+w.getWidth()+" height="+w.getHeight());
-                    }
-                });
+                check(t.id,"controls-panel-slots-and-resize-"+suffix,()->MenuGeometryChecks.verify(mc.screen,size==0));
                 Screenshot.grab(mc.gameDirectory,"menu-"+t.id.replace(':','-')+"-"+suffix+".png",mc.getMainRenderTarget(),m->Eln.LOGGER.info("Native menu screenshot {}",m.getString()));
                 if(size++==0) {
                     mc.getWindow().setWindowed(640,480);mc.resizeDisplay();ticks=0;
