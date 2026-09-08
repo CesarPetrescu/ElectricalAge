@@ -36,7 +36,8 @@ class OreWorldgenProbe private constructor(private val restart: Boolean) {
     private val phase = if (restart) "restart" else "generate"
     private val profile = System.getProperty("eln.oreWorldgenProfile")
     private val report = ContractReport("ore-$phase", output)
-    private val ores = BuiltInRegistries.BLOCK.filterIsInstance<OreBlock>().associateBy { BuiltInRegistries.BLOCK.getKey(it).toString() }.toSortedMap()
+    // The hook is registered during mod construction, before deferred block registration finishes.
+    private val ores by lazy { BuiltInRegistries.BLOCK.filterIsInstance<OreBlock>().associateBy { BuiltInRegistries.BLOCK.getKey(it).toString() }.toSortedMap() }
     private data class Region(val name: String, val level: ServerLevel, val start: Int, val width: Int)
     private data class OreCount(var count: Int = 0, var minY: Int? = null, var maxY: Int? = null, val positions: MutableList<Long> = mutableListOf())
     private data class Census(val chunks: Int, val terrain: Int, val biomes: Set<String>, val ores: Map<String, Map<String, Any?>>)
@@ -44,7 +45,7 @@ class OreWorldgenProbe private constructor(private val restart: Boolean) {
     private var regions = emptyList<Region>()
     private var regionIndex = 0
     private var chunkIndex = 0
-    private var counts = ores.mapValues { OreCount() }
+    private var counts: Map<String, OreCount> = emptyMap()
     private var terrain = 0
     private val biomes = sortedSetOf<String>()
     private var started = false
@@ -98,6 +99,7 @@ class OreWorldgenProbe private constructor(private val restart: Boolean) {
     }
 
     private fun setup(server: MinecraftServer) {
+        counts = ores.mapValues { OreCount() }
         check(server.isDedicatedServer && FMLEnvironment.production)
         check(server.overworld().chunkSource.generator !is FlatLevelSource) { "Superflat is not an ore-generation test" }
         check(server.overworld().seed == System.getProperty("eln.oreWorldgenSeed").toLong())
