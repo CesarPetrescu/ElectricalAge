@@ -23,9 +23,8 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.math.abs
 
-/** Extension of the no-inventory-grants starter. Every block and fuel item is removed from its
- * actual acquired inventory. Layout is built in air on a platform paid for with gathered blocks.
- * Container insertion/configuration is automated; electrical and thermal simulation runs normally. */
+/** Every item comes from the natural starter's acquired inventory. Container insertion and
+ * configuration are automated; thermal/electrical simulation and production run normally. */
 object NaturalPowerInstallation {
     private lateinit var world: ServerLevel
     private lateinit var take: (String, Int) -> ItemStack
@@ -56,8 +55,7 @@ object NaturalPowerInstallation {
             "fuelRemaining" to checkNotNull(furnace.inventory).getItem(HeatFurnaceContainer.combustibleId).count,
             "bareWireRegistryId" to bareId,
             "insulatedWire" to (finalWire?.toString() ?: "not yet produced"),
-            "platform" to listOf(base.x,base.y,base.z),
-            "snapshots" to snapshots,
+            "platform" to listOf(base.x,base.y,base.z), "snapshots" to snapshots,
             "scope" to "Naturally acquired resources, actual survival placement and normal fuel/thermal/electrical processing; automated container insertion and configuration, no seeded power source or battery attached."
         )))
     }
@@ -66,10 +64,12 @@ object NaturalPowerInstallation {
               placeItem: (String, BlockPos, Direction) -> BlockPos,
               collectItem: (ItemStack) -> Unit) {
         world=level;take=removeItem;receive=collectItem
-        val highest=(-3..3).flatMap { dx -> (0..4).map { dz -> world.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,table.x+dx,table.z+dz) } }.max()
-        var pillar=table
-        val floorY=maxOf(highest+4,table.y+4)
-        check(floorY-table.y < 60) { "Natural campsite exceeds acquired platform budget" }
+        // The acquisition campsite can stack paid furnaces above the workbench. Start at its
+        // actual current top surface; never replace an acquired machine or natural obstruction.
+        val highest=(-3..3).flatMap { dx -> (0..4).map { dz -> world.getHeight(Heightmap.Types.MOTION_BLOCKING,table.x+dx,table.z+dz) } }.max()
+        var pillar=BlockPos(table.x,world.getHeight(Heightmap.Types.MOTION_BLOCKING,table.x,table.z)-1,table.z)
+        val floorY=maxOf(highest+4,pillar.y+4)
+        check(floorY-pillar.y < 60) { "Natural campsite exceeds acquired platform budget" }
         while(pillar.y<floorY-1) pillar=placeItem("minecraft:dark_oak_planks",pillar,Direction.UP)
         val floorCenter=placeItem("minecraft:cobblestone",pillar,Direction.UP)
         val built=mutableSetOf(floorCenter)
@@ -105,7 +105,7 @@ object NaturalPowerInstallation {
         check(!player.abilities.instabuild)
         stage=1;write(false)
     }
-    /** Called once per 20 normal server ticks, not an accelerated simulation loop. */
+    /** Once per 20 normal server ticks, without an accelerated simulation loop. */
     fun step():Boolean {
         check(++seconds <= 300) { "No fuel-paid insulated wire within five minutes" }
         val voltage=turbine.positiveLoad.voltage
@@ -129,8 +129,7 @@ object NaturalPowerInstallation {
             check(descriptor.insulated && !descriptor.melted && abs(descriptor.getRemainingLengthMeters(wire)-2.0)<1e-8)
             check(peakVoltage>1.0 && peakPower>.01 && checkNotNull(furnace.inventory).getItem(HeatFurnaceContainer.combustibleId).count<4) { "No observed thermal generation and paid fuel consumption" }
             check(insulator.inventory.getItem(0).isEmpty)
-            write(true,wire)
-            receive(wire)
+            write(true,wire);receive(wire)
             packet(furnace,HeatFurnaceElement.unserializeToogleTakeFuelId)
             return true
         }
