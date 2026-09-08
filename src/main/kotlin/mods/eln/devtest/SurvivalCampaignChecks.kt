@@ -216,6 +216,12 @@ object SurvivalCampaignChecks {
             report.test(name, "normal-break-one-machine-no-node") {
                 check(blockDrops.sumOf { it.count } == 1) { "Machine drops: $drops" }
                 check(NodeManager.instance!!.getNodeFromCoordonate(Coordinate(pos.x, pos.y, pos.z, world)) == null)
+                if (name == "Wire Roller") {
+                    check(drops.filter { ItemStack.isSameItem(it, Eln.findItemStack("Iron Roller Wheel", 1)) }.sumOf { it.count } == 2)
+                } else {
+                    val wire = drops.single { Eln.sixNodeItem.getDescriptor(it) is UtilityCableDescriptor }
+                    check((Eln.sixNodeItem.getDescriptor(wire) as UtilityCableDescriptor).getRemainingLengthMeters(wire) == 2.0)
+                }
             }
             var restored = Double.NaN
             if (blockDrops.size == 1) {
@@ -224,6 +230,9 @@ object SurvivalCampaignChecks {
                 check(Eln.transparentNodeItem.placeBlockAt(stack, player, world, pos, net.minecraft.core.Direction.UP))
                 val installed = machine(world, pos)
                 restored = if (name == "Wire Roller") installed.loadedMassKg else installed.insulationMetersBuffer
+                check((0 until installed.inventory.containerSize).all { installed.inventory.getItem(it).isEmpty }) {
+                    "Dropped inventory was also copied into the reinstalled machine"
+                }
             }
             write("relocation-${if (name == "Wire Roller") "roller" else "insulator"}.json", mapOf("beforeBuffer" to before, "afterBuffer" to restored, "refundedItems" to refunded, "drops" to drops.map { mapOf("id" to key(it), "count" to it.count, "components" to it.componentsPatch.toString()) }))
             report.test(name, "relocation-preserves-paid-buffer-or-refunds-input") {
@@ -244,6 +253,27 @@ object SurvivalCampaignChecks {
                     check(!tag.contains("inv") && !tag.contains("progressMeters"))
                     installed.loadedMassKg = 0.0; installed.insulationMetersBuffer = 0.0
                     installed.readItemStackNBT(tag)
+                    check(installed.loadedMassKg == .875 && installed.loadedMaterial == UtilityCableMaterial.COPPER)
+                    check(installed.insulationMetersBuffer == 29.5 && installed.progressMeters == 0.0)
+                    check(installed.selectedOption == 2 && installed.targetLengthMeters == 7)
+                }
+            }
+            report.test(name, "repeated-survival-relocation-preserves-fractional-buffer-once") {
+                // Previous dropped inventories are accounted above. Clear that fixture's loose
+                // entities so subsequent counts refer only to the next actual survival break.
+                world.getEntitiesOfClass(ItemEntity::class.java, AABB(pos).inflate(4.0)).forEach { it.discard() }
+                repeat(3) {
+                    player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack(Items.DIAMOND_PICKAXE))
+                    check(player.gameMode.destroyBlock(pos))
+                    val entities = world.getEntitiesOfClass(ItemEntity::class.java, AABB(pos).inflate(4.0))
+                    check(entities.size == 1 && entities.single().item.count == 1)
+                    val carried = entities.single().item.copy()
+                    check(ItemStack.isSameItem(carried, block))
+                    entities.single().discard()
+                    player.setItemInHand(InteractionHand.MAIN_HAND, carried)
+                    check(Eln.transparentNodeItem.placeBlockAt(carried, player, world, pos, net.minecraft.core.Direction.UP))
+                    carried.shrink(1) // placeBlockAt is the primitive; ordinary item use consumes one.
+                    val installed = machine(world, pos)
                     check(installed.loadedMassKg == .875 && installed.loadedMaterial == UtilityCableMaterial.COPPER)
                     check(installed.insulationMetersBuffer == 29.5 && installed.progressMeters == 0.0)
                     check(installed.selectedOption == 2 && installed.targetLengthMeters == 7)

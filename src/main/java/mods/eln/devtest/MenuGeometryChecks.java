@@ -54,6 +54,7 @@ public final class MenuGeometryChecks {
                 throw new AssertionError("Panel outside viewport: viewport="+screen.width+"x"+screen.height+" panel="+helper.xSize+"x"+helper.ySize+" origin="+left+","+top);
             for (Object object : controls) if (object instanceof AbstractWidget widget) visibleBounds(screen,widget);
             if (screen instanceof mods.eln.sixnode.electricaldatalogger.ElectricalDataLoggerGui) {
+                nonOverlappingControls(controls);
                 var configField = screen.getClass().getDeclaredField("config");
                 var stateField = screen.getClass().getDeclaredField("state");
                 configField.setAccessible(true); stateField.setAccessible(true);
@@ -62,6 +63,7 @@ public final class MenuGeometryChecks {
                 click(screen, config);
                 if (stateField.get(screen).equals(before)) throw new AssertionError("Logger configuration button did not work");
                 for (Object object : controls) if (object instanceof AbstractWidget widget) visibleBounds(screen,widget);
+                nonOverlappingControls(controls);
                 click(screen, config);
                 if (!stateField.get(screen).equals(before)) throw new AssertionError("Logger back button did not work");
             }
@@ -81,6 +83,22 @@ public final class MenuGeometryChecks {
         double y = widget.getY() + widget.getHeight() / 2.0;
         screen.mouseClicked(x, y, 0);
         screen.mouseReleased(x, y, 0);
+    }
+    static void toggleLoggerConfiguration(Screen screen) throws ReflectiveOperationException {
+        var field = mods.eln.sixnode.electricaldatalogger.ElectricalDataLoggerGui.class.getDeclaredField("config");
+        field.setAccessible(true);
+        click(screen, (AbstractWidget)field.get(screen));
+    }
+    private static void nonOverlappingControls(List<?> controls) {
+        for (int i = 0; i < controls.size(); i++) {
+            if (!(controls.get(i) instanceof AbstractWidget a) || !a.visible) continue;
+            for (int j = i + 1; j < controls.size(); j++) {
+                if (!(controls.get(j) instanceof AbstractWidget b) || !b.visible) continue;
+                if (a.getX() < b.getX()+b.getWidth() && b.getX() < a.getX()+a.getWidth()
+                        && a.getY() < b.getY()+b.getHeight() && b.getY() < a.getY()+a.getHeight())
+                    throw new AssertionError("Logger controls overlap: " + a.getMessage().getString() + " / " + b.getMessage().getString());
+            }
+        }
     }
     private static void visibleBounds(Screen screen, AbstractWidget widget) {
         if(!widget.visible)return;

@@ -54,6 +54,18 @@ jobs:
         run: python3 script/test_ore_worldgen.py
       - name: Build and test
         run: ./gradlew build
+      - name: Verify survival recipe data matches its declarations
+        run: |
+          ./gradlew --no-daemon runData
+          python3 - <<'PY'
+          import json, pathlib, subprocess
+          for item in ('wire_snips', 'polarized_shaft_generator', 'polarized_shaft_motor'):
+              for folder in ('recipe', 'advancement/recipes/misc'):
+                  path = f'src/generated/resources/data/eln/{folder}/{item}.json'
+                  committed = json.loads(subprocess.check_output(['git', 'show', f'HEAD:{path}']))
+                  generated = json.loads(pathlib.Path(path).read_text())
+                  assert committed == generated, f'Stale generated recipe data: {path}'
+          PY
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v4

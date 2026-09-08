@@ -75,9 +75,17 @@ public final class AllMenusClientChecks {
                 });
                 check(t.id,"controls-panel-slots-and-resize-"+suffix,()->MenuGeometryChecks.verify(mc.screen,size==0));
                 Screenshot.grab(mc.gameDirectory,"menu-"+t.id.replace(':','-')+"-"+suffix+".png",mc.getMainRenderTarget(),m->Eln.LOGGER.info("Native menu screenshot {}",m.getString()));
-                if(size++==0) {
-                    mc.getWindow().setWindowed(640,480);mc.resizeDisplay();ticks=0;
-                } else {phase=4;ticks=0;}
+                if (mc.screen instanceof mods.eln.sixnode.electricaldatalogger.ElectricalDataLoggerGui) {
+                    MenuGeometryChecks.toggleLoggerConfiguration(mc.screen);
+                    phase=5;ticks=0;
+                } else advanceSize(mc);
+            } else if (phase==5) {
+                if(++ticks<10) return; // Capture a rendered configuration frame, not the preceding display frame.
+                var t=TARGETS.get(index);
+                String suffix=size==0?"normal":"minimum";
+                Screenshot.grab(mc.gameDirectory,"logger-config-"+t.id.replace(':','-')+"-"+suffix+".png",mc.getMainRenderTarget(),m->Eln.LOGGER.info("Logger configuration screenshot {}",m.getString()));
+                MenuGeometryChecks.toggleLoggerConfiguration(mc.screen);
+                advanceSize(mc);
             } else if(phase==4) {
                 if(++ticks<20) return;
                 if(mc.screen!=null) mc.screen.onClose();
@@ -96,5 +104,10 @@ public final class AllMenusClientChecks {
     }
     private static void check(String id,String name,Runnable body) {
         REPORT.test(id,name,()->{body.run();return kotlin.Unit.INSTANCE;});REPORT.write(false);
+    }
+    private static void advanceSize(Minecraft mc) {
+        if(size++==0) {
+            mc.getWindow().setWindowed(640,480);mc.resizeDisplay();phase=3;ticks=0;
+        } else {phase=4;ticks=0;}
     }
 }

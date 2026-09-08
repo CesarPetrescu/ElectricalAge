@@ -80,6 +80,8 @@ jobs:
           assert d['complete'] and d['failures']==0 and len(d['results'])>0
           assert len({(r['id'],r['check']) for r in d['results']})==len(d['results'])
           assert len(list(pathlib.Path('run/client/screenshots').glob('menu-*.png')))*2==len(d['results'])
+          screenshots=pathlib.Path('run/client/screenshots')
+          assert len(list(screenshots.glob('logger-config-*.png')))==len(list(screenshots.glob('menu-*data_logger-*.png')))
           PY
       - uses: actions/upload-artifact@v4
         if: always()

@@ -1,6 +1,6 @@
 # Survival/runtime audit follow-up
 
-Baseline: `a3b9b046c08abfd8b8979e9093b7f830e7ee0568`. PR #5 preserves the opt-in campaign and its original failing runs. These repairs are verified by subsequent CI, not by relabeling those earlier failures.
+Baseline: `a3b9b046c08abfd8b8979e9093b7f830e7ee0568`. PR #5 preserves the opt-in campaign and its original failing runs. Repair verification is in progress; original audit results are not relabeled as passing evidence.
 
 ## Repairs
 
@@ -16,7 +16,9 @@ Baseline: `a3b9b046c08abfd8b8979e9093b7f830e7ee0568`. PR #5 preserves the opt-in
 
 Main/PR CI now also requires survival material/crafting, acquisition, all advertised GUI shards, directional overhead rendering, and the natural-resource fuel-powered production campaign. Release publishing waits for these jobs as well as the existing suites.
 
-Survival fixtures use explicitly seeded ingredients for deterministic regression tests. The separate natural-resource campaign starts empty and pays ingredients from harvested resources, but uses automated travel, placement and menu interactions; it is not a human-equivalent survival playthrough. Fractional item-state roundtrips are synthetic boundary checks, distinct from ordinary survival break/reinstallation.
+The three acquisition recipes include packaged JSON and recipe-book unlocks. CI runs data generation and compares those files against their Kotlin declarations, so adding a declaration without shipping its data cannot silently pass again.
+
+Survival fixtures use explicitly seeded ingredients for deterministic regression tests. The separate natural-resource campaign starts empty and pays ingredients from harvested resources, but uses automated travel, placement and menu interactions; it is not a human-equivalent survival playthrough. Fractional item-state roundtrips use synthetic values; three repeated ordinary survival breaks also check those values, single machine drops, and the absence of copied inventories.
 
 ## Shutdown investigation
 
