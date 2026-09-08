@@ -11,8 +11,6 @@ import mods.eln.sixnode.electricalcable.UtilityCableDescriptor
 import mods.eln.sixnode.electricalcable.UtilityCableMaterial
 import net.minecraft.core.BlockPos
 import net.minecraft.core.registries.BuiltInRegistries
-import net.minecraft.nbt.CompoundTag
-import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.InteractionHand
@@ -48,7 +46,6 @@ object SurvivalCampaignChecks {
         return if (bundle != null && bundle.checkSameItemStack(stack))
             "$base[${bundle.getMaterial(stack)}:${bundle.getTargetLabel(stack)}]" else base
     }
-    private fun item(id: String) = BuiltInRegistries.ITEM.get(ResourceLocation.parse(id))
     private fun write(name: String, value: Any) {
         Files.createDirectories(directory)
         Files.writeString(directory.resolve(name), GsonBuilder().setPrettyPrinting().create().toJson(value))
@@ -56,7 +53,7 @@ object SurvivalCampaignChecks {
     private fun machine(world: ServerLevel, pos: BlockPos) =
         (NodeManager.instance!!.getNodeFromCoordonate(Coordinate(pos.x, pos.y, pos.z, world)) as TransparentNode).element as WireMachineElement
 
-    @JvmStatic @SubscribeEvent fun tick(event: ServerTickEvent.Post) {
+    @SubscribeEvent fun tick(event: ServerTickEvent.Post) {
         if (System.getProperty("eln.campaign") != "survival") return
         ticks++
         try {
