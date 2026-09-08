@@ -22,13 +22,14 @@ public class ElectricalDataLoggerGui extends GuiContainerEln implements GuiTextF
     GuiButtonEln resetBt, voltageType, energyType, currentType, powerType, celsiusType, temperatureType, humidityType, percentType, noType, zeroLineToggle, config, printBt, pause;
     GuiTextFieldEln samplingPeriod, maxValue, minValue, yCursorValue;
     ElectricalDataLoggerRender render;
-    private static final int GUI_WIDTH = 176;
-    private static final int GUI_HEIGHT = 286;
-    private static final int PLAYER_INV_X = 8;
-    private static final int PLAYER_INV_Y = 204;
+    private int GUI_WIDTH = 176;
+    private int GUI_HEIGHT = 286;
+    private int PLAYER_INV_X = 8;
+    private int PLAYER_INV_Y = 204;
     private static final int GRAPH_TOP = 53;
-    private static final int PRINT_BUTTON_Y = 179;
-    private static final int CONFIG_FIELDS_Y = 157;
+    private int PRINT_BUTTON_Y = 179;
+    private int CONFIG_FIELDS_Y = 157;
+    private boolean compact;
     private static final float TEMPERATURE_F_DEFAULT_MIN = -40f;
     private static final float TEMPERATURE_F_DEFAULT_MAX = 122f;
 
@@ -87,6 +88,10 @@ public class ElectricalDataLoggerGui extends GuiContainerEln implements GuiTextF
 
     @Override
     public void initGui() {
+        State previousState = state;
+        String previousPeriod = samplingPeriod == null ? null : samplingPeriod.getText();
+        String previousMin = minValue == null ? null : minValue.getText();
+        String previousMax = maxValue == null ? null : maxValue.getText();
         super.initGui();
 
         config = newGuiButton(GUI_WIDTH / 2 - 50, 8 - 2, 100, "");
@@ -102,6 +107,13 @@ public class ElectricalDataLoggerGui extends GuiContainerEln implements GuiTextF
         humidityType = newGuiButton(GUI_WIDTH / 2 + 2, 8 + 80 + 8 - 2, 75, tr("Humidity [%%]"));
         noType = newGuiButton(GUI_WIDTH / 2 - 75 - 2, 8 + 100 + 10 - 2, 75, tr("Unit"));
         zeroLineToggle = newGuiButton(GUI_WIDTH / 2 + 2, 8 + 100 + 10 - 2, 75, tr("0 Line"));
+
+        if (compact) {
+            GuiButtonEln[] types = {voltageType, currentType, powerType, celsiusType, percentType,
+                    energyType, temperatureType, humidityType, noType, zeroLineToggle};
+            for (int i = 0; i < types.length; i++)
+                types[i].setPosition(getGuiLeft() + 8 + (i % 3) * 80, getGuiTop() + 28 + (i / 3) * 22);
+        }
 
         resetBt = newGuiButton(GUI_WIDTH / 2 - 50, 8 + 20 + 2 - 2, 48, tr("Reset"));
         pause = newGuiButton(GUI_WIDTH / 2 + 2, 8 + 20 + 2 - 2, 48, "");
@@ -120,7 +132,18 @@ public class ElectricalDataLoggerGui extends GuiContainerEln implements GuiTextF
         minValue.setText(render.log.minValue);
         minValue.setComment(new String[]{tr("Y-axis min")});
 
-        displayEntry();
+        if (previousPeriod != null) samplingPeriod.setText(previousPeriod);
+        if (previousMin != null) minValue.setText(previousMin);
+        if (previousMax != null) maxValue.setText(previousMax);
+        // Only this client's slot geometry changes; slot IDs and server inventory stay intact.
+        net.neoforged.fml.util.ObfuscationReflectionHelper.setPrivateValue(net.minecraft.world.inventory.Slot.class,
+                getMenu().getSlot(ElectricalDataLoggerContainer.paperSlotId), GUI_WIDTH / 2 - 44, "x");
+        net.neoforged.fml.util.ObfuscationReflectionHelper.setPrivateValue(net.minecraft.world.inventory.Slot.class,
+                getMenu().getSlot(ElectricalDataLoggerContainer.printSlotId), GUI_WIDTH / 2 + 28, "x");
+        for (int id = 0; id < 2; id++)
+            net.neoforged.fml.util.ObfuscationReflectionHelper.setPrivateValue(net.minecraft.world.inventory.Slot.class,
+                    getMenu().getSlot(id), PRINT_BUTTON_Y + 5, "y");
+        if (previousState == State.config) configEntry(); else displayEntry();
     }
 
     @Override
@@ -248,7 +271,7 @@ public class ElectricalDataLoggerGui extends GuiContainerEln implements GuiTextF
 
             GL11.glPushMatrix();
             GL11.glTranslatef(getGuiLeft() + 8, getGuiTop() + GRAPH_TOP, 0);
-            GL11.glScalef(50, 50, 1f);
+            GL11.glScalef(compact ? 75 : 50, compact ? 32 : 50, 1f);
 
             GL11.glColor4f(0.15f, 0.15f, 0.15f, 1.0f);
             UtilsClient.disableTexture();
@@ -270,6 +293,13 @@ public class ElectricalDataLoggerGui extends GuiContainerEln implements GuiTextF
 
     @Override
     protected GuiHelperContainer newHelper() {
+        compact = height < 302;
+        GUI_WIDTH = compact ? 256 : 176;
+        GUI_HEIGHT = compact ? 232 : 286;
+        PLAYER_INV_X = compact ? 47 : 8;
+        PLAYER_INV_Y = compact ? 150 : 204;
+        PRINT_BUTTON_Y = compact ? 125 : 179;
+        CONFIG_FIELDS_Y = compact ? 119 : 157;
         return new GuiHelperContainer(this, GUI_WIDTH, GUI_HEIGHT, PLAYER_INV_X, PLAYER_INV_Y);
     }
 }

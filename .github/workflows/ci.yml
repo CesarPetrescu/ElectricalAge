@@ -214,9 +214,29 @@ jobs:
     needs: build
     uses: ./.github/workflows/ore-worldgen.yml
 
+  survival:
+    name: Survival material and recipe contracts
+    uses: ./.github/workflows/playtest-survival.yml
+
+  acquisition:
+    name: Survival acquisition contracts
+    uses: ./.github/workflows/playtest-acquisition.yml
+
+  menus:
+    name: Native menu resize contracts
+    uses: ./.github/workflows/playtest-all-menus.yml
+
+  overhead:
+    name: Overhead support rendering
+    uses: ./.github/workflows/playtest-overhead.yml
+
+  natural-power:
+    name: Natural resource powered production
+    uses: ./.github/workflows/playtest-natural-power.yml
+
   release:
     name: Publish latest 1.21.1 mod
-    needs: [build, benchmark, smoke, compatibility, evaporative, wire-thermal, multiplayer, ore-worldgen]
+    needs: [build, benchmark, smoke, compatibility, evaporative, wire-thermal, multiplayer, ore-worldgen, survival, acquisition, menus, overhead, natural-power]
     if: >-
       github.repository == 'CesarPetrescu/ElectricalAge' &&
       github.ref == 'refs/heads/main' &&

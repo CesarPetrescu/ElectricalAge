@@ -1,8 +1,7 @@
 name: Survival recipes and relocation contracts
 on:
-  push:
-    branches: [qa/survival-runtime-2026-09-08]
-    paths: [.github/workflows/playtest-survival.yml, src/main/kotlin/mods/eln/devtest/SurvivalCampaignChecks.kt]
+  workflow_call:
+  workflow_dispatch:
 permissions:
   contents: read
 defaults:

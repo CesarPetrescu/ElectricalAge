@@ -1,8 +1,7 @@
 name: Native overhead support orientation
 on:
-  push:
-    branches: [qa/survival-runtime-2026-09-08]
-    paths: [.github/workflows/playtest-overhead.yml, src/main/java/mods/eln/devtest/OverheadOrientationChecks.java]
+  workflow_call:
+  workflow_dispatch:
 permissions:
   contents: read
 defaults:

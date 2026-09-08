@@ -60,6 +60,7 @@ object SurvivalCampaignChecks {
             if (ticks == 20) {
                 report.write(false)
                 recipes(event.server.overworld())
+                mods.eln.transparentnode.heatfurnace.HeatFurnaceFuelChecks.run(event.server.overworld(), report)
                 fixtures(event.server.overworld())
             }
             if (ticks == 100) {
@@ -84,7 +85,7 @@ object SurvivalCampaignChecks {
         val table = BlockPos(144, 64, 144)
         world.setBlockAndUpdate(table, Blocks.CRAFTING_TABLE.defaultBlockState())
         player.teleportTo(table.x + .5, table.y + 1.0, table.z + 1.5)
-        val transactionNames = setOf("eln:tree_resin_collector", "eln:machine_block", "eln:copper_cable", "eln:iron_cable", "eln:low_voltage_cable", "eln:electrical_motor", "eln:iron_roller_wheel", "eln:wire_roller", "eln:wire_insulator", "eln:wire_combiner", "eln:stone_heat_furnace", "eln:48v_turbine", "eln:multimeter", "eln:thermometer", "eln:cost_oriented_battery", "eln:simple_lamp_socket")
+        val transactionNames = setOf("eln:wire_snips", "eln:polarized_shaft_generator", "eln:polarized_shaft_motor", "eln:tree_resin_collector", "eln:machine_block", "eln:copper_cable", "eln:iron_cable", "eln:low_voltage_cable", "eln:electrical_motor", "eln:iron_roller_wheel", "eln:wire_roller", "eln:wire_insulator", "eln:wire_combiner", "eln:stone_heat_furnace", "eln:48v_turbine", "eln:multimeter", "eln:thermometer", "eln:cost_oriented_battery", "eln:simple_lamp_socket")
         val transacted = mutableSetOf<String>()
         for (holder in crafting) {
             val recipe = holder.value()
@@ -228,6 +229,24 @@ object SurvivalCampaignChecks {
             report.test(name, "relocation-preserves-paid-buffer-or-refunds-input") {
                 check(abs(restored + refunded * (if (name == "Wire Roller") 1.0 else 32.0) - before) < 1e-8) {
                     "Paid buffer lost during ordinary survival break/reinstall: before=$before restored=$restored refunded=$refunded"
+                }
+            }
+            report.test(name, "fractional-buffer-item-state-roundtrip-without-inventory-or-work") {
+                val installed = machine(world, pos)
+                installed.loadedMaterial = UtilityCableMaterial.COPPER
+                installed.loadedMassKg = .875
+                installed.insulationMetersBuffer = 29.5
+                installed.progressMeters = .75
+                installed.selectedOption = 2
+                installed.targetLengthMeters = 7
+                repeat(3) {
+                    val tag = installed.getItemStackNBT()
+                    check(!tag.contains("inv") && !tag.contains("progressMeters"))
+                    installed.loadedMassKg = 0.0; installed.insulationMetersBuffer = 0.0
+                    installed.readItemStackNBT(tag)
+                    check(installed.loadedMassKg == .875 && installed.loadedMaterial == UtilityCableMaterial.COPPER)
+                    check(installed.insulationMetersBuffer == 29.5 && installed.progressMeters == 0.0)
+                    check(installed.selectedOption == 2 && installed.targetLengthMeters == 7)
                 }
             }
         }

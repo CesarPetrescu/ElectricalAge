@@ -152,6 +152,30 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
 
     override fun initialize() = connect()
 
+    // Inventories drop separately. Carry only paid, unconsumed buffers and settings;
+    // never copy slots or partially completed work into the machine item.
+    override fun getItemStackNBT() = CompoundTag().apply {
+        putInt("selectedOption", selectedOption)
+        putInt("targetLengthMeters", targetLengthMeters)
+        putInt("loadedMaterial", loadedMaterial?.ordinal ?: -1)
+        putDouble("loadedMassKg", loadedMassKg)
+        putDouble("insulationMetersBuffer", insulationMetersBuffer)
+    }
+
+    override fun readItemStackNBT(nbt: CompoundTag?) {
+        if (nbt == null) return
+        selectedOption = nbt.getInt("selectedOption").coerceAtLeast(0)
+        if (nbt.contains("targetLengthMeters"))
+            targetLengthMeters = nbt.getInt("targetLengthMeters").coerceIn(1, WireProduction.MAX_LENGTH)
+        loadedMaterial = if (nbt.contains("loadedMaterial"))
+            UtilityCableMaterial.entries.getOrNull(nbt.getInt("loadedMaterial")) else null
+        loadedMassKg = nbt.getDouble("loadedMassKg").takeIf { it.isFinite() && it >= 0.0 && loadedMaterial != null } ?: 0.0
+        insulationMetersBuffer = nbt.getDouble("insulationMetersBuffer").takeIf { it.isFinite() && it >= 0.0 } ?: 0.0
+        progressMeters = 0.0
+        progressTargetMeters = 0.0
+        running = false
+    }
+
     override fun getElectricalLoad(side: Direction, lrdu: LRDU): ElectricalLoad? {
         return if (lrdu == LRDU.Down) powerLoad else null
     }

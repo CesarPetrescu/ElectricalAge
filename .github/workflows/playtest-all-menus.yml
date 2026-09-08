@@ -1,8 +1,7 @@
 name: All advertised descriptor GUIs
 on:
-  push:
-    branches: [qa/survival-runtime-2026-09-08]
-    paths: [.github/workflows/playtest-all-menus.yml, src/main/kotlin/mods/eln/devtest/CampaignMenuFixtures.kt, src/main/java/mods/eln/devtest/AllMenusClientChecks.java]
+  workflow_call:
+  workflow_dispatch:
 permissions:
   contents: read
 defaults:

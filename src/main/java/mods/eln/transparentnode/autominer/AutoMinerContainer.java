@@ -30,10 +30,20 @@ public class AutoMinerContainer extends BasicContainer {
             ElectricalDrillDescriptor.class, SlotSkin.medium,
             new String[]{tr("Drill slot")});
         slots[1] = new GenericItemUsingDamageSlot(inventory, 1, 3000, 3000, 1,
-            OreScanner.class, SlotSkin.medium, new String[]{tr("Ore scanner slot")});
+            OreScanner.class, SlotSkin.none, new String[]{tr("Ore scanner slot")}) {
+            // Reserved legacy inventory index. Scanner behavior is not implemented;
+            // reject transfers instead of accepting items into an off-screen slot.
+            @Override public boolean isActive() { return false; }
+            @Override public boolean mayPlace(net.minecraft.world.item.ItemStack stack) { return false; }
+            @Override public boolean mayPickup(Player player) { return false; }
+        };
         slots[2] = new GenericItemUsingDamageSlot(inventory, MiningPipeSlotId, 134 + 18, 8, 64,
             MiningPipeDescriptor.class, SlotSkin.medium, new String[]{tr("Mining pipe slot")});
 
         return slots;
+    }
+
+    @Override public net.minecraft.world.item.ItemStack quickMoveStack(Player player, int slot) {
+        return slot == 1 ? net.minecraft.world.item.ItemStack.EMPTY : super.quickMoveStack(player, slot);
     }
 }

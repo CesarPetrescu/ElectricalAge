@@ -1,8 +1,7 @@
 name: Natural-resource fuel-powered wire production
 on:
-  push:
-    branches: [qa/survival-runtime-2026-09-08]
-    paths: [.github/workflows/playtest-natural-power.yml, src/main/kotlin/mods/eln/devtest/NaturalPowerInstallation.kt, tools/qa/enable_natural_power.py]
+  workflow_call:
+  workflow_dispatch:
 permissions:
   contents: read
 defaults:
