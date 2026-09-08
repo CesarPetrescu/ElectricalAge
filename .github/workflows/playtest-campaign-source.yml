@@ -1,0 +1,27 @@
+name: Playtest campaign source
+on:
+  push:
+    branches: [qa/survival-runtime-2026-09-08]
+    paths: [.github/workflows/playtest-campaign-source.yml]
+permissions:
+  contents: read
+jobs:
+  source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Record baseline and source
+        shell: bash
+        run: |
+          git rev-parse HEAD > source-commit.txt
+          echo a3b9b046c08abfd8b8979e9093b7f830e7ee0568 > production-baseline.txt
+          tar -czf playtest-source.tar.gz --exclude='*.blend*' --exclude='*.xcf' src tools script build.gradle.kts settings.gradle.kts gradle.properties gradle gradlew gradlew.bat .github docs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: playtest-source
+          path: |
+            playtest-source.tar.gz
+            source-commit.txt
+            production-baseline.txt
+          retention-days: 14
