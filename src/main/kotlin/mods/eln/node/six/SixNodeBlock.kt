@@ -9,6 +9,7 @@ import mods.eln.misc.Utils.println
 import mods.eln.misc.Utils.updateAllLightTypes
 import mods.eln.node.NodeBase
 import mods.eln.node.NodeBlock
+import mods.eln.node.LoadedBlockEntities
 import net.minecraft.world.InteractionHand
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction as EnumFacing
@@ -49,7 +50,7 @@ class SixNodeBlock : NodeBlock(nodeProperties().strength(0.3f, 1.0f), 0) {
     override fun newBlockEntity(pos: BlockPos, state: BlockState): BlockEntity = SixNodeEntity(pos, state)
 
     override fun getCloneItemStack(state: BlockState, target: HitResult, world: LevelReader, pos: BlockPos, player: Player): ItemStack {
-        val entity = world.getBlockEntity(pos) as SixNodeEntity?
+        val entity = LoadedBlockEntities.get(world, pos) as? SixNodeEntity
         if (entity != null && target is BlockHitResult) {
             val (vx, vy, vz) = hitFractions(target, pos)
             val render = entity.elementRenderList[resolveElementSide(world, pos, fromFacing(target.direction), vx, vy, vz).int]
@@ -93,7 +94,7 @@ class SixNodeBlock : NodeBlock(nodeProperties().strength(0.3f, 1.0f), 0) {
     /** The outline and ray-trace shape: a full cube for bodies, else one slab per populated face. */
     override fun getShape(state: BlockState, world: BlockGetter, pos: BlockPos, context: CollisionContext): VoxelShape {
         if (hasBody(world, pos)) return Shapes.block()
-        val entity = world.getBlockEntity(pos) as? SixNodeEntity ?: return Shapes.empty()
+        val entity = LoadedBlockEntities.get(world, pos) as? SixNodeEntity ?: return Shapes.empty()
         var shape = Shapes.empty()
         for (direction in Direction.values()) {
             val enabled = if (world is Level && !world.isClientSide) {
@@ -122,9 +123,8 @@ class SixNodeBlock : NodeBlock(nodeProperties().strength(0.3f, 1.0f), 0) {
     }
 
     fun getEntity(world: BlockGetter, x: Int, y: Int, z: Int): SixNodeEntity? {
-        val tileEntity = world.getBlockEntity(x, y, z)
+        val tileEntity = LoadedBlockEntities.get(world, BlockPos(x, y, z))
         if (tileEntity != null && tileEntity is SixNodeEntity) return tileEntity
-        println("ASSERTSixNodeEntity getEntity() null")
         return null
     }
 
@@ -274,7 +274,7 @@ class SixNodeBlock : NodeBlock(nodeProperties().strength(0.3f, 1.0f), 0) {
 
     /** Shared by interaction, pick-block and breaking on both logical sides. */
     fun resolveElementSide(world: BlockGetter, pos: BlockPos, hitSide: Direction, vx: Float, vy: Float, vz: Float): Direction {
-        val entity = world.getBlockEntity(pos) as? SixNodeEntity ?: return hitSide
+        val entity = LoadedBlockEntities.get(world, pos) as? SixNodeEntity ?: return hitSide
         if (nodeHasCache(world, pos.x, pos.y, pos.z)) return hitSide
         val serverNode = if (world is Level && !world.isClientSide) entity.node as? SixNode else null
         val enabled: (Direction) -> Boolean = { direction ->
@@ -378,14 +378,14 @@ class SixNodeBlock : NodeBlock(nodeProperties().strength(0.3f, 1.0f), 0) {
      * there, so no body.
      */
     fun nodeHasCache(world: BlockGetter, x: Int, y: Int, z: Int): Boolean {
-        val tileEntity = world.getBlockEntity(x, y, z) as? SixNodeEntity ?: return false
+        val tileEntity = LoadedBlockEntities.get(world, BlockPos(x, y, z)) as? SixNodeEntity ?: return false
         if (isRemote(world)) return tileEntity.sixNodeCacheBlock !== Blocks.AIR
         val sixNode = tileEntity.node as SixNode? ?: return false
         return sixNode.sixNodeCacheBlock !== Blocks.AIR
     }
 
     override fun getLightBlock(state: BlockState, w: BlockGetter, pos: BlockPos): Int {
-        val sne = w.getBlockEntity(pos) as? SixNodeEntity ?: return 0
+        val sne = LoadedBlockEntities.get(w, pos) as? SixNodeEntity ?: return 0
         val b = sne.sixNodeCacheBlock
         return if (b === Blocks.AIR) 0 else try {
             b.defaultBlockState().getLightBlock(w, pos)

@@ -74,6 +74,7 @@ def plan(profile):
     one("server", "leave-fixture-chunk", "away")
     both("client-chunk-unloaded", "unloaded")
     one("server", "server-chunk-unloaded", "unloaded")
+    one("server", "passive-queries-do-not-load-chunks", "passive-unloaded-queries")
     one("server", "reload-fixture-chunk", "home")
     both("reload-source-sync", "source", voltage=24)
     both("reload-monitor-sync", "monitor")

@@ -22,6 +22,7 @@ import net.minecraft.world.level.GameRules
 import net.minecraft.world.level.GameType
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.phys.shapes.CollisionContext
 import net.neoforged.bus.api.SubscribeEvent
 import net.neoforged.fml.ModList
 import net.neoforged.neoforge.common.NeoForge
@@ -122,6 +123,24 @@ class MultiplayerServerProbe : MultiplayerProbe("server") {
                 // A real chunk-source observation: no force-load, getBlockEntity or NodeManager lookup here.
                 for (pos in listOf(MultiplayerScene.source, MultiplayerScene.monitor, MultiplayerScene.adapter)) {
                     if (world.chunkSource.getChunkNow(pos.x shr 4, pos.z shr 4) != null) return null
+                }
+            }
+            "passive-unloaded-queries" -> {
+                val pos = MultiplayerScene.monitor
+                fun requireUnloaded(query: String) = check(world.chunkSource.getChunkNow(pos.x shr 4, pos.z shr 4) == null) {
+                    "Passive $query loaded the fixture chunk"
+                }
+                requireUnloaded("precondition")
+                for (block in listOf(Eln.sixNodeBlock, Eln.transparentNodeBlock)) {
+                    val state = block.defaultBlockState()
+                    val context = CollisionContext.empty()
+                    state.getShape(world, pos, context); requireUnloaded("outline")
+                    state.getCollisionShape(world, pos, context); requireUnloaded("collision")
+                    state.getLightBlock(world, pos); requireUnloaded("opacity")
+                    state.propagatesSkylightDown(world, pos); requireUnloaded("skylight")
+                    state.getLightEmission(world, pos); requireUnloaded("emission")
+                    state.getSignal(world, pos, net.minecraft.core.Direction.UP); requireUnloaded("redstone signal")
+                    state.canRedstoneConnectTo(world, pos, net.minecraft.core.Direction.UP); requireUnloaded("redstone connection")
                 }
             }
             "circuit" -> {

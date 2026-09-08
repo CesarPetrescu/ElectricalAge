@@ -24,7 +24,7 @@ Every process checks that it loaded the expected ELN JAR's SHA-256. Clients asse
 | Shared monitor | Both players open the same real menu; a real Print-button click consumes exactly one paper. Repeated requests cannot overwrite/duplicate the print. Concurrent vanilla output transfers leave exactly one print across player inventories. |
 | Create adapter | With both menus open, one player disengages, the other selects a different gear, and both menus and block entities agree. The live Create motor drives the ELN output to the selected speed. |
 | Dimension travel | Both clients travel to the Nether and return; ELN source/monitor state synchronizes again. |
-| Chunk reload | Both players move away; the test waits for actual server **and** client chunk unload, then returns and verifies the circuit and client state. It does not force-load the fixture to pretend a reload occurred. |
+| Chunk reload | Both players move away; the test waits for actual server **and** client chunk unload, checks that passive shape/light/redstone queries do not load it, then returns and verifies the circuit and client state. It does not force-load the fixture to pretend a reload occurred. |
 | Server restart | Settings, monitor data and the single printed item survive a fresh dedicated-server process; client state and the Create gear/speed are checked again. |
 
 The two headless windows cannot both own native keyboard focus. The isolation test therefore sends the same production key payload each client normally sends. It does not claim to test physical keyboard or operating-system focus events. The focus-loss cleanup also releases a held modifier when opening a GUI or leaving the window.
@@ -46,6 +46,7 @@ The orchestration entry point is `script/run_multiplayer.py`; its process/file a
 
 ## What still needs more testing
 
+- Earlier runs exposed an intermittent shutdown loop in `ChunkMap.scheduleUnload` / `processUnloads`, after `Saving worlds`. Passive ELN shape/light/redstone reads now use loaded-only block-entity lookup, and CI explicitly checks these queries cannot reload an absent chunk. This removes an unsafe chunk-loading path, but a single green run is not proof that every shutdown race is eliminated. Shutdown retains its hard failure deadline, thread dumps and failed-world capture.
 - This is representative cross-client coverage, **not a behavior test for every descriptor**. Batteries, every machine GUI, wireless networks, cooler UI, computer mods and all lamp variants need their own two-player scenarios.
 - Custom/datapack dimension identifiers are not covered by the vanilla Nether/Overworld trip. The legacy integer dimension mapping needs a dedicated review before claiming arbitrary dimension support.
 - Internet latency, packet loss, many-player load, long-running worlds, permissions/claim mods and client-only rendering mods are not covered.
