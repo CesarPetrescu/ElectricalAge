@@ -2,10 +2,19 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
-from run_ore_worldgen import ORES, PROFILES, enabled, expected_checks, validate
+from run_ore_worldgen import ORES, PROFILES, enabled, expected_checks, validate, read_properties
 
 
 class OreGateTest(unittest.TestCase):
+    def test_pinned_versions_accept_property_whitespace(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "versions.properties"
+            path.write_text("  # ignored = comment\n  neoVersion    = 21.1.249 \nminecraftVersion = 1.21.1\n")
+            self.assertEqual(read_properties(path), {"neoVersion": "21.1.249", "minecraftVersion": "1.21.1"})
+        actual = read_properties(Path(__file__).resolve().parents[1] / "gradle.properties")
+        self.assertTrue(actual["neoVersion"])
+        self.assertEqual(actual["minecraftVersion"], "1.21.1")
+
     def fixture(self, profile="default"):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)

@@ -17,6 +17,12 @@ ORES = ("copper", "lead", "tungsten", "cinnabar")
 PROFILES = {"default": 20260908, "default-alt": 8675309, "disabled": 20260908, "mixed": 8675309}
 
 
+def read_properties(path):
+    return {key.strip(): value.strip() for key, value in
+        (line.split("=", 1) for line in path.read_text().splitlines()
+         if "=" in line and not line.lstrip().startswith(("#", "!")))}
+
+
 def enabled(profile, ore):
     return profile in ("default", "default-alt") or (profile == "mixed" and ore in ("lead", "cinnabar"))
 
@@ -116,14 +122,15 @@ def main():
     sha = hashlib.sha256(jar.read_bytes()).hexdigest()
     output = Path("build/ore-worldgen-artifacts").resolve()
     output.mkdir(parents=True, exist_ok=False)
+    (output / "request.json").write_text(json.dumps({"profile": args.profile, "jarSha256": sha}))
     root = Path(tempfile.mkdtemp(prefix="eln-ore-", dir=os.environ["RUNNER_TEMP"]))
     server = root / "server"
     server.mkdir()
     runtime = Path(os.environ["RUNNER_TEMP"]) / "eln-ore-runtime"
     runtime.mkdir(exist_ok=True)
     java = str(Path(os.environ["JAVA_HOME"]) / "bin/java")
-    properties = dict(line.split("=", 1) for line in Path("gradle.properties").read_text().splitlines() if "=" in line and not line.startswith("#"))
-    neo = properties["neoVersion"].strip()
+    properties = read_properties(Path("gradle.properties"))
+    neo = properties["neoVersion"]
     try:
         url = f"https://maven.neoforged.net/releases/net/neoforged/neoforge/{neo}/neoforge-{neo}-installer.jar"
         with urllib.request.urlopen(url + ".sha1", timeout=60) as response:
