@@ -1,11 +1,33 @@
 import copy
 import unittest
+from unittest.mock import Mock, patch
+from pathlib import Path
 
 from multiplayer_plan import plan, validate
-from run_multiplayer import offline_uuid
+from run_multiplayer import offline_uuid, install_client
 
 
 class MultiplayerGateTest(unittest.TestCase):
+    def test_pinned_installer_does_not_query_loader_version_listing(self):
+        launcher, log = Mock(), Mock()
+        runtime, installer = Path("runtime"), Path("installer.jar")
+        launcher.vanilla_launcher.do_vanilla_launcher_profiles_exists.return_value = False
+        with patch("run_multiplayer.subprocess.run") as run:
+            self.assertEqual(install_client(launcher, "1.21.1", "21.1.249", runtime, "java", installer, log), "neoforge-21.1.249")
+        launcher.mod_loader.get_mod_loader.assert_not_called()
+        self.assertEqual([c.args[0] for c in launcher.install.install_minecraft_version.call_args_list], ["1.21.1", "neoforge-21.1.249"])
+        launcher.vanilla_launcher.create_empty_vanilla_launcher_profiles_file.assert_called_once_with(runtime)
+        self.assertEqual(run.call_args.args[0], ["java", "-jar", str(installer), "--install-client", str(runtime)])
+        self.assertTrue(run.call_args.kwargs["check"])
+
+    def test_failed_installer_cannot_be_reported_as_installed(self):
+        import subprocess
+        launcher = Mock()
+        with patch("run_multiplayer.subprocess.run", side_effect=subprocess.CalledProcessError(1, "installer")):
+            with self.assertRaises(subprocess.CalledProcessError):
+                install_client(launcher, "1.21.1", "21.1.249", Path("runtime"), "java", Path("installer.jar"), Mock())
+        self.assertEqual(launcher.install.install_minecraft_version.call_count, 1)
+
     def reports(self, profile="standalone"):
         results = []
         for group in plan(profile):

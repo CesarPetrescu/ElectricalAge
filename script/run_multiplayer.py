@@ -46,6 +46,19 @@ def offline_uuid(name):
     return str(uuid.UUID(bytes=digest, version=3))
 
 
+def install_client(launcher, mc, neo, runtime, java, installer, log):
+    """Use the pinned official installer, without an unrelated live loader-version listing."""
+    callback = {"setStatus": lambda text: print(text, flush=True)}
+    launcher.install.install_minecraft_version(mc, runtime, callback=callback)
+    if not launcher.vanilla_launcher.do_vanilla_launcher_profiles_exists(runtime):
+        launcher.vanilla_launcher.create_empty_vanilla_launcher_profiles_file(runtime)
+    subprocess.run([java, "-jar", str(installer), "--install-client", str(runtime)],
+        cwd=runtime, stdout=log, stderr=subprocess.STDOUT, check=True, timeout=900)
+    version = f"neoforge-{neo}"
+    launcher.install.install_minecraft_version(version, runtime, callback=callback)
+    return version
+
+
 class Runner:
     def __init__(self, args):
         self.args = args
@@ -73,16 +86,12 @@ class Runner:
         mc, neo = properties["minecraftVersion"], properties["neoVersion"]
         self.neo = neo
         print(f"Installing Minecraft {mc} / NeoForge {neo}", flush=True)
-        try:
-            self.version = launcher.mod_loader.get_mod_loader("neoforge").install(mc, self.runtime, loader_version=neo, java=self.java,
-                callback={"setStatus": lambda text: print(text, flush=True)})
-        except subprocess.CalledProcessError as e:
-            print(e.stdout, e.stderr, flush=True)
-            raise
         installer_url = f"https://maven.neoforged.net/releases/net/neoforged/neoforge/{neo}/neoforge-{neo}-installer.jar"
         with urllib.request.urlopen(installer_url + ".sha1", timeout=60) as response:
             sha1 = response.read().decode().strip().split()[0]
         installer = download(installer_url, self.runtime / "installer.jar", sha1)
+        with (self.output / "client-install.log").open("w") as log:
+            self.version = install_client(launcher, mc, neo, self.runtime, self.java, installer, log)
         server = self.root / "server"
         server.mkdir()
         with (self.output / "server-install.log").open("w") as log:
