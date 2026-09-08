@@ -8,6 +8,7 @@ import mods.eln.misc.Direction
 import mods.eln.node.NodeManager
 import mods.eln.node.six.SixNode
 import mods.eln.node.transparent.TransparentNode
+import mods.eln.sixnode.electricalcable.UtilityCableElement
 import net.minecraft.core.BlockPos
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.Container
@@ -62,7 +63,7 @@ object CampaignDropChecks {
     private fun verify(world: ServerLevel, entry: BlockContracts.Entry) {
         val pos = BlockPos(entry.x, entry.y, entry.z)
         val box = AABB(pos).inflate(4.0)
-        // Remove only obsolete item entities within this disposable fixture cell, before counting a new transaction.
+        // Clear obsolete fixture debris before the transaction, never drops produced by it.
         world.getEntitiesOfClass(ItemEntity::class.java, box).forEach { it.discard() }
         val coordinate = Coordinate(pos.x, pos.y, pos.z, world)
         val node = NodeManager.instance!!.getNodeFromCoordonate(coordinate)
@@ -70,8 +71,11 @@ object CampaignDropChecks {
         val inventory: Container?
         when (node) {
             is SixNode -> {
-                val e = checkNotNull(node.getElement(Direction.fromInt(entry.side)))
-                declared = e.dropItemStack.copy(); inventory = e.inventory
+                val e = checkNotNull(node.getElement(checkNotNull(Direction.fromInt(entry.side))))
+                // Utility wires intentionally yield typed scrap, not reusable cable. This is an explicit
+                // documented transformation, not a loss of the still-paid wire-machine buffers tested separately.
+                declared = if (e is UtilityCableElement) checkNotNull(Eln.instance.wireScrapDescriptor).createScrapStack(e.descriptor) else e.dropItemStack.copy()
+                inventory = e.inventory
             }
             is TransparentNode -> {
                 val e = checkNotNull(node.element)
