@@ -125,32 +125,31 @@ public class GuiHelper {
         if (g == null) return;
         if (background != null)
             UtilsClient.drawGuiBackground(background, screen, xSize, ySize);
-        else {
-            int px = 0, py = 0;
-            px += (screen.width - xSize) / 2;
-            py += (screen.height - ySize) / 2;
-
-            g.fill(px + 2, py + 2, px + xSize - 2, py + ySize - 2, 0xFFC6C6C6);
-
-            g.fill(px + 4, py, px + xSize - 4, py + 1, 0xFF000000);
-            g.fill(px + 4, py + 1, px + xSize - 4, py + 3, 0xFFFFFFFF);
-            g.fill(px + 4, py + ySize - 1, px + xSize - 4, py + ySize - 0, 0xFF000000);
-            g.fill(px + 4, py + ySize - 3, px + xSize - 4, py + ySize - 1, 0xFF555555);
-
-            g.fill(px, py + 4, px + 1, py + ySize - 4, 0xFF000000);
-            g.fill(px + 1, py + 4, px + 3, py + ySize - 4, 0xFFFFFFFF);
-            g.fill(px + xSize - 1, py + 4, px + xSize - 0, py + ySize - 4, 0xFF000000);
-            g.fill(px + xSize - 3, py + 4, px + xSize - 1, py + ySize - 4, 0xFF555555);
-
-            g.blit(helperTexture, px, py, 0, 0, 4, 4);
-            g.blit(helperTexture, px + xSize - 4, py, 4, 0, 4, 4);
-            g.blit(helperTexture, px, py + ySize - 4, 0, 4, 4, 4);
-            g.blit(helperTexture, px + xSize - 4, py + ySize - 4, 4, 4, 4, 4);
-        }
+        else drawPanel(g, (screen.width - xSize) / 2, (screen.height - ySize) / 2, xSize, ySize);
 
         for (IGuiObject o : objectList) {
             o.idraw(x, y, f);
         }
+    }
+
+    /** Shared ELN frame for native menus that do not use the legacy inventory helper. */
+    public static void drawPanel(GuiGraphics g, int px, int py, int xSize, int ySize) {
+        g.fill(px + 2, py + 2, px + xSize - 2, py + ySize - 2, 0xFFC6C6C6);
+
+        g.fill(px + 4, py, px + xSize - 4, py + 1, 0xFF000000);
+        g.fill(px + 4, py + 1, px + xSize - 4, py + 3, 0xFFFFFFFF);
+        g.fill(px + 4, py + ySize - 1, px + xSize - 4, py + ySize - 0, 0xFF000000);
+        g.fill(px + 4, py + ySize - 3, px + xSize - 4, py + ySize - 1, 0xFF555555);
+
+        g.fill(px, py + 4, px + 1, py + ySize - 4, 0xFF000000);
+        g.fill(px + 1, py + 4, px + 3, py + ySize - 4, 0xFFFFFFFF);
+        g.fill(px + xSize - 1, py + 4, px + xSize - 0, py + ySize - 4, 0xFF000000);
+        g.fill(px + xSize - 3, py + 4, px + xSize - 1, py + ySize - 4, 0xFF555555);
+
+        g.blit(helperTexture, px, py, 0, 0, 4, 4);
+        g.blit(helperTexture, px + xSize - 4, py, 4, 0, 4, 4);
+        g.blit(helperTexture, px, py + ySize - 4, 0, 4, 4, 4);
+        g.blit(helperTexture, px + xSize - 4, py + ySize - 4, 4, 4, 4, 4);
     }
 
     /** Draws from the texture last bound through UtilsClient.bindTexture (256x256, as before). */
