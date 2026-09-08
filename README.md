@@ -44,6 +44,8 @@ See the [Create adapter guide](docs/create-shaft-adapters.md) for connections on
 
 **In-game recipes and help:** press **P** to open the [Electrical Age guide](docs/in-game-guide.md). Search items, scroll through recipes and click ingredients to follow their crafting chains.
 
+**Meters and monitor paper:** sneak-click two terminals with a Multimeter/AllMeter to measure their voltage difference. Right-click a printed monitor sheet to read its saved chart. Press **P** for the new circuit exercises, or read the [printout and diagnostics guide](docs/monitor-print-and-diagnostics.md).
+
 **Wire overloads:** AWG/kcmil conductors now account for electrical heat, material heat capacity and conductor failure. Damaged insulation can still conduct until the metal breaks. See the [thermal model, assumptions and tests](docs/wire-thermal-model.md). Existing overloaded builds may fail after updating; back up your world first.
 
 ## Installation
@@ -152,11 +154,15 @@ Development files live in `run/client/` and `run/server/`. Create is added to de
 
 [GitHub Actions](https://github.com/CesarPetrescu/ElectricalAge/actions/workflows/ci.yml) runs build/unit tests, simulation benchmarks and separate **standalone / Create-enabled** game jobs.
 
+**Multiplayer checks use a real dedicated server and two separate clients**, in both standalone and Create-enabled clean installations. They test the packaged release JAR, independent player controls, late joining, shared monitor inventories/printing, Create gear synchronization, dimension travel, chunk reload and a server restart. See the [multiplayer support and testing guide](docs/multiplayer-testing.md) for exact assertions and remaining gaps. Use matching mod/dependency versions on every client and the server; back up worlds before updating this development port.
+
+**Natural ore generation** has its own packaged-server tests: two normal-world seeds, enabled/disabled/mixed configurations, every ore counted separately, Nether/End exclusions and exact saved-position checks after restarting. These do not use superflat or manually placed ores. See [ore heights, configuration and test coverage](docs/ore-generation.md). Existing chunks are not retroactively populated when generation is fixed or enabled.
+
 Three additional **companion compatibility** jobs load the actual pinned mods: **fluids**, **OpenComputers without CC**, and **combined**. Named assertions verify fuel behavior, pipe transfer and computer callbacks, followed by a separate-JVM restart. Missing or skipped required checks fail CI, and release publishing waits for these jobs too.
 
 | When | What runs |
 |---|---|
-| Pushes and pull requests | Build, unit tests, benchmarks, strict descriptor placement/removal contracts, saved-world restart checks and targeted client/GUI checks |
+| Pushes and pull requests | Build, unit tests, benchmarks, strict descriptor placement/removal contracts, saved-world restart checks, targeted client/GUI checks and packaged two-client multiplayer checks |
 | Nightly or manual **extended** run | The above, plus two additional restart replays and a named per-block screenshot gallery |
 | Passing eligible `main` build | Publish the build artifact and checksum to the rolling `latest-1.21.1` release |
 

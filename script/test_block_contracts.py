@@ -50,6 +50,13 @@ class ReportsTest(unittest.TestCase):
         self.write(results=[row, row])
         self.assertTrue(summarize(self.path)[1])
 
+    def test_monitor_and_meter_contracts_cannot_be_missing(self):
+        required = {"monitor-print", "monitor-print-restart", "circuit-diagnostics", "circuit-diagnostics-restart"}
+        self.assertTrue(required.issubset(REQUIRED))
+        self.assertIn("monitor-print-client", CLIENT_REQUIRED)
+        self.write(suites=tuple(s for s in REQUIRED if s not in required))
+        self.assertEqual(len(summarize(self.path)[1]), len(required))
+
     def test_client_reports_are_required_and_must_finish(self):
         suites = REQUIRED + CLIENT_REQUIRED
         self.write()

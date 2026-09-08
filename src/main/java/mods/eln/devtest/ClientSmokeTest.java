@@ -43,6 +43,7 @@ public final class ClientSmokeTest {
     private final BlockGallery blockGallery = "1".equals(System.getenv("ELN_FULL_GALLERY")) ? new BlockGallery() : null;
     private final BlockGallery lightingGallery = new BlockGallery(true);
     private final mods.eln.wiki.WikiClientChecks wikiChecks = new mods.eln.wiki.WikiClientChecks();
+    private final mods.eln.sixnode.electricaldatalogger.PrintedLogClientChecks printChecks = new mods.eln.sixnode.electricaldatalogger.PrintedLogClientChecks();
 
     /** One check: a PASS/FAIL log line, and the run's exit status. */
     private boolean check(boolean ok, String what, Object... args) {
@@ -442,6 +443,7 @@ public final class ClientSmokeTest {
             }
             case DONE -> {
                 if (!wikiChecks.tick(mc)) return;
+                if (!printChecks.tick(mc)) return;
                 if (!lightingGallery.tick(mc)) return;
                 if (blockGallery != null && !blockGallery.tick(mc)) return;
                 if (wait++ < 10) return;

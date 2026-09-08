@@ -1,0 +1,45 @@
+name: Natural ore generation
+on:
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  worldgen:
+    name: Normal terrain, config and restart (${{ matrix.profile }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [default, default-alt, disabled, mixed]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: mod-jar
+          path: ore-input
+      - uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/eln-ore-runtime
+          key: ore-runtime-linux-v1-${{ hashFiles('gradle.properties', 'script/run_ore_worldgen.py') }}
+          restore-keys: ore-runtime-linux-v1-
+      - name: Generate natural chunks and restart the packaged dedicated server
+        shell: bash
+        run: |
+          mapfile -t jars < <(find ore-input -type f -name '*.jar' ! -name '*-sources.jar')
+          test "${#jars[@]}" -eq 1
+          python script/run_ore_worldgen.py '${{ matrix.profile }}' --jar "${jars[0]}"
+      - name: Upload ore counts, heights, position hashes and named results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ore-worldgen-${{ matrix.profile }}
+          if-no-files-found: error
+          path: build/ore-worldgen-artifacts/**

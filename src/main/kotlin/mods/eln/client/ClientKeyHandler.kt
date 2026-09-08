@@ -38,9 +38,21 @@ class ClientKeyHandler {
 
     @SubscribeEvent
     fun onKeyInput(@Suppress("UNUSED_PARAMETER") event: Key?) {
+        val mc = net.minecraft.client.Minecraft.getInstance()
         keyboardKeys.forEach {
-            setState(it.name, it.binding?.isDown ?: return@forEach)
+            setState(it.name, mc.screen == null && mc.isWindowActive && (it.binding?.isDown == true))
         }
+    }
+
+    @SubscribeEvent
+    fun onTick(event: net.neoforged.neoforge.client.event.ClientTickEvent.Post) {
+        val mc = net.minecraft.client.Minecraft.getInstance()
+        // A key-up event may never arrive after opening a GUI or losing window focus.
+        if (mc.screen != null || !mc.isWindowActive) keyboardKeys.forEach { setState(it.name, false) }
+    }
+
+    fun reset() {
+        keyboardKeys.forEach { it.lastState = false }
     }
 
     fun setState(name: String, state: Boolean) {
@@ -55,7 +67,8 @@ class ClientKeyHandler {
                 clientOpenGui(Root(null))
             }
 
-            Utils.println("Sending a client key event to server: ${entry.name} is $state")
+            if (entry.name != ServerKeyHandler.WRENCH ||
+                net.minecraft.client.Minecraft.getInstance().connection == null) return
             val bos = ByteArrayOutputStream(64)
             val stream = DataOutputStream(bos)
             try {

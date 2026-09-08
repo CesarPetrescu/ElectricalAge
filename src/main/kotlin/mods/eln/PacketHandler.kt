@@ -175,11 +175,12 @@ class PacketHandler {
         }
     }
 
-    private fun packetPlayerKey(stream: DataInputStream, @Suppress("UNUSED_PARAMETER") manager: Connection, @Suppress("UNUSED_PARAMETER") player: Player?) {
+    private fun packetPlayerKey(stream: DataInputStream, @Suppress("UNUSED_PARAMETER") manager: Connection, player: Player?) {
+        val sender = player as? ServerPlayer ?: return
         try {
             val name = stream.readUTF()
             val state = stream.readBoolean()
-            ServerKeyHandler.set(name, state)
+            ServerKeyHandler.set(sender.uuid, name, state)
         } catch (e: IOException) {
             e.printStackTrace()
         }

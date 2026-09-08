@@ -437,7 +437,7 @@ class SixNode : Node() {
             var b = Blocks.AIR
             if (!stack.isNothing()) b = Block.byItem(stack.item)
             var isWrenchReplacingBlock = false
-            if (ServerKeyHandler.get(ServerKeyHandler.WRENCH) && !stack.isNothing()) {
+            if (ServerKeyHandler.get(entityPlayer.uuid, ServerKeyHandler.WRENCH) && !stack.isNothing()) {
                 for (a in sixNodeCacheList) {
                     if (a.accept(stack)) {
                         isWrenchReplacingBlock = true

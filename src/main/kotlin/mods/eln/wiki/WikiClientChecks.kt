@@ -26,6 +26,7 @@ class WikiClientChecks {
     private var finished = false
     private var awaitedPage: Default? = null
     private var requiredFrames = 0
+    private var lessonIndex = 0
 
     private fun test(name: String, body: () -> Unit) {
         report.test("eln:wiki", name, body)
@@ -211,6 +212,32 @@ class WikiClientChecks {
                     check(page.extender.maxScroll() > 0)
                 }
                 shot(mc, "wire-production")
+                mc.setScreen(Root(null))
+                test("contents-link-opens-circuit-lesson") {
+                    val contents = mc.screen as Root
+                    contents.mouseClicked(contents.extender.posX + 12.0, contents.extender.posY + 12.0, 0)
+                    check(mc.screen is CircuitLessonPage)
+                }
+                step++
+            }
+            9 -> {
+                val lesson = CircuitLessons.all()[lessonIndex]
+                test("lesson-${lesson.id}-content-and-items") {
+                    val page = mc.screen as CircuitLessonPage
+                    check(page.lesson.id == lesson.id)
+                    check(page.extender.objectList.filterIsInstance<WikiText>().size == lesson.paragraphs.size + 1)
+                    check(lesson.items.all { !CircuitLessons.stack(it).isEmpty })
+                    page.keyPressed(GLFW.GLFW_KEY_END, 0, 0)
+                    check(-page.extender.sliderPosition == page.extender.maxScroll().toFloat())
+                }
+                shot(mc, "lesson-${lesson.id}")
+                if (++lessonIndex < CircuitLessons.all().size) {
+                    mc.setScreen(CircuitLessonPage(CircuitLessons.all()[lessonIndex], root))
+                    return false
+                }
+                step++
+            }
+            10 -> {
                 mc.setScreen(null)
                 mc.options.guiScale().set(originalScale)
                 mc.options.hideGui = originalHideGui

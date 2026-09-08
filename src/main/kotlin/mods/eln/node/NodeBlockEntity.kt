@@ -210,6 +210,7 @@ abstract class NodeBlockEntity(type: BlockEntityType<*>, pos: BlockPos, state: B
     fun onBlockActivated(entityPlayer: Player?, side: Direction?, vx: Float, vy: Float, vz: Float): Boolean {
         if (!world.isClientSide) {
             if (node == null) return false
+            if (CircuitDiagnostics.activate(node!!, entityPlayer!!, side!!, vx, vy, vz)) return true
             node!!.onBlockActivated(entityPlayer!!, side!!, vx, vy, vz)
             return true
         }

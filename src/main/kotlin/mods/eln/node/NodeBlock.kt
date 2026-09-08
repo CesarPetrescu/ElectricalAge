@@ -40,7 +40,7 @@ abstract class NodeBlock(properties: Properties, blockItemNbr: Int) : Block(prop
         BlockEntityTicker { _, _, _, entity -> (entity as? NodeBlockEntity)?.update() }
 
     override fun getSignal(blockState: BlockState, world: BlockGetter, pos: BlockPos, side: EnumFacing): Int {
-        val entity = world.getBlockEntity(pos) as? NodeBlockEntity ?: return 0
+        val entity = LoadedBlockEntities.get(world, pos) as? NodeBlockEntity ?: return 0
         return entity.isProvidingWeakPower(fromFacing(side))
     }
 
@@ -48,7 +48,7 @@ abstract class NodeBlock(properties: Properties, blockItemNbr: Int) : Block(prop
     override fun isSignalSource(state: BlockState): Boolean = true
 
     override fun canConnectRedstone(state: BlockState, world: BlockGetter, pos: BlockPos, side: EnumFacing?): Boolean {
-        val entity = world.getBlockEntity(pos) as? NodeBlockEntity ?: return false
+        val entity = LoadedBlockEntities.get(world, pos) as? NodeBlockEntity ?: return false
         return entity.canConnectRedstone(Direction.XN)
     }
 

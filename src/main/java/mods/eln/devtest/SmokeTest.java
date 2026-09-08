@@ -90,6 +90,8 @@ public final class SmokeTest {
                 if (everything) placeEverything();
                 check(PowerBehaviorChecks.run(world(), !placing) == 0, "generator, motor and battery behavior contracts");
                 check(WireBehaviorChecks.run(world(), !placing) == 0, "wire production, recipes and resistance contracts");
+                check(mods.eln.sixnode.electricaldatalogger.MonitorPrintChecks.run(world(), !placing) == 0, "monitor printing and saved paper contracts");
+                check(CircuitDiagnosticsChecks.run(world(), !placing) == 0, "two-probe meter and guide circuit contracts");
             } catch (Throwable t) {
                 fail("placement threw", t);
                 shutdown();

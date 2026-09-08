@@ -62,6 +62,9 @@ open class GenericItemUsingDamageDescriptor {
         return s
     }
 
+    /** A read-only GUI/tool action can consume use without changing the stack. */
+    open fun consumesRightClick(s: ItemStack, w: Level, p: Player): Boolean = false
+
     fun getSubItems(list: MutableList<ItemStack>) = list.add(newItemStack(1))
 
 

@@ -4,6 +4,7 @@ import mods.eln.misc.IMetaBlock
 import mods.eln.node.NodeBase
 import mods.eln.node.NodeBlock
 import mods.eln.node.NodeBlockEntity
+import mods.eln.node.LoadedBlockEntities
 import net.minecraft.core.BlockPos
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.player.Player
@@ -70,7 +71,7 @@ class TransparentNodeBlock : NodeBlock(nodeProperties(), 0), IMetaBlock {
     // No loot table: the block itself never drops (the element drops through the node).
 
     override fun getCollisionShape(state: BlockState, world: BlockGetter, pos: BlockPos, context: CollisionContext): VoxelShape {
-        val tileEntity = world.getBlockEntity(pos)
+        val tileEntity = LoadedBlockEntities.get(world, pos)
         if (tileEntity !is TransparentNodeEntity) return Shapes.block()
         val boxes = ArrayList<AABB?>()
         val query = AABB(pos).inflate(4.0)
@@ -90,7 +91,7 @@ class TransparentNodeBlock : NodeBlock(nodeProperties(), 0), IMetaBlock {
 
     /** Pick-block (and Jade's name/icon): the descriptor's item, which 1.7.10 reached through the metadata value. */
     override fun getCloneItemStack(state: BlockState, target: net.minecraft.world.phys.HitResult, world: net.minecraft.world.level.LevelReader, pos: BlockPos, player: Player): net.minecraft.world.item.ItemStack {
-        val entity = world.getBlockEntity(pos) as? TransparentNodeEntity ?: return net.minecraft.world.item.ItemStack.EMPTY
+        val entity = LoadedBlockEntities.get(world, pos) as? TransparentNodeEntity ?: return net.minecraft.world.item.ItemStack.EMPTY
         val descriptor = entity.elementRender?.transparentNodeDescriptor
             ?: (entity.node as? TransparentNode)?.element?.transparentNodeDescriptor
             ?: return net.minecraft.world.item.ItemStack.EMPTY
