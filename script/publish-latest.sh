@@ -42,6 +42,8 @@ Use a fresh world; legacy saves are not migrated.
 
 Includes the **EC-240 evaporative heat sink**, with tested power, water, airflow, saved-world and native UI behavior. [Cooler guide]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/blob/$GITHUB_SHA/docs/evaporative-cooler.md).
 
+**Electrical QA fixes:** capacitor meters now report signed charging/discharging current. Invalid resistance and missing/malformed resistor save data retain safe values instead of creating infinite conductance. Independent regressions now run in normal CI, with native meter and saved-world recovery checks. [Audit and repair notes]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/blob/$GITHUB_SHA/docs/qa/2026-09-08-audit.md).
+
 **Ore generation/config fixes:** copper, lead, tungsten and cinnabar are checked in natural terrain, with enabled/disabled settings and saved-world restarts. Cinnabar no longer has zero generation attempts baked in. Explore **new chunks** to find newly enabled/fixed ores; existing chunks are not retrofitted. [Ore generation guide]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/blob/$GITHUB_SHA/docs/ore-generation.md).
 
 Includes nine organized inventory categories and optional **4 kW / 16 kW Create shaft adapters**.

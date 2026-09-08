@@ -2,12 +2,17 @@ package mods.eln.sim.mna.component;
 
 import mods.eln.sim.mna.SubSystem;
 import mods.eln.sim.mna.misc.ISubSystemProcessI;
+import mods.eln.sim.mna.misc.ISubSystemProcessFlush;
 import mods.eln.sim.mna.state.State;
 
-public class Capacitor extends Bipole implements ISubSystemProcessI {
+public class Capacitor extends Bipole implements ISubSystemProcessI, ISubSystemProcessFlush {
 
     private double coulombs = 0;
     double coulombsPerStep;
+    private double current;
+    private double stepVoltage;
+    private double stepConductance;
+    private boolean sampledStep;
 
     public Capacitor() {}
 
@@ -17,7 +22,7 @@ public class Capacitor extends Bipole implements ISubSystemProcessI {
 
     @Override
     public double getCurrent() {
-        return 0;
+        return current;
     }
 
     public void setCoulombs(double coulombs) {
@@ -37,24 +42,45 @@ public class Capacitor extends Bipole implements ISubSystemProcessI {
 
     @Override
     public void simProcessI(SubSystem s) {
-        double add = (s.getXSafe(aPin) - s.getXSafe(bPin)) * coulombsPerStep;
+        double voltage = s.getXSafe(aPin) - s.getXSafe(bPin);
+        if (s.isCalculatingStep()) {
+            stepVoltage = voltage;
+            stepConductance = coulombsPerStep;
+            sampledStep = true;
+        }
+        double add = voltage * coulombsPerStep;
         s.addToI(aPin, add);
         s.addToI(bPin, -add);
+    }
+
+    @Override
+    public void simProcessFlush() {
+        SubSystem s = getLocalSubSystem();
+        double solvedCurrent = sampledStep && s != null && s.hasValidStepSolution()
+                ? (getVoltage() - stepVoltage) * stepConductance : 0;
+        current = Double.isFinite(solvedCurrent) ? solvedCurrent : 0;
+        sampledStep = false;
     }
 
     @Override
     public void quitSubSystem() {
         SubSystem localSubSystem = getLocalSubSystem();
         if (localSubSystem != null) {
-            localSubSystem.removeProcess(this);
+            localSubSystem.removeProcess((ISubSystemProcessI) this);
+            localSubSystem.removeProcess((ISubSystemProcessFlush) this);
         }
+        current = 0;
+        sampledStep = false;
         super.quitSubSystem();
     }
 
     @Override
     public void addToSubsystem(SubSystem s) {
         super.addToSubsystem(s);
-        s.addProcess(this);
+        current = 0;
+        sampledStep = false;
+        s.addProcess((ISubSystemProcessI) this);
+        s.addProcess((ISubSystemProcessFlush) this);
     }
 
     /**

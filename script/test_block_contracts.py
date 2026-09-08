@@ -2,7 +2,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from check_block_contracts import REQUIRED, CLIENT_REQUIRED, summarize
+from check_block_contracts import REQUIRED, CLIENT_REQUIRED, ELECTRICAL_AUDIT_CHECKS, summarize
 from check_client_assets import inspect
 
 
@@ -16,6 +16,8 @@ class ReportsTest(unittest.TestCase):
         for suite in suites:
             data = dict(suite=suite, complete=True, failures=0,
                         results=[dict(id="eln:sample", check="place", status="passed", detail="")])
+            if suite in ("circuit-diagnostics", "circuit-diagnostics-restart"):
+                data["results"] += [dict(id=i, check=c, status="passed", detail="") for i, c in sorted(ELECTRICAL_AUDIT_CHECKS)]
             data.update(changes)
             (self.path / f"{suite}.json").write_text(json.dumps(data), encoding="utf-8")
 
@@ -65,6 +67,25 @@ class ReportsTest(unittest.TestCase):
         self.assertFalse(summarize(self.path, suites)[1])
         self.write(suites=("wiki-client",), complete=False)
         self.assertEqual(len(summarize(self.path, suites)[1]), 1)
+
+    def test_electrical_regressions_cannot_be_omitted_or_skipped(self):
+        self.write()
+        for suite in ("circuit-diagnostics", "circuit-diagnostics-restart"):
+            path = self.path / f"{suite}.json"
+            original = json.loads(path.read_text())
+            for check in ELECTRICAL_AUDIT_CHECKS:
+                for status in (None, "skipped"):
+                    data = json.loads(json.dumps(original))
+                    rows = data["results"]
+                    if status is None:
+                        data["results"] = [r for r in rows if (r["id"], r["check"]) != check]
+                    else:
+                        for row in rows:
+                            if (row["id"], row["check"]) == check:
+                                row.update(status=status, detail="not executed")
+                    path.write_text(json.dumps(data))
+                    self.assertTrue(summarize(self.path)[1])
+            path.write_text(json.dumps(original))
 
     def test_asset_gate(self):
         bad, known = inspect("Unable to load model: 'eln:item/conduit'\nUnable to load model: 'eln:item/new_machine'\nMissing textures in model eln:block/new_machine")

@@ -8,6 +8,10 @@ from pathlib import Path
 REQUIRED = ("blocks-place", "blocks-settled", "blocks-restart", "power-behavior", "power-behavior-restart", "wire-behavior", "wire-behavior-restart", "wire-thermal", "wire-thermal-restart")
 REQUIRED += ("monitor-print", "monitor-print-restart", "circuit-diagnostics", "circuit-diagnostics-restart")
 CLIENT_REQUIRED = ("power-client-leds", "wiki-client", "lighting-gallery", "monitor-print-client")
+ELECTRICAL_AUDIT_CHECKS = {
+    ("eln:power_capacitor", "signed-native-meter-current-and-voltage"),
+    ("eln:resistor", "saved-boundary-recovery-and-live-solve"),
+}
 
 
 def summarize(directory, suites=REQUIRED):
@@ -36,6 +40,11 @@ def summarize(directory, suites=REQUIRED):
                     errors.append(f"{suite}: {key}: {r.get('detail', '')}")
             if report.get("failures") != counts["failed"]:
                 raise ValueError("failure count mismatch")
+            if suite in ("circuit-diagnostics", "circuit-diagnostics-restart"):
+                passed = {(r["id"], r["check"]) for r in results if r["status"] == "passed"}
+                missing = ELECTRICAL_AUDIT_CHECKS - passed
+                if missing:
+                    raise ValueError(f"missing/nonpassing electrical regression contracts: {sorted(missing)}")
             rows.append(f"| {suite} | {counts['passed']} | {counts['failed']} | {counts['skipped']} |")
         except (OSError, ValueError, KeyError, TypeError) as error:
             errors.append(f"{suite}: {error}")

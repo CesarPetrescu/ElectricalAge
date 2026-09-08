@@ -33,6 +33,8 @@ public class SubSystem {
     int stateCount;
     double[][] A;
     boolean singularMatrix;
+    private boolean calculatingStep;
+    private boolean validStepSolution;
     private int singularMatrixCountSinceLastDrain = 0;
     private int inversionCountSinceLastDrain = 0;
     private long inversionTotalNanosecondsSinceLastDrain = 0L;
@@ -274,6 +276,7 @@ public class SubSystem {
     }
 
     public void stepCalc() {
+        validStepSolution = false;
         if (!matrixValid) {
             generateMatrix();
         }
@@ -282,10 +285,16 @@ public class SubSystem {
             for (int y = 0; y < stateCount; y++) {
                 Idata[y] = 0;
             }
-            for (ISubSystemProcessI p : processI) {
-                p.simProcessI(this);
+            calculatingStep = true;
+            try {
+                for (ISubSystemProcessI p : processI) {
+                    p.simProcessI(this);
+                }
+            } finally {
+                calculatingStep = false;
             }
 
+            boolean finite = true;
             for (int idx2 = 0; idx2 < stateCount; idx2++) {
                 DD stack = DD.ZERO;
                 DD[] inverseRow = AInvdata[idx2];
@@ -293,7 +302,9 @@ public class SubSystem {
                     stack = stack.add(inverseRow[idx].multiply(Idata[idx]));
                 }
                 XtempData[idx2] = stack.doubleValue();
+                finite &= Double.isFinite(XtempData[idx2]);
             }
+            validStepSolution = finite;
         }
     }
 
@@ -406,9 +417,23 @@ public class SubSystem {
             }
         }
 
-        for (ISubSystemProcessFlush p : processF) {
-            p.simProcessFlush();
+        try {
+            for (ISubSystemProcessFlush p : processF) {
+                p.simProcessFlush();
+            }
+        } finally {
+            validStepSolution = false;
         }
+    }
+
+    /** True only while assembling an actual step, never during a speculative solve(). */
+    public boolean isCalculatingStep() {
+        return calculatingStep;
+    }
+
+    /** Pending finite solution, observable by flush callbacks; not a new solver operation. */
+    public boolean hasValidStepSolution() {
+        return validStepSolution && !singularMatrix;
     }
 
     public static void main(String[] args) {
