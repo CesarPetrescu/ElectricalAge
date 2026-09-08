@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "c:ingots/iron"
+    },
+    "R": {
+      "tag": "c:rubber"
+    }
+  },
+  "pattern": [
+    " I",
+    "I ",
+    "RR"
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:wire_snips"
+  }
+}

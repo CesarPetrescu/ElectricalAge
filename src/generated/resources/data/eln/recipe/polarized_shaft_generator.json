@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "eln:high_voltage_cable"
+    },
+    "M": {
+      "item": "eln:generator"
+    },
+    "R": {
+      "tag": "c:rubber"
+    }
+  },
+  "pattern": [
+    " C ",
+    "RMR",
+    " C "
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:polarized_shaft_generator"
+  }
+}

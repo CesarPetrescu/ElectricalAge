@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "eln:very_high_voltage_cable"
+    },
+    "M": {
+      "item": "eln:shaft_motor"
+    },
+    "R": {
+      "tag": "c:rubber"
+    }
+  },
+  "pattern": [
+    " C ",
+    "RMR",
+    " C "
+  ],
+  "result": {
+    "count": 1,
+    "id": "eln:polarized_shaft_motor"
+  }
+}

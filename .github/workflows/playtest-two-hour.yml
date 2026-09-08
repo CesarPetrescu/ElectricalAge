@@ -1,0 +1,63 @@
+name: Two-hour packaged server and client endurance
+on:
+  push:
+    branches: [qa/survival-runtime-2026-09-08]
+    paths: [.github/workflows/playtest-two-hour.yml]
+permissions:
+  contents: read
+  actions: read
+defaults:
+  run:
+    shell: bash
+jobs:
+  endurance:
+    strategy:
+      fail-fast: false
+      matrix: {profile: [standalone, create]}
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    env:
+      DISPLAY: ':99'
+      LIBGL_ALWAYS_SOFTWARE: '1'
+      LP_NUM_THREADS: '2'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 1839612c56dea3cd1c2860d040a639f41e0f1844
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '21'}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - uses: actions/download-artifact@v4
+        with:
+          name: mod-jar
+          path: multiplayer-input
+          run-id: 34230008312
+          github-token: ${{ github.token }}
+      - uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/eln-multiplayer-runtime
+          key: campaign-runtime-linux-v1-${{ hashFiles('gradle.properties', 'script/run_multiplayer.py') }}
+          restore-keys: multiplayer-runtime-linux-v1-
+      - name: Native software rendering and pinned launcher
+        run: |
+          python -m pip install minecraft-launcher-lib==8.0
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends xvfb libgl1-mesa-dri libopenal1
+          Xvfb :99 -screen 0 1280x1024x24 -nolisten tcp > /tmp/campaign-xvfb.log 2>&1 &
+      - name: Two wall-clock hours, minute-by-minute live assertions and three saved-world restarts
+        run: |
+          git rev-parse HEAD > campaign-source-commit.txt
+          mapfile -t jars < <(find multiplayer-input -name '*.jar' ! -name '*-sources.jar')
+          test "${#jars[@]}" -eq 1
+          python script/run_campaign_soak.py '${{ matrix.profile }}' --jar "${jars[0]}" --seconds 7200 --interval 60
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: campaign-two-hour-${{ matrix.profile }}
+          retention-days: 14
+          path: |
+            campaign-source-commit.txt
+            build/multiplayer-artifacts/
+            /tmp/campaign-xvfb.log

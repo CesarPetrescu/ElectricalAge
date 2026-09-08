@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_shaft_motor": {
+      "conditions": {
+        "items": [
+          {
+            "items": "eln:shaft_motor"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "eln:polarized_shaft_motor"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_shaft_motor"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "eln:polarized_shaft_motor"
+    ]
+  }
+}

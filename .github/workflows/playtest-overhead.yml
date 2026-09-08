@@ -1,0 +1,63 @@
+name: Native overhead support orientation
+on:
+  workflow_call:
+  workflow_dispatch:
+permissions:
+  contents: read
+defaults:
+  run:
+    shell: bash
+jobs:
+  orientation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      LIBGL_ALWAYS_SOFTWARE: '1'
+      LP_NUM_THREADS: '2'
+      ALSOFT_DRIVERS: 'null'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '21'}
+      - uses: gradle/actions/setup-gradle@v4
+        with: {cache-read-only: false}
+      - name: Compile QA client without altering its production renderer
+        run: |
+          git rev-parse HEAD > source-commit.txt
+          ./gradlew --no-daemon build 2>&1 | tee overhead-build.log
+      - name: Fresh server world and software display
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends xvfb libgl1-mesa-dri libopenal1
+          mkdir -p run/server run/client/saves
+          echo eula=true > run/server/eula.txt
+          printf 'server-ip=127.0.0.1\nonline-mode=false\nlevel-type=minecraft\\:flat\n' > run/server/server.properties
+          ./gradlew --no-daemon -PstopAfterStart=40 runServer 2>&1 | tee overhead-server.log
+          cp -a run/server/world run/client/saves/overhead-test
+          printf 'onboardAccessibility:false\nnarrator:0\nguiScale:2\nmaxFps:30\npauseOnLostFocus:false\n' > run/client/options.txt
+      - name: Native support predicates and four rendered screenshots
+        env:
+          JAVA_TOOL_OPTIONS: '-Deln.campaign=overhead'
+        run: timeout --signal=TERM --kill-after=30s 10m xvfb-run -a -s '-screen 0 1280x1024x24' ./gradlew --no-daemon runClient 2>&1 | tee overhead-client.log
+      - name: Require all orientation results and screenshots
+        run: |
+          python - <<'PY'
+          import json,pathlib
+          d=json.loads(pathlib.Path('build/smoke-artifacts/contracts/overhead-orientation-client.json').read_text())
+          assert d['complete'] and d['failures']==0 and len(d['results'])==8
+          assert len(list(pathlib.Path('run/client/screenshots').glob('overhead-support-*.png')))==4
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: overhead-orientation-results
+          retention-days: 14
+          path: |
+            source-commit.txt
+            overhead-*.log
+            build/test-results/
+            build/smoke-artifacts/
+            run/client/screenshots/
+            run/client/logs/
+            run/client/crash-reports/
+            run/server/logs/

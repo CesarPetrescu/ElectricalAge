@@ -1,0 +1,122 @@
+name: Survival campaign baseline
+on:
+  push:
+    branches: [qa/survival-runtime-2026-09-08]
+    paths: [.github/workflows/playtest-baseline.yml]
+permissions:
+  contents: read
+defaults:
+  run:
+    shell: bash
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '21'}
+      - uses: gradle/actions/setup-gradle@v4
+        with: {cache-read-only: false}
+      - name: Build exact baseline and all regressions
+        run: |
+          git rev-parse HEAD > source-commit.txt
+          ./gradlew --no-daemon build 2>&1 | tee baseline-build.log
+          bash script/test-publish-latest.sh
+          python3 script/test_block_contracts.py
+          python3 script/test_multiplayer.py
+          python3 script/test_ore_worldgen.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: baseline-unit-results
+          path: |
+            source-commit.txt
+            baseline-build.log
+            build/test-results/
+            build/reports/tests/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mod-jar
+          path: |
+            build/libs/*.jar
+            !build/libs/*-sources.jar
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '21'}
+      - uses: gradle/actions/setup-gradle@v4
+      - run: ./gradlew --no-daemon benchmarkTest
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: baseline-benchmarks
+          path: build/test-results/benchmarkTest/
+  smoke:
+    name: Full per-variant native gallery (${{ matrix.profile }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix: {profile: [standalone, create]}
+    env:
+      DISPLAY: ':99'
+      ELN_FULL_GALLERY: '1'
+      WITH_CREATE: ${{ matrix.profile == 'create' && '1' || '0' }}
+      LIBGL_ALWAYS_SOFTWARE: '1'
+      LP_NUM_THREADS: '2'
+      ALSOFT_DRIVERS: 'null'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '21'}
+      - uses: gradle/actions/setup-gradle@v4
+        with: {cache-read-only: false}
+      - name: Isolated software graphical runtime and world
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends xvfb libgl1-mesa-dri libopenal1
+          Xvfb :99 -screen 0 1280x1024x24 -nolisten tcp > /tmp/xvfb.log 2>&1 &
+          mkdir -p run/server run/client
+          echo eula=true > run/server/eula.txt
+          cat > run/server/server.properties <<'EOF'
+          server-ip=127.0.0.1
+          online-mode=false
+          max-tick-time=120000
+          level-type=minecraft\:flat
+          generator-settings={"layers":[{"block":"minecraft:bedrock","height":1},{"block":"minecraft:stone","height":63}],"biome":"minecraft:plains"}
+          EOF
+          printf 'onboardAccessibility:false\nnarrator:0\nguiScale:2\nmaxFps:30\npauseOnLostFocus:false\n' > run/client/options.txt
+      - name: Every registered variant, three restart passes, native gallery
+        run: |
+          git rev-parse HEAD > source-commit.txt
+          bash tools/port/smoke.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: full-gallery-${{ matrix.profile }}
+          retention-days: 14
+          path: |
+            source-commit.txt
+            build/smoke-artifacts/
+            run/client/screenshots/
+            run/client/logs/
+            run/server/logs/
+            run/server/world/eln-contracts.json
+            run/client/crash-reports/
+            run/server/crash-reports/
+  compatibility:
+    uses: ./.github/workflows/compatibility.yml
+  evaporative:
+    uses: ./.github/workflows/evaporative-cooler.yml
+  wire-thermal:
+    uses: ./.github/workflows/wire-thermal.yml
+  multiplayer:
+    needs: build
+    uses: ./.github/workflows/multiplayer.yml
+  ore-worldgen:
+    needs: build
+    uses: ./.github/workflows/ore-worldgen.yml

@@ -714,6 +714,12 @@ object CraftingRecipes {
     }
 
     private fun recipeTurbine() {
+        // Polarized machines retain the parent machine's progression cost and add
+        // an insulated pair of terminals; neither upgrade bypasses its base recipe.
+        addRecipe(findItemStack("Polarized Shaft Generator"), " C ", "RMR", " C ",
+            'M', findItemStack("Generator"), 'C', findItemStack("High Voltage Cable"), 'R', "itemRubber")
+        addRecipe(findItemStack("Polarized Shaft Motor"), " C ", "RMR", " C ",
+            'M', findItemStack("Shaft Motor"), 'C', findItemStack("Very High Voltage Cable"), 'R', "itemRubber")
         addRecipe(
             findItemStack("48V Turbine"), " m ", "HMH", " E ", 'M', findItemStack("Machine Block"), 'E',
             findItemStack("Low Voltage Cable"), 'H', findItemStack("Copper Thermal Cable"), 'm', findItemStack(
@@ -2758,6 +2764,8 @@ object CraftingRecipes {
     }
 
     private fun recipeTool() {
+        addRecipe(findItemStack("Wire Snips"), " I", "I ", "RR",
+            'I', "ingotIron", 'R', "itemRubber")
         addRecipe(ItemStack(Eln.shovelCopper), "i", "s", "s", 'i', "ingotCopper", 's', ItemStack(Items.STICK))
         addRecipe(ItemStack(Eln.axeCopper), "ii", "is", " s", 'i', "ingotCopper", 's', ItemStack(Items.STICK))
         addRecipe(ItemStack(Eln.hoeCopper), "ii", " s", " s", 'i', "ingotCopper", 's', ItemStack(Items.STICK))

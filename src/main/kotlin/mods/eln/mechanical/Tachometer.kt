@@ -155,19 +155,24 @@ class TachometerRender(entity: TransparentNodeEntity, desc: TransparentNodeDescr
 }
 
 class TachometerGui(val render: TachometerRender) : GuiScreenEln() {
-    val validate: GuiButtonEln by lazy { newGuiButton(82, 12, 80, tr("Validate")) }
-    val lowValue: GuiTextFieldEln by lazy { newGuiTextField(8, 24, 70) }
-    val highValue: GuiTextFieldEln by lazy { newGuiTextField(8, 8, 70) }
+    lateinit var validate: GuiButtonEln
+    lateinit var lowValue: GuiTextFieldEln
+    lateinit var highValue: GuiTextFieldEln
 
     override fun newHelper(): GuiHelper? = GuiHelper(this, 169, 44)
 
     override fun initGui() {
+        val lowText = if (::lowValue.isInitialized) lowValue.text else null
+        val highText = if (::highValue.isInitialized) highValue.text else null
         super.initGui()
+        validate = newGuiButton(82, 12, 80, tr("Validate"))
+        lowValue = newGuiTextField(8, 24, 70)
+        highValue = newGuiTextField(8, 8, 70)
         validate.enabled = true
         lowValue.setComment(tr("Rads/s corresponding\nto 0% output").split("\n".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray())
         highValue.setComment(tr("Rads/s corresponding\nto 100% output").split("\n".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray())
-        lowValue.setText(render.minRads)
-        highValue.setText(render.maxRads)
+        if (lowText != null) lowValue.setText(lowText) else lowValue.setText(render.minRads)
+        if (highText != null) highValue.setText(highText) else highValue.setText(render.maxRads)
     }
 
     override fun guiObjectEvent(`object`: IGuiObject?) {

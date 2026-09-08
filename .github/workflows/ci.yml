@@ -54,6 +54,18 @@ jobs:
         run: python3 script/test_ore_worldgen.py
       - name: Build and test
         run: ./gradlew build
+      - name: Verify survival recipe data matches its declarations
+        run: |
+          ./gradlew --no-daemon runData
+          python3 - <<'PY'
+          import json, pathlib, subprocess
+          for item in ('wire_snips', 'polarized_shaft_generator', 'polarized_shaft_motor'):
+              for folder in ('recipe', 'advancement/recipes/misc'):
+                  path = f'src/generated/resources/data/eln/{folder}/{item}.json'
+                  committed = json.loads(subprocess.check_output(['git', 'show', f'HEAD:{path}']))
+                  generated = json.loads(pathlib.Path(path).read_text())
+                  assert committed == generated, f'Stale generated recipe data: {path}'
+          PY
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -214,9 +226,29 @@ jobs:
     needs: build
     uses: ./.github/workflows/ore-worldgen.yml
 
+  survival:
+    name: Survival material and recipe contracts
+    uses: ./.github/workflows/playtest-survival.yml
+
+  acquisition:
+    name: Survival acquisition contracts
+    uses: ./.github/workflows/playtest-acquisition.yml
+
+  menus:
+    name: Native menu resize contracts
+    uses: ./.github/workflows/playtest-all-menus.yml
+
+  overhead:
+    name: Overhead support rendering
+    uses: ./.github/workflows/playtest-overhead.yml
+
+  natural-power:
+    name: Natural resource powered production
+    uses: ./.github/workflows/playtest-natural-power.yml
+
   release:
     name: Publish latest 1.21.1 mod
-    needs: [build, benchmark, smoke, compatibility, evaporative, wire-thermal, multiplayer, ore-worldgen]
+    needs: [build, benchmark, smoke, compatibility, evaporative, wire-thermal, multiplayer, ore-worldgen, survival, acquisition, menus, overhead, natural-power]
     if: >-
       github.repository == 'CesarPetrescu/ElectricalAge' &&
       github.ref == 'refs/heads/main' &&

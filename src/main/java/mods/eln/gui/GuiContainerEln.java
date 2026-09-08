@@ -178,6 +178,7 @@ public abstract class GuiContainerEln extends AbstractContainerScreen<AbstractCo
         UtilsClient.bindTexture(slotSkin);
 
         for (Slot slot : menu.slots) {
+            if (!slot.isActive()) continue;
             SlotSkin skin = SlotSkin.none;
             if (slot instanceof ISlotSkin) skin = ((ISlotSkin) slot).getSlotSkin();
             switch (skin) {

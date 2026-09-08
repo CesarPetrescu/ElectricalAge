@@ -166,6 +166,7 @@ class OverheadLinesRender(tileEntity: TransparentNodeEntity, transparentNodeDesc
         boundedSides.add(Coordinate(x, y + 1, z, 0))
         boundedSides.add(Coordinate(x, y - 1, z, 0))
         boundedSides.add(Coordinate(x, y, z + 1, 0))
+        boundedSides.add(Coordinate(x, y, z - 1, 0))
     }
 
     private fun hasBlockAnySideNotBottom(): Boolean {

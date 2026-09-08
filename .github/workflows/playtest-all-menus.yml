@@ -1,0 +1,97 @@
+name: All advertised descriptor GUIs
+on:
+  workflow_call:
+  workflow_dispatch:
+permissions:
+  contents: read
+defaults:
+  run:
+    shell: bash
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '21'}
+      - uses: gradle/actions/setup-gradle@v4
+        with: {cache-read-only: false}
+      - run: |
+          git rev-parse HEAD > source-commit.txt
+          ./gradlew --no-daemon build 2>&1 | tee menu-build.log
+          mkdir -p run/server
+          echo eula=true > run/server/eula.txt
+          printf 'server-ip=127.0.0.1\nonline-mode=false\nlevel-type=minecraft\\:flat\nmax-tick-time=180000\n' > run/server/server.properties
+      - name: Prepare each real descriptor and enumerate advertised menus
+        env:
+          JAVA_TOOL_OPTIONS: '-Deln.campaign=menu-setup'
+        run: timeout --signal=TERM --kill-after=30s 10m ./gradlew --no-daemon runServer 2>&1 | tee menu-fixtures.log
+      - name: Archive exact native world
+        run: |
+          test -s run/server/world/menu-targets.json
+          tar -C run/server -czf menu-world.tar.gz world
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-menu-world
+          path: |
+            source-commit.txt
+            menu-world.tar.gz
+            menu-*.log
+            build/smoke-artifacts/
+          retention-days: 14
+  client:
+    needs: prepare
+    strategy:
+      fail-fast: false
+      matrix: {shard: [0, 1, 2, 3]}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      LIBGL_ALWAYS_SOFTWARE: '1'
+      LP_NUM_THREADS: '2'
+      ALSOFT_DRIVERS: 'null'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '21'}
+      - uses: gradle/actions/setup-gradle@v4
+        with: {cache-read-only: false}
+      - uses: actions/download-artifact@v4
+        with: {name: native-menu-world, path: menu-input}
+      - name: Install software rendering and isolate this world's copy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends xvfb libgl1-mesa-dri libopenal1
+          mkdir -p run/client/saves/menu-audit
+          tar -xzf menu-input/menu-world.tar.gz --strip-components=1 -C run/client/saves/menu-audit
+          printf 'onboardAccessibility:false\nnarrator:0\nguiScale:2\nmaxFps:30\npauseOnLostFocus:false\n' > run/client/options.txt
+          git rev-parse HEAD > source-commit.txt
+      - name: Open every assigned GUI at normal and minimum scaled viewport
+        env:
+          JAVA_TOOL_OPTIONS: '-Deln.campaign=menus -Deln.menuShard=${{ matrix.shard }}'
+        run: timeout --signal=TERM --kill-after=30s 22m xvfb-run -a -s '-screen 0 1280x1024x24' ./gradlew --no-daemon runClient 2>&1 | tee menu-client.log
+      - name: Require complete unique menu results and captures
+        run: |
+          python - <<'PY'
+          import json,pathlib
+          d=json.loads(pathlib.Path('build/smoke-artifacts/contracts/all-menus-client.json').read_text())
+          assert d['complete'] and d['failures']==0 and len(d['results'])>0
+          assert len({(r['id'],r['check']) for r in d['results']})==len(d['results'])
+          assert len(list(pathlib.Path('run/client/screenshots').glob('menu-*.png')))*2==len(d['results'])
+          screenshots=pathlib.Path('run/client/screenshots')
+          assert len(list(screenshots.glob('logger-config-*.png')))==len(list(screenshots.glob('menu-*data_logger-*.png')))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-menu-shard-${{ matrix.shard }}
+          retention-days: 14
+          path: |
+            source-commit.txt
+            menu-client.log
+            build/smoke-artifacts/
+            run/client/screenshots/
+            run/client/logs/
+            run/client/crash-reports/

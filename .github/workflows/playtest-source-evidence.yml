@@ -1,0 +1,42 @@
+name: Campaign source evidence
+on:
+  push:
+    branches: [qa/survival-runtime-2026-09-08]
+    paths: [.github/workflows/playtest-source-evidence.yml]
+permissions:
+  contents: read
+defaults:
+  run:
+    shell: bash
+jobs:
+  source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - name: Verify baseline ancestry and archive only the QA additions
+        run: |
+          python - <<'PY'
+          import hashlib,json,pathlib,subprocess,tarfile
+          baseline='a3b9b046c08abfd8b8979e9093b7f830e7ee0568'
+          head=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
+          subprocess.run(['git','merge-base','--is-ancestor',baseline,head],check=True)
+          names=subprocess.check_output(['git','diff','--name-only',baseline,head],text=True).splitlines()
+          allowed=('.github/workflows/playtest-','src/main/java/mods/eln/devtest/','src/main/kotlin/mods/eln/devtest/','tools/qa/','docs/qa/')
+          for name in names:
+              assert name.startswith(allowed) or name=='script/run_campaign_soak.py',name
+          manifest={'baseline':baseline,'campaignHead':head,'productionChanges':[], 'qaFiles':[{'path':n,'sha256':hashlib.sha256(pathlib.Path(n).read_bytes()).hexdigest()} for n in names]}
+          pathlib.Path('campaign-source-manifest.json').write_text(json.dumps(manifest,indent=2))
+          with tarfile.open('campaign-instrumentation.tar.gz','w:gz') as archive:
+              for name in names: archive.add(name,arcname=name)
+          pathlib.Path('campaign-changes.patch').write_bytes(subprocess.check_output(['git','diff','--binary',baseline,head]))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: campaign-source-evidence
+          retention-days: 14
+          path: |
+            campaign-source-manifest.json
+            campaign-instrumentation.tar.gz
+            campaign-changes.patch
