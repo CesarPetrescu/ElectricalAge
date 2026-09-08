@@ -1,7 +1,6 @@
 package mods.eln.devtest
 
 import com.google.gson.GsonBuilder
-import mods.eln.Eln
 import mods.eln.misc.Coordinate
 import mods.eln.node.NodeManager
 import mods.eln.node.transparent.TransparentNode
@@ -54,7 +53,7 @@ object NaturalPowerInstallation {
         Files.writeString(file,GsonBuilder().setPrettyPrinting().create().toJson(mapOf(
             "complete" to complete, "elapsedSimulatedSeconds" to seconds,
             "peakTurbineVoltage" to peakVoltage, "peakTurbineOutputWatts" to peakPower,
-            "fuelRemaining" to furnace.inventory.getItem(HeatFurnaceContainer.combustibleId).count,
+            "fuelRemaining" to checkNotNull(furnace.inventory).getItem(HeatFurnaceContainer.combustibleId).count,
             "bareWireRegistryId" to bareId,
             "insulatedWire" to (finalWire?.toString() ?: "not yet produced"),
             "platform" to listOf(base.x,base.y,base.z),
@@ -98,8 +97,9 @@ object NaturalPowerInstallation {
         roller.inventory.setItem(0,take("minecraft:copper_ingot",1))
         roller.inventory.setItem(1,take("eln:iron_roller_wheel",1))
         roller.inventory.setItem(2,take("eln:iron_roller_wheel",1))
-        furnace.inventory.setItem(HeatFurnaceContainer.combustibleId,take("minecraft:coal",4))
-        furnace.inventoryChange(furnace.inventory)
+        val fuelInventory=checkNotNull(furnace.inventory)
+        fuelInventory.setItem(HeatFurnaceContainer.combustibleId,take("minecraft:coal",4))
+        furnace.inventoryChange(fuelInventory)
         packet(furnace,HeatFurnaceElement.unserializeToogleTakeFuelId)
         packet(furnace,HeatFurnaceElement.unserializeGain,.3f)
         check(!player.abilities.instabuild)
@@ -127,7 +127,7 @@ object NaturalPowerInstallation {
             val wire=insulator.inventory.removeItem(2,1)
             val descriptor=UtilityCableDescriptor.allDescriptors().single { it.checkSameItemStack(wire) }
             check(descriptor.insulated && !descriptor.melted && abs(descriptor.getRemainingLengthMeters(wire)-2.0)<1e-8)
-            check(peakVoltage>1.0 && peakPower>.01 && furnace.inventory.getItem(HeatFurnaceContainer.combustibleId).count<4) { "No observed thermal generation and paid fuel consumption" }
+            check(peakVoltage>1.0 && peakPower>.01 && checkNotNull(furnace.inventory).getItem(HeatFurnaceContainer.combustibleId).count<4) { "No observed thermal generation and paid fuel consumption" }
             check(insulator.inventory.getItem(0).isEmpty)
             write(true,wire)
             receive(wire)
