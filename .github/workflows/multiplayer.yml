@@ -1,0 +1,88 @@
+name: Packaged multiplayer
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  multiplayer:
+    name: Dedicated server + two clients (${{ matrix.profile }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [standalone, create]
+    env:
+      DISPLAY: ':99'
+      LIBGL_ALWAYS_SOFTWARE: '1'
+      LP_NUM_THREADS: '2'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: mod-jar
+          path: multiplayer-input
+      - uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/eln-multiplayer-runtime
+          key: multiplayer-runtime-linux-v1-${{ hashFiles('gradle.properties', 'script/run_multiplayer.py') }}
+          restore-keys: multiplayer-runtime-linux-v1-
+      - name: Install test launcher
+        run: python -m pip install minecraft-launcher-lib==8.0
+      - name: Software OpenGL display
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends xserver-xorg-video-dummy xserver-xorg-core x11-xserver-utils libgl1-mesa-dri mesa-utils
+          sudo tee /tmp/multiplayer-xorg.conf >/dev/null <<'EOF'
+          Section "Monitor"
+            Identifier "Monitor0"
+            HorizSync 28.0-90.0
+            VertRefresh 48.0-80.0
+          EndSection
+          Section "Device"
+            Identifier "Card0"
+            Driver "dummy"
+            VideoRam 256000
+          EndSection
+          Section "Screen"
+            Identifier "Screen0"
+            Device "Card0"
+            Monitor "Monitor0"
+            DefaultDepth 24
+            SubSection "Display"
+              Depth 24
+              Modes "1280x1024"
+              Virtual 1280 1024
+            EndSubSection
+          EndSection
+          EOF
+          sudo nohup Xorg :99 -config /tmp/multiplayer-xorg.conf -logfile /tmp/multiplayer-xorg.log -noreset -nolisten tcp -ac >/tmp/multiplayer-xorg.stdout 2>&1 &
+          for i in $(seq 1 30); do xset -display :99 q >/dev/null 2>&1 && break; sleep 1; done
+          xset -display :99 q >/dev/null
+          glxinfo -B
+          free -h
+      - name: Test the release artifact in three independent JVMs
+        run: |
+          mapfile -t jars < <(find multiplayer-input -type f -name '*.jar' ! -name '*-sources.jar')
+          test "${#jars[@]}" -eq 1
+          python script/run_multiplayer.py '${{ matrix.profile }}' --jar "${jars[0]}"
+      - name: Upload named results, screenshots and all process logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: multiplayer-${{ matrix.profile }}
+          if-no-files-found: error
+          path: |
+            build/multiplayer-artifacts/**
+            /tmp/multiplayer-xorg.log

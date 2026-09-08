@@ -26,6 +26,7 @@ public class ConnectionListener {
 
     @SubscribeEvent
     public void onConnectedToServerEvent(ClientPlayerNetworkEvent.LoggingIn event) {
+        if (Eln.clientKeyHandler != null) Eln.clientKeyHandler.reset();
         Utils.println("Connected to server " + Utils.INSTANCE.getSide());
         OreScannerManager.regenOreScannerFactors();
 
@@ -35,6 +36,9 @@ public class ConnectionListener {
 
     @SubscribeEvent
     public void onDisconnectedFromServerEvent(ClientPlayerNetworkEvent.LoggingOut event) {
+        newConnection = false;
+        timer = 0;
+        if (Eln.clientKeyHandler != null) Eln.clientKeyHandler.reset();
         Utils.println("Disconnected from server " + Utils.INSTANCE.getSide());
         Minecraft.getInstance().execute(UtilsClient::glDeleteListsAllSafe);
     }

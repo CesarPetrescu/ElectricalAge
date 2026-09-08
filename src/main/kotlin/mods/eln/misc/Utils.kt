@@ -1227,7 +1227,7 @@ object Utils {
     @JvmStatic
     fun isPlayerUsingWrench(player: Player?): Boolean {
         if (player == null) return false
-        if (ServerKeyHandler.get(ServerKeyHandler.WRENCH)) return true
+        if (ServerKeyHandler.get(player.uuid, ServerKeyHandler.WRENCH)) return true
         val stack = player.inventory.getSelected() ?: return false
         return isWrench(stack)
     }

@@ -1,17 +1,20 @@
 package mods.eln
 
-data class KeyState(val name: String, var state: Boolean = false)
+import java.util.UUID
 
 object ServerKeyHandler {
-    val WRENCH = "Wrench"
-    val WIKI = "Wiki"
-    private val keyState = listOf(KeyState(WRENCH))
+    const val WRENCH = "Wrench"
+    const val WIKI = "Wiki"
+    // Only touched on the logical server thread, including packet and logout handlers.
+    private val wrenchPlayers = HashSet<UUID>()
 
-    fun get(name: String): Boolean {
-        return keyState.firstOrNull {it.name == name}?.state?: false
+    fun get(playerId: UUID, name: String): Boolean = name == WRENCH && playerId in wrenchPlayers
+
+    fun set(playerId: UUID, name: String, state: Boolean) {
+        if (name != WRENCH) return // The wiki is client-only; do not store arbitrary packet keys.
+        if (state) wrenchPlayers.add(playerId) else wrenchPlayers.remove(playerId)
     }
 
-    fun set(name: String, state: Boolean) {
-        keyState.firstOrNull { it.name == name }?.state = state
-    }
+    fun remove(playerId: UUID) { wrenchPlayers.remove(playerId) }
+    fun clear() { wrenchPlayers.clear() }
 }

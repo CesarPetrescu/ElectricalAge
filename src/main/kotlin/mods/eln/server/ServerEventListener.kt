@@ -30,6 +30,16 @@ import java.nio.file.StandardCopyOption
 import java.util.*
 
 class ServerEventListener {
+    @SubscribeEvent
+    fun onLogout(event: net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent) {
+        mods.eln.ServerKeyHandler.remove(event.entity.uuid)
+    }
+
+    @SubscribeEvent
+    fun onServerStopped(event: net.neoforged.neoforge.event.server.ServerStoppedEvent) {
+        mods.eln.ServerKeyHandler.clear()
+    }
+
     private var lightningListNext = LinkedList<LightningBolt>()
     private var lightningList = LinkedList<LightningBolt>()
     @SubscribeEvent

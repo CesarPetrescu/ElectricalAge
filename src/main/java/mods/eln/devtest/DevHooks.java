@@ -20,6 +20,7 @@ public final class DevHooks {
     }
 
     public static void registerIfRequested() {
+        MultiplayerServerProbe.registerIfRequested();
         if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) ClientDevHooks.registerIfRequested();
         String smoke = System.getProperty("eln.smokeTest", "");
         if (smoke.startsWith("wire-thermal-")) WireThermalSmokeTest.register(smoke);
