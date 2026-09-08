@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 from pathlib import Path
 
 from multiplayer_plan import plan, validate
-from run_multiplayer import offline_uuid, install_client
+from run_multiplayer import offline_uuid, install_client, run_installer
 
 
 class MultiplayerGateTest(unittest.TestCase):
@@ -23,10 +23,17 @@ class MultiplayerGateTest(unittest.TestCase):
     def test_failed_installer_cannot_be_reported_as_installed(self):
         import subprocess
         launcher = Mock()
-        with patch("run_multiplayer.subprocess.run", side_effect=subprocess.CalledProcessError(1, "installer")):
+        with patch("run_multiplayer.subprocess.run", side_effect=subprocess.CalledProcessError(1, "installer")) as run, patch("run_multiplayer.time.sleep"):
             with self.assertRaises(subprocess.CalledProcessError):
                 install_client(launcher, "1.21.1", "21.1.249", Path("runtime"), "java", Path("installer.jar"), Mock())
+        self.assertEqual(run.call_count, 3)
         self.assertEqual(launcher.install.install_minecraft_version.call_count, 1)
+
+    def test_partial_installer_failure_retries_but_stops_on_success(self):
+        import subprocess
+        with patch("run_multiplayer.subprocess.run", side_effect=[subprocess.CalledProcessError(1, "installer"), None]) as run, patch("run_multiplayer.time.sleep"):
+            run_installer("java", Path("installer.jar"), "--install-server", Path("server"), Mock())
+        self.assertEqual(run.call_count, 2)
 
     def reports(self, profile="standalone"):
         results = []

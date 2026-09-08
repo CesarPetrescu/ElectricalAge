@@ -46,14 +46,28 @@ def offline_uuid(name):
     return str(uuid.UUID(bytes=digest, version=3))
 
 
+def run_installer(java, installer, mode, directory, log):
+    # The official installer validates cached downloads. Retry partial CDN failures,
+    # never gameplay assertions; all attempts remain in the installation log.
+    for attempt in range(3):
+        print(f"Installer {mode}, attempt {attempt + 1}", file=log, flush=True)
+        try:
+            subprocess.run([java, "-jar", str(installer), mode, str(directory)],
+                cwd=directory, stdout=log, stderr=subprocess.STDOUT, check=True, timeout=900)
+            return
+        except subprocess.CalledProcessError:
+            if attempt == 2:
+                raise
+            time.sleep(2)
+
+
 def install_client(launcher, mc, neo, runtime, java, installer, log):
     """Use the pinned official installer, without an unrelated live loader-version listing."""
     callback = {"setStatus": lambda text: print(text, flush=True)}
     launcher.install.install_minecraft_version(mc, runtime, callback=callback)
     if not launcher.vanilla_launcher.do_vanilla_launcher_profiles_exists(runtime):
         launcher.vanilla_launcher.create_empty_vanilla_launcher_profiles_file(runtime)
-    subprocess.run([java, "-jar", str(installer), "--install-client", str(runtime)],
-        cwd=runtime, stdout=log, stderr=subprocess.STDOUT, check=True, timeout=900)
+    run_installer(java, installer, "--install-client", runtime, log)
     version = f"neoforge-{neo}"
     launcher.install.install_minecraft_version(version, runtime, callback=callback)
     return version
@@ -95,7 +109,7 @@ class Runner:
         server = self.root / "server"
         server.mkdir()
         with (self.output / "server-install.log").open("w") as log:
-            subprocess.run([self.java, "-jar", str(installer), "--install-server", str(server)], cwd=server, stdout=log, stderr=subprocess.STDOUT, check=True, timeout=900)
+            run_installer(self.java, installer, "--install-server", server, log)
         (server / "eula.txt").write_text("eula=true\n")
         (server / "server.properties").write_text(
             "server-ip=127.0.0.1\nserver-port=25565\nonline-mode=false\nenforce-secure-profile=false\n"
