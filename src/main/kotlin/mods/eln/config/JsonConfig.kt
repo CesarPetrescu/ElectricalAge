@@ -279,7 +279,6 @@ class JsonConfig @JvmOverloads constructor(
             "runtime.items.batteries.standardHalfLifeTicks",
             getDoubleOrElse("items.batteries.standardHalfLifeDays", 2.0) * Utils.minecraftDay
         )
-        setRuntimeValue("runtime.worldgen.ores.cinnabar.enabled", false)
 
         val oredictTungsten = getBooleanOrElse("integrations.oredict.tungstenEnabled", false)
         val dictTungstenOre: String

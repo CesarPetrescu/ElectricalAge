@@ -156,6 +156,8 @@ Development files live in `run/client/` and `run/server/`. Create is added to de
 
 **Multiplayer checks use a real dedicated server and two separate clients**, in both standalone and Create-enabled clean installations. They test the packaged release JAR, independent player controls, late joining, shared monitor inventories/printing, Create gear synchronization, dimension travel, chunk reload and a server restart. See the [multiplayer support and testing guide](docs/multiplayer-testing.md) for exact assertions and remaining gaps. Use matching mod/dependency versions on every client and the server; back up worlds before updating this development port.
 
+**Natural ore generation** has its own packaged-server tests: two normal-world seeds, enabled/disabled/mixed configurations, every ore counted separately, Nether/End exclusions and exact saved-position checks after restarting. These do not use superflat or manually placed ores. See [ore heights, configuration and test coverage](docs/ore-generation.md). Existing chunks are not retroactively populated when generation is fixed or enabled.
+
 Three additional **companion compatibility** jobs load the actual pinned mods: **fluids**, **OpenComputers without CC**, and **combined**. Named assertions verify fuel behavior, pipe transfer and computer callbacks, followed by a separate-JVM restart. Missing or skipped required checks fail CI, and release publishing waits for these jobs too.
 
 | When | What runs |

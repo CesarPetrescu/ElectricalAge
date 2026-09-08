@@ -50,6 +50,8 @@ jobs:
         run: python3 script/test_block_contracts.py
       - name: Check multiplayer result gate
         run: python3 script/test_multiplayer.py
+      - name: Check ore-generation result gate
+        run: python3 script/test_ore_worldgen.py
       - name: Build and test
         run: ./gradlew build
       - name: Upload test reports
@@ -207,9 +209,14 @@ jobs:
     needs: build
     uses: ./.github/workflows/multiplayer.yml
 
+  ore-worldgen:
+    name: Natural ore generation contracts
+    needs: build
+    uses: ./.github/workflows/ore-worldgen.yml
+
   release:
     name: Publish latest 1.21.1 mod
-    needs: [build, benchmark, smoke, compatibility, evaporative, wire-thermal, multiplayer]
+    needs: [build, benchmark, smoke, compatibility, evaporative, wire-thermal, multiplayer, ore-worldgen]
     if: >-
       github.repository == 'CesarPetrescu/ElectricalAge' &&
       github.ref == 'refs/heads/main' &&

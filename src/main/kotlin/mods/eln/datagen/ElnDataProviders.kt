@@ -206,7 +206,7 @@ object ElnWorldgen {
             for ((desc, _) in ElnData.ores()) {
                 val feature = placed.getOrThrow(ResourceKey.create(Registries.PLACED_FEATURE, ElnData.id(keyPath(desc))))
                 ctx.register(ResourceKey.create(NeoForgeRegistries.Keys.BIOME_MODIFIERS, ElnData.id(keyPath(desc))),
-                    ElnOreBiomeModifier(feature, desc.configKey ?: "worldgen.ores.${keyPath(desc)}.enabled", desc.configDefault))
+                    ElnOreBiomeModifier(feature, requireNotNull(desc.configKey) { "Ore ${keyPath(desc)} has no config gate" }, desc.configDefault))
             }
         }
 }

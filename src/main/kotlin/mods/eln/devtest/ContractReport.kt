@@ -6,7 +6,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 /** Machine-readable checks; skipped means untested, never passed. */
-class ContractReport(val suite: String) {
+class ContractReport @JvmOverloads constructor(val suite: String, private val directory: Path = Path.of("../../build/smoke-artifacts/contracts")) {
     data class Result(val id: String, val check: String, val status: String, val detail: String, val milliseconds: Long)
     val results = mutableListOf<Result>()
     val failures get() = results.count { it.status == "failed" }
@@ -22,7 +22,7 @@ class ContractReport(val suite: String) {
     }
     fun skip(id: String, check: String, reason: String) { results.add(Result(id, check, "skipped", reason, 0)) }
     fun write(complete: Boolean) {
-        val dir = Path.of("../../build/smoke-artifacts/contracts")
+        val dir = directory
         Files.createDirectories(dir)
         val report = mapOf("suite" to suite, "complete" to complete, "failures" to failures, "results" to results)
         Files.writeString(dir.resolve("$suite.json"), GsonBuilder().setPrettyPrinting().create().toJson(report))

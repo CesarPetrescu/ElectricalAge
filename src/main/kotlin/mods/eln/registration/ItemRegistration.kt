@@ -1865,7 +1865,7 @@ object ItemRegistration {
             id = 1
             name = I18N.TR_NAME(I18N.Type.NONE, "Copper Ore")
             val desc =
-                OreDescriptor(name, id, 30 * (if (Eln.config.getBooleanOrElse("worldgen.ores.copper.enabled", true)) 1 else 0), 6, 10, 0, 80)
+                OreDescriptor(name, id, 30, 6, 10, 0, 80).gatedBy("worldgen.ores.copper.enabled", true)
             Eln.oreCopper = desc
             Eln.oreItem.addDescriptor(id, desc)
             addToOre("oreCopper", stackOf(desc))
@@ -1875,7 +1875,7 @@ object ItemRegistration {
             id = 4
             name = I18N.TR_NAME(I18N.Type.NONE, "Lead Ore")
             val desc =
-                OreDescriptor(name, id, 8 * (if (Eln.config.getBooleanOrElse("worldgen.ores.lead.enabled", true)) 1 else 0), 3, 9, 0, 24)
+                OreDescriptor(name, id, 8, 3, 9, 0, 24).gatedBy("worldgen.ores.lead.enabled", true)
             Eln.oreItem.addDescriptor(id, desc)
             addToOre("oreLead", stackOf(desc))
         }
@@ -1883,7 +1883,7 @@ object ItemRegistration {
             id = 5
             name = I18N.TR_NAME(I18N.Type.NONE, "Tungsten Ore")
             val desc =
-                OreDescriptor(name, id, 6 * (if (Eln.config.getBooleanOrElse("worldgen.ores.tungsten.enabled", true)) 1 else 0), 3, 9, 0, 32)
+                OreDescriptor(name, id, 6, 3, 9, 0, 32).gatedBy("worldgen.ores.tungsten.enabled", true)
             Eln.oreItem.addDescriptor(id, desc)
             addToOre(Eln.config.getStringOrElse("runtime.dictionary.tungstenOre", "oreElnTungsten"), stackOf(desc))
         }
@@ -1891,7 +1891,7 @@ object ItemRegistration {
             id = 6
             name = I18N.TR_NAME(I18N.Type.NONE, "Cinnabar Ore")
             val desc =
-                OreDescriptor(name, id, 3 * (if (Eln.config.getBooleanOrElse("runtime.worldgen.ores.cinnabar.enabled", false)) 1 else 0), 3, 9, 0, 32)
+                OreDescriptor(name, id, 3, 3, 9, 0, 32).gatedBy("worldgen.ores.cinnabar.enabled", true)
             Eln.oreItem.addDescriptor(id, desc)
             addToOre("oreCinnabar", stackOf(desc))
         }

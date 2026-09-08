@@ -1,5 +1,5 @@
 {
   "type": "eln:ores",
-  "config": "worldgen.ores.copper_ore.enabled",
+  "config": "worldgen.ores.copper.enabled",
   "feature": "eln:copper_ore"
 }
