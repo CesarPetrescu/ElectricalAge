@@ -16,4 +16,15 @@ class SixNodeHitSelectionTest {
     @Test fun `surface parts keep their slab selection path`() {
         for (hit in Direction.values()) assertNull(SixNodeHitSelection.bodySide(hit) { false })
     }
+    @Test fun `a body does not steal hits from another populated face`() {
+        for (mount in Direction.values()) for (surface in Direction.values().filter { it != mount }) {
+            for (hit in Direction.values()) {
+                assertEquals(if (hit == surface) surface else mount,
+                    SixNodeHitSelection.bodySide(hit, { it == mount }, { it == mount || it == surface }))
+            }
+        }
+    }
+    @Test fun `populated faces without a body still use slab selection`() {
+        for (hit in Direction.values()) assertNull(SixNodeHitSelection.bodySide(hit, { false }, { true }))
+    }
 }

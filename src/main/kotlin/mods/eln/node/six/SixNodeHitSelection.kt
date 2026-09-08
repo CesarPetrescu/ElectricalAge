@@ -2,8 +2,13 @@ package mods.eln.node.six
 
 import mods.eln.misc.Direction
 
-/** A full-cube hit belongs to the volumetric descriptor, not necessarily its mounting face. */
+/** Resolve a full-cube hit without hiding surface parts that share the six-node. */
 object SixNodeHitSelection {
     fun bodySide(hitSide: Direction, isBody: (Direction) -> Boolean): Direction? =
-        if (isBody(hitSide)) hitSide else Direction.values().firstOrNull(isBody)
+        bodySide(hitSide, isBody, isBody)
+
+    fun bodySide(hitSide: Direction, isBody: (Direction) -> Boolean, isEnabled: (Direction) -> Boolean): Direction? {
+        val body = Direction.values().firstOrNull(isBody) ?: return null
+        return if (isEnabled(hitSide)) hitSide else body
+    }
 }

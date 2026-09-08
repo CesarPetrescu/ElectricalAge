@@ -277,15 +277,16 @@ class SixNodeBlock : NodeBlock(nodeProperties().strength(0.3f, 1.0f), 0) {
         val entity = world.getBlockEntity(pos) as? SixNodeEntity ?: return hitSide
         if (nodeHasCache(world, pos.x, pos.y, pos.z)) return hitSide
         val serverNode = if (world is Level && !world.isClientSide) entity.node as? SixNode else null
-        val body = SixNodeHitSelection.bodySide(hitSide) { direction ->
-            if (world is Level && !world.isClientSide) serverNode?.getElement(direction)?.sixNodeElementDescriptor?.hasVolume() == true
-            else entity.elementRenderList[direction.int]?.sixNodeDescriptor?.hasVolume() == true
-        }
-        if (body != null) return body
-        return elementSide(hitSide, vx, vy, vz) { direction ->
+        val enabled: (Direction) -> Boolean = { direction ->
             if (world is Level && !world.isClientSide) serverNode?.getSideEnable(direction) == true
             else entity.getSyncronizedSideEnable(direction)
         }
+        val body = SixNodeHitSelection.bodySide(hitSide, { direction ->
+            if (world is Level && !world.isClientSide) serverNode?.getElement(direction)?.sixNodeElementDescriptor?.hasVolume() == true
+            else entity.elementRenderList[direction.int]?.sixNodeDescriptor?.hasVolume() == true
+        }, enabled)
+        if (body != null) return body
+        return elementSide(hitSide, vx, vy, vz, enabled)
     }
 
     private fun resolveBreakDirection(world: Level, pos: BlockPos, entityPlayer: Player, sixNode: SixNode): Direction? {

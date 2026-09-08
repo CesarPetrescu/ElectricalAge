@@ -6,7 +6,7 @@ This is still a development port. Passing these checks is useful evidence, not a
 
 ## What the dedicated multiplayer job proves
 
-The multiplayer work also fixed floor/volumetric monitor selection: a hit on the cube's top or side must select the descriptor mounted on its bottom. Previously that could select an empty face and silently fail to open the monitor. Interaction, pick-block and breaking now share the same body-selection rule.
+The multiplayer work also fixed floor/volumetric monitor selection: a hit on an otherwise empty cube face must select the descriptor mounted on its bottom. Previously that could select an empty face and silently fail to open the monitor. A separate populated face (for example, a surface wire sharing the block) remains selectable. Interaction, pick-block and breaking now share the same body-selection rule.
 
 `Packaged multiplayer contracts` runs twice: **standalone** and **with Create 6.0.10**. Each job installs a clean NeoForge runtime, copies the exact `mod-jar` build artifact into three separate game directories, then launches:
 
