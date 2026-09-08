@@ -18,7 +18,7 @@ Craft from a 240 V active thermal dissipator, a sponge, two copper thermal cable
 
 The native menu shows surface and intake temperatures, relative humidity, estimated wet-bulb temperature, water and consumption, electrical input and signed net heat rejection. Hover net cooling for the sensible, evaporative and electrical-heat components. A negative net value means the device is warming rather than cooling.
 
-A rotating fan, wet/dry pad, reservoir gauge, status LED and cosmetic moisture particles reflect synchronized server state. Particles are not the simulation.
+A rotating fan, wet/dry pad, reservoir gauge and cosmetic moisture particles reflect synchronized server state. Particles are not the simulation.
 
 ## Limits and failure behavior
 
@@ -51,14 +51,14 @@ Environmental/ventilation sampling occurs at 2 Hz, independently from the therma
 
 ## Asset sources
 
-`tools/evaporative/build_model.py` generates the original model in Blender 5.2 LTS. The `.blend` source and animated `.glb` are in `artwork/evaporative_cooler/`; game assets are triangulated OBJ, MTL, atlas and pivot metadata in `assets/eln/model/evaporativecooler`. The reservoir, fan, pad and LED are separate parts. No external model, image or proprietary asset is used. Regenerate with:
+`tools/evaporative/build_model.py` generates the original model in Blender 5.2 LTS. The `.blend` source and animated `.glb` are in `artwork/evaporative_cooler/`; game assets are triangulated OBJ, MTL, atlas and pivot metadata in `assets/eln/model/evaporativecooler`. The base is adapted from the existing passive heatsink and the four-bladed fan from the 240 V active cooler. The shared diffuse atlas preserves the original texture pixels. The reservoir gauge, fan and wet/dry pad are separate parts; there is no cabinet, logo or LED assembly. The adapted legacy ELN assets retain their existing attribution/license; no external model or proprietary asset is added. Regenerate with:
 
 ```
 python -m pip install bpy==5.2.0
 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=4 python tools/evaporative/build_model.py --root .
 ```
 
-The generator validates bounds and a <16000-triangle budget and writes hashes in a manifest. Blender source is not included in the game JAR. Rendering uses CPU Cycles without denoising for portable headless execution.
+The generator validates bounds and a 768-triangle budget (444 triangles in this revision) and writes hashes in a manifest. Blender source is not included in the game JAR. Rendering uses CPU Cycles without denoising for portable headless execution.
 
 ## Verification commands
 
@@ -69,7 +69,7 @@ bash tools/evaporative/test-core.sh
 
 The 26 pure regression cases are also exposed as JUnit parameterized tests. They exercise conservation, wet/dry behavior, saturated air, water exhaustion, fractional accounting, timestep sensitivity, invalid inputs, mode hysteresis and redstone/command limits. The opt-in dedicated `evaporative-place` and `evaporative-restart` suites exercise real registered blocks, a 240 V source through an MV cable, copper thermal connections, NeoForge fluid capability calls, water/empty buckets, bounded menu commands, fractional-film NBT and item drops, power loss, undervoltage, blocked airflow, indoor inhibition, water exhaustion and refilling. Restart uses a separate JVM and the saved world, not a serialized mock.
 
-`-PsmokeClient=evaporative` loads that saved world, checks actual renderer parts and changing fan angle, right-clicks the block, checks synchronized telemetry, presses the real UI buttons and captures wet/dry/interlock screenshots. The 320x238 control panel fits the minimum ordinary vanilla scaled viewport. Client tests are never enabled during normal play.
+`-PsmokeClient=evaporative` loads that saved world, checks actual renderer parts and changing fan angle, right-clicks the block, checks synchronized telemetry, presses the real UI buttons and captures wet/dry/interlock screenshots. The 248x228 control panel with ELN's shared grey frame fits the minimum ordinary vanilla scaled viewport. The Details page retains all secondary telemetry without crowding the main controls. Client checks also cover navigation, GUI scales 1/2/3, a real mouse hit after resizing, and same-scale family/orientation screenshots. Client tests are never enabled during normal play.
 
 The reusable evaporative workflow is a required dependency of the repository's release job, alongside existing build, benchmarks, standalone/Create and companion-mod checks. Missing, skipped or failing feature reports prevent that job from publishing.
 

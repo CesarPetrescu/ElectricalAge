@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Build the editable EC-240 asset with Blender 5.2 LTS (bpy), then export ELN OBJ.
+"""Rebuild the evaporative dissipator from ELN's existing heatsink/fan assets.
 
-Run with `python build_model.py --root . --renders build/evaporative-renders`, or
-`blender --background --python build_model.py -- --root .`. No downloaded assets.
-ELN's loader needs triangulated faces, global indices, map_Kd and named parts.
+Uses Blender's Python module (bpy 5.2). All game geometry is flat shaded, on the
+same coarse grid as the original cooler; the shared diffuse atlas is 64x64.
+--no-render skips presentation renders, not the game icon. No network access.
 """
 from __future__ import annotations
 import argparse
@@ -13,7 +13,12 @@ import math
 import sys
 from pathlib import Path
 import bpy
+import numpy as np
 from mathutils import Vector
+
+PIVOT = (-0.375, 0.125, 0.0)
+GAUGE_BOTTOM = -0.4375
+PARTS = {'main', 'rotor', 'pad_dry', 'pad_wet', 'water'}
 
 
 def arguments():
@@ -26,328 +31,263 @@ def arguments():
 
 
 def mc(v):
-    """Minecraft Y-up to Blender Z-up, right-handed in both systems."""
+    """Right-handed Minecraft Y-up to Blender Z-up."""
     return Vector((v[0], -v[2], v[1]))
 
 
-def build(root: Path, renders: Path, render: bool):
+def read_obj(path):
+    """Read only the textured, named game parts (not the old reference cube)."""
+    vertices, uvs, groups = [], [], {}
+    group = None
+    for line in path.read_text().splitlines():
+        t = line.split()
+        if not t:
+            continue
+        if t[0] == 'v':
+            vertices.append(tuple(map(float, t[1:4])))
+        elif t[0] == 'vt':
+            uvs.append(tuple(map(float, t[1:3])))
+        elif t[0] == 'o':
+            group = t[1]
+            groups[group] = []
+        elif t[0] == 'f' and group is not None:
+            face = [p.split('/') for p in t[1:]]
+            if all(len(p) > 1 and p[1] for p in face):
+                groups[group].append([(int(p[0])-1, int(p[1])-1) for p in face])
+    return vertices, uvs, groups
+
+
+def digest(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def build(root: Path, renders: Path, presentation: bool):
     bpy.ops.wm.read_factory_settings(use_empty=True)
-    out = root / 'src/main/resources/assets/eln/model/evaporativecooler'
-    source = root / 'artwork/evaporative_cooler'
-    out.mkdir(parents=True, exist_ok=True)
-    source.mkdir(parents=True, exist_ok=True)
-    renders.mkdir(parents=True, exist_ok=True)
+    game_root = root / 'src/main/resources/assets/eln/model'
+    out = game_root / 'evaporativecooler'
+    art = root / 'artwork/evaporative_cooler'
+    for p in (out, art, renders):
+        p.mkdir(parents=True, exist_ok=True)
     scene = bpy.context.scene
     scene.unit_settings.system = 'METRIC'
-    scene.unit_settings.scale_length = 1
     scene.render.engine = 'CYCLES'
     scene.cycles.device = 'CPU'
-    scene.cycles.samples = 64
+    scene.cycles.samples = 32
     scene.cycles.use_denoising = False
     scene.render.threads_mode = 'FIXED'
     scene.render.threads = 4
-    scene.render.resolution_x = 1100
-    scene.render.resolution_y = 1100
-    scene.render.resolution_percentage = 100
     scene.render.image_settings.file_format = 'PNG'
-    scene.render.film_transparent = False
-    scene.view_settings.view_transform = 'AgX'
-    scene.world = bpy.data.worlds.new('Workshop atmosphere')
+    scene.view_settings.view_transform = 'Standard'
+    scene.world = bpy.data.worlds.new('Neutral reference lighting')
     scene.world.use_nodes = True
-    scene.world.node_tree.nodes['Background'].inputs[0].default_value = (.14, .18, .23, 1)
-    scene.world.node_tree.nodes['Background'].inputs[1].default_value = .4
+    scene.world.node_tree.nodes['Background'].inputs[0].default_value = (.5,.5,.5,1)
+    scene.world.node_tree.nodes['Background'].inputs[1].default_value = .6
 
-    # 16 swatches in a small shared atlas; values are sRGB and become packed pixels.
-    swatches = [
-        (41, 52, 62), (104, 129, 142), (184, 196, 199), (190, 110, 61),
-        (24, 29, 35), (37, 157, 183), (191, 153, 90), (81, 111, 96),
-        (18, 100, 143), (84, 218, 183), (242, 174, 56), (234, 237, 229),
-        (87, 99, 109), (107, 66, 43), (25, 43, 57), (20, 31, 41),
-    ]
-    import numpy as np
-    size = 256
-    pixels = np.zeros((size, size, 4), dtype=np.float32)
-    rng = np.random.default_rng(240)
-    for tile, col in enumerate(swatches):
-        tx, ty = (tile % 4) * 64, (tile // 4) * 64
-        noise = rng.uniform(-.012, .012, (64, 64, 1))
-        block = np.clip(np.array(col)[None, None, :] / 255.0 + noise, 0, 1)
-        if tile in (1, 2, 3):
-            block[::4] *= .96
-        pixels[ty:ty+64, tx:tx+64, :3] = block
-        pixels[ty:ty+64, tx:tx+64, 3] = 1
-    image = bpy.data.images.new('ec240_atlas', width=size, height=size, alpha=False)
-    image.pixels.foreach_set(pixels.flatten())
-    image.filepath_raw = str(out / 'atlas.png')
-    image.file_format = 'PNG'
-    image.save()
-    image.pack()
-    mats = []
-    for i in range(16):
-        m = bpy.data.materials.new(f'EC240_{i:02d}')
-        m.use_nodes = True
-        bsdf = m.node_tree.nodes.get('Principled BSDF')
-        tex = m.node_tree.nodes.new('ShaderNodeTexImage')
-        tex.image = image
-        tex.interpolation = 'Closest'
-        m.node_tree.links.new(tex.outputs['Color'], bsdf.inputs['Base Color'])
-        bsdf.inputs['Metallic'].default_value = .65 if i in (1, 2, 3, 12) else .08
-        bsdf.inputs['Roughness'].default_value = .35 if i in (2, 3) else .62
-        mats.append(m)
-    objects = []
+    # Preserve the existing 240 V cooler's exact pixels in the lower-left tile.
+    # Additional 16px tiles supply only pad, water, copper and plain metal.
+    reference = game_root / '200vactivethermaldissipatora/tex.png'
+    passive_texture = game_root / 'passivethermaldissipatora/tex.png'
+    old_image = bpy.data.images.load(str(passive_texture))
+    active_image = bpy.data.images.load(str(reference))
+    pixels = np.ones((64,64,4), dtype=np.float32)
+    pixels[:,:,:3] = .18
+    pixels[:32,:32] = np.array(old_image.pixels[:],dtype=np.float32).reshape(32,32,4)
+    pixels[:32,32:] = np.array(active_image.pixels[:],dtype=np.float32).reshape(32,32,4)
+    colors = {'metal':(83,83,83), 'light':(118,118,118), 'dark':(41,41,41),
+              'blue':(48,72,121), 'dry':(118,101,73), 'wet':(69,79,64),
+              'water':(54,87,139), 'copper':(144,91,52)}
+    tiles = {}
+    for i,(name,col) in enumerate(colors.items()):
+        x,y = (i%4)*16,32+(i//4)*16
+        tiles[name] = (x,y)
+        for py in range(16):
+            for px in range(16):
+                # Deliberate pixel treatment, not PBR/noise or baked studio light.
+                v = ((px*13+py*7)%5-2) / 255.0
+                if name in ('dry','wet') and (px+py)%4==0:
+                    v -= .055
+                if name=='water' and py%5==0:
+                    v += .045
+                pixels[y+py,x+px,:3] = np.clip(np.array(col)/255.0+v,0,1)
+    atlas = bpy.data.images.new('ELN cooler diffuse',width=64,height=64,alpha=False)
+    atlas.pixels.foreach_set(pixels.ravel())
+    atlas.filepath_raw=str(out/'atlas.png'); atlas.file_format='PNG'; atlas.save(); atlas.pack()
 
-    def finish(obj, material, part='main', bevel=0):
-        obj['eln_part'] = part
-        obj.data.materials.append(mats[material])
-        if bevel:
-            modifier = obj.modifiers.new('Machined edge', 'BEVEL')
-            modifier.width = bevel
-            modifier.segments = 1
-            bpy.context.view_layer.objects.active = obj
-            bpy.ops.object.modifier_apply(modifier=modifier.name)
-        uv = obj.data.uv_layers.active or obj.data.uv_layers.new(name='EC240 atlas')
-        u, v = (material % 4 + .5) / 4, (material // 4 + .5) / 4
-        for poly in obj.data.polygons:
-            for k, loop_idx in enumerate(poly.loop_indices):
-                # Small region avoids bleeding between atlas cells.
-                uv.data[loop_idx].uv = (u + (.06 if k % 2 else -.06), v + (.06 if k // 2 else -.06))
-        objects.append(obj)
-        if part in ('pad_dry', 'led_off', 'led_warning'):
-            obj.hide_render = True
+    def material(image, name):
+        m=bpy.data.materials.new(name); m.use_nodes=True
+        bsdf=m.node_tree.nodes['Principled BSDF']
+        bsdf.inputs['Metallic'].default_value=0
+        bsdf.inputs['Roughness'].default_value=1
+        bsdf.inputs['Specular IOR Level'].default_value=0
+        tex=m.node_tree.nodes.new('ShaderNodeTexImage');tex.image=image;tex.interpolation='Closest'
+        m.node_tree.links.new(tex.outputs['Color'],bsdf.inputs['Base Color'])
+        return m
+    mat=material(atlas,'ELN diffuse only')
+    objects=[]
+
+    def mesh(name, verts, faces, uvfaces, part, m=mat, record=True):
+        data=bpy.data.meshes.new(name)
+        data.from_pydata([mc(v) for v in verts],[],faces);data.update()
+        obj=bpy.data.objects.new(name,data);scene.collection.objects.link(obj)
+        data.materials.append(m);uv=data.uv_layers.new(name='Diffuse')
+        for poly,coords in zip(data.polygons,uvfaces):
+            poly.use_smooth=False
+            for li,xy in zip(poly.loop_indices,coords):uv.data[li].uv=xy
+        obj['eln_part']=part
+        if record:objects.append(obj)
+        if part=='pad_dry':obj.hide_render=True
         return obj
 
-    def box(name, p, d, material, part='main', bevel=.006):
-        bpy.ops.mesh.primitive_cube_add(size=1, location=mc(p))
-        obj = bpy.context.object
-        obj.name = name
-        obj.dimensions = (d[0], d[2], d[1])
-        bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
-        return finish(obj, material, part, bevel)
+    def box(name, pos, dims, tile, part='main'):
+        x,y,z=pos;a,b,c=(d/2 for d in dims)
+        verts=[(x-a,y-b,z-c),(x+a,y-b,z-c),(x+a,y+b,z-c),(x-a,y+b,z-c),
+               (x-a,y-b,z+c),(x+a,y-b,z+c),(x+a,y+b,z+c),(x-a,y+b,z+c)]
+        faces=[(0,3,2,1),(4,5,6,7),(0,4,7,3),(1,2,6,5),(0,1,5,4),(3,7,6,2)]
+        tx,ty=tiles[tile]
+        u,v=(tx+.5)/64,(ty+.5)/64;du=dv=15/64
+        return mesh(name,verts,faces,[[(u,v),(u+du,v),(u+du,v+dv),(u,v+dv)]]*6,part)
 
-    def cylinder(name, a, b, r, material, part='main', n=12):
-        a, b = mc(a), mc(b)
-        delta = b - a
-        bpy.ops.mesh.primitive_cylinder_add(vertices=n, radius=r, depth=delta.length, location=(a+b)/2)
-        obj = bpy.context.object
-        obj.name = name
-        obj.rotation_euler = delta.to_track_quat('Z', 'Y').to_euler()
-        return finish(obj, material, part)
+    def reuse(path, group, name, part, transform=lambda v,i:v, m=mat, uvscale=.5, uoffset=0.0, record=True):
+        verts,uvs,groups=read_obj(path)
+        source=groups[group];ids=sorted({vi for f in source for vi,_ in f});remap={v:i for i,v in enumerate(ids)}
+        faces=[[remap[vi] for vi,_ in f] for f in source]
+        uvfaces=[[(uoffset+uvs[ti][0]*uvscale,uvs[ti][1]*uvscale) for _,ti in f] for f in source]
+        return mesh(name,[transform(verts[i],i) for i in ids],faces,uvfaces,part,m,record)
 
-    def mesh(name, vertices, faces, material, part='main'):
-        data = bpy.data.meshes.new(name)
-        data.from_pydata([mc(p) for p in vertices], [], faces)
-        data.update()
-        obj = bpy.data.objects.new(name, data)
-        scene.collection.objects.link(obj)
-        return finish(obj, material, part)
+    # Original passive base and six broad fins. Only fin length changes to make
+    # physical room for the front fan and rear pad; the base/UVs are unchanged.
+    passive=game_root/'passivethermaldissipatora/passivethermaldissipatora.obj'
+    active=game_root/'200vactivethermaldissipatora/200vactivethermaldissipatora.obj'
+    def shorten_fins(v,i):
+        return v if i<8 else (.03125+v[0]*.4375,v[1],v[2])
+    reuse(passive,'main','Classic heatsink base and six fins','main',shorten_fins)
+    # Reuse the real four-bladed ELN fan. It faces front/back because that is the
+    # installed cooler's existing ventilation direction. Ports/builds don't move.
+    def fan_transform(v,i):
+        return (PIVOT[0]-(v[1]-.3125)*.6,PIVOT[1]+v[0]*.6,v[2]*.6)
+    reuse(active,'rot','Classic four-bladed fan','rotor',fan_transform,uoffset=.5)
 
-    def ring(name, x, y, z, outer, inner, depth, material, part='main', n=32):
-        vertices = []
-        for xx, r in ((x-depth/2, outer), (x-depth/2, inner), (x+depth/2, outer), (x+depth/2, inner)):
-            for k in range(n):
-                a = 2 * math.pi * k / n
-                vertices.append((xx, y + math.cos(a)*r, z + math.sin(a)*r))
-        faces = []
-        for k in range(n):
-            j = (k+1) % n
-            faces.extend([(k,j,n+j,n+k), (2*n+k,3*n+k,3*n+j,2*n+j), (k,2*n+k,2*n+j,j), (n+k,n+j,3*n+j,3*n+k)])
-        return mesh(name, vertices, faces, material, part)
-
-    # Structural frame, reservoir and isolation feet.
-    box('Reservoir welded steel shell', (0,-.315,0), (.82,.27,.80), 0, bevel=.016)
-    box('Reservoir top lip', (0,-.168,0), (.86,.033,.84), 2)
-    for x in (-.32,.32):
-        for z in (-.31,.31):
-            box('Rubber isolation foot', (x,-.465,z), (.13,.07,.13), 4, bevel=.01)
-    for x in (-.37,.37):
-        for z in (-.37,.37):
-            box('Corner extrusion', (x,.132,z), (.055,.62,.055), 1)
-    box('Roof', (0,.458,0), (.86,.043,.84), 0, bevel=.012)
-    for z in (-.405,.405):
-        box('Upper silver trim', (0,.40,z), (.81,.028,.025), 2)
-        box('Lower silver trim', (0,-.11,z), (.81,.026,.025), 2)
-        # Side louvers retain genuine openings onto the copper core.
-        for j in range(6):
-            slat = box('Side intake louver', (.12,-.052+j*.072,z), (.39,.024,.023), 1, bevel=.002)
-            slat.rotation_euler[0] = math.radians(22 if z > 0 else -22)
-    # Copper thermal circuit, exposed in the side cut-outs.
-    for z in (-.23,.23):
-        cylinder('Vertical copper header', (.105,-.11,z), (.105,.36,z), .029, 3)
-    for j in range(9):
-        y = -.076 + j*.048
-        cylinder('Cross-flow copper tube', (.105,y,-.23), (.105,y,.23), .012, 3, n=10)
-    for j in range(13):
-        z = -.25+j*.0417
-        box('Copper exchanger fin', (.10,.125,z), (.145,.475,.006), 3, bevel=0)
-    for z in (-.45,.45):
-        sign = 1 if z > 0 else -1
-        cylinder('Thermal connection stub', (.0,-.16,z-sign*.08), (.0,-.16,sign*.5), .052, 3)
-        cylinder('Thermal compression nut', (0,-.16,z-sign*.022), (0,-.16,z+sign*.016), .071, 2, n=6)
-    # Rear wetted media, separate dry and wet variants.
-    for part, material in (('pad_dry',6), ('pad_wet',7)):
-        box('Wetted cellulose block '+part, (.323,.128,0), (.06,.50,.64), material, part, .002)
-        for j in range(13):
-            z=-.29+j*.048
-            cylinder('Media channel '+part, (.361,-.102,z), (.361,.352,z), .006, material, part, 6)
+    # A simple octagonal fan surround, no cabinet, roof, logo or fine grille.
+    verts=[]
+    for x,r in ((-.4375,.375),(-.4375,.34375),(-.40625,.375),(-.40625,.34375)):
+        for j in range(8):
+            a=(j+.5)*math.pi/4
+            verts.append((x,PIVOT[1]+math.cos(a)*r,math.sin(a)*r))
+    faces=[]
     for j in range(8):
-        cylinder('Rear pad retaining bar', (.367,-.115,-.28+j*.08), (.367,.375,-.28+j*.08), .005, 12, n=6)
-    # Fan, bearing, angled blades and guard. Pivot matches the accompanying .txt.
-    pivot=(-.326,.124,0)
-    ring('Fan bellmouth', -.332,.124,0,.292,.266,.074,2)
-    ring('Fan black gasket', -.372,.124,0,.300,.286,.013,4)
-    cylinder('Fan rotor hub', (-.367,.124,0), (-.291,.124,0), .063, 4, 'rotor',20)
-    cylinder('Fan hub cover', (-.382,.124,0), (-.366,.124,0), .039, 5, 'rotor',16)
-    for i in range(6):
-        a = i*math.pi/3
-        local=[(.065,-.019,-.020),(.222,-.066,-.010),(.257,.029,.028),(.124,.057,.018)]
-        verts=[]
-        for thickness in (-.005,.005):
-            for radius,tangent,xshift in local:
-                y=.124+radius*math.cos(a)-tangent*math.sin(a)
-                z=radius*math.sin(a)+tangent*math.cos(a)
-                verts.append((-.326+xshift+thickness,y,z))
-        faces=[(0,1,2,3),(7,6,5,4),(0,4,5,1),(1,5,6,2),(2,6,7,3),(3,7,4,0)]
-        mesh(f'Swept fan blade {i+1}',verts,faces,12,'rotor')
-    for r in (.108,.194,.271):
-        ring('Concentric wire safety guard',-.409,.124,0,r+.003,r-.003,.006,1,n=40)
-    for i in range(8):
-        a=i*math.pi/4
-        cylinder('Radial safety guard',(-.412,.124,0),(-.412,.124+.280*math.cos(a),.280*math.sin(a)),.003,1,n=6)
-    for y in (-.123,.371):
-        for z in (-.247,.247):
-            cylinder('Fan fastener',(-.399,y,z),(-.415,y,z),.013,2,n=6)
-    # Water distributor and pump, connected by a visible riser.
-    cylinder('Water riser',(.285,-.26,-.28),(.285,.407,-.28),.018,5)
-    cylinder('Distribution manifold',(.281,.405,-.31),(.281,.405,.31),.027,2)
-    for j in range(7):
-        z=-.27+j*.09
-        cylinder('Water distribution nozzle',(.282,.390,z),(.315,.358,z),.009,5,n=8)
-    cylinder('Circulation pump body',(.23,-.27,-.17),(.23,-.27,.05),.053,4)
-    cylinder('Pump blue end cap',(.23,-.27,-.20),(.23,-.27,-.175),.06,5)
-    cylinder('Top water fill connector',(0,.457,0),(0,.5,0),.055,5,n=12)
-    # External service points and tank gauge.
-    box('Power terminal enclosure',(-.437,-.303,-.245),(.06,.11,.17),4)
-    for z in (-.276,-.216):
-        cylinder('Power terminal',(-.450,-.30,z),(-.49,-.30,z),.019,10,n=8)
-    box('Sight gauge dark recess',(-.266,-.303,.411),(.109,.216,.015),4,bevel=.004)
-    box('Water gauge liquid',(-.266,-.310,.421),(.075,.180,.006),8,'water',0)
-    for j in range(5):
-        box('Sight gauge mark',(-.330,-.385+j*.044,.424),(.025,.004,.009),11,bevel=0)
-    box('Front identification plate',(-.435,-.300,.123),(.022,.123,.23),14)
-    # Text is mesh geometry so it survives every interchange format without font dependencies.
-    def lettering(text, pos, size, material):
-        curve=bpy.data.curves.new('EC240 lettering','FONT')
-        curve.body=text; curve.size=size; curve.align_x='CENTER'; curve.extrude=.00025; curve.resolution_u=2
-        obj=bpy.data.objects.new(text,curve); scene.collection.objects.link(obj)
-        obj.location=mc(pos)
-        # Text lies in the Y/Z plane, reading from the front (-X).
-        obj.rotation_euler=(math.pi/2,0,-math.pi/2)
-        bpy.context.view_layer.objects.active=obj
-        bpy.ops.object.select_all(action='DESELECT'); obj.select_set(True)
-        bpy.ops.object.convert(target='MESH')
-        return finish(bpy.context.object,material)
-    lettering('EC-240',(-.450,-.292,.122),.029,11)
-    lettering('EVAP',(-.450,-.332,.122),.018,5)
-    for part,mat in (('led_off',4),('led_ready',9),('led_warning',10)):
-        cylinder('Controller status lamp '+part,(-.450,-.246,.212),(-.46,-.246,.212),.012,mat,part,10)
-    for z in (-.40,.40):
-        for x in (-.33,.33):
-            cylinder('Reservoir access fastener',(x,-.30,z),(x,-.30,z+math.copysign(.008,z)),.009,2,n=6)
+        k=(j+1)%8
+        faces.extend([(j,k,8+k,8+j),(16+j,24+j,24+k,16+k),(j,16+j,16+k,k),(8+j,8+k,24+k,24+j)])
+    u,v=tiles['metal'];quad=[((u+.5)/64,(v+.5)/64),((u+15.5)/64,(v+.5)/64),((u+15.5)/64,(v+15.5)/64),((u+.5)/64,(v+15.5)/64)]
+    mesh('Eight-sided fan surround',verts,faces,[quad]*len(faces),'main')
+    box('Fan support',(-.265625,-.03125,0),(.0625,.3125,.09375),'blue')
+    box('Fan axle',(-.296875,.125,0),(.09375,.0625,.0625),'dark')
+    # Thin tray rim uses the existing base as its reservoir rather than growing
+    # a second enclosure. Two simple side pads mark the native heat connections.
+    for z in (-.46875,.46875):
+        box('Reservoir rim',(0,-.171875,z),(1,.03125,.0625),'metal')
+        box('Thermal connection',(0,-.34375,math.copysign(.501,z)),(.1875,.1875,.002),'copper')
+    for x in (-.46875,.46875):
+        box('Reservoir rim',(x,-.171875,0),(.0625,.03125,.875),'metal')
+        box('240 V terminal',(math.copysign(.501,x),-.34375,-.28125),(.002,.125,.125),'blue')
+    for part,tile in [('pad_dry','dry'),('pad_wet','wet')]:
+        box('Evaporative media '+part,(.34375,.09375,0),(.0625,.5,.8125),tile,part)
+    for z in (-.4375,.4375):box('Pad retaining edge',(.34375,.09375,z),(.09375,.5625,.0625),'dark')
+    box('Water distributor',(.34375,.375,0),(.09375,.0625,.9375),'metal')
+    box('Water feed',(.34375,.0625,.40625),(.0625,.8125,.0625),'blue')
+    box('Top water port',(.34375,.46875,.40625),(.125,.0625,.125),'blue')
+    box('Pump block',(.3125,-.125,-.34375),(.125,.125,.125),'dark')
+    # Recessed side sight strip. The dynamic liquid remains on the same plane
+    # and scales from GAUGE_BOTTOM, shared with the renderer's anchor.
+    box('Water sight recess',(-.28125,-.34375,.501),(.09375,.21875,.002),'dark')
+    box('Water sight strip',(-.28125,-.34375,.503),(.0625,.1875,.001),'water','water')
 
-    # Animation in the editable source; exported ELN .txt uses the same pivot.
-    rotor_root=bpy.data.objects.new('Fan axis - animate X',None)
-    scene.collection.objects.link(rotor_root)
-    rotor_root.location=mc(pivot)
-    bpy.context.view_layer.update()
+    rotor_root=bpy.data.objects.new('Fan animation pivot',None);scene.collection.objects.link(rotor_root)
+    rotor_root.location=mc(PIVOT);bpy.context.view_layer.update()
     for obj in objects:
         if obj['eln_part']=='rotor':
-            matrix=obj.matrix_world.copy(); obj.parent=rotor_root; obj.matrix_world=matrix
-    rotor_root.rotation_euler.x=0
-    rotor_root.keyframe_insert('rotation_euler',frame=1)
-    rotor_root.rotation_euler.x=2*math.pi
-    rotor_root.keyframe_insert('rotation_euler',frame=61)
-    scene.frame_start=1; scene.frame_end=60; scene.render.fps=30; scene.frame_set(1)
+            transform=obj.matrix_world.copy();obj.parent=rotor_root;obj.matrix_world=transform
+    # Quarter-turn keys avoid quaternion shortest-path loss of a full turn.
+    for frame,angle in [(1,0),(16,math.pi/2),(31,math.pi),(46,3*math.pi/2),(61,2*math.pi)]:
+        rotor_root.rotation_euler.x=angle;rotor_root.keyframe_insert('rotation_euler',frame=frame)
+    scene.frame_start=1;scene.frame_end=60;scene.render.fps=30;scene.frame_set(1)
     bpy.context.view_layer.update()
 
-    # Export ELN's constrained OBJ dialect. Materials use one shared atlas to minimize binds.
-    lines=['# EC-240 evaporative heat sink; generated by Blender '+bpy.app.version_string,'mtllib evaporativecooler.mtl']
-    vertex_count=0; uv_count=0; triangles=0; bounds=[]; part_stats={}
-    deps=bpy.context.evaluated_depsgraph_get()
-    for part in sorted({o['eln_part'] for o in objects}):
-        lines.append('o '+part)
-        part_tri=0
-        for obj in [o for o in objects if o['eln_part']==part]:
-            evaluated=obj.evaluated_get(deps)
-            data=evaluated.to_mesh()
-            data.calc_loop_triangles()
-            offset=vertex_count
+    # ELN's OBJ dialect: global indices, triangles, named groups, one diffuse.
+    lines=['# ELN evaporative dissipator: adapted classic heatsink/fan','mtllib evaporativecooler.mtl']
+    nv=nt=0;bounds=[];counts={}
+    for part in sorted(PARTS):
+        lines.append('o '+part);counts[part]=0
+        for obj in (o for o in objects if o['eln_part']==part):
+            data=obj.data;data.calc_loop_triangles()
             for vertex in data.vertices:
-                v=evaluated.matrix_world@vertex.co
-                xyz=(v.x,v.z,-v.y)
-                bounds.append(xyz)
+                v=obj.matrix_world@vertex.co;xyz=(v.x,v.z,-v.y);bounds.append(xyz)
                 lines.append('v %.6f %.6f %.6f'%xyz)
-            vertex_count+=len(data.vertices)
-            uv_offset=uv_count
-            for uv in data.uv_layers.active.data:
-                lines.append('vt %.6f %.6f'%(uv.uv.x,uv.uv.y))
-            uv_count+=len(data.uv_layers.active.data)
+            for uv in data.uv_layers.active.data:lines.append('vt %.6f %.6f'%tuple(uv.uv))
             lines.append('usemtl atlas')
-            for triangle in data.loop_triangles:
-                indices=[f'{offset+vi+1}/{uv_offset+li+1}' for vi,li in zip(triangle.vertices,triangle.loops)]
-                lines.append('f '+' '.join(indices)); triangles+=1; part_tri+=1
-            evaluated.to_mesh_clear()
-        part_stats[part]=part_tri
+            for t in data.loop_triangles:
+                lines.append('f '+' '.join(f'{nv+vi+1}/{nt+li+1}' for vi,li in zip(t.vertices,t.loops)))
+                counts[part]+=1
+            nv+=len(data.vertices);nt+=len(data.uv_layers.active.data)
     (out/'evaporativecooler.obj').write_text('\n'.join(lines)+'\n')
     (out/'evaporativecooler.mtl').write_text('newmtl atlas\nKd 1 1 1\nd 1\nillum 1\nmap_Kd atlas.png\n')
-    (out/'evaporativecooler.txt').write_text('o rotor\nf originX -0.326\nf originY 0.124\nf originZ 0.0\n')
-    mins=[min(v[i] for v in bounds) for i in range(3)]
-    maxs=[max(v[i] for v in bounds) for i in range(3)]
-    assert all(-.505<=x<=.505 for x in mins+maxs),(mins,maxs)
-    assert triangles<16000,triangles
-
-    # Portable glTF interchange and editable Blender source, not bundled into the game JAR.
+    (out/'evaporativecooler.txt').write_text('o rotor\nf originX -0.375\nf originY 0.125\nf originZ 0.0\n')
+    mins=[min(v[i] for v in bounds) for i in range(3)];maxs=[max(v[i] for v in bounds) for i in range(3)]
+    assert all(-.505<=v<=.505 for v in mins+maxs),(mins,maxs)
+    assert sum(counts.values())<=768,counts
     bpy.ops.object.select_all(action='DESELECT')
     for obj in objects:
-        if obj['eln_part'] not in ('pad_dry','led_off','led_warning'): obj.select_set(True)
+        if obj['eln_part']!='pad_dry':obj.select_set(True)
     rotor_root.select_set(True)
-    bpy.ops.export_scene.gltf(filepath=str(source/'evaporativecooler.glb'),use_selection=True,export_format='GLB',export_animations=True)
+    bpy.ops.export_scene.gltf(filepath=str(art/'evaporativecooler.glb'),use_selection=True,export_format='GLB',export_animations=True)
 
-    # Separate studio collection; none of this is part of the Minecraft export.
-    bpy.ops.mesh.primitive_plane_add(size=200,location=(0,0,-.501))
-    floor=bpy.context.object; floor.name='STUDIO - ground (not exported)'
-    m=bpy.data.materials.new('Studio slate'); m.diffuse_color=(.055,.07,.09,1); floor.data.materials.append(m)
-    def area(name,position,power,size):
-        data=bpy.data.lights.new(name,'AREA'); data.energy=power; data.shape='DISK'; data.size=size
-        obj=bpy.data.objects.new(name,data); scene.collection.objects.link(obj); obj.location=position
-        obj.rotation_euler=(Vector((0,0,.0))-obj.location).to_track_quat('-Z','Y').to_euler()
-    area('STUDIO key',(-3,-4,5),500,4)
-    area('STUDIO rim',(3,1,3),650,3)
-    area('STUDIO fill',(-1,3,2),220,3)
-    camera_data=bpy.data.cameras.new('Presentation camera'); camera=bpy.data.objects.new('Presentation camera',camera_data)
-    scene.collection.objects.link(camera); scene.camera=camera
-    camera_data.type='ORTHO'; camera_data.ortho_scale=1.65
-    def view(position):
-        camera.location=position
-        camera.rotation_euler=(Vector((0,0,.015))-camera.location).to_track_quat('-Z','Y').to_euler()
-    view((-3.2,-4,2.5))
-    bpy.ops.wm.save_as_mainfile(filepath=str(source/'evaporativecooler.blend'))
-    if render:
-        scene.render.filepath=str(renders/'evaporative-cooler-front.png'); bpy.ops.render.render(write_still=True)
-        view((3.2,-4,2.4))
-        scene.render.filepath=str(renders/'evaporative-cooler-rear.png'); bpy.ops.render.render(write_still=True)
-        # Actual model render used as the game's inventory sprite, with transparent surroundings.
-        view((-3.2,-4,2.5)); floor.hide_render=True; scene.render.film_transparent=True
-        scene.render.resolution_x=128; scene.render.resolution_y=128; camera_data.ortho_scale=1.55
-        icon=root/'src/main/resources/assets/eln/textures/blocks/evaporativecooler.png'
-        icon.parent.mkdir(parents=True,exist_ok=True)
-        scene.render.filepath=str(icon); bpy.ops.render.render(write_still=True)
-    manifest={'blender':bpy.app.version_string,'triangles':triangles,'vertices':vertex_count,'parts':part_stats,
-              'bounds_min':mins,'bounds_max':maxs,'rotor_pivot_mc':list(pivot),
-              'generator_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-              'obj_sha256':hashlib.sha256((out/'evaporativecooler.obj').read_bytes()).hexdigest(),
-              'atlas_sha256':hashlib.sha256((out/'atlas.png').read_bytes()).hexdigest()}
-    (source/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
+    def area(name,p,power,size):
+        data=bpy.data.lights.new(name,'AREA');data.energy=power;data.size=size
+        obj=bpy.data.objects.new(name,data);scene.collection.objects.link(obj);obj.location=p
+        obj.rotation_euler=(-obj.location).to_track_quat('-Z','Y').to_euler()
+    area('Reference key',(-4,-5,6),500,5);area('Reference fill',(4,2,4),300,4)
+    camera_data=bpy.data.cameras.new('Reference camera');camera=bpy.data.objects.new('Reference camera',camera_data)
+    scene.collection.objects.link(camera);scene.camera=camera;camera_data.type='ORTHO'
+    def view(pos,scale):
+        camera.location=pos;camera.rotation_euler=(-camera.location).to_track_quat('-Z','Y').to_euler();camera_data.ortho_scale=scale
+    view((-4,-6,4),1.7)
+    scene.render.resolution_x=900;scene.render.resolution_y=900;scene.render.resolution_percentage=100
+    scene.render.film_transparent=True
+    bpy.ops.wm.save_as_mainfile(filepath=str(art/'evaporativecooler.blend'))
+    if presentation:
+        for name,pos in [('front',(-4,-6,4)),('rear',(4,-6,4))]:
+            view(pos,1.7);scene.render.filepath=str(renders/f'evaporative-cooler-{name}.png');bpy.ops.render.render(write_still=True)
+    # Actual 32px game icon, matching the existing heatsinks' sprite resolution.
+    view((-4,-6,4),1.58);scene.render.resolution_x=scene.render.resolution_y=32
+    icon=root/'src/main/resources/assets/eln/textures/blocks/evaporativecooler.png'
+    scene.render.filepath=str(icon);bpy.ops.render.render(write_still=True)
+
+    refs=[passive,active,reference,passive_texture]
+    manifest={'blender':bpy.app.version_string,'design':'classic-eln-family-v2','triangles':sum(counts.values()),
+              'vertices':nv,'parts':counts,'bounds_min':mins,'bounds_max':maxs,'rotor_pivot_mc':list(PIVOT),
+              'gauge_bottom_mc':GAUGE_BOTTOM,'atlas_size':[64,64],'icon_size':[32,32],
+              'reference_sha256':{str(p.relative_to(root)):digest(p) for p in refs},
+              'generator_sha256':digest(Path(__file__)),'obj_sha256':digest(out/'evaporativecooler.obj'),
+              'atlas_sha256':digest(out/'atlas.png'),'icon_sha256':digest(icon),
+              'blend_sha256':digest(art/'evaporativecooler.blend'),'glb_sha256':digest(art/'evaporativecooler.glb')}
+    (art/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
     print(json.dumps(manifest,indent=2))
 
+    if presentation:
+        # Review source meshes at identical scale/light, not stylized mock-ups.
+        view((-4,-6,4),5.25);scene.render.resolution_x=1680;scene.render.resolution_y=660
+        right=camera.rotation_euler.to_matrix()@Vector((1,0,0))
+        shift=right*1.7
+        for obj in objects:
+            if obj.parent is None:obj.location+=shift
+        rotor_root.location+=shift
+        for index,folder in enumerate(['passivethermaldissipatora','200vactivethermaldissipatora']):
+            img=bpy.data.images.load(str(game_root/folder/'tex.png'));m=material(img,folder)
+            for part in ['main']+(['rot'] if index==1 else []):
+                obj=reuse(game_root/folder/(folder+'.obj'),part,folder+' '+part,'reference',m=m,uvscale=1,record=False)
+                obj.location+=right*((index-1)*1.7)
+        scene.render.filepath=str(renders/'cooler-family-comparison.png');bpy.ops.render.render(write_still=True)
+
+
 if __name__=='__main__':
-    args=arguments(); build(args.root.resolve(),(args.renders or args.root/'build/evaporative-renders').resolve(),not args.no_render)
+    args=arguments()
+    build(args.root.resolve(),(args.renders or args.root/'build/evaporative-renders').resolve(),not args.no_render)

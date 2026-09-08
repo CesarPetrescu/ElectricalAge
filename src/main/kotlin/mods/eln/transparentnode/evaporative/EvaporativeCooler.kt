@@ -45,7 +45,7 @@ class EvaporativeCoolerDescriptor(name: String) : TransparentNodeDescriptor(
         if (type == IItemRenderer.ItemRenderType.INVENTORY) super.renderItem(type, item, *data)
         else {
             val obj = Eln.obj.getObj("evaporativecooler")
-            for (part in arrayOf("main", "pad_dry", "rotor", "led_off")) obj.getPart(part)?.draw()
+            for (part in arrayOf("main", "pad_dry", "rotor")) obj.getPart(part)?.draw()
         }
     }
     override fun mustHaveFloor() = false
