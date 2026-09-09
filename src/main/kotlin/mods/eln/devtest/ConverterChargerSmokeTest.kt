@@ -265,12 +265,17 @@ class ConverterChargerSmokeTest(private val restart: Boolean) {
                     if(restart) { next(7) } else { next(4);force(false) }
                 }
                 4 -> {
-                    if(world.getChunkSource().getChunkNow(P.x shr 4,P.z shr 4)==null && world.getEntity(carId)==null) {
-                        assertCase("actual-chunk-unload-closes-native-charger-port") {
-                            val field=charger.javaClass.getDeclaredField("port");field.isAccessible=true;check(field.get(charger)==null)
-                        }
+                    // FULL availability and entity tracking disappear before asynchronous
+                    // chunk save and block-entity teardown have necessarily finished. Wait
+                    // for the real teardown; never invoke its callback or close the port here.
+                    val unavailable=world.getChunkSource().getChunkNow(P.x shr 4,P.z shr 4)==null
+                    val absent=world.getEntity(carId)==null
+                    val field=charger.javaClass.getDeclaredField("port");field.isAccessible=true
+                    val closed=field.get(charger)==null && (charger as net.minecraft.world.level.block.entity.BlockEntity).isRemoved
+                    if(unavailable && absent && closed) {
+                        assertCase("actual-chunk-unload-closes-native-charger-port") { check(unavailable && absent && closed) }
                         force(true);next(5)
-                    } else check(elapsed<900) { "Test chunk did not actually unload; no simulated lifecycle pass" }
+                    } else check(elapsed<900) { "Actual unload incomplete: chunkUnavailable=$unavailable carAbsent=$absent portClosed=$closed; no simulated lifecycle pass" }
                 }
                 5 -> if(elapsed>=60 && recoverWorld()) {
                     assertCase("real-chunk-reload-preserves-car-and-expires-lease") { check(call(charger,"connected")==false && batteryJ()<=beforeEnergy+1.0) }
