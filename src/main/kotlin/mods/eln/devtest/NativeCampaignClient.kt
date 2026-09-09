@@ -83,14 +83,15 @@ object NativeCampaignClient {
     private val serverTimes=java.util.Collections.synchronizedList(mutableListOf<Double>())
     private var serverTickStart=0L
 
-    @SubscribeEvent @JvmStatic fun serverPre(event:ServerTickEvent.Pre) {
+    // KFF registers this object instance: event handlers must not be static.
+    @SubscribeEvent fun serverPre(event:ServerTickEvent.Pre) {
         if(suite.isNotEmpty() && !finished)serverTickStart=System.nanoTime()
     }
-    @SubscribeEvent @JvmStatic fun serverPost(event:ServerTickEvent.Post) {
+    @SubscribeEvent fun serverPost(event:ServerTickEvent.Post) {
         if(suite.isNotEmpty() && !finished && serverTickStart!=0L && serverTimes.size<100000)
             serverTimes+=(System.nanoTime()-serverTickStart)/1e6
     }
-    @SubscribeEvent @JvmStatic fun frame(event:RenderFrameEvent.Post) {
+    @SubscribeEvent fun frame(event:RenderFrameEvent.Post) {
         if(suite.isEmpty() || finished)return
         val now=System.nanoTime()
         if(lastFrame!=0L && mc.level!=null && mc.screen==null && frameTimes.size<100000)frameTimes+=(now-lastFrame)/1e6
@@ -227,7 +228,7 @@ object NativeCampaignClient {
         write("performance.json",mapOf("serverTickSamples" to server.size,"serverTickP50Ms" to serverPercentile(.5),"serverTickP95Ms" to serverPercentile(.95),"serverTickP99Ms" to serverPercentile(.99),"usedJvmHeapBytes" to java.lang.management.ManagementFactory.getMemoryMXBean().heapMemoryUsage.used,"runId" to runId,"totalSeconds" to (System.nanoTime()-started)/1e9,"worldFrameSamples" to ordered.size,"frameP50Ms" to percentile(.5),"frameP95Ms" to percentile(.95),"frameP99Ms" to percentile(.99),"note" to "Client frame intervals at a 60 FPS cap and separate integrated-server Pre/Post intervals, including test instrumentation. Used JVM heap is not per-network allocation."))
         write("trace.json",traces);report(true);mc.stop()
     }
-    @SubscribeEvent @JvmStatic fun tick(event:ClientTickEvent.Post) {
+    @SubscribeEvent fun tick(event:ClientTickEvent.Post) {
         if(suite.isEmpty() || finished)return
         try {
             check((System.nanoTime()-started)/1e9<1500) { "Native suite exceeded 25 minute watchdog" }

@@ -136,8 +136,7 @@ jobs:
         # LWJGL 3 needs an X display and a GL 3.2 core context; Xorg on the dummy driver plus
         # Mesa's llvmpipe (GL 4.5) is enough, and is the setup tools/port/headless.md documents.
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends xserver-xorg-video-dummy xserver-xorg-core x11-xserver-utils libgl1-mesa-dri mesa-utils
+          bash script/install_ci_packages.sh xserver-xorg-video-dummy xserver-xorg-core x11-xserver-utils libgl1-mesa-dri mesa-utils
           sudo tee /tmp/dummy.conf >/dev/null <<'EOF'
           Section "Monitor"
             Identifier "Monitor0"

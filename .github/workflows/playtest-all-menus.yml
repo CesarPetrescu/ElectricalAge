@@ -62,8 +62,7 @@ jobs:
         with: {name: native-menu-world, path: menu-input}
       - name: Install software rendering and isolate this world's copy
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends xvfb libgl1-mesa-dri libopenal1
+          bash script/install_ci_packages.sh xvfb libgl1-mesa-dri libopenal1
           mkdir -p run/client/saves/menu-audit
           tar -xzf menu-input/menu-world.tar.gz --strip-components=1 -C run/client/saves/menu-audit
           printf 'onboardAccessibility:false\nnarrator:0\nguiScale:2\nmaxFps:30\npauseOnLostFocus:false\n' > run/client/options.txt

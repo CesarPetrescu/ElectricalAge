@@ -28,6 +28,9 @@ jobs:
         run: |
           python3 -m pip install Pillow==11.3.0
           python3 script/test_native_campaign_report.py
+          python3 script/test_native_campaign_startup.py
+      - name: Load real client-side subscribers before expensive client fan-out
+        run: ./gradlew --no-daemon runData
       - name: Compile the actual production artifact
         run: ./gradlew --no-daemon assemble
       - name: Build the registry gallery and existing physical installations in Minecraft
@@ -74,6 +77,8 @@ jobs:
             build/smoke-artifacts/**
             run/server/logs/**
             run/server/crash-reports/**
+            run/data/logs/**
+            run/data/crash-reports/**
   m1:
     name: M1 real client / ${{ matrix.suite }}
     needs: package
@@ -182,8 +187,7 @@ jobs:
           restore-keys: native-linux-x64-v1-
       - name: Real X display and software OpenGL
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends xserver-xorg-video-dummy xserver-xorg-core x11-xserver-utils libgl1-mesa-dri mesa-utils
+          bash script/install_ci_packages.sh xserver-xorg-video-dummy xserver-xorg-core x11-xserver-utils libgl1-mesa-dri mesa-utils
           sudo tee /tmp/native-xorg.conf >/dev/null <<'EOF'
           Section "Monitor"
             Identifier "Monitor0"

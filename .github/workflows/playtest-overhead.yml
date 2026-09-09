@@ -27,8 +27,7 @@ jobs:
           ./gradlew --no-daemon build 2>&1 | tee overhead-build.log
       - name: Fresh server world and software display
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends xvfb libgl1-mesa-dri libopenal1
+          bash script/install_ci_packages.sh xvfb libgl1-mesa-dri libopenal1
           mkdir -p run/server run/client/saves
           echo eula=true > run/server/eula.txt
           printf 'server-ip=127.0.0.1\nonline-mode=false\nlevel-type=minecraft\\:flat\n' > run/server/server.properties

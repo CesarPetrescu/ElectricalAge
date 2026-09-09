@@ -42,8 +42,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$(cat menu-input/source-commit.txt)" = '4ff68e073b588e4711cd1575620994efc5acd33d'
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends xvfb libgl1-mesa-dri libopenal1
+          bash script/install_ci_packages.sh xvfb libgl1-mesa-dri libopenal1
           mkdir -p run/client/saves/menu-audit build/hv-native
           tar -xzf menu-input/menu-world.tar.gz --strip-components=1 -C run/client/saves/menu-audit
           printf 'onboardAccessibility:false\nnarrator:0\nguiScale:2\nmaxFps:30\npauseOnLostFocus:false\n' > run/client/options.txt

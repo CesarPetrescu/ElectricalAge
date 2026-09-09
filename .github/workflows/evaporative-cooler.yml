@@ -40,8 +40,7 @@ jobs:
           ./gradlew build --stacktrace 2>&1 | tee build/evaporative-build.log
       - name: Headless display
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends xserver-xorg-video-dummy xserver-xorg-core x11-xserver-utils libgl1-mesa-dri mesa-utils
+          bash script/install_ci_packages.sh xserver-xorg-video-dummy xserver-xorg-core x11-xserver-utils libgl1-mesa-dri mesa-utils
           sudo tee /tmp/evap-dummy.conf >/dev/null <<'XORG'
           Section "Monitor"
             Identifier "Monitor0"

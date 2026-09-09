@@ -20,6 +20,7 @@ from run_multiplayer import MODS, download, install_client, offline_uuid
 from native_campaign_plan import SUITES
 from native_campaign_report import build_index, validate_phase
 from check_client_assets import inspect as inspect_assets
+from native_campaign_process import crash_snapshot, wait_for_client
 
 
 def main():
@@ -73,6 +74,8 @@ def main():
                 flags += [f'-Deln.nativeCampaign={args.suite}',f'-Deln.nativeCampaignDirectory={directory}',f'-Deln.nativeCampaignJarSha256={sha}',f'-Deln.nativeCampaignRunId={nonce}',f'-Deln.nativeCampaignRestart={str(phase=="restart").lower()}']
             command=launcher.command.get_minecraft_command(version,runtime,{'username':'ElnNativeQA','uuid':offline_uuid('ElnNativeQA'),'token':'offline-ci-local-only','executablePath':java,'jvmArguments':flags,'gameDirectory':str(game),'customResolution':True,'resolutionWidth':'1280','resolutionHeight':'800'})
             phase_start=time.monotonic()
+            metadata['activePhase']=phase
+            previous_crashes=crash_snapshot(game/'crash-reports')
             with (directory/'client.log').open('w') as log:
                 proc=subprocess.Popen(command,cwd=game,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
                 if phase=='preflight':
@@ -90,8 +93,8 @@ def main():
                         with Image.open(control/f'alpha-{action}.png') as im: im.verify()
                     code=proc.wait(timeout=60)
                 else:
-                    try: code=proc.wait(timeout=1600)
-                    except subprocess.TimeoutExpired:
+                    try: code=wait_for_client(proc,game/'crash-reports',previous_crashes)
+                    except TimeoutError:
                         with (directory/'threads.txt').open('w') as dump: subprocess.run([str(Path(java).with_name('jcmd')),str(proc.pid),'Thread.print'],stdout=dump,stderr=subprocess.STDOUT,timeout=20,check=False)
                         raise
                 if code!=0: raise RuntimeError(f'{phase} client exited {code}')
@@ -110,7 +113,18 @@ def main():
                 elif metadata['phases']['first']['pid']==proc.pid: raise ValueError('Restart reused the same JVM')
         metadata['status']='passed'
     except BaseException as e:
-        metadata['status']='failed';metadata['error']=str(e);raise
+        metadata['status']='failed';metadata['error']=str(e)
+        # OS capture is diagnostic only, never counted as a passed framebuffer test.
+        if platform.system()=='Darwin' and proc is not None and proc.poll() is None:
+            try:
+                shot=out/'failure-desktop.png'
+                captured=subprocess.run(['/usr/sbin/screencapture','-x',str(shot)],capture_output=True,text=True,timeout=10)
+                metadata['failureScreenshot']={'kind':'OS desktop diagnostic, not functional evidence',
+                    'file':shot.name if shot.is_file() else None,'exitCode':captured.returncode,
+                    'stderr':captured.stderr[-1000:]}
+            except (OSError,subprocess.TimeoutExpired) as capture_error:
+                metadata['failureScreenshot']={'error':str(capture_error)}
+        raise
     finally:
         if proc is not None and proc.poll() is None:
             proc.terminate()
