@@ -1,0 +1,103 @@
+name: Converter charger and scaling acceptance
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: converter-acceptance-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  charger:
+    name: Four converters -> actual car charger -> chunk unload -> JVM restart
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: CesarPetrescu/AutoPropulsion-Age
+          ref: daf12579815345470310aed469df3e54eb7c61d4
+          path: companion-source
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build real mod and require the native fixture
+        run: ./gradlew --no-daemon build --stacktrace
+      - name: Test production charger, car, energy, unload and saved-world restart
+        env:
+          ELN_ALLOW_DISPOSABLE_QA: '1'
+        run: bash script/test-converter-charger.sh companion-source
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: converter-charger-native-evidence
+          if-no-files-found: error
+          path: |
+            build/charger-acceptance/
+            build/smoke-artifacts/converter-charger-*
+            build/smoke-artifacts/contracts/converter-charger-*
+            build/test-results/test/
+            run/server/logs/
+            run/server/crash-reports/
+  scaling:
+    name: Actual 1/4/16/64-converter scaling and base-revision control
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: bde23a17ac80f3af96ed266c0dd115169aaf4901
+          path: base-control
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Measure base revision with identical QA-only control source
+        run: |
+          set -o pipefail
+          mkdir -p build/converter-scaling base-control/src/test/kotlin/mods/eln/sim/power
+          cp src/test/kotlin/mods/eln/sim/power/ConverterLinearControlBenchmarkTest.kt base-control/src/test/kotlin/mods/eln/sim/power/
+          git -C base-control rev-parse HEAD > build/converter-scaling/base-sha.txt
+          (cd base-control && ./gradlew --no-daemon benchmarkTest --tests 'mods.eln.sim.power.ConverterLinearControlBenchmarkTest' --stacktrace) 2>&1 | tee build/converter-scaling/base.log
+          cp base-control/build/test-results/benchmarkTest/TEST-mods.eln.sim.power.ConverterLinearControlBenchmarkTest.xml build/converter-scaling/base.xml
+      - name: Measure repaired converter networks and ordinary linear control
+        run: |
+          set -o pipefail
+          git rev-parse HEAD > build/converter-scaling/head-sha.txt
+          ./gradlew --no-daemon benchmarkTest --tests 'mods.eln.sim.power.ConverterNetworkBenchmarkTest' --tests 'mods.eln.sim.power.ConverterLinearControlBenchmarkTest' --stacktrace 2>&1 | tee build/converter-scaling/head.log
+          cp build/test-results/benchmarkTest/TEST-mods.eln.sim.power.Converter*.xml build/converter-scaling/
+      - name: Require executed tests and publish measured values
+        run: |
+          python3 - <<'PY'
+          import pathlib,xml.etree.ElementTree as E,re,os
+          folder=pathlib.Path('build/converter-scaling')
+          files=[folder/'base.xml',folder/'TEST-mods.eln.sim.power.ConverterNetworkBenchmarkTest.xml',folder/'TEST-mods.eln.sim.power.ConverterLinearControlBenchmarkTest.xml']
+          roots=[]
+          for p in files:
+              r=E.parse(p).getroot();roots.append(r)
+              assert int(r.attrib['tests'])>=1 and all(int(r.attrib.get(k,0))==0 for k in ['failures','errors','skipped']),E.tostring(r).decode()
+          text='\n'.join(''.join(r.itertext()) for r in roots)
+          for n in [1,4,16,64]:assert re.search(r'CONVERTER_NETWORK_BENCH count='+str(n)+r' ',text),n
+          lines=[s for s in text.splitlines() if s.startswith('CONVERTER_')]
+          (folder/'measurements.txt').write_text('\n'.join(lines)+'\n')
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write('## Measured converter performance\n\n```text\n'+'\n'.join(lines)+'\n```\nAbsolute JVM heap is recorded, not mislabelled as per-network allocation.\n')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: converter-scaling-evidence
+          if-no-files-found: error
+          path: |
+            build/converter-scaling/
+            build/test-results/benchmarkTest/

@@ -2,6 +2,7 @@ package mods.eln.sim.mna;
 
 import mods.eln.Eln;
 import mods.eln.sim.power.ConservativePowerProcess;
+import mods.eln.sim.power.ConverterConvergence;
 import mods.eln.metrics.MetricsSubsystem;
 import mods.eln.misc.Profiler;
 import mods.eln.misc.Utils;
@@ -176,6 +177,16 @@ public class RootSystem {
     }
 
     private void generateSystems() {
+        // A converter needs the actual port impedance, not a stale ideal-voltage proxy
+        // at a private/size partition boundary. Solve each physically connected port
+        // network exactly; the converter's input and output remain separate networks.
+        // Unrelated linear networks retain the existing decomposition and size policy.
+        for (Component component : new ArrayList<>(addComponents)) {
+            if (!(component instanceof SwitchableVoltageSource)) continue;
+            for (State pin : component.getConnectedStates()) {
+                if (pin != null && pin.getSubSystem() == null) buildSubSystem(pin, true);
+            }
+        }
         LinkedList<State> firstState = new LinkedList<State>();
         for (State s : addStates) {
             if (s.mustBeFarFromInterSystem()) {
@@ -230,6 +241,10 @@ public class RootSystem {
         for (IRootSystemPreStepProcess process : processPre) {
             if (process instanceof ConservativePowerProcess) converters.add((ConservativePowerProcess) process);
         }
+        // Seed all voltage-regulated sources before sequential load calculations. Otherwise
+        // the first member of a parallel bus is incorrectly asked to carry the entire load,
+        // and subsequent members climb out of current limit only millivolts per iteration.
+        for (ConservativePowerProcess converter : converters) converter.prepareStep();
         Set<ConservativePowerProcess> blocked = new HashSet<>();
         boolean converged = false;
         int attempts = converters.isEmpty() ? 1 : 64;
@@ -242,6 +257,12 @@ public class RootSystem {
             for (SubSystem system : systems) system.stepCalc();
             converged = converters.stream().allMatch(ConservativePowerProcess::acceptsCandidate);
             if (converged) break;
+            if (trial == 3 || trial == 15) {
+                ConverterConvergence.correct(converters);
+                for (SubSystem system : systems) system.stepCalc();
+                converged = converters.stream().allMatch(ConservativePowerProcess::acceptsCandidate);
+                if (converged) break;
+            }
         }
         if (!converged) {
             // Fail the connected converter group, not unrelated machines elsewhere in the world.
@@ -311,12 +332,16 @@ public class RootSystem {
     }
 
     private void buildSubSystem(State root) {
+        buildSubSystem(root, false);
+    }
+
+    private void buildSubSystem(State root, boolean exactConverterNetwork) {
         Set<Component> componentSet = new LinkedHashSet<Component>();
         Set<State> stateSet = new LinkedHashSet<State>();
 
         LinkedList<State> roots = new LinkedList<State>();
         roots.push(root);
-        buildSubSystem(roots, componentSet, stateSet);
+        buildSubSystem(roots, componentSet, stateSet, exactConverterNetwork);
 
         addComponents.removeAll(componentSet);
         addStates.removeAll(stateSet);
@@ -328,7 +353,7 @@ public class RootSystem {
         systems.add(subSystem);
     }
 
-    private void buildSubSystem(LinkedList<State> roots, Set<Component> componentSet, Set<State> stateSet) {
+    private void buildSubSystem(LinkedList<State> roots, Set<Component> componentSet, Set<State> stateSet, boolean exactConverterNetwork) {
         boolean privateSystem = roots.getFirst().isPrivateSubSystem();
 
         while (!roots.isEmpty()) {
@@ -336,7 +361,7 @@ public class RootSystem {
             stateSet.add(sExplored);
 
             for (Component c : sExplored.getConnectedComponentsNotAbstracted()) {
-                if (!privateSystem && roots.size() + stateSet.size() > maxSubSystemSize && c.canBeReplacedByInterSystem()) {
+                if (!exactConverterNetwork && !privateSystem && roots.size() + stateSet.size() > maxSubSystemSize && c.canBeReplacedByInterSystem()) {
                     continue;
                 }
                 if (componentSet.contains(c)) continue;
@@ -347,7 +372,7 @@ public class RootSystem {
                         noGo = true;
                         break;
                     }
-                    if (sNext.isPrivateSubSystem() != privateSystem) {
+                    if (!exactConverterNetwork && sNext.isPrivateSubSystem() != privateSystem) {
                         noGo = true;
                         break;
                     }

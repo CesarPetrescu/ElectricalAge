@@ -1,5 +1,6 @@
 package mods.eln.sim.mna
 
+import org.apache.commons.numbers.core.DD
 import mods.eln.sim.mna.state.State
 import mods.eln.sim.mna.state.VoltageState
 import kotlin.math.abs
@@ -43,6 +44,14 @@ class VoltageGauge(matrix: Array<DoubleArray>, states: List<State>) {
     }
 
     val active: Boolean get() = rows.isNotEmpty()
+
+    /** Apply the same reference choice to the precision-preserving solve matrix. */
+    fun applyMatrix(matrix: Array<Array<DD>>) {
+        for (row in rows) {
+            matrix[row].fill(DD.ZERO)
+            matrix[row][row] = DD.ONE
+        }
+    }
 
     fun applyRhs(rhs: DoubleArray) {
         savedRhs.clear()

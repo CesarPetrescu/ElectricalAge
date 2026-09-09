@@ -197,40 +197,41 @@ class RootSystemSimMetricsProfilingTest {
         disableLog4jJmx()
         Eln.debugEnabled = false
 
-        val withoutMetrics = runScenario(
-            enableMetrics = false,
-            shape = ScenarioShape.MANY_SUBSYSTEMS,
-            matrixSize = 10,
-            repetitions = 10,
-            warmupSteps = 40,
-            measuredSteps = 600
-        )
-        val withMetrics = runScenario(
-            enableMetrics = true,
-            shape = ScenarioShape.MANY_SUBSYSTEMS,
-            matrixSize = 10,
-            repetitions = 10,
-            warmupSteps = 40,
-            measuredSteps = 600
-        )
+        // Do not measure every baseline first and every instrumented run afterwards:
+        // JIT/GC/runner scheduling drift then masquerades as instrumentation overhead.
+        // Warm both paths, pair identical workloads, and alternate AB/BA order.
+        for (on in listOf(false,true)) runScenario(on,ScenarioShape.MANY_SUBSYSTEMS,10,1,400,1200)
+        val baseline = mutableListOf<Long>()
+        val instrumented = mutableListOf<Long>()
+        var withoutMetrics: ScenarioResult? = null
+        var withMetrics: ScenarioResult? = null
+        repeat(10) { round ->
+            for (on in if(round%2==0) listOf(false,true) else listOf(true,false)) {
+                val result=runScenario(on,ScenarioShape.MANY_SUBSYSTEMS,10,1,400,2400)
+                if(on) { instrumented += result.elapsedRunsNanos.single(); withMetrics=result }
+                else { baseline += result.elapsedRunsNanos.single(); withoutMetrics=result }
+            }
+        }
+        val pairedWithout=withoutMetrics!!.copy(elapsedRunsNanos=baseline)
+        val pairedWith=withMetrics!!.copy(elapsedRunsNanos=instrumented)
 
-        assertEquals(10, withoutMetrics.matrixRows)
-        assertEquals(10, withoutMetrics.matrixCols)
-        assertTrue(withoutMetrics.subsystemCount >= 24, "Expected fragmented subsystem scenario")
-        assertEquals(withoutMetrics.subsystemCount, withMetrics.subsystemCount)
-        assertEquals(0, withoutMetrics.dummyPublishes)
-        assertTrue(withMetrics.dummyPublishes > 0)
+        assertEquals(10, pairedWithout.matrixRows)
+        assertEquals(10, pairedWithout.matrixCols)
+        assertTrue(pairedWithout.subsystemCount >= 24, "Expected fragmented subsystem scenario")
+        assertEquals(pairedWithout.subsystemCount, pairedWith.subsystemCount)
+        assertEquals(0, pairedWithout.dummyPublishes)
+        assertTrue(pairedWith.dummyPublishes > 0)
 
-        val ratios = pairedRatios(withoutMetrics.elapsedRunsNanos, withMetrics.elapsedRunsNanos)
+        val ratios = pairedRatios(pairedWithout.elapsedRunsNanos, pairedWith.elapsedRunsNanos)
         val ratioMean = mean(ratios)
         val ratioMedian = percentile(ratios, 0.5)
         val ratioP95 = percentile(ratios, 0.95)
         println(
-            "SIM_METRICS_FRAGMENTED subsystems=${withMetrics.subsystemCount} matrix=10x10 runs=${ratios.size} " +
-                "baseline_mean_ns=${meanLong(withoutMetrics.elapsedRunsNanos)} baseline_median_ns=${percentileLong(withoutMetrics.elapsedRunsNanos, 0.5)} " +
-                "instrumented_mean_ns=${meanLong(withMetrics.elapsedRunsNanos)} instrumented_median_ns=${percentileLong(withMetrics.elapsedRunsNanos, 0.5)} " +
+            "SIM_METRICS_FRAGMENTED subsystems=${pairedWith.subsystemCount} matrix=10x10 runs=${ratios.size} " +
+                "baseline_mean_ns=${meanLong(pairedWithout.elapsedRunsNanos)} baseline_median_ns=${percentileLong(pairedWithout.elapsedRunsNanos, 0.5)} " +
+                "instrumented_mean_ns=${meanLong(pairedWith.elapsedRunsNanos)} instrumented_median_ns=${percentileLong(pairedWith.elapsedRunsNanos, 0.5)} " +
                 "ratio_mean=$ratioMean ratio_median=$ratioMedian ratio_p95=$ratioP95 " +
-                "dummyPublishes=${withMetrics.dummyPublishes}"
+                "dummyPublishes=${pairedWith.dummyPublishes}"
         )
 
         assertTrue(ratios.isNotEmpty(), "Expected ratio measurements")

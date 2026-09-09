@@ -1,0 +1,14 @@
+PASS affineProbeDoesNotCancelLargeNearlyEqualCurrents
+FAIL anOpenPortWithInjectedCurrentIsNotAPassiveOpenCircuit: java.lang.AssertionError: Expected value to be true.
+PASS conflictingIdealSourcesAreStillRejected
+FAIL converterPortSeesThroughPrivateApiLoadWithoutArtificialVoltageBoundary: java.lang.AssertionError: Expected <[(-1,VoltageState) SwitchableVoltageSource null][(-1,VoltageState) Resistor (-1,VoltageState)][(-1,VoltageState) VoltageSource null]>, actual <[(-1,VoltageState) Resistor null][(-1,VoltageState) Resistor (-1,VoltageState)][(-1,VoltageState) VoltageSource null]> is not same.
+FAIL exactNetworkRebuildPreservesDisconnectionAndReconnection: java.lang.AssertionError: Expected <[(0,VoltageState) SwitchableVoltageSource null][(0,VoltageState) Resistor (2,VoltageState)][(2,VoltageState) VoltageSource null]>, actual <[(0,VoltageState) Resistor null][(0,VoltageState) Resistor (1,VoltageState)][(1,VoltageState) VoltageSource null]> is not same.
+FAIL idleChargerResistanceIsNotDiscardedAsFloating: java.lang.AssertionError: 9.9991110732027E11 != 1.0000000000000637E12
+FAIL irregularOpenCableTreesRemainOpenAtEitherPolarity: java.lang.AssertionError: trial 0. Expected <Infinity>, actual <NaN>.
+PASS ordinaryPrivatePartitionPolicyIsUnchanged
+PASS sourceProbePreservesIsolatedReferenceAndCapacitorHistory
+Exception in thread "main" java.lang.IllegalStateException: 5 test bodies failed
+	at New_unit_runnerKt.main(new-unit-runner.kt:8)
+	at New_unit_runnerKt.main(new-unit-runner.kt)
+
+Baseline test runner exit: 1
