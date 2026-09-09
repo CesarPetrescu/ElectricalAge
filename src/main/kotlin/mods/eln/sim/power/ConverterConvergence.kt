@@ -56,19 +56,31 @@ object ConverterConvergence {
         repeat(8) {
             val residual = evaluate(x) ?: return // Let ordinary iteration handle an active-set change.
             if (accepted()) return
+            val regions = group.map { it.iterationRegion() }
             val jacobian = Array(x.size) { DoubleArray(x.size) }
             for (column in x.indices) {
-                val h = 1e-5 * max(1.0, abs(x[column]))
-                val perturbed = x.copyOf().apply { this[column] += h }
-                var difference = h
-                var response = evaluate(perturbed)
-                if (response == null) {
-                    perturbed[column] = x[column] - h
-                    difference = -h
-                    response = evaluate(perturbed)
+                // Stay on the same limiter branch when differentiating. Near the
+                // transition from voltage regulation to current limit, a forward
+                // stencil may cross the target clamp and erase the bus's common-mode
+                // derivative. Try both directions, then shrink the stencil.
+                var difference = 0.0
+                var response: DoubleArray? = null
+                var h = 1e-5 * max(1.0, abs(x[column]))
+                repeat(5) {
+                    if (response == null) {
+                        for (direction in doubleArrayOf(1.0, -1.0)) {
+                            val signed = direction * h
+                            val probe = evaluate(x.copyOf().apply { this[column] += signed })
+                            if (probe != null && group.map { it.iterationRegion() } == regions) {
+                                response = probe; difference = signed; break
+                            }
+                        }
+                        h *= .1
+                    }
                 }
                 if (response == null) { evaluate(x); return }
-                for (row in x.indices) jacobian[row][column] = (response[row] - residual[row]) / difference
+
+                for (row in x.indices) jacobian[row][column] = (response!![row] - residual[row]) / difference
             }
             val delta = solve(jacobian, DoubleArray(x.size) { -residual[it] })
             if (delta == null) { evaluate(x); return }

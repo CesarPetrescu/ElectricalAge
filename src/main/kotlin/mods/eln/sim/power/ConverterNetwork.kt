@@ -13,6 +13,8 @@ interface ConservativePowerProcess : IRootSystemPreStepProcess {
     fun prepareStep() {}
     /** Voltage commands eligible for a bounded algebraic convergence correction. */
     fun trialSources(): List<SwitchableVoltageSource> = emptyList()
+    /** Piecewise operating region for a one-sided numerical derivative only. */
+    fun iterationRegion(): String = ""
     fun acceptsCandidate(): Boolean
     fun failClosed()
     fun connectedSystems(): Set<SubSystem>

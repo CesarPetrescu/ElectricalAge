@@ -259,6 +259,8 @@ class OneWayDcDcElement(
         label = "Secondary"
     )
     private val transferProcess = OneWayDcDcProcess(this)
+    /** Read-only server diagnostic; does not change control or reset protection. */
+    val transferStatus: String get() = transferProcess.status
     private val electronicsHeating = mods.eln.sim.process.heater.ElectricalHeatAccumulator({
         (-inputSink.power - outputSource.power).coerceAtLeast(0.0)
     }, primaryThermalLoad)
@@ -688,6 +690,8 @@ class OneWayDcDcProcess(private val element: OneWayDcDcElement) : ConservativePo
         element.inputSink.enabled = true
         element.outputSource.enabled = true
     }
+
+    override fun iterationRegion(): String = if (modernRegulated) regulated.iterationRegion() else status
 
     override fun acceptsCandidate(): Boolean {
         if (modernRegulated) return regulated.acceptsCandidate()

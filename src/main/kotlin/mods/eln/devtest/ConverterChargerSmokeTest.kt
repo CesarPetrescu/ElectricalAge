@@ -65,7 +65,9 @@ class ConverterChargerSmokeTest(private val restart: Boolean) {
     private var inputJ = 0.0
     private var peakSourceW = 0.0
     private var sampler: IProcess? = null
-    private val trace = StringBuilder("tick,phase,busV,sourceW,outputW,inputJ,outputJ,chargerV,chargerW,deliveredJ,batteryJ,lossJ,status\n")
+    private var sawSupplyLimiting = false
+    private var limitedSamples = 0
+    private val trace = StringBuilder("tick,phase,busV,sourceW,outputW,inputJ,outputJ,chargerV,chargerW,deliveredJ,batteryJ,lossJ,status,converterStatus,inputAmps,inputLimits\n")
     private fun call(target: Any, name: String, vararg args: Any?): Any? {
         val methods = target.javaClass.methods.filter { it.name == name && it.parameterCount == args.size }
         check(methods.size == 1) { "Ambiguous/missing API ${target.javaClass.name}.$name/${args.size}" }
@@ -105,7 +107,10 @@ class ConverterChargerSmokeTest(private val restart: Boolean) {
             placeWire(p.west())
             val stack=Eln.findItemStack("Electrical Source",1);player.setItemInHand(InteractionHand.MAIN_HAND,stack)
             Eln.sixNodeItem.onItemUse(stack,player,world,p.west(2),InteractionHand.MAIN_HAND,Direction.UP,.5f,1f,.5f)
-            source(i).readConfigTool(CompoundTag().apply { putDouble("voltage",300.0) },player)
+            // Four 110 A-rated windings at 300 V only just cover the charger
+            // demand before warming. Use 400 V for the within-capacity fixture;
+            // a separate 241 V phase below explicitly checks real current limits.
+            source(i).readConfigTool(CompoundTag().apply { putDouble("voltage",400.0) },player)
             placeWire(p.east());placeWire(p.east(2))
         }
         for(z in 0..12)placeWire(P.offset(3,0,z))
@@ -155,8 +160,14 @@ class ConverterChargerSmokeTest(private val restart: Boolean) {
         player.moveTo(car.position())
         check(call(charger,"connect",player,car) == true) { "Native charger refused vehicle pairing" }
         check(call(charger,"creativePower") == false) { "Creative power is forbidden in this fixture" }
+        markEnergy()
+    }
+    private fun markEnergy() {
         beforeEnergy=batteryJ();beforeDelivered=number(charger,"deliveredJ")
         beforeLoss=number(charger,"lossJ");beforeOutput=outputJ
+    }
+    private fun supply(volts: Double) {
+        for(i in 0..3)source(i).readConfigTool(CompoundTag().apply { putDouble("voltage",volts) },player)
     }
     private fun verifyCharge(prefix: String) {
         assertCase("$prefix-native-charger-draws-power") { check(number(charger,"inputKw")>1.0) { "${call(charger,"status")} ${number(charger,"inputVoltage")} V" } }
@@ -185,9 +196,19 @@ class ConverterChargerSmokeTest(private val restart: Boolean) {
             check((0..3).sumOf { abs(converter(it).outputSource.power) }<1.0)
         }
     }
+    private fun verifyLimitedSample() {
+        for(i in 0..3) {
+            val e=converter(i)
+            check(e.transferStatus != "NON_CONVERGENT" && e.transferStatus != "INVALID_NETWORK") { e.getWaila().toString() }
+            check(-e.inputSink.current in -1e-7..(e.primaryMeltCurrent * 1.000001 + 1e-7)) { "Actual primary limit exceeded" }
+            check(e.outputSource.current in -1e-7..(e.secondaryMeltCurrent * 1.000001 + 1e-7)) { "Actual secondary limit exceeded" }
+            if(-e.inputSink.current > e.primaryMeltCurrent * .999) sawSupplyLimiting = true
+        }
+        limitedSamples++
+    }
     private fun record() {
         if(phase in 4..5 || !::car.isInitialized)return
-        trace.append("$ticks,$phase,${converter(0).secondaryLoad.voltage},${(0..3).sumOf { -converter(it).inputSink.power }},${(0..3).sumOf { converter(it).outputSource.power }},$inputJ,$outputJ,${number(charger,"inputVoltage")},${number(charger,"inputKw")*1000},${number(charger,"deliveredJ")},${batteryJ()},${number(charger,"lossJ")},${call(charger,"status")}\n")
+        trace.append("$ticks,$phase,${converter(0).secondaryLoad.voltage},${(0..3).sumOf { -converter(it).inputSink.power }},${(0..3).sumOf { converter(it).outputSource.power }},$inputJ,$outputJ,${number(charger,"inputVoltage")},${number(charger,"inputKw")*1000},${number(charger,"deliveredJ")},${batteryJ()},${number(charger,"lossJ")},${call(charger,"status")},${(0..3).joinToString(";"){converter(it).transferStatus}},${(0..3).joinToString(";"){(-converter(it).inputSink.current).toString()}},${(0..3).joinToString(";"){converter(it).primaryMeltCurrent.toString()}}\n")
     }
     private fun next(p: Int) { phase=p;phaseTick=ticks }
     private fun finish() {
@@ -224,7 +245,20 @@ class ConverterChargerSmokeTest(private val restart: Boolean) {
                     }
                     beforeEnergy=batteryJ();verifyIdle("initial");pair();next(1)
                 }
-                1 -> if(elapsed>=160) { verifyCharge("initial");call(charger,"disconnect");beforeEnergy=batteryJ();next(2) }
+                1 -> if(elapsed>=160) { verifyCharge("initial");supply(241.0);next(8) }
+                8 -> {
+                    if(elapsed>0)verifyLimitedSample()
+                    if(elapsed>=160) {
+                        assertCase("under-capacity-241v-supply-limits-without-numerical-latch") {
+                            check(sawSupplyLimiting && limitedSamples>=150)
+                            check((0..3).all { converter(it).primaryLoad.voltage in 230.0..242.0 })
+                        }
+                        // A real charger may pause at its undervoltage threshold when
+                        // demand exceeds supply; it must recover without converter reset.
+                        markEnergy();supply(400.0);next(9)
+                    }
+                }
+                9 -> if(elapsed>=120) { verifyCharge("supply-recovered");call(charger,"disconnect");beforeEnergy=batteryJ();next(2) }
                 2 -> if(elapsed>=50) { verifyIdle("unplugged");pair();next(3) }
                 3 -> if(elapsed>=120) {
                     verifyCharge("replugged");call(charger,"disconnect");beforeEnergy=batteryJ()

@@ -69,6 +69,8 @@ class RegulatedPowerProcess(
         }
     }
 
+    override fun iterationRegion(): String = status
+
     override fun acceptsCandidate(): Boolean {
         if (!input.enabled && !output.enabled) return true
         val rating = activeLimits ?: return false

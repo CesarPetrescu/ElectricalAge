@@ -36,7 +36,7 @@ p=pathlib.Path('build/smoke-artifacts/contracts')/(suite+'.json');d=json.loads(p
 assert d['complete'] is True and d['failures']==0,d
 r=d['results'];assert r and all(x['status']=='passed' for x in r),d
 names={x['check'] for x in r}
-required={'actual-companion-mod-loaded','no-external-ground-or-dummy-load','initial-no-load-output-stays-regulated','initial-native-charger-draws-power','initial-real-battery-gains-energy','initial-energy-conserved-through-charger-and-battery','replugged-native-charger-draws-power','unplugged-no-phantom-charging-or-large-bleeder','final-no-load-output-stays-regulated'}
+required={'actual-companion-mod-loaded','no-external-ground-or-dummy-load','initial-no-load-output-stays-regulated','initial-native-charger-draws-power','initial-real-battery-gains-energy','initial-energy-conserved-through-charger-and-battery','under-capacity-241v-supply-limits-without-numerical-latch','supply-recovered-native-charger-draws-power','supply-recovered-energy-conserved-through-charger-and-battery','replugged-native-charger-draws-power','unplugged-no-phantom-charging-or-large-bleeder','final-no-load-output-stays-regulated'}
 if mode=='place':required|={'actual-chunk-unload-closes-native-charger-port','real-chunk-reload-preserves-car-and-expires-lease','chunk-reloaded-real-battery-gains-energy'}
 else:required|={'separate-jvm-saved-car-energy-preserved','separate-jvm-connection-lease-expired','separate-jvm-converter-settings-and-windings-preserved'}
 assert required<=names,required-names

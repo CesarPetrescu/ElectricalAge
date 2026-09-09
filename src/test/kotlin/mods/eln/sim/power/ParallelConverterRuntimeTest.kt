@@ -113,6 +113,30 @@ class ParallelConverterRuntimeTest {
         assertTrue(rig.bus.voltage > 1000.0, rig.diagnostic())
     }
 
+    @Test fun actual110AmpWindingsRecoverFromSampledChargerDemandAndSupplySag() {
+        // Match the real 2 AWG winding watchdog rating and the 400 V car's
+        // 120 kW battery-side demand through the 96% ULTRA charger.
+        val rig = ConverterBusFixture(4, true)
+        rig.maximumInputAmps = 110.0
+        rig.supplies.forEach { it.voltage = 400.0 }
+        var sawLimited = false
+        for (feed in listOf(400.0, 300.0, 241.0, 400.0)) {
+            rig.supplies.forEach { it.voltage = feed }
+            repeat(250) { step ->
+                // Sampled physical resistance, not a test-only constant-power source.
+                // Outside its input envelope the production charger disconnects.
+                val v = rig.loadPin.voltage
+                rig.load.resistance = if (v in 2560.0..3520.0) v * v / 125000.0 else 1e9
+                rig.primaryWindings.forEach { it.resistance = .064 + step * .00001 }
+                rig.step(1)
+                if (feed == 241.0 && rig.inputs.any { -it.current > 109.9 }) sawLimited = true
+            }
+            if (feed == 400.0) assertTrue(rig.bus.voltage in 3190.0..3200.001, rig.diagnostic())
+        }
+        assertTrue(sawLimited, "The under-capacity case must exercise current limiting")
+        assertTrue(rig.load.power > 120000.0, rig.diagnostic())
+    }
+
     @Test fun seededLoadAndSetpointChangesAcrossParallelBus() {
         val rng = Random(9309)
         repeat(12) { trial ->
@@ -152,13 +176,15 @@ internal class ConverterBusFixture(
     val controllers = mutableListOf<RegulatedPowerProcess>()
     val targets = DoubleArray(count) { 3200.0 }
     val enabled = BooleanArray(count) { true }
+    var maximumInputAmps = 200.0
     var maximumOutputAmps = 100.0
+    val primaryWindings = mutableListOf<Resistor>()
 
     init {
         repeat(count) { i ->
             val feed = pin(); val primary = pin(); val secondary = pin()
             supplies += VoltageSource("feed-$i", feed, null).setVoltage(300.0).also(root::addComponent)
-            resistor(feed, primary, .0637)
+            primaryWindings += resistor(feed, primary, .0637)
             resistor(secondary, bus, .0637 + i * .001)
             val input = SwitchableVoltageSource("input-$i").apply { connectTo(primary, null) }
             val output = SwitchableVoltageSource("output-$i").apply { connectTo(secondary, returnPin) }
@@ -166,7 +192,7 @@ internal class ConverterBusFixture(
             inputs += input; outputs += output
             controllers += RegulatedPowerProcess(primary, null, secondary, returnPin, input, output,
                 { enabled[i] },
-                { ConverterLimits(.1, 40000.0, 40000.0, 200.0, maximumOutputAmps, 1e6, .97, 1.0 / 256, 256.0) },
+                { ConverterLimits(.1, 40000.0, 40000.0, maximumInputAmps, maximumOutputAmps, 1e6, .97, 1.0 / 256, 256.0) },
                 { targets[i] })
         }
         order.forEach { root.addProcess(controllers[it]) }
@@ -183,7 +209,7 @@ internal class ConverterBusFixture(
     fun verify() {
         assertTrue(controllers.none { it.status == "NON_CONVERGENT" || it.status == "INVALID_NETWORK" }, diagnostic())
         for (i in inputs.indices) {
-            assertTrue(-inputs[i].current in -1e-7..200.000201, diagnostic())
+            assertTrue(-inputs[i].current in -1e-7..(maximumInputAmps * 1.000001 + 1e-7), diagnostic())
             assertTrue(outputs[i].current in -1e-7..(maximumOutputAmps * 1.000001 + 1e-7), diagnostic())
             assertTrue(balancedPower(-inputs[i].power, outputs[i].power, .97), diagnostic())
         }
