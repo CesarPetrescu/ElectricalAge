@@ -38,7 +38,7 @@ jobs:
   m1-preflight:
     needs: package
     runs-on: macos-15
-    timeout-minutes: 30
+    timeout-minutes: 55
     steps:
       - uses: actions/checkout@v4
         with:
@@ -62,9 +62,22 @@ jobs:
           test "$(uname -m)" = arm64
           system_profiler SPHardwareDataType SPDisplaysDataType >> build/native-host.txt
           sysctl hw.memsize hw.ncpu >> build/native-host.txt
+      - name: Probe actual Apple OpenGL capability
+        run: |
+          mkdir -p build/native-graphics
+          clang -Wno-deprecated-declarations script/probe_macos_gl.c -framework OpenGL -o "$RUNNER_TEMP/gl-probe"
+          set +e
+          "$RUNNER_TEMP/gl-probe" > build/native-graphics/apple-context.json
+          result=$?
+          set -e
+          cat build/native-graphics/apple-context.json
+          # 42 means unavailable host graphics, NOT a successful client test.
+          test "$result" -eq 0 -o "$result" -eq 42
+      - name: Build explicitly labelled off-screen software graphics for M1
+        run: bash script/build_macos_software_gl.sh
       - name: Install pinned launcher and image validator
         run: python3 -m pip install minecraft-launcher-lib==8.0 Pillow==11.3.0
-      - name: Launch actual packaged client and capture native title screen
+      - name: Launch actual packaged client and capture its rendered framebuffer
         run: |
           python3 - <<'PY'
           import pathlib, subprocess
@@ -79,4 +92,5 @@ jobs:
           if-no-files-found: error
           path: |
             build/native-host.txt
+            build/native-graphics/**
             build/native-campaign/**
