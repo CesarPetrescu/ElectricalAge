@@ -38,6 +38,9 @@ import mods.eln.sim.ElectricalLoad
 import mods.eln.sim.IProcess
 import mods.eln.sim.ThermalLoad
 import mods.eln.sim.mna.component.VoltageSource
+import mods.eln.sim.mna.component.SwitchableVoltageSource
+import mods.eln.sim.mna.component.Resistor
+import mods.eln.sim.power.*
 import mods.eln.sim.mna.misc.IRootSystemPreStepProcess
 import mods.eln.sim.mna.misc.MnaConst
 import mods.eln.sim.mna.SubSystem
@@ -214,36 +217,52 @@ class OneWayDcDcElement(
     transparentNode: TransparentNode,
     descriptor: TransparentNodeDescriptor
 ) : TransparentNodeElement(transparentNode, descriptor), IConfigurable {
-    private val oneWayDescriptor = descriptor as OneWayDcDcDescriptor
+    internal val oneWayDescriptor = descriptor as OneWayDcDcDescriptor
 
     val isolated: Boolean
         get() = oneWayDescriptor.isolated
 
     val primaryLoad = NbtElectricalLoad("primaryLoad")
     val secondaryLoad = NbtElectricalLoad("secondaryLoad")
+    val primaryInternal = NbtElectricalLoad("primaryInternal")
+    val secondaryInternal = NbtElectricalLoad("secondaryInternal")
+    val primaryWindingResistance = Resistor(primaryLoad, primaryInternal)
+    val secondaryWindingResistance = Resistor(secondaryInternal, secondaryLoad)
+
     val primaryReferenceLoad = NbtElectricalLoad("primaryReferenceLoad")
     val secondaryReferenceLoad = NbtElectricalLoad("secondaryReferenceLoad")
     val control = NbtElectricalGateInput("control")
+    val settings = DcDcControl()
 
-    val inputSink = VoltageSource("inputSink")
-    val outputSource = VoltageSource("outputSource")
+    override val inventory = TransparentNodeElementInventory(4, 64, this)
+
+    val inputSink = SwitchableVoltageSource("inputSink")
+    val outputSource = SwitchableVoltageSource("outputSource")
     private val primaryThermalLoad = NbtThermalLoad("primaryThermalLoad")
     private val secondaryThermalLoad = NbtThermalLoad("secondaryThermalLoad")
-    private val primaryThermalProcess = WindingThermalProcess(
+    private val primaryThermalProcess = DcDcWindingThermalProcess(
+        owner = this, inventory = inventory,
+        windingResistance = primaryWindingResistance, terminal = primaryLoad,
+        onMelted = { computeInventory(); reconnect() },
         thermalLoad = primaryThermalLoad,
         slot = OneWayDcDcContainer.primaryCableSlotId,
         current = { inputSink.current },
         label = "Primary"
     )
-    private val secondaryThermalProcess = WindingThermalProcess(
+    private val secondaryThermalProcess = DcDcWindingThermalProcess(
+        owner = this, inventory = inventory,
+        windingResistance = secondaryWindingResistance, terminal = secondaryLoad,
+        onMelted = { computeInventory(); reconnect() },
         thermalLoad = secondaryThermalLoad,
         slot = OneWayDcDcContainer.secondaryCableSlotId,
         current = { outputSource.current },
         label = "Secondary"
     )
     private val transferProcess = OneWayDcDcProcess(this)
+    private val electronicsHeating = mods.eln.sim.process.heater.ElectricalHeatAccumulator({
+        (-inputSink.power - outputSource.power).coerceAtLeast(0.0)
+    }, primaryThermalLoad)
 
-    override val inventory = TransparentNodeElementInventory(4, 64, this)
 
     var primaryMeltCurrent = 0.0
     var secondaryMeltCurrent = 0.0
@@ -258,6 +277,10 @@ class OneWayDcDcElement(
     init {
         electricalLoadList.add(primaryLoad)
         electricalLoadList.add(secondaryLoad)
+        electricalLoadList.add(primaryInternal)
+        electricalLoadList.add(secondaryInternal)
+        electricalComponentList.add(primaryWindingResistance)
+        electricalComponentList.add(secondaryWindingResistance)
         if (oneWayDescriptor.isolated) {
             electricalLoadList.add(primaryReferenceLoad)
             electricalLoadList.add(secondaryReferenceLoad)
@@ -267,6 +290,10 @@ class OneWayDcDcElement(
         electricalComponentList.add(outputSource)
         thermalLoadList.add(primaryThermalLoad)
         thermalLoadList.add(secondaryThermalLoad)
+        electricalProcessList.add(electronicsHeating.sample)
+        electricalProcessList.add(IProcess { movedPower = outputSource.power.coerceAtLeast(0.0) })
+        electricalProcessList.add(primaryThermalProcess.heating.sample)
+        electricalProcessList.add(secondaryThermalProcess.heating.sample)
         slowProcessList.add(primaryThermalProcess)
         slowProcessList.add(secondaryThermalProcess)
         primaryThermalLoad.setAsSlow()
@@ -279,18 +306,27 @@ class OneWayDcDcElement(
     }
 
     override fun connectJob() {
+        Eln.simulator.addThermalSlowProcess(electronicsHeating.deliver)
+        Eln.simulator.addThermalSlowProcess(primaryThermalProcess.heating.deliver)
+        Eln.simulator.addThermalSlowProcess(secondaryThermalProcess.heating.deliver)
         Eln.simulator.mna.addProcess(transferProcess)
         super.connectJob()
     }
 
     override fun disconnectJob() {
+        electronicsHeating.flushIntoLoad()
+        Eln.simulator.removeThermalSlowProcess(electronicsHeating.deliver)
+        primaryThermalProcess.heating.flushIntoLoad()
+        secondaryThermalProcess.heating.flushIntoLoad()
+        Eln.simulator.removeThermalSlowProcess(primaryThermalProcess.heating.deliver)
+        Eln.simulator.removeThermalSlowProcess(secondaryThermalProcess.heating.deliver)
         super.disconnectJob()
         Eln.simulator.mna.removeProcess(transferProcess)
     }
 
     override fun initialize() {
-        inputSink.connectTo(primaryLoad, if (oneWayDescriptor.isolated) primaryReferenceLoad else null)
-        outputSource.connectTo(secondaryLoad, if (oneWayDescriptor.isolated) secondaryReferenceLoad else null)
+        inputSink.connectTo(primaryInternal, if (oneWayDescriptor.isolated) primaryReferenceLoad else null)
+        outputSource.connectTo(secondaryInternal, if (oneWayDescriptor.isolated) secondaryReferenceLoad else null)
         computeInventory()
         connect()
     }
@@ -344,10 +380,32 @@ class OneWayDcDcElement(
 
     override fun multiMeterString(side: Direction): String {
         return when (side) {
-            front.left() -> Utils.plotVolt("IN:", primaryLoad.voltage) + Utils.plotAmpere("I:", -inputSink.current)
-            front.right() -> Utils.plotVolt("OUT:", secondaryLoad.voltage) + Utils.plotAmpere("I:", outputSource.current)
-            else -> Utils.plotVolt("IN:", primaryLoad.voltage) + Utils.plotVolt(" OUT:", secondaryLoad.voltage) + Utils.plotPower(" P:", movedPower)
+            front.left() -> Utils.plotVolt("IN:", primaryLoad.voltage - if (isolated) primaryReferenceLoad.voltage else 0.0) + Utils.plotAmpere("I:", -inputSink.current)
+            front.right() -> Utils.plotVolt("OUT:", secondaryLoad.voltage - if (isolated) secondaryReferenceLoad.voltage else 0.0) + Utils.plotAmpere("I:", outputSource.current)
+            else -> Utils.plotVolt("IN:", primaryLoad.voltage - if (isolated) primaryReferenceLoad.voltage else 0.0) + Utils.plotVolt(" OUT:", secondaryLoad.voltage - if (isolated) secondaryReferenceLoad.voltage else 0.0) + Utils.plotPower(" P:", movedPower)
         }
+    }
+
+    override fun readFromNBT(nbt: CompoundTag) {
+        super.readFromNBT(nbt)
+        settings.load(nbt)
+    }
+
+    override fun writeToNBT(nbt: CompoundTag) {
+        super.writeToNBT(nbt)
+        settings.save(nbt)
+    }
+
+    override fun getItemStackNBT(): CompoundTag = CompoundTag().also(settings::save)
+    override fun readItemStackNBT(nbt: CompoundTag?) { if (nbt != null) settings.load(nbt) }
+
+    override fun networkUnserialize(stream: DataInputStream): Byte {
+        val id = super.networkUnserialize(stream)
+        if (!settings.handle(id, stream)) return id
+        transferProcess.resetFault()
+        computeInventory()
+        needPublish()
+        return TransparentNodeElement.unserializeNulldId
     }
 
     override fun hasGui(): Boolean = true
@@ -367,6 +425,7 @@ class OneWayDcDcElement(
     }
 
     override fun inventoryChange(inventory: Container?) {
+        transferProcess.resetFault()
         disconnect()
         computeInventory()
         connect()
@@ -387,7 +446,7 @@ class OneWayDcDcElement(
         primaryThermalProcess.configure(primaryCable)
         secondaryThermalProcess.configure(secondaryCable)
 
-        val constructionStatus = if (oneWayDescriptor.mode == OneWayDcDcMode.FIXED) {
+        val constructionStatus = if (oneWayDescriptor.mode == OneWayDcDcMode.FIXED || settings.version >= 2) {
             dcDcFlexibleConstructionStatus(core, primaryCable, secondaryCable)
         } else {
             dcDcConstructionStatus(core, primaryCable, secondaryCable)
@@ -402,16 +461,16 @@ class OneWayDcDcElement(
             primaryLoad.highImpedance()
             if (oneWayDescriptor.isolated) primaryReferenceLoad.highImpedance()
         } else {
-            primaryLoad.serialResistance = coreFactor * 0.01
-            if (oneWayDescriptor.isolated) primaryReferenceLoad.serialResistance = coreFactor * 0.01
+            primaryLoad.serialResistance = 1e-6
+            if (oneWayDescriptor.isolated) primaryReferenceLoad.serialResistance = 1e-6
         }
 
         if (secondaryWinding == null || !hasValidConstruction) {
             secondaryLoad.highImpedance()
             if (oneWayDescriptor.isolated) secondaryReferenceLoad.highImpedance()
         } else {
-            secondaryLoad.serialResistance = coreFactor * 0.01
-            if (oneWayDescriptor.isolated) secondaryReferenceLoad.serialResistance = coreFactor * 0.01
+            secondaryLoad.serialResistance = 1e-6
+            if (oneWayDescriptor.isolated) secondaryReferenceLoad.serialResistance = 1e-6
         }
 
         populated = primaryWinding != null && secondaryWinding != null && hasValidConstruction
@@ -426,22 +485,19 @@ class OneWayDcDcElement(
 
     fun computeRatio(): Double {
         if (!populated) return 1.0
-        val normalized = Utils.limit(control.normalized, 0.0, 1.0)
-        return when (oneWayDescriptor.mode) {
-            OneWayDcDcMode.FIXED -> Utils.limit(ratioControl, OneWayDcDcDescriptor.MIN_RATIO, OneWayDcDcDescriptor.MAX_RATIO)
-            OneWayDcDcMode.BOOST -> 1.0 + normalized * (OneWayDcDcDescriptor.MAX_VARIABLE_RATIO - 1.0)
-            OneWayDcDcMode.BUCK -> OneWayDcDcDescriptor.MIN_VARIABLE_RATIO + normalized * (1.0 - OneWayDcDcDescriptor.MIN_VARIABLE_RATIO)
-            OneWayDcDcMode.BOOST_BUCK -> if (normalized < 0.5) {
-                OneWayDcDcDescriptor.MIN_VARIABLE_RATIO + normalized * 2.0 * (1.0 - OneWayDcDcDescriptor.MIN_VARIABLE_RATIO)
-            } else {
-                1.0 + (normalized - 0.5) * 2.0 * (OneWayDcDcDescriptor.MAX_VARIABLE_RATIO - 1.0)
-            }
-            OneWayDcDcMode.ISOLATION -> 1.0
+        if (oneWayDescriptor.mode == OneWayDcDcMode.FIXED) return ratioControl.coerceIn(1.0 / 256, 256.0)
+        if (oneWayDescriptor.mode == OneWayDcDcMode.ISOLATION) return 1.0
+        val kind = when (oneWayDescriptor.mode) {
+            OneWayDcDcMode.BOOST -> ConverterKind.BOOST
+            OneWayDcDcMode.BUCK -> ConverterKind.BUCK
+            else -> ConverterKind.BUCK_BOOST
         }
+        return settings.ratio(kind, control.normalized)
     }
 
     override fun networkSerialize(stream: DataOutputStream) {
         super.networkSerialize(stream)
+        settings.write(stream)
         try {
             stream.writeShort(dcDcRenderedWindingCount(inventory.getItem(0)))
             stream.writeShort(dcDcRenderedWindingCount(inventory.getItem(1)))
@@ -465,7 +521,7 @@ class OneWayDcDcElement(
 
     override fun getWaila(): Map<String, String> {
         val info = linkedMapOf<String, String>()
-        val constructionStatus = if (oneWayDescriptor.mode == OneWayDcDcMode.FIXED) {
+        val constructionStatus = if (oneWayDescriptor.mode == OneWayDcDcMode.FIXED || settings.version >= 2) {
             dcDcFlexibleConstructionStatus(
                 inventory.getItem(OneWayDcDcContainer.ferromagneticSlotId),
                 inventory.getItem(OneWayDcDcContainer.primaryCableSlotId),
@@ -478,6 +534,10 @@ class OneWayDcDcElement(
                 inventory.getItem(OneWayDcDcContainer.secondaryCableSlotId)
             )
         }
+        info[tr("Converter state")] = converterStateText(transferProcess.status)
+        info[tr("Control mode")] = tr("%1$ (version %2$)", settings.mode, settings.version)
+        if (settings.mode == "VOLTAGE") info[tr("Internal output target")] = Utils.plotVolt("", settings.value)
+        info[tr("Winding resistance")] = tr("Primary %1$ ohm; secondary %2$ ohm", Utils.plotValue(primaryWindingResistance.resistance), Utils.plotValue(secondaryWindingResistance.resistance))
         info[tr("Construction")] = dcDcConstructionWaila(constructionStatus)
         info[tr("Ratio")] = Utils.plotValue(activeRatio)
         info[tr("Transferred power")] = Utils.plotPower("", movedPower)
@@ -521,6 +581,7 @@ class OneWayDcDcElement(
     }
 
     override fun readConfigTool(compound: CompoundTag, invoker: Player) {
+        if (compound.contains("converterControlVersion")) { settings.load(compound); transferProcess.resetFault() }
         if (ConfigCopyToolDescriptor.readGenDescriptor(compound, "primary", inventory, OneWayDcDcContainer.primaryCableSlotId, invoker))
             inventoryChange(inventory)
         if (ConfigCopyToolDescriptor.readGenDescriptor(compound, "secondary", inventory, OneWayDcDcContainer.secondaryCableSlotId, invoker))
@@ -530,225 +591,106 @@ class OneWayDcDcElement(
     }
 
     override fun writeConfigTool(compound: CompoundTag, invoker: Player) {
+        settings.save(compound)
         ConfigCopyToolDescriptor.writeGenDescriptor(compound, "primary", inventory.getItem(OneWayDcDcContainer.primaryCableSlotId))
         ConfigCopyToolDescriptor.writeGenDescriptor(compound, "secondary", inventory.getItem(OneWayDcDcContainer.secondaryCableSlotId))
         ConfigCopyToolDescriptor.writeGenDescriptor(compound, "core", inventory.getItem(OneWayDcDcContainer.ferromagneticSlotId))
     }
 
-    private inner class WindingThermalProcess(
-        private val thermalLoad: NbtThermalLoad,
-        private val slot: Int,
-        private val current: () -> Double,
-        private val label: String
-    ) : IProcess {
-        private var descriptor: UtilityCableDescriptor? = null
-        private var lastPublishedTemperatureCelsius = Double.NaN
-
-        fun configure(stack: ItemStack?) {
-            val utilityStackDescriptor = if (stack.isNothing()) {
-                null
-            } else {
-                ElectricalCableDescriptor.getDescriptor(
-                    stack,
-                    ElectricalCableDescriptor::class.java
-                ) as? UtilityCableDescriptor
-            }
-            val nextDescriptor = utilityStackDescriptor?.takeUnless { it.melted }
-            if (descriptor != nextDescriptor) {
-                if (utilityStackDescriptor?.melted != true) {
-                    thermalLoad.temperatureCelsius = 0.0
-                }
-                lastPublishedTemperatureCelsius = Double.NaN
-            }
-            descriptor = nextDescriptor
-            val utility = descriptor
-            if (utility == null) {
-                thermalLoad.set(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY)
-            } else {
-                utility.applyTo(thermalLoad)
-            }
-        }
-
-        override fun process(time: Double) {
-            val utility = descriptor ?: return
-            if (utility.melted) return
-
-            val amps = current()
-            var power = amps * amps * utility.electricalRs * 2.0
-            val limit = utility.thermalSelfHeatingRateLimit
-            if (limit.isFinite() && limit > 0.0 && thermalLoad.heatCapacity > 0.0) {
-                power = power.coerceIn(-limit * thermalLoad.heatCapacity, limit * thermalLoad.heatCapacity)
-            }
-            thermalLoad.movePowerTo(power)
-
-            val absoluteTemperatureCelsius = thermalLoad.temperatureCelsius + getAmbientTemperatureCelsius()
-            maybePublishTemperature(absoluteTemperatureCelsius, utility)
-
-            if (absoluteTemperatureCelsius >= utility.material.meltingPointCelsius ||
-                utility.insulated && absoluteTemperatureCelsius >= utility.meltTemperatureCelsius
-            ) {
-                meltInsertedWire(utility)
-            }
-        }
-
-        private fun maybePublishTemperature(absoluteTemperatureCelsius: Double, utility: UtilityCableDescriptor) {
-            val previous = lastPublishedTemperatureCelsius
-            val crossedGlowThreshold = previous <= 550.0 && absoluteTemperatureCelsius > 550.0 ||
-                previous > 550.0 && absoluteTemperatureCelsius <= 550.0
-            val smokeThreshold = utility.meltTemperatureCelsius * 0.8
-            val crossedSmokeThreshold = utility.insulated && !utility.melted && (
-                previous <= smokeThreshold && absoluteTemperatureCelsius > smokeThreshold ||
-                    previous > smokeThreshold && absoluteTemperatureCelsius <= smokeThreshold
-                )
-            val changedEnough = previous.isNaN() || abs(absoluteTemperatureCelsius - previous) >= 10.0
-            if (changedEnough || crossedGlowThreshold || crossedSmokeThreshold) {
-                needPublish()
-                lastPublishedTemperatureCelsius = absoluteTemperatureCelsius
-            }
-        }
-
-        private fun meltInsertedWire(utility: UtilityCableDescriptor) {
-            val stack = inventory.getItem(slot).takeUnless { it.isEmpty } ?: return
-            val melted = utility.meltedDescriptor ?: return
-            val replacement = melted.newItemStack(1)
-            melted.setRemainingLengthMeters(replacement, utility.getRemainingLengthMeters(stack))
-            inventory.setItem(slot, replacement)
-            inventory.setChanged()
-            Utils.println("One-way DC/DC $label winding melted at ${coordinate()}")
-            computeInventory()
-            reconnect()
-            needPublish()
-        }
-    }
 }
 
-class OneWayDcDcProcess(private val element: OneWayDcDcElement) : IRootSystemPreStepProcess {
-    override fun rootSystemPreStepProcess() {
-        element.activeRatio = element.computeRatio()
+class OneWayDcDcProcess(private val element: OneWayDcDcElement) : ConservativePowerProcess {
+    var status = "IDLE"
+        private set
+    private var tripped = false
+    private var efficiency = 1.0
+    private var inputLimit = Double.MAX_VALUE
+    private var outputLimit = Double.MAX_VALUE
+
+    fun resetFault() { tripped = false }
+    private fun open(reason: String) {
+        element.inputSink.enabled = false
+        element.outputSource.enabled = false
         element.movedPower = 0.0
+        status = reason
+    }
 
-        if (!element.populated) {
-            idleSourcesFromThevenin()
-            return
-        }
-
-        val inputSystem = element.primaryLoad.subSystem ?: run {
-            idleSources()
-            return
-        }
-        val outputSystem = element.secondaryLoad.subSystem ?: run {
-            idleSources()
-            return
-        }
-        val inputTh = if (element.isolated) {
-            getBipoleTh(inputSystem, element.primaryLoad, element.primaryReferenceLoad, element.inputSink)
-        } else {
-            val th = inputSystem.getTh(element.primaryLoad, element.inputSink)
-            Thevenin(th.voltage, th.resistance)
-        }
-        val outputTh = if (element.isolated) {
-            getBipoleTh(outputSystem, element.secondaryLoad, element.secondaryReferenceLoad, element.outputSource)
-        } else {
-            val th = outputSystem.getTh(element.secondaryLoad, element.outputSource)
-            Thevenin(th.voltage, th.resistance)
-        }
-
-        if (!inputTh.voltage.isFinite() || !outputTh.voltage.isFinite()) {
-            idleSources()
-            return
-        }
-        if (inputTh.resistance >= MnaConst.highImpedance * 0.1) {
-            idleSources(0.0, outputTh.voltage)
-            return
-        }
-        if (inputTh.voltage <= 0.0) {
-            idleSources()
-            return
-        }
-
-        val transfer = OneWayDcDcMath.solve(
-            inputTh = inputTh,
-            outputTh = outputTh,
-            ratio = element.activeRatio,
-            maxOutputVoltage = 120_000.0
-        )
-
-        if (transfer == null) {
-            val targetOutputVoltage = Utils.limit(inputTh.voltage * element.activeRatio, 0.0, 120_000.0)
-            val idleOutputVoltage = if (outputTh.resistance >= MnaConst.highImpedance * 0.1) {
-                min(outputTh.voltage, targetOutputVoltage)
-            } else {
-                outputTh.voltage
+    override fun rootSystemPreStepProcess() {
+        if (tripped) { open("NON_CONVERGENT"); return }
+        if (!element.settings.enabled || !element.populated) { open("DISABLED"); return }
+        val a = probePort(element.primaryInternal, if (element.isolated) element.primaryReferenceLoad else null, element.inputSink)
+        val b = probePort(element.secondaryInternal, if (element.isolated) element.secondaryReferenceLoad else null, element.outputSource)
+        if (!a.volts.isFinite() || !b.volts.isFinite() || a.ohms.isNaN() || b.ohms.isNaN()) { open("INVALID_NETWORK"); return }
+        if (a.volts <= 0 || a.ohms >= RegulatedConverter.OPEN_OHMS) { open("NO_INPUT"); return }
+        val ratio = try { element.computeRatio() } catch (_: IllegalArgumentException) { open("INVALID_CONTROL"); return }
+        element.activeRatio = ratio
+        val modern = element.settings.version >= 2
+        inputLimit = if (modern) element.primaryMeltCurrent else Double.MAX_VALUE
+        outputLimit = if (modern) element.secondaryMeltCurrent else Double.MAX_VALUE
+        val maxInput = if (modern) dcDcWindingVoltage(element.inventory.getItem(0)) else 120_000.0
+        val maxOutput = if (modern) dcDcWindingVoltage(element.inventory.getItem(1)) else 120_000.0
+        if (a.volts > maxInput) { open("INPUT_OVERVOLTAGE"); return }
+        val mode = element.oneWayDescriptor.mode
+        val fixed = mode == OneWayDcDcMode.FIXED || mode == OneWayDcDcMode.ISOLATION
+        efficiency = if (modern && !fixed) 0.97 else 1.0
+        val point: OperatingPoint = if (fixed && modern) {
+            val p = if (b.ohms >= RegulatedConverter.OPEN_OHMS)
+                OperatingPoint(a.volts, a.volts * ratio, 0.0, 0.0, 0.0, 0.0, 0.0)
+            else RatioTransformer.solve(a, b, ratio)
+            if (p == null || p.outputAmps < -1e-9 || p.inputAmps < -1e-9) { open("OUTPUT_ALREADY_HIGH"); return }
+            if (p.inputAmps > inputLimit || p.outputAmps > outputLimit || p.outputVolts > maxOutput) {
+                open("FIXED_RATIO_LIMIT"); return
             }
-            idleSources(inputTh.voltage, idleOutputVoltage)
-            return
-        }
-
-        element.inputSink.setVoltage(transfer.inputSourceVoltage)
-        element.outputSource.setVoltage(transfer.outputSourceVoltage)
-        element.movedPower = transfer.power
-    }
-
-    private fun idleSources(
-        inputVoltage: Double = differentialVoltage(element.primaryLoad, element.primaryReferenceLoad),
-        outputVoltage: Double = differentialVoltage(element.secondaryLoad, element.secondaryReferenceLoad)
-    ) {
-        element.inputSink.setVoltage(inputVoltage)
-        element.outputSource.setVoltage(outputVoltage)
-    }
-
-    private fun idleSourcesFromThevenin() {
-        val inputVoltage = element.primaryLoad.subSystem?.let { system ->
-            if (element.isolated) {
-                getBipoleTh(system, element.primaryLoad, element.primaryReferenceLoad, element.inputSink).voltage
-            } else {
-                val th = system.getTh(element.primaryLoad, element.inputSink)
-                th.voltage
+            p
+        } else if (modern) {
+            val kind = when (mode) {
+                OneWayDcDcMode.BOOST -> 1.0 to 256.0
+                OneWayDcDcMode.BUCK -> (1.0 / 256) to 1.0
+                else -> (1.0 / 256) to 256.0
             }
-        }?.takeIf { it.isFinite() } ?: 0.0
-
-        val outputVoltage = element.secondaryLoad.subSystem?.let { system ->
-            if (element.isolated) {
-                getBipoleTh(system, element.secondaryLoad, element.secondaryReferenceLoad, element.outputSource).voltage
-            } else {
-                val th = system.getTh(element.secondaryLoad, element.outputSource)
-                th.voltage
+            val target = if (element.settings.mode == "VOLTAGE") element.settings.value else a.volts * ratio
+            when (val result = RegulatedConverter.solve(a, b, target, ConverterLimits(
+                0.1, maxInput, maxOutput, inputLimit, outputLimit, 1_000_000.0, efficiency, kind.first, kind.second
+            ))) {
+                is TransferResult.Off -> { open(result.reason.name); return }
+                is TransferResult.Running -> {
+                    status = if (result.point.limitedBy.isEmpty()) "REGULATING" else result.point.limitedBy.first().name
+                    result.point
+                }
             }
-        }?.takeIf { it.isFinite() } ?: 0.0
-
-        idleSources(inputVoltage, outputVoltage)
-    }
-
-    private fun differentialVoltage(positive: State, negative: State): Double {
-        return if (element.isolated) positive.state - negative.state else positive.state
-    }
-
-    private data class Thevenin(
-        override val voltage: Double,
-        override val resistance: Double
-    ) : OneWayDcDcThevenin
-
-    private fun getBipoleTh(system: SubSystem, positive: State, negative: State, source: VoltageSource): Thevenin {
-        val originalVoltage = positive.state - negative.state
-        val testVoltage = originalVoltage + 5.0
-        source.setVoltage(testVoltage)
-        val testCurrent = system.solve(source.currentState)
-        source.setVoltage(originalVoltage)
-        val originalCurrent = system.solve(source.currentState)
-
-        var resistance = (testVoltage - originalVoltage) / (originalCurrent - testCurrent)
-        var voltage = if (resistance > 1.0e19 || resistance < 0.0 || resistance.isNaN()) {
-            resistance = 1.0e20
-            originalVoltage
         } else {
-            testVoltage + resistance * testCurrent
+            // Existing saves retain their historical ratio/power policy, but get genuine open-circuit shutdown.
+            if (b.ohms >= RegulatedConverter.OPEN_OHMS) {
+                OperatingPoint(a.volts, (a.volts * ratio).coerceAtMost(maxOutput), 0.0, 0.0, 0.0, 0.0, 0.0)
+            } else {
+                val transfer = OneWayDcDcMath.solve(th(a), th(b), ratio, maxOutput)
+                if (transfer == null) { open("OUTPUT_ALREADY_HIGH"); return }
+                OperatingPoint(transfer.inputSourceVoltage, transfer.outputSourceVoltage, 0.0, 0.0,
+                    transfer.power, transfer.power, 0.0)
+            }
         }
+        if (fixed || !modern) status = "TRANSFERRING"
+        element.inputSink.voltage = point.inputVolts
+        element.outputSource.voltage = point.outputVolts
+        element.inputSink.enabled = true
+        element.outputSource.enabled = true
+    }
 
-        source.setVoltage(originalVoltage)
+    override fun acceptsCandidate(): Boolean {
+        if (!element.inputSink.enabled && !element.outputSource.enabled) return true
+        val inputSystem = element.inputSink.subSystem ?: return false
+        val outputSystem = element.outputSource.subSystem ?: return false
+        val inputAmps = inputSystem.pendingValue(element.inputSink.currentState)
+        val outputAmps = -outputSystem.pendingValue(element.outputSource.currentState)
+        if (inputAmps < -1e-7 || outputAmps < -1e-7 || inputAmps > inputLimit * (1 + 1e-6) || outputAmps > outputLimit * (1 + 1e-6)) return false
+        return balancedPower(-pendingSourcePower(element.inputSink), pendingSourcePower(element.outputSource), efficiency)
+    }
 
-        if (!voltage.isFinite()) voltage = originalVoltage
-        if (!resistance.isFinite()) resistance = 1.0e20
-        return Thevenin(voltage, resistance)
+    override fun failClosed() { tripped = true; open("NON_CONVERGENT") }
+    override fun connectedSystems(): Set<SubSystem> = setOfNotNull(element.primaryInternal.subSystem, element.secondaryInternal.subSystem)
+    private fun th(value: PortThevenin) = object : OneWayDcDcThevenin {
+        override val voltage = value.volts
+        override val resistance = value.ohms
     }
 }
 
@@ -841,6 +783,8 @@ class OneWayDcDcRender(
     tileEntity: TransparentNodeEntity,
     private val descriptor: TransparentNodeDescriptor
 ) : TransparentNodeElementRender(tileEntity, descriptor) {
+
+    val settings = DcDcControl()
     override val inventory = TransparentNodeElementInventory(4, 64, this)
 
     private val oneWayDescriptor = descriptor as OneWayDcDcDescriptor
@@ -900,6 +844,7 @@ class OneWayDcDcRender(
 
     override fun networkUnserialize(stream: DataInputStream) {
         super.networkUnserialize(stream)
+        settings.read(stream)
         try {
             primaryStackSize = stream.readShort().toInt()
             secondaryStackSize = stream.readShort().toInt()
@@ -1016,15 +961,17 @@ class OneWayDcDcRender(
     }
 }
 
-class OneWayDcDcGui(
-    player: Player,
-    inventory: Container,
-    val render: OneWayDcDcRender,
-    variable: Boolean
-) : GuiContainerEln(OneWayDcDcContainer(player, inventory, variable)) {
-    override fun newHelper(): GuiHelperContainer {
-        val descriptor = render.transparentNodeDescriptor as OneWayDcDcDescriptor
-        return GuiHelperContainer(this, 176, 194 - 33 + 20, 8, 84 + 194 - 166 - 33 + 20, descriptor.guiTexture)
+class OneWayDcDcGui(player: Player, inventory: Container, val render: OneWayDcDcRender, private val variable: Boolean) : GuiContainerEln(OneWayDcDcContainer(player, inventory, variable)) {
+    private val controls = DcDcControlWidgets(this, render, render.settings, variable)
+    override fun newHelper(): GuiHelperContainer = GuiHelperContainer(this, 176, 238, 8, 156)
+    override fun initGui() { super.initGui(); controls.init() }
+    override fun guiObjectEvent(obj: mods.eln.gui.IGuiObject) { controls.event(obj) }
+    override fun textFieldNewValue(field: mods.eln.gui.GuiTextFieldEln, value: String) { controls.text(field, value) }
+    override fun postDraw(f: Float, x: Int, y: Int) {
+        super.postDraw(f, x, y)
+        controls.refresh()
+        drawString(8, 6, tr("Input / Output windings"))
+        drawString(8, 142, tr("V2: protected; V1: legacy"))
     }
 }
 

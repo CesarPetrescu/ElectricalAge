@@ -28,6 +28,9 @@ import mods.eln.sim.ElectricalLoad
 import mods.eln.sim.IProcess
 import mods.eln.sim.ThermalLoad
 import mods.eln.sim.mna.component.VoltageSource
+import mods.eln.sim.mna.component.SwitchableVoltageSource
+import mods.eln.sim.mna.component.Resistor
+import mods.eln.sim.power.*
 import mods.eln.sim.mna.process.TransformerInterSystemProcess
 import mods.eln.sim.nbt.NbtElectricalLoad
 import mods.eln.sim.nbt.NbtThermalLoad
@@ -175,11 +178,16 @@ class DcDcDescriptor(
 class DcDcElement(transparentNode: TransparentNode, descriptor: TransparentNodeDescriptor): TransparentNodeElement(transparentNode, descriptor), IConfigurable {
     val primaryLoad = NbtElectricalLoad("primaryLoad")
     val secondaryLoad = NbtElectricalLoad("secondaryLoad")
+    val primaryInternal = NbtElectricalLoad("primaryInternal")
+    val secondaryInternal = NbtElectricalLoad("secondaryInternal")
+    val primaryWindingResistance = Resistor(primaryLoad, primaryInternal)
+    val secondaryWindingResistance = Resistor(secondaryInternal, secondaryLoad)
 
-    val primaryVoltageSource = VoltageSource("primaryVoltageSource")
-    val secondaryVoltageSource = VoltageSource("secondaryVoltageSource")
 
-    val interSystemProcess = TransformerInterSystemProcess(primaryLoad, secondaryLoad, primaryVoltageSource, secondaryVoltageSource)
+    val primaryVoltageSource = SwitchableVoltageSource("primaryVoltageSource")
+    val secondaryVoltageSource = SwitchableVoltageSource("secondaryVoltageSource")
+
+    val interSystemProcess = SafeTransformerProcess(primaryInternal, secondaryInternal, primaryVoltageSource, secondaryVoltageSource) { populated }
     override val inventory = TransparentNodeElementInventory(4, 64, this)
     private val primaryThermalLoad = NbtThermalLoad("primaryThermalLoad")
     private val secondaryThermalLoad = NbtThermalLoad("secondaryThermalLoad")
@@ -193,7 +201,9 @@ class DcDcElement(transparentNode: TransparentNode, descriptor: TransparentNodeD
         onMelted = {
             computeInventory()
             reconnect()
-        }
+        },
+        windingResistance = primaryWindingResistance,
+        terminal = primaryLoad
     )
     private val secondaryThermalProcess = DcDcWindingThermalProcess(
         owner = this,
@@ -205,7 +215,9 @@ class DcDcElement(transparentNode: TransparentNode, descriptor: TransparentNodeD
         onMelted = {
             computeInventory()
             reconnect()
-        }
+        },
+        windingResistance = secondaryWindingResistance,
+        terminal = secondaryLoad
     )
 
     var primaryMeltCurrent = 0.0
@@ -221,10 +233,16 @@ class DcDcElement(transparentNode: TransparentNode, descriptor: TransparentNodeD
     init {
         electricalLoadList.add(primaryLoad)
         electricalLoadList.add(secondaryLoad)
+        electricalLoadList.add(primaryInternal)
+        electricalLoadList.add(secondaryInternal)
+        electricalComponentList.add(primaryWindingResistance)
+        electricalComponentList.add(secondaryWindingResistance)
         electricalComponentList.add(primaryVoltageSource)
         electricalComponentList.add(secondaryVoltageSource)
         thermalLoadList.add(primaryThermalLoad)
         thermalLoadList.add(secondaryThermalLoad)
+        electricalProcessList.add(primaryThermalProcess.heating.sample)
+        electricalProcessList.add(secondaryThermalProcess.heating.sample)
         slowProcessList.add(primaryThermalProcess)
         slowProcessList.add(secondaryThermalProcess)
         primaryThermalLoad.setAsSlow()
@@ -237,12 +255,18 @@ class DcDcElement(transparentNode: TransparentNode, descriptor: TransparentNodeD
     }
 
     override fun disconnectJob() {
+        primaryThermalProcess.heating.flushIntoLoad()
+        secondaryThermalProcess.heating.flushIntoLoad()
+        Eln.simulator.removeThermalSlowProcess(primaryThermalProcess.heating.deliver)
+        Eln.simulator.removeThermalSlowProcess(secondaryThermalProcess.heating.deliver)
         super.disconnectJob()
         Eln.simulator.mna.removeProcess(interSystemProcess)
 
     }
 
     override fun connectJob() {
+        Eln.simulator.addThermalSlowProcess(primaryThermalProcess.heating.deliver)
+        Eln.simulator.addThermalSlowProcess(secondaryThermalProcess.heating.deliver)
         Eln.simulator.mna.addProcess(interSystemProcess)
         super.connectJob()
     }
@@ -296,10 +320,8 @@ class DcDcElement(transparentNode: TransparentNode, descriptor: TransparentNodeD
     }
 
     override fun initialize() {
-        primaryVoltageSource.connectTo(primaryLoad, null)
-        secondaryVoltageSource.connectTo(secondaryLoad, null)
-        electricalComponentList.add(primaryVoltageSource)
-        electricalComponentList.add(secondaryVoltageSource)
+        primaryVoltageSource.connectTo(primaryInternal, null)
+        secondaryVoltageSource.connectTo(secondaryInternal, null)
         interSystemProcess.ratio = 1.0
         computeInventory()
         connect()
@@ -315,6 +337,9 @@ class DcDcElement(transparentNode: TransparentNode, descriptor: TransparentNodeD
         primaryVoltageWatchdog.setNominalVoltage(120_000.0)
         secondaryVoltageWatchdog.setNominalVoltage(120_000.0)
 
+        interSystemProcess.maximumPrimaryVoltage = dcDcWindingVoltage(primaryCable)
+        interSystemProcess.maximumSecondaryVoltage = dcDcWindingVoltage(secondaryCable)
+        interSystemProcess.resetFault()
         primaryMeltCurrent = dcDcWindingMeltCurrent(primaryCable)
         secondaryMeltCurrent = dcDcWindingMeltCurrent(secondaryCable)
         primaryThermalProcess.configure(primaryCable)
@@ -329,14 +354,14 @@ class DcDcElement(transparentNode: TransparentNode, descriptor: TransparentNodeD
             primaryLoad.highImpedance()
             populated = false
         } else {
-            primaryLoad.serialResistance = coreFactor * 0.01
+            primaryLoad.serialResistance = 1e-6
         }
 
         if (secondaryWinding == null || !hasValidCore) {
             secondaryLoad.highImpedance()
             populated = false
         } else {
-            secondaryLoad.serialResistance = coreFactor * 0.01
+            secondaryLoad.serialResistance = 1e-6
         }
 
         populated = primaryWinding != null && secondaryWinding != null && hasValidCore
@@ -421,6 +446,7 @@ class DcDcElement(transparentNode: TransparentNode, descriptor: TransparentNodeD
     override fun getWaila(): Map<String, String> {
         val info = HashMap<String, String>()
         info[tr("Construction")] = dcDcFlexibleConstructionWaila()
+        info[tr("Winding resistance")] = tr("Primary %1$ ohm; secondary %2$ ohm", Utils.plotValue(primaryWindingResistance.resistance), Utils.plotValue(secondaryWindingResistance.resistance))
         info[tr("Ratio")] = Utils.plotValue(interSystemProcess.ratio)
         info[tr("Primary winding")] = windingStatus(
             inventory.getItem(DcDcContainer.primaryCableSlotId),

@@ -8,6 +8,12 @@ import mods.eln.misc.Utils
 import mods.eln.node.transparent.TransparentNodeElement
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor
 import mods.eln.sixnode.electricalcable.UtilityCableDescriptor
+import mods.eln.sim.ElectricalLoad
+import mods.eln.sim.mna.component.Resistor
+import mods.eln.sim.process.heater.ElectricalHeatAccumulator
+import mods.eln.sixnode.electricalcable.WireThermalPhysics
+import mods.eln.misc.editTag
+import mods.eln.misc.tagCompound
 import mods.eln.sim.IProcess
 import mods.eln.sim.nbt.NbtThermalLoad
 import net.minecraft.world.Container
@@ -191,56 +197,77 @@ internal class DcDcWindingThermalProcess(
     private val slot: Int,
     private val current: () -> Double,
     private val label: String,
-    private val onMelted: () -> Unit
+    private val onMelted: () -> Unit,
+    private val windingResistance: Resistor,
+    private val terminal: ElectricalLoad
 ) : IProcess {
     private var descriptor: UtilityCableDescriptor? = null
+    private var winding: DcDcWinding? = null
+    private var heldStack: ItemStack? = null
+    private var configured = false
     private var lastPublishedTemperatureCelsius = Double.NaN
+    val heating = ElectricalHeatAccumulator({
+        val amps = current()
+        (amps * amps * windingResistance.resistance + terminal.serialPower).coerceAtLeast(0.0)
+    }, thermalLoad)
 
     fun configure(stack: ItemStack?) {
-        val utilityStackDescriptor = if (stack.isNothing()) {
-            null
-        } else {
-            ElectricalCableDescriptor.getDescriptor(
-                stack,
-                ElectricalCableDescriptor::class.java
-            ) as? UtilityCableDescriptor
-        }
-        val nextDescriptor = utilityStackDescriptor?.takeUnless { it.melted }
-        if (descriptor != nextDescriptor) {
-            if (utilityStackDescriptor?.melted != true) {
-                thermalLoad.temperatureCelsius = 0.0
+        heating.flushIntoLoad()
+        if (configured && heldStack !== stack) {
+            // Removed wire carries its last accepted temperature instead of becoming a free cooler.
+            heldStack?.takeUnless { it.isEmpty }?.editTag {
+                it.putDouble("windingTemperatureCelsius", thermalLoad.temperatureCelsius + owner.getAmbientTemperatureCelsius())
             }
-            lastPublishedTemperatureCelsius = Double.NaN
+            val saved = stack?.tagCompound?.getDouble("windingTemperatureCelsius")
+            thermalLoad.temperatureCelsius = if (stack?.tagCompound?.contains("windingTemperatureCelsius") == true && saved != null && saved.isFinite())
+                saved - owner.getAmbientTemperatureCelsius() else 0.0
         }
-        descriptor = nextDescriptor
+        heldStack = stack
+        configured = true
+        winding = dcDcWinding(stack)
+        descriptor = winding?.descriptor as? UtilityCableDescriptor
+        updateProperties()
+    }
+
+    private fun updateProperties() {
+        val w = winding
+        if (w == null) {
+            windingResistance.resistance = mods.eln.sim.mna.misc.MnaConst.highImpedance
+            thermalLoad.setHighImpedance()
+            return
+        }
         val utility = descriptor
-        if (utility == null) {
-            thermalLoad.set(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY)
+        val ambient = owner.getAmbientTemperatureCelsius()
+        val temperature = thermalLoad.temperatureCelsius + ambient
+        val resistance = if (utility != null) utility.resistanceOhms(w.amount, temperature)
+            else w.descriptor.electricalRs * 2.0 * w.amount
+        // Positive resistance also avoids incompatible ideal source constraints at zero length.
+        val next = resistance.coerceAtLeast(1e-9)
+        if (abs(windingResistance.resistance - next) > next * 0.001) windingResistance.resistance = next
+        if (utility != null) {
+            // Legacy multicore winding uses one selected core, not all cores in parallel.
+            val physics = WireThermalPhysics(utility.material, utility.totalConductorAreaMm2, w.amount)
+            // A packed coil exposes less area than the equivalent straight wire (gameplay geometry).
+            val cooling = physics.coolingConductance(temperature, ambient, utility.insulated) /
+                sqrt(w.amount.coerceAtLeast(1.0))
+            thermalLoad.set(physics.endpointThermalResistance, 1.0 / cooling, physics.capacity(temperature))
         } else {
-            utility.applyTo(thermalLoad)
+            w.descriptor.applyTo(thermalLoad)
+            thermalLoad.heatCapacity *= w.amount
         }
     }
 
     override fun process(time: Double) {
+        updateProperties()
         val utility = descriptor ?: return
-        if (utility.melted) return
-
-        val amps = current()
-        var power = amps * amps * utility.electricalRs * 2.0
-        val limit = utility.thermalSelfHeatingRateLimit
-        if (limit.isFinite() && limit > 0.0 && thermalLoad.heatCapacity > 0.0) {
-            power = power.coerceIn(-limit * thermalLoad.heatCapacity, limit * thermalLoad.heatCapacity)
-        }
-        thermalLoad.movePowerTo(power)
-
         val absoluteTemperatureCelsius = thermalLoad.temperatureCelsius + owner.getAmbientTemperatureCelsius()
+        heldStack?.takeUnless { it.isEmpty }?.editTag {
+            it.putDouble("windingTemperatureCelsius", absoluteTemperatureCelsius)
+        }
         maybePublishTemperature(absoluteTemperatureCelsius, utility)
-
         if (absoluteTemperatureCelsius >= utility.material.meltingPointCelsius ||
             utility.insulated && absoluteTemperatureCelsius >= utility.meltTemperatureCelsius
-        ) {
-            meltInsertedWire(utility)
-        }
+        ) meltInsertedWire(utility)
     }
 
     private fun maybePublishTemperature(absoluteTemperatureCelsius: Double, utility: UtilityCableDescriptor) {
@@ -264,6 +291,7 @@ internal class DcDcWindingThermalProcess(
         val melted = utility.meltedDescriptor ?: return
         val replacement = melted.newItemStack(1)
         melted.setRemainingLengthMeters(replacement, utility.getRemainingLengthMeters(stack))
+        replacement.editTag { it.putDouble("windingTemperatureCelsius", thermalLoad.temperatureCelsius + owner.getAmbientTemperatureCelsius()) }
         inventory.setItem(slot, replacement)
         inventory.setChanged()
         Utils.println("${owner.javaClass.simpleName} $label winding melted at ${owner.node?.coordinate}")
@@ -310,4 +338,10 @@ internal class DcDcWindingSlot(
     override fun getComment(list: MutableList<String>) {
         comment.forEach(list::add)
     }
+}
+
+internal fun dcDcWindingVoltage(stack: ItemStack?): Double {
+    val d = dcDcWinding(stack)?.descriptor ?: return 0.0
+    return if (d is UtilityCableDescriptor && d.insulated) d.insulationVoltageRating.coerceAtMost(120_000.0)
+        else 120_000.0
 }

@@ -8,7 +8,7 @@ import mods.eln.sim.mna.state.VoltageState
 
 class SubSystemMatrixTest {
     @Test
-    fun singularMatrixFlagsAndZerosStates() {
+    fun unreferencedVoltageGetsGaugeWithoutInventingPower() {
         disableLog4jJmx()
         val state = VoltageState()
         state.state = 5.0
@@ -17,11 +17,17 @@ class SubSystemMatrixTest {
         subSystem.addState(state)
 
         val snapshot = subSystem.captureDebugSnapshot()
-        assertTrue(snapshot.isSingular)
+        assertTrue(!snapshot.isSingular)
 
         subSystem.step()
         assertEquals(0.0, state.state)
 
         assertEquals(0.0, subSystem.solve(state))
+    }
+    @Test
+    fun unconstrainedNonVoltageUnknownRemainsSingular() {
+        val system = SubSystem(null, 0.1)
+        system.addState(mods.eln.sim.mna.state.CurrentState())
+        assertTrue(system.captureDebugSnapshot().isSingular)
     }
 }

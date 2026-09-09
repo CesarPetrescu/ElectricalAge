@@ -9,7 +9,8 @@ import mods.eln.node.NodePeriodicPublishProcess
 import mods.eln.node.transparent.TransparentNode
 import mods.eln.node.transparent.TransparentNodeDescriptor
 import mods.eln.sim.ElectricalLoad
-import mods.eln.sim.mna.component.VoltageSource
+import mods.eln.sim.mna.component.SwitchableVoltageSource
+import mods.eln.sim.power.SafeTransformerProcess
 import mods.eln.sim.mna.process.TransformerInterSystemProcess
 import mods.eln.sim.nbt.NbtElectricalLoad
 import mods.eln.sim.nbt.NbtThermalLoad
@@ -23,9 +24,9 @@ import java.io.DataOutputStream
 class GridTransformerElement(node: TransparentNode, descriptor: TransparentNodeDescriptor) : GridElement(node, descriptor, 8) {
     var primaryLoad = NbtElectricalLoad("primaryLoad")
     var secondaryLoad = NbtElectricalLoad("secondaryLoad")
-    var primaryVoltageSource = VoltageSource("primaryVoltageSource", primaryLoad, null)
-    var secondaryVoltageSource = VoltageSource("secondaryVoltageSource", secondaryLoad, null)
-    var interSystemProcess = TransformerInterSystemProcess(primaryLoad, secondaryLoad, primaryVoltageSource, secondaryVoltageSource)
+    var primaryVoltageSource = SwitchableVoltageSource("primaryVoltageSource").apply { connectTo(primaryLoad, null) }
+    var secondaryVoltageSource = SwitchableVoltageSource("secondaryVoltageSource").apply { connectTo(secondaryLoad, null) }
+    var interSystemProcess = SafeTransformerProcess(primaryLoad, secondaryLoad, primaryVoltageSource, secondaryVoltageSource) { true }
     internal var desc: GridTransformerDescriptor = descriptor as GridTransformerDescriptor
     internal var maxCurrent = desc.cableDescriptor.electricalMaximalCurrent.toFloat()
 
@@ -72,6 +73,8 @@ class GridTransformerElement(node: TransparentNode, descriptor: TransparentNodeD
         desc.cableDescriptor.applyTo(primaryLoad, 4.0)
         desc.cableDescriptor.applyTo(secondaryLoad)
 
+        interSystemProcess.maximumPrimaryVoltage = primaryVoltage
+        interSystemProcess.maximumSecondaryVoltage = secondaryVoltage
         interSystemProcess.setRatio(0.25)
 
         // Publish load from time to time.

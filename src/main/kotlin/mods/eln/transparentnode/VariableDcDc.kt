@@ -19,6 +19,9 @@ import mods.eln.sim.ElectricalLoad
 import mods.eln.sim.IProcess
 import mods.eln.sim.ThermalLoad
 import mods.eln.sim.mna.component.VoltageSource
+import mods.eln.sim.mna.component.SwitchableVoltageSource
+import mods.eln.sim.mna.component.Resistor
+import mods.eln.sim.power.*
 import mods.eln.sim.mna.process.TransformerInterSystemProcess
 import mods.eln.sim.nbt.NbtElectricalGateInput
 import mods.eln.sim.nbt.NbtElectricalLoad
@@ -166,13 +169,19 @@ class VariableDcDcDescriptor(
 class VariableDcDcElement(transparentNode: TransparentNode, descriptor: TransparentNodeDescriptor): TransparentNodeElement(transparentNode, descriptor), IConfigurable {
     val primaryLoad = NbtElectricalLoad("primaryLoad")
     val secondaryLoad = NbtElectricalLoad("secondaryLoad")
+    val primaryInternal = NbtElectricalLoad("primaryInternal")
+    val secondaryInternal = NbtElectricalLoad("secondaryInternal")
+    val primaryWindingResistance = Resistor(primaryLoad, primaryInternal)
+    val secondaryWindingResistance = Resistor(secondaryInternal, secondaryLoad)
+
 
     val control = NbtElectricalGateInput("control")
+    val settings = DcDcControl()
 
-    val primaryVoltageSource = VoltageSource("primaryVoltageSource")
-    val secondaryVoltageSource = VoltageSource("secondaryVoltageSource")
+    val primaryVoltageSource = SwitchableVoltageSource("primaryVoltageSource")
+    val secondaryVoltageSource = SwitchableVoltageSource("secondaryVoltageSource")
 
-    val interSystemProcess = TransformerInterSystemProcess(primaryLoad, secondaryLoad, primaryVoltageSource, secondaryVoltageSource)
+    val interSystemProcess = SafeTransformerProcess(primaryInternal, secondaryInternal, primaryVoltageSource, secondaryVoltageSource) { populated }
     override val inventory = TransparentNodeElementInventory(4, 64, this)
     private val primaryThermalLoad = NbtThermalLoad("primaryThermalLoad")
     private val secondaryThermalLoad = NbtThermalLoad("secondaryThermalLoad")
@@ -186,7 +195,9 @@ class VariableDcDcElement(transparentNode: TransparentNode, descriptor: Transpar
         onMelted = {
             computeInventory()
             reconnect()
-        }
+        },
+        windingResistance = primaryWindingResistance,
+        terminal = primaryLoad
     )
     private val secondaryThermalProcess = DcDcWindingThermalProcess(
         owner = this,
@@ -198,7 +209,9 @@ class VariableDcDcElement(transparentNode: TransparentNode, descriptor: Transpar
         onMelted = {
             computeInventory()
             reconnect()
-        }
+        },
+        windingResistance = secondaryWindingResistance,
+        terminal = secondaryLoad
     )
 
     var primaryMeltCurrent = 0.0
@@ -213,11 +226,17 @@ class VariableDcDcElement(transparentNode: TransparentNode, descriptor: Transpar
     init {
         electricalLoadList.add(primaryLoad)
         electricalLoadList.add(secondaryLoad)
+        electricalLoadList.add(primaryInternal)
+        electricalLoadList.add(secondaryInternal)
+        electricalComponentList.add(primaryWindingResistance)
+        electricalComponentList.add(secondaryWindingResistance)
         electricalLoadList.add(control)
         electricalComponentList.add(primaryVoltageSource)
         electricalComponentList.add(secondaryVoltageSource)
         thermalLoadList.add(primaryThermalLoad)
         thermalLoadList.add(secondaryThermalLoad)
+        electricalProcessList.add(primaryThermalProcess.heating.sample)
+        electricalProcessList.add(secondaryThermalProcess.heating.sample)
         slowProcessList.add(primaryThermalProcess)
         slowProcessList.add(secondaryThermalProcess)
         primaryThermalLoad.setAsSlow()
@@ -230,12 +249,18 @@ class VariableDcDcElement(transparentNode: TransparentNode, descriptor: Transpar
     }
 
     override fun disconnectJob() {
+        primaryThermalProcess.heating.flushIntoLoad()
+        secondaryThermalProcess.heating.flushIntoLoad()
+        Eln.simulator.removeThermalSlowProcess(primaryThermalProcess.heating.deliver)
+        Eln.simulator.removeThermalSlowProcess(secondaryThermalProcess.heating.deliver)
         super.disconnectJob()
         Eln.simulator.mna.removeProcess(interSystemProcess)
 
     }
 
     override fun connectJob() {
+        Eln.simulator.addThermalSlowProcess(primaryThermalProcess.heating.deliver)
+        Eln.simulator.addThermalSlowProcess(secondaryThermalProcess.heating.deliver)
         Eln.simulator.mna.addProcess(interSystemProcess)
         super.connectJob()
     }
@@ -291,10 +316,8 @@ class VariableDcDcElement(transparentNode: TransparentNode, descriptor: Transpar
     }
 
     override fun initialize() {
-        primaryVoltageSource.connectTo(primaryLoad, null)
-        secondaryVoltageSource.connectTo(secondaryLoad, null)
-        electricalComponentList.add(primaryVoltageSource)
-        electricalComponentList.add(secondaryVoltageSource)
+        primaryVoltageSource.connectTo(primaryInternal, null)
+        secondaryVoltageSource.connectTo(secondaryInternal, null)
         interSystemProcess.ratio = 1.0
         computeInventory()
         connect()
@@ -306,11 +329,15 @@ class VariableDcDcElement(transparentNode: TransparentNode, descriptor: Transpar
         val core = inventory.getItem(VariableDcDcContainer.ferromagneticSlotId)
         val primaryWinding = dcDcWinding(primaryCable)
         val secondaryWinding = dcDcWinding(secondaryCable)
-        val constructionStatus = dcDcConstructionStatus(core, primaryCable, secondaryCable)
+        val constructionStatus = if (settings.version == 1) dcDcConstructionStatus(core, primaryCable, secondaryCable)
+            else dcDcFlexibleConstructionStatus(core, primaryCable, secondaryCable)
 
         primaryVoltageWatchdog.setNominalVoltage(120_000.0)
         secondaryVoltageWatchdog.setNominalVoltage(120_000.0)
 
+        interSystemProcess.maximumPrimaryVoltage = dcDcWindingVoltage(primaryCable)
+        interSystemProcess.maximumSecondaryVoltage = dcDcWindingVoltage(secondaryCable)
+        interSystemProcess.resetFault()
         primaryMeltCurrent = dcDcWindingMeltCurrent(primaryCable)
         secondaryMeltCurrent = dcDcWindingMeltCurrent(secondaryCable)
         primaryThermalProcess.configure(primaryCable)
@@ -325,14 +352,14 @@ class VariableDcDcElement(transparentNode: TransparentNode, descriptor: Transpar
             primaryLoad.highImpedance()
             populated = false
         } else {
-            primaryLoad.serialResistance = coreFactor * 0.01
+            primaryLoad.serialResistance = 1e-6
         }
 
         if (secondaryWinding == null || !hasValidConstruction) {
             secondaryLoad.highImpedance()
             populated = false
         } else {
-            secondaryLoad.serialResistance = coreFactor * 0.01
+            secondaryLoad.serialResistance = 1e-6
         }
 
         populated = primaryWinding != null && secondaryWinding != null && hasValidConstruction
@@ -359,6 +386,7 @@ class VariableDcDcElement(transparentNode: TransparentNode, descriptor: Transpar
     }
 
     override fun inventoryChange(inventory: Container?) {
+        interSystemProcess.resetFault()
         disconnect()
         computeInventory()
         connect()
@@ -367,6 +395,28 @@ class VariableDcDcElement(transparentNode: TransparentNode, descriptor: Transpar
 
     override fun onBlockActivated(player: Player, side: Direction, vx: Float, vy: Float, vz: Float): Boolean {
         return false
+    }
+
+    override fun readFromNBT(nbt: CompoundTag) {
+        super.readFromNBT(nbt)
+        settings.load(nbt)
+    }
+
+    override fun writeToNBT(nbt: CompoundTag) {
+        super.writeToNBT(nbt)
+        settings.save(nbt)
+    }
+
+    override fun getItemStackNBT(): CompoundTag = CompoundTag().also(settings::save)
+    override fun readItemStackNBT(nbt: CompoundTag?) { if (nbt != null) settings.load(nbt) }
+
+    override fun networkUnserialize(stream: DataInputStream): Byte {
+        val id = super.networkUnserialize(stream)
+        if (!settings.handle(id, stream)) return id
+        interSystemProcess.resetFault()
+        computeInventory()
+        needPublish()
+        return TransparentNodeElement.unserializeNulldId
     }
 
     override fun hasGui(): Boolean {
@@ -389,6 +439,7 @@ class VariableDcDcElement(transparentNode: TransparentNode, descriptor: Transpar
 
     override fun networkSerialize(stream: DataOutputStream) {
         super.networkSerialize(stream)
+        settings.write(stream)
         try {
             stream.writeShort(dcDcRenderedWindingCount(inventory.getItem(0)))
             stream.writeShort(dcDcRenderedWindingCount(inventory.getItem(1)))
@@ -419,6 +470,9 @@ class VariableDcDcElement(transparentNode: TransparentNode, descriptor: Transpar
                 inventory.getItem(VariableDcDcContainer.secondaryCableSlotId)
             )
         )
+        info[tr("Converter state")] = converterStateText(interSystemProcess.status)
+        info[tr("Control mode")] = tr("%1$ (version %2$)", settings.mode, settings.version)
+        info[tr("Winding resistance")] = tr("Primary %1$ ohm; secondary %2$ ohm", Utils.plotValue(primaryWindingResistance.resistance), Utils.plotValue(secondaryWindingResistance.resistance))
         info[tr("Ratio")] = Utils.plotValue(interSystemProcess.ratio)
         info[tr("Primary winding")] = windingStatus(
             inventory.getItem(VariableDcDcContainer.primaryCableSlotId),
@@ -457,6 +511,7 @@ class VariableDcDcElement(transparentNode: TransparentNode, descriptor: Transpar
     }
 
     override fun readConfigTool(compound: CompoundTag, invoker: Player) {
+        if (compound.contains("converterControlVersion")) { settings.load(compound); interSystemProcess.resetFault() }
         if (compound.contains("isolator")) {
             disconnect()
             reconnect()
@@ -471,6 +526,7 @@ class VariableDcDcElement(transparentNode: TransparentNode, descriptor: Transpar
     }
 
     override fun writeConfigTool(compound: CompoundTag, invoker: Player) {
+        settings.save(compound)
         ConfigCopyToolDescriptor.writeGenDescriptor(compound, "primary", inventory.getItem(VariableDcDcContainer.primaryCableSlotId))
         ConfigCopyToolDescriptor.writeGenDescriptor(compound, "secondary", inventory.getItem(VariableDcDcContainer.secondaryCableSlotId))
         ConfigCopyToolDescriptor.writeGenDescriptor(compound, "core", inventory.getItem(VariableDcDcContainer.ferromagneticSlotId))
@@ -488,17 +544,19 @@ class VariableDcDcProcess(val element: VariableDcDcElement): IProcess {
             element.interSystemProcess.ratio = 1.0
             return
         }
-        val normalized = Utils.limit(element.control.normalized, 0.0, 1.0)
-        if (normalized.isFinite()) {
-            element.interSystemProcess.ratio = MIN_RATIO + normalized * (MAX_RATIO - MIN_RATIO)
-        } else {
-            element.interSystemProcess.ratio = 1.0
+        element.interSystemProcess.enabled = element.settings.enabled
+        element.interSystemProcess.voltageTarget = if (element.settings.mode == "VOLTAGE") element.settings.value else null
+        try {
+            element.interSystemProcess.ratio = element.settings.ratio(ConverterKind.VARIABLE, element.control.normalized)
+        } catch (_: IllegalArgumentException) {
+            element.interSystemProcess.enabled = false
         }
     }
 }
 
 class VariableDcDcRender(tileEntity: TransparentNodeEntity, val descriptor: TransparentNodeDescriptor): TransparentNodeElementRender(tileEntity, descriptor) {
 
+    val settings = DcDcControl()
     override val inventory = TransparentNodeElementInventory(4, 64, this)
 
     val load = SlewLimiter(0.5f)
@@ -557,6 +615,7 @@ class VariableDcDcRender(tileEntity: TransparentNodeEntity, val descriptor: Tran
 
     override fun networkUnserialize(stream: DataInputStream) {
         super.networkUnserialize(stream)
+        settings.read(stream)
         try {
             primaryStackSize = stream.readShort().toInt()
             secondaryStackSize = stream.readShort().toInt()
@@ -643,10 +702,17 @@ class VariableDcDcRender(tileEntity: TransparentNodeEntity, val descriptor: Tran
     }
 }
 
-class VariableDcDcGui(player: Player, inventory: Container, val render: VariableDcDcRender): GuiContainerEln(VariableDcDcContainer(player, inventory)) {
-    override fun newHelper(): GuiHelperContainer {
-        val descriptor = render.descriptor as VariableDcDcDescriptor
-        return GuiHelperContainer(this, 176, 194 - 33 + 20, 8, 84 + 194 - 166 - 33 + 20, descriptor.guiTexture)
+class VariableDcDcGui(player: Player, inventory: Container, val render: VariableDcDcRender) : GuiContainerEln(VariableDcDcContainer(player, inventory)) {
+    private val controls = DcDcControlWidgets(this, render, render.settings, true)
+    override fun newHelper(): GuiHelperContainer = GuiHelperContainer(this, 176, 238, 8, 156)
+    override fun initGui() { super.initGui(); controls.init() }
+    override fun guiObjectEvent(obj: mods.eln.gui.IGuiObject) { controls.event(obj) }
+    override fun textFieldNewValue(field: mods.eln.gui.GuiTextFieldEln, value: String) { controls.text(field, value) }
+    override fun postDraw(f: Float, x: Int, y: Int) {
+        super.postDraw(f, x, y)
+        controls.refresh()
+        drawString(8, 6, tr("Input / Output windings"))
+        drawString(8, 142, tr("V2: protected; V1: legacy"))
     }
 }
 
