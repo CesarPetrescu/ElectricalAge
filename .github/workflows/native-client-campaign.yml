@@ -1,0 +1,82 @@
+name: Native client campaigns
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: native-campaign-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build exact production artifact
+        run: ./gradlew --no-daemon assemble
+      - name: Record source snapshot
+        run: |
+          git rev-parse HEAD > build/source-commit.txt
+          git archive --format=zip --output=build/native-campaign-source.zip HEAD
+      - uses: actions/upload-artifact@v4
+        with:
+          name: native-campaign-input
+          if-no-files-found: error
+          path: |
+            build/libs/*.jar
+            !build/libs/*-sources.jar
+            build/source-commit.txt
+            build/native-campaign-source.zip
+  m1-preflight:
+    needs: package
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          architecture: aarch64
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: native-campaign-input
+          path: native-input
+      - name: Record actual Apple Silicon hardware
+        run: |
+          mkdir -p build
+          uname -a | tee build/native-host.txt
+          test "$(uname -m)" = arm64
+          system_profiler SPHardwareDataType SPDisplaysDataType >> build/native-host.txt
+          sysctl hw.memsize hw.ncpu >> build/native-host.txt
+      - name: Install pinned launcher and image validator
+        run: python3 -m pip install minecraft-launcher-lib==8.0 Pillow==11.3.0
+      - name: Launch actual packaged client and capture native title screen
+        run: |
+          python3 - <<'PY'
+          import pathlib, subprocess
+          jars=[p for p in pathlib.Path('native-input').rglob('*.jar') if not p.name.endswith('-sources.jar')]
+          assert len(jars)==1, jars
+          subprocess.run(['python3','script/run_native_campaign.py','--jar',str(jars[0]),'--suite','preflight'],check=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: m1-native-preflight
+          if-no-files-found: error
+          path: |
+            build/native-host.txt
+            build/native-campaign/**
