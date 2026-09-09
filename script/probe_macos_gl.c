@@ -12,13 +12,14 @@ int main(void) {
     }
     if(info)CGLDestroyRendererInfo(info);
     printf("],\"profiles\":[");int ok=0;
-    for(int i=0;i<3;++i){
-        CGLPixelFormatAttribute profile=(CGLPixelFormatAttribute)(i==0?kCGLOGLPVersion_3_2_Core:i==1?kCGLOGLPVersion_4_1_Core:kCGLOGLPVersion_Legacy);
+    /* CGL's public 3.2 core profile requests 3.2 OR LATER. */
+    for(int i=0;i<2;++i){
+        CGLPixelFormatAttribute profile=(CGLPixelFormatAttribute)(i==0?kCGLOGLPVersion_3_2_Core:kCGLOGLPVersion_Legacy);
         CGLPixelFormatAttribute attrs[]={kCGLPFAOpenGLProfile,profile,kCGLPFAColorSize,(CGLPixelFormatAttribute)24,kCGLPFADepthSize,(CGLPixelFormatAttribute)24,(CGLPixelFormatAttribute)0};
         CGLPixelFormatObj pf=0;CGLContextObj ctx=0;GLint n=0;
         CGLError choose=CGLChoosePixelFormat(attrs,&pf,&n);CGLError create=pf?CGLCreateContext(pf,0,&ctx):kCGLBadPixelFormat;
         const char *v="",*r="";
-        if(ctx){CGLSetCurrentContext(ctx);v=(const char*)glGetString(GL_VERSION);r=(const char*)glGetString(GL_RENDERER);if(i<2&&v)ok=1;}
+        if(ctx){CGLSetCurrentContext(ctx);v=(const char*)glGetString(GL_VERSION);r=(const char*)glGetString(GL_RENDERER);if(i==0&&v)ok=1;}
         printf("%s{\"profile\":%d,\"chooseCode\":%d,\"createCode\":%d,\"version\":\"%s\",\"renderer\":\"%s\"}",i?",":"",profile,choose,create,v?v:"",r?r:"");
         if(ctx){CGLSetCurrentContext(0);CGLDestroyContext(ctx);}if(pf)CGLDestroyPixelFormat(pf);
     }
