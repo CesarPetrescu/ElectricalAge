@@ -1,6 +1,7 @@
 package mods.eln.sim.mna.component
 
 import mods.eln.disableLog4jJmx
+import mods.eln.sim.ElectricalLoad
 import mods.eln.sim.mna.RootSystem
 import mods.eln.sim.mna.state.VoltageState
 import kotlin.test.Test
@@ -12,7 +13,7 @@ class GroundedLineRegressionTest {
         disableLog4jJmx()
         val root = RootSystem(0.01, 1)
         val supplyPin = VoltageState()
-        val middle = VoltageState().apply { setCanBeSimplifiedByLine(true) }
+        val middle = ElectricalLoad().apply { setCanBeSimplifiedByLine(true) }
         val a = if (groundAtStart) null else supplyPin
         val b = if (groundAtStart) supplyPin else null
         val first = Resistor(a, middle).setResistance(2.0)
