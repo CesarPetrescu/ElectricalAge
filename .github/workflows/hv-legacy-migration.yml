@@ -1,0 +1,89 @@
+name: HV legacy-world migration
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: hv-legacy-migration-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  legacy-world:
+    name: Pre-HV world -> current PR -> saved identities and controls
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Download the pre-HV fixture, not a newly generated replacement
+        uses: actions/download-artifact@v4
+        with:
+          name: native-menu-world
+          run-id: 34264096765
+          github-token: ${{ github.token }}
+          path: legacy-input
+      - name: Verify provenance and install the disposable archived world
+        run: |
+          set -euo pipefail
+          test "$(cat legacy-input/source-commit.txt)" = '4ff68e073b588e4711cd1575620994efc5acd33d'
+          mkdir -p run/server build/hv-migration
+          git rev-parse HEAD > build/hv-migration/tested-commit.txt
+          cp legacy-input/source-commit.txt run/server/hv-baseline-commit.txt
+          cp legacy-input/source-commit.txt build/hv-migration/baseline-commit.txt
+          sha256sum legacy-input/menu-world.tar.gz > build/hv-migration/baseline-world-sha256.txt
+          test ! -e run/server/world
+          tar -xzf legacy-input/menu-world.tar.gz -C run/server
+          test -s run/server/world/eln-contracts.json
+          python3 - <<'PY'
+          import json, pathlib
+          rows = json.loads(pathlib.Path('run/server/world/eln-contracts.json').read_text())
+          assert len(rows) == 412 and len({r['id'] for r in rows}) == 412
+          PY
+          echo eula=true > run/server/eula.txt
+          printf 'server-ip=127.0.0.1\nonline-mode=false\nlevel-name=world\nmax-tick-time=180000\n' > run/server/server.properties
+      - name: Load the old world with current production classes and check it without repopulation
+        env:
+          JAVA_TOOL_OPTIONS: '-Deln.campaign=hv-legacy-migration'
+        run: |
+          set -o pipefail
+          timeout --signal=TERM --kill-after=30s 20m ./gradlew --no-daemon runServer --stacktrace 2>&1 | tee build/hv-migration/server.log
+      - name: Require all baseline identities and legacy control semantics
+        run: |
+          python3 - <<'PY'
+          import json, pathlib
+          data = json.loads(pathlib.Path('build/smoke-artifacts/contracts/hv-legacy-migration.json').read_text())
+          assert data['suite'] == 'hv-legacy-migration' and data['complete'] is True
+          rows = data['results']
+          assert data['failures'] == 0 and all(r['status'] == 'passed' for r in rows), data
+          identities = [r for r in rows if r['check'] == 'legacy-saved-block-identity']
+          assert len(identities) == 412 and len({r['id'] for r in identities}) == 412
+          assert any(r['check'] == 'legacy-control-fixtures-were-actually-exercised' for r in rows)
+          print('Migrated all 412 retained pre-HV identities and checked legacy converter controls')
+          PY
+      - name: Preserve migration evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hv-legacy-migration-evidence
+          retention-days: 14
+          if-no-files-found: error
+          path: |
+            build/hv-migration/
+            build/smoke-artifacts/contracts/hv-legacy-migration.*
+            run/server/logs/
+            run/server/crash-reports/

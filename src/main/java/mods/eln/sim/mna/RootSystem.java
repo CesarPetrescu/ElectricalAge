@@ -1,6 +1,7 @@
 package mods.eln.sim.mna;
 
 import mods.eln.Eln;
+import mods.eln.sim.power.ConservativePowerProcess;
 import mods.eln.metrics.MetricsSubsystem;
 import mods.eln.misc.Profiler;
 import mods.eln.misc.Utils;
@@ -225,16 +226,52 @@ public class RootSystem {
         profiler.add("Generate");
         generate();
         profiler.add("interSystem");
-        for (int idx = 0; idx < interSystemOverSampling; idx++) {
-            for (IRootSystemPreStepProcess p : processPre) {
-                p.rootSystemPreStepProcess();
+        List<ConservativePowerProcess> converters = new ArrayList<>();
+        for (IRootSystemPreStepProcess process : processPre) {
+            if (process instanceof ConservativePowerProcess) converters.add((ConservativePowerProcess) process);
+        }
+        Set<ConservativePowerProcess> blocked = new HashSet<>();
+        boolean converged = false;
+        int attempts = converters.isEmpty() ? 1 : 64;
+        for (int trial = 0; trial < attempts; trial++) {
+            for (int sample = 0; sample < Math.max(1, interSystemOverSampling); sample++) {
+                for (IRootSystemPreStepProcess process : processPre) {
+                    if (!blocked.contains(process)) process.rootSystemPreStepProcess();
+                }
             }
+            for (SubSystem system : systems) system.stepCalc();
+            converged = converters.stream().allMatch(ConservativePowerProcess::acceptsCandidate);
+            if (converged) break;
         }
-
+        if (!converged) {
+            // Fail the connected converter group, not unrelated machines elsewhere in the world.
+            Set<SubSystem> affected = new HashSet<>();
+            for (ConservativePowerProcess converter : converters) {
+                if (!converter.acceptsCandidate()) {
+                    blocked.add(converter);
+                    affected.addAll(converter.connectedSystems());
+                }
+            }
+            boolean changed;
+            do {
+                changed = false;
+                for (SubSystem system : new ArrayList<>(affected)) {
+                    changed |= affected.addAll(system.interSystemConnectivity);
+                }
+                for (ConservativePowerProcess converter : converters) {
+                    if (!Collections.disjoint(affected, converter.connectedSystems())) {
+                        changed |= affected.addAll(converter.connectedSystems());
+                        blocked.add(converter);
+                    }
+                }
+            } while (changed);
+            for (ConservativePowerProcess converter : blocked) converter.failClosed();
+            for (int sample = 0; sample < Math.max(1, interSystemOverSampling); sample++) {
+                for (IRootSystemPreStepProcess process : processPre) if (!blocked.contains(process)) process.rootSystemPreStepProcess();
+            }
+            for (SubSystem system : systems) system.stepCalc();
+        }
         profiler.add("stepCalc");
-        for (SubSystem s : systems) {
-            s.stepCalc();
-        }
         profiler.add("stepFlush");
         for (SubSystem s : systems) {
             s.stepFlush();

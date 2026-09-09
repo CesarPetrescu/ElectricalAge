@@ -31,6 +31,33 @@ object WireProduction {
             abs(it.conductorAreaMm2 - target.conductorAreaMm2) < 0.001
     }
 
+    /** Base insulation metres consumed per actual metre; gameplay layer costs, not cable certification. */
+    fun insulationCostFactor(d: UtilityCableDescriptor): Double = when {
+        d.insulationVoltageRating <= 1_000.0 -> 1.0
+        d.insulationVoltageRating <= 5_000.0 -> 2.0
+        d.insulationVoltageRating <= 20_000.0 -> 4.0
+        d.insulationVoltageRating <= 40_000.0 -> 8.0
+        else -> 16.0
+    }
+
+    fun insulatorOptions(input: ItemStack): List<UtilityCableDescriptor> {
+        if (input.isEmpty) return emptyList()
+        val wire = cable(input)
+        if (wire != null) {
+            if (wire.insulated || wire.melted || wire.conductorCount != 1) return emptyList()
+            return UtilityCableDescriptor.allDescriptors().filter {
+                it.insulated && !it.melted && it.conductorCount == 1 && it.material == wire.material &&
+                    abs(it.conductorAreaMm2 - wire.conductorAreaMm2) <= 0.001
+            }.sortedBy { it.insulationVoltageRating }
+        }
+        val bundle = Eln.instance.woundWireBundleDescriptor ?: return emptyList()
+        if (!bundle.checkSameItemStack(input)) return emptyList()
+        return UtilityCableDescriptor.allDescriptors().filter {
+            it.insulated && !it.melted && it.material == bundle.getMaterial(input) &&
+                it.sizeLabel == bundle.getTargetLabel(input) && it.conductorCount == bundle.getConductorCount(input)
+        }.sortedBy { it.insulationVoltageRating }
+    }
+
     fun combinerOptions(inputs: List<ItemStack>): List<UtilityCableDescriptor> {
         if (inputs.size !in 2..8) return emptyList()
         val wires = inputs.map { cable(it) ?: return emptyList() }

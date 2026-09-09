@@ -30,6 +30,8 @@ import mods.eln.node.NodeConnectionEndpoint
 import mods.eln.node.NodeManager
 import mods.eln.node.six.*
 import mods.eln.sixnode.groundcable.GroundCableElement
+import mods.eln.sim.power.*
+import mods.eln.sim.mna.component.Resistor
 import mods.eln.sim.ElectricalConnection
 import mods.eln.sim.ElectricalLoad
 import mods.eln.sim.IProcess
@@ -377,6 +379,10 @@ class UtilityCableElement(
     private val conductorLoads: Array<NbtElectricalLoad>
     val heating: ElectricalHeatAccumulator
     private val breakdownConnections = mutableListOf<ElectricalConnection>()
+    private var insulationDamage = InsulationDamage()
+    private var insulationFault: Resistor? = null
+    val insulationFailed: Boolean get() = insulationDamage.fault != null || (!descriptor.actsAsSingleConductor && conductorsBound)
+
 
     init {
         conductorsBound = this.descriptor.actsAsSingleConductor
@@ -386,7 +392,7 @@ class UtilityCableElement(
                 electricalLoadList.add(it)
             }
         }
-        heating = ElectricalHeatAccumulator({ conductorLoads.sumOf { it.serialPower } }, thermalLoad)
+        heating = ElectricalHeatAccumulator({ conductorLoads.sumOf { it.serialPower } + (insulationFault?.power ?: 0.0) }, thermalLoad)
         electricalProcessList.add(heating.sample)
         thermalSlowProcessList.add(IProcess { updateThermalProperties() })
         thermalSlowProcessList.add(heating.deliver)
@@ -401,6 +407,7 @@ class UtilityCableElement(
         if (conductorsBound && conductorLoads.size > 1) {
             bindConductors(force = true)
         }
+        installInsulationFault()
     }
 
     private fun updateThermalProperties() {
@@ -440,6 +447,13 @@ class UtilityCableElement(
         paletteIndex = nbt.getByte("palette").toInt().coerceAtLeast(0)
         conductorsBound = nbt.getBoolean("bound") || descriptor.actsAsSingleConductor
         shockCooldown = nbt.getDouble("shockCooldown")
+        val exposure = nbt.getDouble("insulationExposure").takeIf { it.isFinite() && it >= 0 } ?: 0.0
+        val from = nbt.getInt("insulationFaultFrom")
+        val to = nbt.getInt("insulationFaultTo")
+        val fault = if (nbt.getBoolean("insulationFailed") && from in conductorLoads.indices &&
+            (to == -1 || to in conductorLoads.indices && to != from))
+            InsulationStress(from, to.takeIf { it >= 0 }, descriptor.insulationVoltageRating, descriptor.insulationVoltageRating.coerceAtLeast(1.0)) else null
+        insulationDamage = InsulationDamage(exposure, fault)
     }
 
     override fun writeToNBT(nbt: CompoundTag) {
@@ -448,6 +462,12 @@ class UtilityCableElement(
         nbt.putByte("palette", paletteIndex.toByte())
         nbt.putBoolean("bound", conductorsBound)
         nbt.putDouble("shockCooldown", shockCooldown)
+        nbt.putDouble("insulationExposure", insulationDamage.exposure)
+        nbt.putBoolean("insulationFailed", insulationDamage.fault != null)
+        insulationDamage.fault?.let {
+            nbt.putInt("insulationFaultFrom", it.fromCore)
+            nbt.putInt("insulationFaultTo", it.toCore ?: -1)
+        }
     }
 
     override fun getElectricalLoad(lrdu: LRDU, mask: Int): ElectricalLoad {
@@ -582,8 +602,14 @@ class UtilityCableElement(
         info[tr("Segment heating")] = Utils.plotPower("", heating.lastWatts)
         info[tr("Insulation condition")] = when {
             descriptor.melted -> tr("Damaged - exposed conductor")
+            insulationFailed -> tr("Insulation failed - repair required")
+            insulationDamage.exposure > 0.0 -> tr("Overvoltage damage recorded")
             descriptor.insulated -> tr("Intact")
             else -> tr("Bare conductor")
+        }
+        insulationDamage.fault?.let {
+            info[tr("Fault connection")] = if (it.toCore == null) tr("Core %1$ to ground", it.fromCore + 1)
+                else tr("Core %1$ to core %2$", it.fromCore + 1, it.toCore + 1)
         }
         if (thermalLoad.phaseJoules > 0) info[tr("Conductor melting")] = tr("%1$ percent", (100 * thermalLoad.phaseJoules / thermalLoad.physics.fusionJoules).toInt())
         info[tr("Subsystem Matrix Size")] = renderSubSystemWaila(conductorLoads[0].subSystem)
@@ -849,17 +875,20 @@ class UtilityCableElement(
         replaceWith(descriptor.moltenPileDescriptor ?: return)
     }
 
-    private fun insulationStressVoltage(): Double {
-        var maxStress = conductorLoads.maxOf { abs(it.voltage) }
-        if (conductorLoads.size > 1) {
-            for (idx in conductorLoads.indices) {
-                for (other in idx + 1 until conductorLoads.size) {
-                    maxStress = maxOf(maxStress, abs(conductorLoads[idx].voltage - conductorLoads[other].voltage))
-                }
-            }
+    private fun installInsulationFault() {
+        if (insulationFault != null || descriptor.melted || !descriptor.insulated) return
+        val fault = insulationDamage.fault ?: return
+        // Finite gameplay fault impedance; no ideal all-core short and no invented energy sink.
+        insulationFault = Resistor(conductorLoads[fault.fromCore], fault.toCore?.let { conductorLoads[it] }).also {
+            it.resistance = 100.0
+            electricalComponentList.add(it)
         }
-        return maxStress
     }
+
+    private fun insulationStress(): InsulationStress = worstInsulationStress(
+        conductorLoads.map { it.voltage }.toDoubleArray(),
+        InsulationClass("utility", descriptor.insulationVoltageRating, descriptor.insulationVoltageRating)
+    )
 
     private fun shockNearbyPlayers(voltage: Double) {
         val coord = coordinate ?: return
@@ -894,15 +923,17 @@ class UtilityCableElement(
                     meltCable()
                     return
                 }
-                val stress = insulationStressVoltage()
-                if (stress > descriptor.insulationVoltageRating) {
-                    if (conductorLoads.size > 1) {
-                        bindConductors()
-                    }
-                    if (shockCooldown <= 0.0) {
-                        shockNearbyPlayers(stress)
-                        shockCooldown = 1.0
-                    }
+                val stress = insulationStress()
+                val faultBefore = insulationDamage.fault
+                insulationDamage.commit(stress, time)
+                if (faultBefore == null && insulationDamage.fault != null) {
+                    installInsulationFault()
+                    reconnect()
+                    needPublish()
+                }
+                if (insulationFailed && shockCooldown <= 0.0) {
+                    shockNearbyPlayers(stress.volts)
+                    shockCooldown = 1.0
                 }
             }
         }

@@ -507,9 +507,9 @@ object SixNodeRegistration {
             desc.RenderClass = UtilityCableRender::class.java
         }
 
-        fun newSingleDescriptor(spec: UtilitySingleSpec, material: UtilityCableMaterial, insulated: Boolean, melted: Boolean = false): UtilityCableDescriptor {
+        fun newSingleDescriptor(spec: UtilitySingleSpec, material: UtilityCableMaterial, insulated: Boolean, melted: Boolean = false, hv: Boolean = false): UtilityCableDescriptor {
             val insulationLabel = when {
-                melted -> "Melted"
+                melted -> if (hv) "${spec.insulatedVoltage.toInt()}V Melted" else "Melted"
                 insulated -> "${spec.insulatedVoltage.toInt()}V"
                 else -> "Bare"
             }
@@ -747,6 +747,34 @@ object SixNodeRegistration {
                 Eln.sixNodeItem.addDescriptor(allocator.nextId(), categoriseUtilityCable(multi, spec.metricArea, multi.poleEligible))
                 Eln.sixNodeItem.addDescriptor(allocator.nextId(), categoriseUtilityCable(melted, spec.metricArea, melted.poleEligible))
             }
+        }
+
+        // Save-stable HV manifest: old groups 34..37 and registration order are untouched.
+        // Group 38 is reserved exclusively for these explicit pairs (intact, damaged).
+        val highVoltage = listOf(
+            0 to UtilitySingleSpec("12 AWG", 3.309, 20.0, 1_000.0, 105.0),
+            2 to UtilitySingleSpec("12 AWG", 3.309, 20.0, 5_000.0, 105.0),
+            4 to UtilitySingleSpec("12 AWG", 3.309, 20.0, 20_000.0, 105.0),
+            6 to UtilitySingleSpec("12 AWG", 3.309, 20.0, 40_000.0, 105.0),
+            8 to UtilitySingleSpec("12 AWG", 3.309, 20.0, 150_000.0, 105.0),
+            10 to UtilitySingleSpec("2 AWG", 33.631, 100.0, 1_000.0, 105.0),
+            12 to UtilitySingleSpec("2 AWG", 33.631, 100.0, 5_000.0, 105.0),
+            14 to UtilitySingleSpec("2 AWG", 33.631, 100.0, 20_000.0, 105.0),
+            16 to UtilitySingleSpec("2 AWG", 33.631, 100.0, 40_000.0, 105.0),
+            18 to UtilitySingleSpec("2 AWG", 33.631, 100.0, 150_000.0, 105.0)
+        )
+        I18N.TR_EXPAND(I18N.Type.NONE, "%s %s Cable %s", arrayOf("Copper"),
+            arrayOf("12 AWG", "2 AWG"),
+            arrayOf("1000V", "5000V", "20000V", "40000V", "150000V",
+                "1000V Melted", "5000V Melted", "20000V Melted", "40000V Melted", "150000V Melted"))
+        for ((offset, spec) in highVoltage) {
+            val intact = newSingleDescriptor(spec, UtilityCableMaterial.COPPER, true, hv = true)
+            val damaged = newSingleDescriptor(spec, UtilityCableMaterial.COPPER, true, melted = true, hv = true)
+            intact.meltedDescriptor = damaged
+            intact.moltenPileDescriptor = moltenPileByMaterial[UtilityCableMaterial.COPPER]
+            damaged.moltenPileDescriptor = intact.moltenPileDescriptor
+            Eln.sixNodeItem.addDescriptor((38 shl 6) + offset, intact.cables())
+            Eln.sixNodeItem.addDescriptor((38 shl 6) + offset + 1, damaged.cables())
         }
     }
 

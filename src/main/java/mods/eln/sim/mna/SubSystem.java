@@ -29,6 +29,7 @@ public class SubSystem {
 
     double dt;
     boolean matrixValid = false;
+    private VoltageGauge voltageGauge;
 
     int stateCount;
     double[][] A;
@@ -129,10 +130,14 @@ public class SubSystem {
 
         //	org.apache.commons.math3.linear.
 
+        // Keep A as the physical stamp matrix for diagnostics and component contracts.
+        double[][] solveMatrix = copyMatrix(A);
+        voltageGauge = new VoltageGauge(solveMatrix, states);
+
         boolean captureMetrics = MetricsSubsystem.isSimulatorMetricsActive();
         long inversionStartNanoseconds = captureMetrics ? System.nanoTime() : 0L;
         try {
-            AInvdata = invertMatrix(A);
+            AInvdata = invertMatrix(solveMatrix);
             singularMatrix = false;
             if (captureMetrics) {
                 long inversionTimeNanoseconds = System.nanoTime() - inversionStartNanoseconds;
@@ -204,7 +209,8 @@ public class SubSystem {
                 componentDescriptions,
                 componentOwners,
                 componentConnections,
-                singularMatrix
+                singularMatrix || voltageGauge.getActive(),
+                voltageGauge.getActive()
         );
     }
 
@@ -294,42 +300,57 @@ public class SubSystem {
                 calculatingStep = false;
             }
 
+            double[] solveRhs = Idata.clone();
+            voltageGauge.applyRhs(solveRhs);
             boolean finite = true;
             for (int idx2 = 0; idx2 < stateCount; idx2++) {
                 DD stack = DD.ZERO;
                 DD[] inverseRow = AInvdata[idx2];
                 for (int idx = 0; idx < stateCount; idx++) {
-                    stack = stack.add(inverseRow[idx].multiply(Idata[idx]));
+                    stack = stack.add(inverseRow[idx].multiply(solveRhs[idx]));
                 }
                 XtempData[idx2] = stack.doubleValue();
                 finite &= Double.isFinite(XtempData[idx2]);
             }
-            validStepSolution = finite;
+            validStepSolution = finite && voltageGauge.valid(XtempData);
         }
     }
 
+    /** Speculative solve; legacy callers retain zero on failure. New power adapters use solveChecked. */
     public double solve(State pin) {
-        if (!matrixValid) {
-            generateMatrix();
-        }
+        double value = solveChecked(pin);
+        return Double.isFinite(value) ? value : 0.0;
+    }
 
-        if (!singularMatrix) {
-            for (int y = 0; y < stateCount; y++) {
-                Idata[y] = 0;
-            }
-            for (ISubSystemProcessI p : processI) {
-                p.simProcessI(this);
-            }
-
-            int idx2 = pin.getId();
-            DD stack = DD.ZERO;
-            DD[] inverseRow = AInvdata[idx2];
-            for (int idx = 0; idx < stateCount; idx++) {
-                stack = stack.add(inverseRow[idx].multiply(Idata[idx]));
-            }
-            return stack.doubleValue();
+    /** Never commits states, capacitor history, heat or physical time. */
+    public double solveChecked(State pin) {
+        if (!matrixValid) generateMatrix();
+        if (singularMatrix || pin == null || pin.getSubSystem() != this) return Double.NaN;
+        java.util.Arrays.fill(Idata, 0.0);
+        for (ISubSystemProcessI p : processI) p.simProcessI(this);
+        if (!voltageGauge.getActive()) {
+            DD sum = DD.ZERO;
+            int row = pin.getId();
+            for (int col = 0; col < stateCount; col++) sum = sum.add(AInvdata[row][col].multiply(Idata[col]));
+            double value = sum.doubleValue();
+            return Double.isFinite(value) ? value : Double.NaN;
         }
-        return 0;
+        double[] solveRhs = Idata.clone();
+        voltageGauge.applyRhs(solveRhs);
+        double[] trial = new double[stateCount];
+        for (int row = 0; row < stateCount; row++) {
+            DD sum = DD.ZERO;
+            for (int col = 0; col < stateCount; col++) sum = sum.add(AInvdata[row][col].multiply(solveRhs[col]));
+            trial[row] = sum.doubleValue();
+        }
+        return voltageGauge.valid(trial) ? trial[pin.getId()] : Double.NaN;
+    }
+
+    /** Read a candidate solution before the single physical commit. */
+    public double pendingValue(State pin) {
+        if (pin == null) return 0.0;
+        if (!hasValidStepSolution() || pin.getSubSystem() != this) return Double.NaN;
+        return XtempData[pin.getId()];
     }
 
     private static double[][] copyMatrix(double[][] source) {
@@ -406,7 +427,7 @@ public class SubSystem {
     }
 
     public void stepFlush() {
-        if (!singularMatrix) {
+        if (hasValidStepSolution()) {
             for (int idx = 0; idx < stateCount; idx++) {
                 statesTab[idx].state = XtempData[idx];
 

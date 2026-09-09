@@ -14,7 +14,8 @@ object WireProductionRecipes {
     data class Step(val kind: WireMachineKind, val inputs: List<ItemStack>, val output: ItemStack,
                     val catalysts: List<ItemStack> = emptyList(), val metalKg: Double = 0.0) {
         val machine: ItemStack get() = Eln.findItemStack(kind.displayName, 1)
-        val energyJoules: Double get() = EXAMPLE_METERS / kind.metersPerSecond * kind.nominalPowerWatts
+        val energyJoules: Double get() = EXAMPLE_METERS / kind.metersPerSecond * kind.nominalPowerWatts *
+            if (kind == WireMachineKind.INSULATOR) WireProduction.cable(output)?.let(WireProduction::insulationCostFactor) ?: 1.0 else 1.0
     }
 
     fun spool(d: UtilityCableDescriptor, meters: Double = EXAMPLE_METERS) = d.newItemStack().also {
@@ -33,13 +34,13 @@ object WireProductionRecipes {
                     List(2) { Eln.findItemStack("Iron Roller Wheel", 1) }, kg))
             } else if (d.conductorCount == 1) {
                 val bare = WireProduction.singleFor(d, false) ?: continue
-                add(Step(WireMachineKind.INSULATOR, listOf(spool(bare), Eln.findItemStack("Rubber", 1)), spool(d)))
+                add(Step(WireMachineKind.INSULATOR, listOf(spool(bare), Eln.findItemStack("Rubber", ceil(WireProduction.insulationCostFactor(d)).toInt())), spool(d)))
             } else {
                 val single = WireProduction.singleFor(d, true) ?: continue
                 val bundle = Eln.instance.woundWireBundleDescriptor!!.createBundleStack(
                     d.sizeLabel, d.metricSizeLabel, d.material, d.conductorCount, d.conductorAreaMm2, EXAMPLE_METERS)
                 add(Step(WireMachineKind.COMBINER, List(d.conductorCount) { spool(single) }, bundle))
-                add(Step(WireMachineKind.INSULATOR, listOf(bundle.copy(), Eln.findItemStack("Rubber", 1)), spool(d)))
+                add(Step(WireMachineKind.INSULATOR, listOf(bundle.copy(), Eln.findItemStack("Rubber", ceil(WireProduction.insulationCostFactor(d)).toInt())), spool(d)))
             }
         }
     }

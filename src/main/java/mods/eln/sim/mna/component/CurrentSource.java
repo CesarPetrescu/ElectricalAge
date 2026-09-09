@@ -32,14 +32,18 @@ public class CurrentSource extends Bipole implements ISubSystemProcessI, INBTTRe
 
     @Override
     public void addToSubsystem(SubSystem s) {
+        // Remember the actual owning subsystem so detaching removes its RHS callback.
+        super.addToSubsystem(s);
         s.addProcess(this);
     }
 
     @Override
     public void quitSubSystem() {
         SubSystem localSubSystem = getLocalSubSystem();
-        if (localSubSystem != null)
+        if (localSubSystem != null) {
             localSubSystem.removeProcess(this);
+        }
+        super.quitSubSystem();
     }
 
     @Override

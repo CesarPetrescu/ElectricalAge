@@ -177,7 +177,8 @@ class ElectricalBoundaryRegressionTest {
     @Test fun singularAndNonFiniteSolutionsDoNotReportFictitiousCurrent() {
         val rc = RC()
         rc.system.step()
-        val floating = VoltageState()
+        // An unconstrained current unknown is a genuine rank defect, not voltage-gauge freedom.
+        val floating = mods.eln.sim.mna.state.CurrentState()
         rc.system.addState(floating); rc.system.step()
         assertEquals(0.0, rc.capacitor.current)
         rc.system.removeState(floating); rc.system.step()
@@ -190,6 +191,18 @@ class ElectricalBoundaryRegressionTest {
         rc.system.step()
         assertEquals(10.0 / 11, rc.capacitor.voltage, 1e-8)
         assertEquals(1.0 / 11, rc.capacitor.current, 1e-8)
+    }
+
+    @Test fun unrelatedFloatingVoltageDoesNotInvalidateARealRcStep() {
+        val rc = RC()
+        rc.system.step()
+        val oldVoltage = rc.capacitor.voltage
+        val floating = VoltageState()
+        rc.system.addState(floating)
+        rc.system.step()
+        assertTrue(rc.capacitor.current > 0)
+        assertEquals(.001 * (rc.capacitor.voltage - oldVoltage) / rc.dt, rc.capacitor.current, 1e-9)
+        assertEquals(0.0, floating.state)
     }
 
     @Test fun capacitanceChangesAndZeroCapacitanceDoNotInventTelemetry() {

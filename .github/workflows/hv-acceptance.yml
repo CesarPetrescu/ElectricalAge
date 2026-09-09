@@ -1,0 +1,131 @@
+name: HV acceptance
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hv-acceptance-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  registered-world:
+    name: HV build -> loaded circuits -> saved-world restart
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Record exact tested source
+        env:
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          mkdir -p build/hv-acceptance
+          git rev-parse HEAD | tee build/hv-acceptance/checkout-sha.txt
+          printf 'PR head: %s\nPR base: %s\nRun: %s/%s/actions/runs/%s\n' "$PR_HEAD" "$PR_BASE" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" | tee build/hv-acceptance/identity.txt
+          git archive --format=zip HEAD -o build/hv-acceptance/tested-source.zip
+      - name: '1. Complete build and actual FML unit suite'
+        run: |
+          set -o pipefail
+          ./gradlew --no-daemon build --stacktrace 2>&1 | tee build/hv-acceptance/build.log
+      - name: '2. Prepare a disposable dedicated-server world'
+        run: |
+          mkdir -p run/server
+          echo eula=true > run/server/eula.txt
+          cat > run/server/server.properties <<'PROPS'
+          online-mode=false
+          max-tick-time=-1
+          level-name=world
+          level-type=minecraft\:flat
+          generator-settings={"layers":[{"block":"minecraft:bedrock","height":1},{"block":"minecraft:stone","height":63}],"biome":"minecraft:plains"}
+          PROPS
+      - name: '3. Registered converters, loaded HV circuits, faults and supply removal'
+        run: |
+          set -o pipefail
+          timeout --signal=TERM --kill-after=30s 15m ./gradlew --no-daemon runServer -PsmokeTest=hv-converters-place --stacktrace 2>&1 | tee build/hv-acceptance/world-place.log
+      - name: '4. Require every named live-world assertion'
+        run: |
+          python3 - <<'PY'
+          import json, pathlib
+          p = pathlib.Path('build/smoke-artifacts/contracts/hv-world-place.json')
+          data = json.loads(p.read_text())
+          assert data['complete'] is True, 'Incomplete live-world report'
+          assert data['failures'] == 0, data
+          results = data['results']
+          assert len(results) >= 29, 'HV test coverage unexpectedly shrank'
+          assert all(r['status'] == 'passed' for r in results), data
+          text = json.dumps(results)
+          for required in ['loaded-conversion-and-orientation-9', 'step-up-line-step-down-power-network', 'input-block-removal-disconnects-converter', 'supply-reconnection-recovers', 'overload-respects-actual-input-current', 'one-way-fixed-blocks-precharged-output', 'final-state-ready-to-save-9', 'cable-identities-unique-and-new-ids-explicit']:
+              assert required in text, f'Missing assertion: {required}'
+          assert pathlib.Path('run/server/world/level.dat').is_file(), 'No saved world'
+          print('Live HV world:', len(results), 'passed')
+          PY
+      - name: '5. Record the saved fixture without replacing it'
+        run: |
+          find run/server/world -type f -name '*.mca' -print0 | sort -z | xargs -0 sha256sum > build/hv-acceptance/saved-region-sha256.txt
+          tar -czf build/hv-acceptance/world-before-restart.tar.gz -C run/server world
+      - name: '6. Restart the same saved world in a separate JVM'
+        run: |
+          set -o pipefail
+          timeout --signal=TERM --kill-after=30s 15m ./gradlew --no-daemon runServer -PsmokeTest=hv-converters-restart --stacktrace 2>&1 | tee build/hv-acceptance/world-restart.log
+      - name: '7. Require restored identities, windings, settings, faults and live power'
+        run: |
+          python3 - <<'PY'
+          import json, pathlib
+          data = json.loads(pathlib.Path('build/smoke-artifacts/contracts/hv-world-restart.json').read_text())
+          assert data['complete'] is True and data['failures'] == 0, data
+          results = data['results']
+          assert len(results) >= 23, 'Restart coverage unexpectedly shrank'
+          assert all(r['status'] == 'passed' for r in results), data
+          text = json.dumps(results)
+          for required in ['saved-identity-windings-settings-9', 'insulation-fault-remains-latched-after-new-jvm', 'saved-network-resumes-9', 'saved-transmission-chain-resumes']:
+              assert required in text, f'Missing assertion: {required}'
+          print('Restarted HV world:', len(results), 'passed')
+          PY
+      - name: Publish test evidence even when a gate fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hv-acceptance-evidence
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            build/hv-acceptance/
+            build/test-results/test/
+            build/reports/tests/test/
+            build/smoke-artifacts/contracts/hv-world-*.json
+            build/smoke-artifacts/hv-world-*.csv
+            run/server/logs/
+            run/server/crash-reports/
+      - name: Summarize gates without treating skipped steps as success
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as out:
+              out.write('## HV acceptance evidence\n\n')
+              out.write('Checkout: `' + pathlib.Path('build/hv-acceptance/checkout-sha.txt').read_text().strip() + '`\n\n')
+              for suite in ['hv-world-place', 'hv-world-restart']:
+                  p = pathlib.Path('build/smoke-artifacts/contracts') / (suite + '.json')
+                  if not p.exists():
+                      out.write(f'- {suite}: **NOT EXECUTED / no report**\n')
+                      continue
+                  d = json.loads(p.read_text())
+                  ok = d.get('complete') is True and d.get('failures') == 0 and bool(d.get('results')) and all(r.get('status') == 'passed' for r in d['results'])
+                  out.write(f'- {suite}: **{"PASSED" if ok else "FAILED / INCOMPLETE"}**, {len(d.get("results", []))} results\n')
+              out.write('\nThese are real registered-world and restart tests, not GUI, multiplayer or old-version world migration proof. Those require their own gates.\n')
+          PY

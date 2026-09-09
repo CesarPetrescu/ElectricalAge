@@ -52,7 +52,7 @@ object WireBehaviorChecks {
             m = machine(world, m.machineDescriptor.kind).apply { readFromNBT(saved) }
             bench = Bench(m, 200.0)
         }
-        repeat(250) { if (m.inventory.getItem(output).isEmpty) bench.tick() }
+        repeat(4000) { if (m.inventory.getItem(output).isEmpty) bench.tick() }
         check(!m.inventory.getItem(output).isEmpty) { "${m.machineDescriptor.kind} produced no output" }
         val before = m.inventory.getItem(output).copy()
         repeat(5) { bench.tick() }
@@ -91,8 +91,10 @@ object WireBehaviorChecks {
         }
         val m = machine(world, WireMachineKind.INSULATOR)
         m.inventory.setItem(0, input); m.inventory.setItem(1, Eln.findItemStack("Rubber", 1))
+        m.selectedOption = WireProduction.insulatorOptions(input).indexOf(d)
+        check(m.selectedOption >= 0) { "No selectable insulation route for ${d.name}" }
         val result = finish(world, m, 2, restart)
-        near(result.insulationMetersBuffer, 30.0)
+        near(result.insulationMetersBuffer, 32.0 - 2.0 * WireProduction.insulationCostFactor(d))
         check(result.inventory.getItem(0).isEmpty && result.inventory.getItem(1).isEmpty)
         return result.inventory.getItem(2).copy()
     }

@@ -13,6 +13,15 @@ public class SubSystemDebugSnapshot {
     private final String[] componentOwners;
     private final int[][] componentConnections;
     private final boolean singular;
+    private final boolean referenceGauge;
+
+    public SubSystemDebugSnapshot(
+        double[][] conductanceMatrix, double[] rhsVector, String[] stateLabels, String[] stateOwners,
+        String[] componentLabels, String[] componentOwners, int[][] componentConnections, boolean singular
+    ) {
+        this(conductanceMatrix, rhsVector, stateLabels, stateOwners, componentLabels, componentOwners,
+            componentConnections, singular, false);
+    }
 
     public SubSystemDebugSnapshot(
         double[][] conductanceMatrix,
@@ -22,7 +31,8 @@ public class SubSystemDebugSnapshot {
         String[] componentLabels,
         String[] componentOwners,
         int[][] componentConnections,
-        boolean singular
+        boolean singular,
+        boolean referenceGauge
     ) {
         this.conductanceMatrix = conductanceMatrix;
         this.rhsVector = rhsVector;
@@ -32,6 +42,7 @@ public class SubSystemDebugSnapshot {
         this.componentOwners = componentOwners;
         this.componentConnections = componentConnections;
         this.singular = singular;
+        this.referenceGauge = referenceGauge;
     }
 
     public double[][] getConductanceMatrix() {
@@ -62,6 +73,12 @@ public class SubSystemDebugSnapshot {
         return componentConnections;
     }
 
+    /** A pure voltage reference freedom was removed for solving, not by adding ground leakage. */
+    public boolean hasReferenceGauge() {
+        return referenceGauge;
+    }
+
+    /** Whether the original, ungauged physical matrix is singular. */
     public boolean isSingular() {
         return singular;
     }

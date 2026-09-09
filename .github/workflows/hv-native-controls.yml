@@ -1,0 +1,99 @@
+name: HV native controls
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: hv-native-controls-${{ github.ref }}
+  cancel-in-progress: true
+defaults:
+  run:
+    shell: bash
+jobs:
+  native-controls:
+    name: Native HV clicks, text entry, server round trips and resize
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      LIBGL_ALWAYS_SOFTWARE: '1'
+      LP_NUM_THREADS: '2'
+      ALSOFT_DRIVERS: 'null'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Archived legacy GUI fixtures for explicit control-upgrade testing
+        uses: actions/download-artifact@v4
+        with:
+          name: native-menu-world
+          run-id: 34264096765
+          github-token: ${{ github.token }}
+          path: menu-input
+      - name: Install software rendering and a disposable old-world copy
+        run: |
+          set -euo pipefail
+          test "$(cat menu-input/source-commit.txt)" = '4ff68e073b588e4711cd1575620994efc5acd33d'
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends xvfb libgl1-mesa-dri libopenal1
+          mkdir -p run/client/saves/menu-audit build/hv-native
+          tar -xzf menu-input/menu-world.tar.gz --strip-components=1 -C run/client/saves/menu-audit
+          printf 'onboardAccessibility:false\nnarrator:0\nguiScale:2\nmaxFps:30\npauseOnLostFocus:false\n' > run/client/options.txt
+          git rev-parse HEAD > build/hv-native/tested-commit.txt
+          cp menu-input/source-commit.txt build/hv-native/fixture-commit.txt
+      - name: Native widget clicks and typing with server-thread verification
+        env:
+          JAVA_TOOL_OPTIONS: '-Deln.campaign=hv-native-controls'
+        run: |
+          set -o pipefail
+          timeout --signal=TERM --kill-after=30s 25m xvfb-run -a -s '-screen 0 1280x1024x24' ./gradlew --no-daemon runClient --stacktrace 2>&1 | tee build/hv-native/client.log
+      - name: Require named interaction evidence for all seven native screens
+        run: |
+          python3 - <<'PY'
+          import json, pathlib
+          d = json.loads(pathlib.Path('build/smoke-artifacts/contracts/hv-native-controls.json').read_text())
+          assert d['suite'] == 'hv-native-controls' and d['complete'] is True and d['failures'] == 0, d
+          rows = d['results']
+          assert rows and all(r['status'] == 'passed' for r in rows), d
+          checks = {(r['id'], r['check']) for r in rows}
+          assert len(checks) == len(rows), 'Duplicate interaction evidence'
+          converters = {'eln:variable_dc-dc_converter','eln:one-way_dc-dc_converter','eln:one-way_boost_vdc_dc_converter','eln:one-way_buck_vdc_dc_converter','eln:one-way_boost_buck_vdc_dc_converter','eln:isolation_transformer'}
+          targets = converters | {'eln:wire_insulator'}
+          assert {r['id'] for r in rows} == targets
+          for target in converters:
+              for name in ['legacy-mapping-visible-before-explicit-upgrade','native-upgrade-explicitly-disables-output','native-enable-packet-round-trip','native-control-values-survive-reopen','native-disable-packet-round-trip']:
+                  assert (target,name) in checks, (target,name)
+              if 'vdc' in target or target == 'eln:variable_dc-dc_converter':
+                  for name in ['native-ratio-text-entry','nonfinite-text-does-not-change-setting','out-of-range-ratio-rejected-by-server','native-switch-to-voltage-mode','native-3200V-text-packet-round-trip']:
+                      assert (target,name) in checks, (target,name)
+          for voltage in [1000,5000,20000,40000,150000]:
+              assert ('eln:wire_insulator',f'native-select-insulation-{voltage}') in checks
+          assert ('eln:wire_insulator','insulation-choice-survives-reopen') in checks
+          for target in targets:
+              assert (target,'native-controls-survive-minimum-viewport') in checks
+              for size in ['normal','minimum']:
+                  image = pathlib.Path('run/client/screenshots') / ('hv-controls-' + target.replace(':','-') + '-' + size + '.png')
+                  assert image.is_file() and image.stat().st_size > 1000, image
+          print(len(rows), 'native interaction assertions passed; 14 native screenshots')
+          PY
+      - name: Preserve native UI evidence and errors
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hv-native-controls-evidence
+          retention-days: 14
+          if-no-files-found: error
+          path: |
+            build/hv-native/
+            build/smoke-artifacts/contracts/hv-native-controls.*
+            run/client/screenshots/hv-controls-*.png
+            run/client/logs/
+            run/client/crash-reports/
