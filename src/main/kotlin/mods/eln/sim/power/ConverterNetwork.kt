@@ -11,6 +11,8 @@ import kotlin.math.max
 interface ConservativePowerProcess : IRootSystemPreStepProcess {
     /** Initial trial commands only. Never advances a physical state or bypasses acceptance. */
     fun prepareStep() {}
+    /** Voltage commands eligible for a bounded algebraic convergence correction. */
+    fun trialSources(): List<SwitchableVoltageSource> = emptyList()
     fun acceptsCandidate(): Boolean
     fun failClosed()
     fun connectedSystems(): Set<SubSystem>

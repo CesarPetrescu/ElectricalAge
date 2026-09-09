@@ -136,7 +136,6 @@ object RegulatedConverter {
         if (!lower.isFinite() || !demandedAmps.isFinite()) return off(StopReason.INVALID_NETWORK)
         var upper = min(demandedAmps, limits.maxOutputAmps)
         if (upper < lower) return off(StopReason.REVERSE_OUTPUT_BEYOND_CURRENT_LIMIT)
-        if (upper < demandedAmps) reasons += LimitReason.OUTPUT_CURRENT
         if (!feasible(lower)) return off(StopReason.GAIN_UNAVAILABLE)
         if (!feasible(upper)) {
             var lo = lower
@@ -154,6 +153,7 @@ object RegulatedConverter {
             return off(StopReason.GAIN_UNAVAILABLE)
         val inputWatts = inputVolts * inputAmps
         if (outputVolts < target - 1e-8) {
+            if (near(upper, limits.maxOutputAmps)) reasons += LimitReason.OUTPUT_CURRENT
             if (near(outputWatts, limits.maxOutputWatts)) reasons += LimitReason.OUTPUT_POWER
             if (near(outputWatts, limits.electronicsEfficiency * inputWattCap))
                 reasons += LimitReason.INPUT_CURRENT_OR_SAG

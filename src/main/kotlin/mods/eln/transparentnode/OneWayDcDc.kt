@@ -607,7 +607,26 @@ class OneWayDcDcProcess(private val element: OneWayDcDcElement) : ConservativePo
     private var inputLimit = Double.MAX_VALUE
     private var outputLimit = Double.MAX_VALUE
 
-    fun resetFault() { tripped = false }
+    private val modernRegulated get() = element.settings.version >= 2 && element.oneWayDescriptor.variable
+    private val regulated = RegulatedPowerProcess(
+        element.primaryInternal, if (element.isolated) element.primaryReferenceLoad else null,
+        element.secondaryInternal, if (element.isolated) element.secondaryReferenceLoad else null,
+        element.inputSink, element.outputSource,
+        { element.settings.enabled && element.populated },
+        {
+            val gain = when (element.oneWayDescriptor.mode) {
+                OneWayDcDcMode.BOOST -> 1.0 to 256.0
+                OneWayDcDcMode.BUCK -> (1.0 / 256) to 1.0
+                else -> (1.0 / 256) to 256.0
+            }
+            ConverterLimits(.1, dcDcWindingVoltage(element.inventory.getItem(0)),
+                dcDcWindingVoltage(element.inventory.getItem(1)), element.primaryMeltCurrent,
+                element.secondaryMeltCurrent, 1_000_000.0, .97, gain.first, gain.second)
+        },
+        { voltage -> if (element.settings.mode == "VOLTAGE") element.settings.value else voltage * element.computeRatio() }
+    )
+
+    fun resetFault() { tripped = false; regulated.resetFault() }
     private fun open(reason: String) {
         element.inputSink.enabled = false
         element.outputSource.enabled = false
@@ -616,25 +635,16 @@ class OneWayDcDcProcess(private val element: OneWayDcDcElement) : ConservativePo
     }
 
     override fun prepareStep() {
-        if (tripped || !element.settings.enabled || !element.populated ||
-            element.settings.version < 2 || !element.oneWayDescriptor.variable) return
-        val input = probePort(element.primaryInternal, if (element.isolated) element.primaryReferenceLoad else null, element.inputSink)
-        val maximumInput = dcDcWindingVoltage(element.inventory.getItem(0))
-        val maximumOutput = dcDcWindingVoltage(element.inventory.getItem(1))
-        if (!input.volts.isFinite() || input.volts <= 0 || input.volts > maximumInput ||
-            input.ohms.isNaN() || input.ohms >= RegulatedConverter.OPEN_OHMS) return
-        val ratio = try { element.computeRatio() } catch (_: IllegalArgumentException) { return }
-        val target = if (element.settings.mode == "VOLTAGE") element.settings.value else input.volts * ratio
-        if (!target.isFinite() || target <= 0) return
-        // This is a trial initialization, not an accepted operating point. Full current,
-        // gain, reverse-flow and energy constraints are still applied below before flush.
-        element.inputSink.voltage = input.volts
-        element.outputSource.voltage = target.coerceAtMost(maximumOutput)
-        element.inputSink.enabled = true
-        element.outputSource.enabled = true
+        if (modernRegulated) regulated.prepareStep()
     }
 
     override fun rootSystemPreStepProcess() {
+        if (modernRegulated) {
+            element.activeRatio = element.computeRatio()
+            regulated.rootSystemPreStepProcess()
+            status = regulated.status
+            return
+        }
         if (tripped) { open("NON_CONVERGENT"); return }
         if (!element.settings.enabled || !element.populated) { open("DISABLED"); return }
         val a = probePort(element.primaryInternal, if (element.isolated) element.primaryReferenceLoad else null, element.inputSink)
@@ -661,22 +671,6 @@ class OneWayDcDcProcess(private val element: OneWayDcDcElement) : ConservativePo
                 open("FIXED_RATIO_LIMIT"); return
             }
             p
-        } else if (modern) {
-            val kind = when (mode) {
-                OneWayDcDcMode.BOOST -> 1.0 to 256.0
-                OneWayDcDcMode.BUCK -> (1.0 / 256) to 1.0
-                else -> (1.0 / 256) to 256.0
-            }
-            val target = if (element.settings.mode == "VOLTAGE") element.settings.value else a.volts * ratio
-            when (val result = RegulatedConverter.solve(a, b, target, ConverterLimits(
-                0.1, maxInput, maxOutput, inputLimit, outputLimit, 1_000_000.0, efficiency, kind.first, kind.second
-            ))) {
-                is TransferResult.Off -> { open(result.reason.name); return }
-                is TransferResult.Running -> {
-                    status = if (result.point.limitedBy.isEmpty()) "REGULATING" else result.point.limitedBy.first().name
-                    result.point
-                }
-            }
         } else {
             // Existing saves retain their historical ratio/power policy, but get genuine open-circuit shutdown.
             if (b.ohms >= RegulatedConverter.OPEN_OHMS) {
@@ -696,6 +690,7 @@ class OneWayDcDcProcess(private val element: OneWayDcDcElement) : ConservativePo
     }
 
     override fun acceptsCandidate(): Boolean {
+        if (modernRegulated) return regulated.acceptsCandidate()
         if (!element.inputSink.enabled && !element.outputSource.enabled) return true
         val inputSystem = element.inputSink.subSystem ?: return false
         val outputSystem = element.outputSource.subSystem ?: return false
@@ -705,7 +700,11 @@ class OneWayDcDcProcess(private val element: OneWayDcDcElement) : ConservativePo
         return balancedPower(-pendingSourcePower(element.inputSink), pendingSourcePower(element.outputSource), efficiency)
     }
 
-    override fun failClosed() { tripped = true; open("NON_CONVERGENT") }
+    override fun trialSources(): List<SwitchableVoltageSource> = listOf(element.inputSink, element.outputSource)
+    override fun failClosed() {
+        if (modernRegulated) regulated.failClosed()
+        tripped = true; open("NON_CONVERGENT")
+    }
     override fun connectedSystems(): Set<SubSystem> = setOfNotNull(element.primaryInternal.subSystem, element.secondaryInternal.subSystem)
     private fun th(value: PortThevenin) = object : OneWayDcDcThevenin {
         override val voltage = value.volts

@@ -56,6 +56,8 @@ class SafeTransformerProcess(
         return balancedPower(-pendingSourcePower(input), pendingSourcePower(output))
     }
 
+    override fun trialSources(): List<SwitchableVoltageSource> = listOf(input, output)
+
     override fun failClosed() { open(); tripped = true; status = "NON_CONVERGENT" }
     override fun connectedSystems(): Set<SubSystem> = setOfNotNull(primary.subSystem, secondary.subSystem)
 }

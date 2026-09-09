@@ -2,6 +2,7 @@ package mods.eln.sim.mna;
 
 import mods.eln.Eln;
 import mods.eln.sim.power.ConservativePowerProcess;
+import mods.eln.sim.power.ConverterConvergence;
 import mods.eln.metrics.MetricsSubsystem;
 import mods.eln.misc.Profiler;
 import mods.eln.misc.Utils;
@@ -256,6 +257,12 @@ public class RootSystem {
             for (SubSystem system : systems) system.stepCalc();
             converged = converters.stream().allMatch(ConservativePowerProcess::acceptsCandidate);
             if (converged) break;
+            if (trial == 3 || trial == 15) {
+                ConverterConvergence.correct(converters);
+                for (SubSystem system : systems) system.stepCalc();
+                converged = converters.stream().allMatch(ConservativePowerProcess::acceptsCandidate);
+                if (converged) break;
+            }
         }
         if (!converged) {
             // Fail the connected converter group, not unrelated machines elsewhere in the world.
