@@ -1,0 +1,34 @@
+name: PR10 guarded Kotlin subscriber correction
+on:
+  push:
+    branches: [test/m1-native-component-campaigns]
+permissions:
+  contents: write
+jobs:
+  correct:
+    if: github.repository == 'CesarPetrescu/ElectricalAge'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Correct only the loader-diagnosed Kotlin object subscriber methods
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD^)" = eb7fb1db2e96604de49b3e0a03616881f314bc2b
+          python3 - <<'PY'
+          import pathlib,subprocess
+          p=pathlib.Path('src/main/kotlin/mods/eln/devtest/NativeCampaignClient.kt')
+          assert subprocess.check_output(['git','hash-object',str(p)],text=True).strip()=='1c405d33ea9656b189ee875b69e7fac405c79b8e'
+          s=p.read_text();needle='@SubscribeEvent @JvmStatic fun '
+          assert s.count(needle)==4
+          p.write_text(s.replace(needle,'@SubscribeEvent fun '))
+          PY
+          git diff --check
+          test "$(git diff --name-only | wc -l)" -eq 1
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/main/kotlin/mods/eln/devtest/NativeCampaignClient.kt
+          git commit -m 'test: register native client callbacks as Kotlin object instance subscribers'
+          git push origin HEAD:refs/heads/test/m1-native-component-campaigns
