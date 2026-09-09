@@ -1,14 +1,15 @@
 name: Native client campaigns
 on:
-  pull_request:
+  workflow_call:
   workflow_dispatch:
 permissions:
   contents: read
 concurrency:
   group: native-campaign-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 jobs:
   package:
+    name: Package artifact and actual registered fixture world
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -19,26 +20,70 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - uses: gradle/actions/setup-gradle@v4
-      - name: Build exact production artifact
-        run: ./gradlew --no-daemon assemble
-      - name: Record source snapshot
+      - name: Exercise the fail-closed screenshot and result validator
         run: |
-          git rev-parse HEAD > build/source-commit.txt
-          git archive --format=zip --output=build/native-campaign-source.zip HEAD
+          python3 -m pip install Pillow==11.3.0
+          python3 script/test_native_campaign_report.py
+      - name: Compile the actual production artifact
+        run: ./gradlew --no-daemon assemble
+      - name: Build the registry gallery and existing physical installations in Minecraft
+        run: |
+          mkdir -p run/server build/native-input
+          echo eula=true > run/server/eula.txt
+          cat > run/server/server.properties <<'EOF'
+          server-ip=127.0.0.1
+          online-mode=false
+          enforce-secure-profile=false
+          max-tick-time=120000
+          level-type=minecraft\:flat
+          generator-settings={"layers":[{"block":"minecraft:bedrock","height":1},{"block":"minecraft:stone","height":63}],"biome":"minecraft:plains"}
+          EOF
+          ./gradlew --no-daemon runServer -PsmokeTest=all
+          python3 - <<'PY'
+          import hashlib,json,pathlib,shutil,subprocess
+          root=pathlib.Path('build/native-input')
+          jars=[p for p in pathlib.Path('build/libs').glob('*.jar') if not p.name.endswith('-sources.jar')]
+          assert len(jars)==1,jars
+          shutil.copy2(jars[0],root/jars[0].name)
+          world=pathlib.Path('run/server/world')
+          assert (world/'level.dat').is_file() and (world/'eln-contracts.json').is_file()
+          assert len(json.loads((world/'eln-contracts.json').read_text()))>0
+          shutil.make_archive(str(root/'seed-world'),'zip',world)
+          sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+          source=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
+          (root/'input-manifest.json').write_text(json.dumps({'source':source,'jar':jars[0].name,'jarSha256':sha(jars[0]),'worldSha256':sha(root/'seed-world.zip')},indent=2))
+          subprocess.run(['git','archive','--format=zip',f'--output={root}/source.zip','HEAD'],check=True)
+          PY
       - uses: actions/upload-artifact@v4
         with:
           name: native-campaign-input
           if-no-files-found: error
+          retention-days: 14
+          path: build/native-input/**
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-seed-world-evidence
+          if-no-files-found: warn
+          retention-days: 14
           path: |
-            build/libs/*.jar
-            !build/libs/*-sources.jar
-            build/source-commit.txt
-            build/native-campaign-source.zip
-  m1-preflight:
+            build/smoke-artifacts/**
+            run/server/logs/**
+            run/server/crash-reports/**
+  m1:
+    name: M1 real client / ${{ matrix.suite }}
     needs: package
     runs-on: macos-15
     timeout-minutes: 55
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        suite: [power, logic, mechanical, storage-thermal]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -55,42 +100,180 @@ jobs:
         with:
           name: native-campaign-input
           path: native-input
-      - name: Record actual Apple Silicon hardware
-        run: |
-          mkdir -p build
-          uname -a | tee build/native-host.txt
-          test "$(uname -m)" = arm64
-          system_profiler SPHardwareDataType SPDisplaysDataType >> build/native-host.txt
-          sysctl hw.memsize hw.ncpu >> build/native-host.txt
-      - name: Probe actual Apple OpenGL capability
+      - uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/eln-native-Darwin-arm64
+          key: native-macos-arm64-v1-${{ hashFiles('gradle.properties', 'script/run_native_campaign.py', 'script/run_multiplayer.py') }}
+          restore-keys: native-macos-arm64-v1-
+      - name: Record the actual M1 and graphics capability
         run: |
           mkdir -p build/native-graphics
+          uname -a > build/native-graphics/host.txt
+          test "$(uname -m)" = arm64
+          system_profiler SPHardwareDataType SPDisplaysDataType >> build/native-graphics/host.txt
+          sysctl hw.memsize hw.ncpu >> build/native-graphics/host.txt
+          cat build/native-graphics/host.txt
           clang -Wno-deprecated-declarations script/probe_macos_gl.c -framework OpenGL -o "$RUNNER_TEMP/gl-probe"
-          set +e
-          "$RUNNER_TEMP/gl-probe" > build/native-graphics/apple-context.json
-          result=$?
-          set -e
-          cat build/native-graphics/apple-context.json
-          # 42 means unavailable host graphics, NOT a successful client test.
-          test "$result" -eq 0 -o "$result" -eq 42
-      - name: Build explicitly labelled off-screen software graphics for M1
+          "$RUNNER_TEMP/gl-probe" | tee build/native-graphics/apple-context.json
+          python3 - <<'PY'
+          import json,pathlib
+          assert json.loads(pathlib.Path('build/native-graphics/apple-context.json').read_text())['minecraftCoreContext'] is True
+          PY
+      - name: Allow the measured Apple software renderer, without altering Minecraft or ELN
         run: bash script/build_macos_software_gl.sh
-      - name: Install pinned launcher and image validator
+      - name: Install pinned launcher and result validator
         run: python3 -m pip install minecraft-launcher-lib==8.0 Pillow==11.3.0
-      - name: Launch actual packaged client and capture its rendered framebuffer
+      - name: Real client actions, physical results, screenshots and separate-JVM restart
+        env:
+          NATIVE_SUITE: ${{ matrix.suite }}
         run: |
           python3 - <<'PY'
-          import pathlib, subprocess
-          jars=[p for p in pathlib.Path('native-input').rglob('*.jar') if not p.name.endswith('-sources.jar')]
-          assert len(jars)==1, jars
-          subprocess.run(['python3','script/run_native_campaign.py','--jar',str(jars[0]),'--suite','preflight'],check=True)
+          import hashlib,json,os,pathlib,subprocess
+          root=pathlib.Path('native-input');m=json.loads((root/'input-manifest.json').read_text());jar=root/m['jar'];world=root/'seed-world.zip'
+          assert hashlib.sha256(jar.read_bytes()).hexdigest()==m['jarSha256']
+          assert hashlib.sha256(world.read_bytes()).hexdigest()==m['worldSha256']
+          assert subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()==m['source']
+          subprocess.run(['python3','script/run_native_campaign.py','--jar',str(jar),'--world',str(world),'--suite',os.environ['NATIVE_SUITE']],check=True)
           PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: m1-native-preflight
+          name: native-evidence-m1-${{ matrix.suite }}
           if-no-files-found: error
-          path: |
-            build/native-host.txt
-            build/native-graphics/**
-            build/native-campaign/**
+          retention-days: 14
+          compression-level: 0
+          path: build/native-campaign/**
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: m1-graphics-${{ matrix.suite }}
+          if-no-files-found: error
+          retention-days: 14
+          path: build/native-graphics/**
+  linux-control:
+    name: Same-artifact Linux real-client power control
+    needs: package
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    env:
+      DISPLAY: ':99'
+      LIBGL_ALWAYS_SOFTWARE: '1'
+      LP_NUM_THREADS: '2'
+      ALSOFT_DRIVERS: 'null'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: native-campaign-input
+          path: native-input
+      - uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/eln-native-Linux-x86_64
+          key: native-linux-x64-v1-${{ hashFiles('gradle.properties', 'script/run_native_campaign.py', 'script/run_multiplayer.py') }}
+          restore-keys: native-linux-x64-v1-
+      - name: Real X display and software OpenGL
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends xserver-xorg-video-dummy xserver-xorg-core x11-xserver-utils libgl1-mesa-dri mesa-utils
+          sudo tee /tmp/native-xorg.conf >/dev/null <<'EOF'
+          Section "Monitor"
+            Identifier "Monitor0"
+            HorizSync 28.0-90.0
+            VertRefresh 48.0-80.0
+          EndSection
+          Section "Device"
+            Identifier "Card0"
+            Driver "dummy"
+            VideoRam 256000
+          EndSection
+          Section "Screen"
+            Identifier "Screen0"
+            Device "Card0"
+            Monitor "Monitor0"
+            DefaultDepth 24
+            SubSection "Display"
+              Depth 24
+              Modes "1280x1024"
+              Virtual 1280 1024
+            EndSubSection
+          EndSection
+          EOF
+          sudo nohup Xorg :99 -config /tmp/native-xorg.conf -logfile /tmp/native-xorg.log -noreset -nolisten tcp -ac >/tmp/native-xorg.stdout 2>&1 &
+          for i in $(seq 1 30); do xset -display :99 q >/dev/null 2>&1 && break; sleep 1; done
+          xset -display :99 q >/dev/null
+          glxinfo -B
+          python3 -m pip install minecraft-launcher-lib==8.0 Pillow==11.3.0
+      - name: Run identical power cases with the same production artifact and seed world
+        run: |
+          python3 - <<'PY'
+          import hashlib,json,pathlib,subprocess
+          root=pathlib.Path('native-input');m=json.loads((root/'input-manifest.json').read_text());jar=root/m['jar'];world=root/'seed-world.zip'
+          assert hashlib.sha256(jar.read_bytes()).hexdigest()==m['jarSha256'] and hashlib.sha256(world.read_bytes()).hexdigest()==m['worldSha256']
+          assert subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()==m['source']
+          subprocess.run(['python3','script/run_native_campaign.py','--jar',str(jar),'--world',str(world),'--suite','power'],check=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-evidence-linux-power
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+          path: build/native-campaign/**
+  evidence:
+    name: Require every shard and publish indexed screenshot evidence
+    if: always()
+    needs: [package, m1, linux-control]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: native-campaign-input
+          path: native-input
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: native-evidence-*
+          path: incoming
+      - name: Validate all named assertions, registry coverage and original screenshots
+        run: |
+          python3 -m pip install Pillow==11.3.0
+          python3 script/aggregate_native_campaign.py --incoming incoming --output build/native-gallery --manifest native-input/input-manifest.json
+      - name: Publish summary in Actions
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json,pathlib,os
+          p=pathlib.Path('build/native-gallery/summary.json')
+          if p.exists():
+              s=json.loads(p.read_text())
+              with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:
+                  f.write(f"# Native client campaign: {s['status']}\n\nSource: `{s['source']}`\n\n")
+                  f.write('| Runner/suite | Result | Functional | Gallery | Restart |\n|---|---|---:|---:|---:|\n')
+                  for k,v in s['shards'].items():f.write(f"|{k}|{v['status']}|{v.get('functional','-')}|{v.get('gallery','-')}|{v.get('restart','-')}|\n")
+                  f.write('\nDownload **native-client-screenshot-index** and open **index.html**. Original PNGs, per-case observations, component-coverage.csv and reproduction worlds are included. Gallery-only does not imply functional coverage.\n')
+                  if s['errors']:f.write('\nFailures:\n'+'\n'.join('- '+e for e in s['errors']))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-client-screenshot-index
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+          path: build/native-gallery/**

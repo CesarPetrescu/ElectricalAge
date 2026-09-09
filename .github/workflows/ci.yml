@@ -1,14 +1,12 @@
 name: CI
 
 # The 1.21.1 port's whole test surface, on every push and pull request:
-#   build     compiles, runs the 300-odd unit tests under NeoForge's JUnit launcher, uploads the jar
+#   build     compiles, runs the unit tests under NeoForge's JUnit launcher, uploads the jar
 #   benchmark the MNA benchmark tests (failures fail the job; statistics as an artifact)
-#   smoke     the in-world runs of tools/port/smoke.sh: a headless dedicated server places every
-#             descriptor and the test circuits, restarts against the saved world, then a headless
-#             client (Xorg + Mesa llvmpipe) opens a single-player copy and screenshots everything.
-#   multiplayer tests the packaged JAR on a dedicated server with two separate real clients.
-#             Screenshots and logs are uploaded whether it passes or not.
-# See tools/port/headless.md for what each run checks and how to run them locally.
+#   smoke     real dedicated server, saved-world restart and software-rendered Linux client
+#   multiplayer tests the packaged JAR on a dedicated server with two separate real clients
+#   native-client hosted M1 functional campaigns, catalogue captures and separate JVM restart
+# See tools/port/headless.md and docs/testing/native-client-campaigns.md.
 
 on:
   push:
@@ -169,8 +167,7 @@ jobs:
           glxinfo -B | grep -E "OpenGL (renderer|core profile version)"
 
       - name: Run directories
-        # What headless.md sets up by hand: the server's eula and a flat world, the client's
-        # options (a fresh profile stops on the accessibility onboarding screen otherwise).
+        # Fresh profiles otherwise stop at the accessibility onboarding screen.
         run: |
           mkdir -p run/server run/client
           echo eula=true > run/server/eula.txt
@@ -246,9 +243,13 @@ jobs:
     name: Natural resource powered production
     uses: ./.github/workflows/playtest-natural-power.yml
 
+  native-client:
+    name: M1 native client component campaigns
+    uses: ./.github/workflows/native-client-campaign.yml
+
   release:
     name: Publish latest 1.21.1 mod
-    needs: [build, benchmark, smoke, compatibility, evaporative, wire-thermal, multiplayer, ore-worldgen, survival, acquisition, menus, overhead, natural-power]
+    needs: [build, benchmark, smoke, compatibility, evaporative, wire-thermal, multiplayer, ore-worldgen, survival, acquisition, menus, overhead, natural-power, native-client]
     if: >-
       github.repository == 'CesarPetrescu/ElectricalAge' &&
       github.ref == 'refs/heads/main' &&
