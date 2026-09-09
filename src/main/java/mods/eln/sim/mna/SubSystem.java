@@ -33,6 +33,9 @@ public class SubSystem {
 
     int stateCount;
     double[][] A;
+    // Preserve Kirchhoff cancellation while accumulating component stamps. Inverting a
+    // rounded double matrix with DD cannot recover conductance already lost here.
+    private DD[][] preciseA;
     boolean singularMatrix;
     private boolean calculatingStep;
     private boolean validStepSolution;
@@ -115,6 +118,8 @@ public class SubSystem {
         p.add("Inversse with " + stateCount + " state : ");
 
         A = new double[stateCount][stateCount];
+        preciseA = new DD[stateCount][stateCount];
+        for (DD[] row : preciseA) java.util.Arrays.fill(row, DD.ZERO);
         Idata = new double[stateCount];
         XtempData = new double[stateCount];
         {
@@ -133,11 +138,14 @@ public class SubSystem {
         // Keep A as the physical stamp matrix for diagnostics and component contracts.
         double[][] solveMatrix = copyMatrix(A);
         voltageGauge = new VoltageGauge(solveMatrix, states);
+        DD[][] preciseSolveMatrix = new DD[stateCount][];
+        for (int row = 0; row < stateCount; row++) preciseSolveMatrix[row] = preciseA[row].clone();
+        voltageGauge.applyMatrix(preciseSolveMatrix);
 
         boolean captureMetrics = MetricsSubsystem.isSimulatorMetricsActive();
         long inversionStartNanoseconds = captureMetrics ? System.nanoTime() : 0L;
         try {
-            AInvdata = invertMatrix(solveMatrix);
+            AInvdata = invertMatrix(preciseSolveMatrix);
             singularMatrix = false;
             if (captureMetrics) {
                 long inversionTimeNanoseconds = System.nanoTime() - inversionStartNanoseconds;
@@ -245,7 +253,9 @@ public class SubSystem {
     public void addToA(State a, State b, double v) {
         if (a == null || b == null)
             return;
-        A[a.getId()][b.getId()] += v;
+        int row = a.getId(), column = b.getId();
+        preciseA[row][column] = preciseA[row][column].add(v);
+        A[row][column] = preciseA[row][column].doubleValue();
     }
 
     /**
@@ -346,6 +356,54 @@ public class SubSystem {
         return voltageGauge.valid(trial) ? trial[pin.getId()] : Double.NaN;
     }
 
+    /**
+     * Affine port response from the active voltage-source constraint. No finite voltage
+     * perturbation and no subtraction of two rounded, potentially huge source currents.
+     * Keeps the source command, enable flag and all physical state/history unchanged.
+     */
+    public Thevenin sourceThevenin(VoltageSource source) {
+        Thevenin result = new Thevenin();
+        result.voltage = Double.NaN;
+        result.resistance = Double.NaN;
+        if (!matrixValid) generateMatrix();
+        State pin = source.getCurrentState();
+        if (singularMatrix || pin.getSubSystem() != this || !Double.isFinite(source.getVoltage())) return result;
+        java.util.Arrays.fill(Idata, 0.0);
+        for (ISubSystemProcessI process : processI) process.simProcessI(this);
+        double[] rhs = Idata.clone();
+        voltageGauge.applyRhs(rhs);
+        int index = pin.getId();
+        DD current = DD.ZERO;
+        for (int column = 0; column < stateCount; column++)
+            current = current.add(AInvdata[index][column].multiply(rhs[column]));
+        if (voltageGauge.getActive()) {
+            double[] trial = new double[stateCount];
+            for (int row = 0; row < stateCount; row++) {
+                DD value = DD.ZERO;
+                for (int column = 0; column < stateCount; column++)
+                    value = value.add(AInvdata[row][column].multiply(rhs[column]));
+                trial[row] = value.doubleValue();
+            }
+            if (!voltageGauge.valid(trial)) return result;
+        }
+        DD conductance = AInvdata[index][index].negate();
+        DD intercept = current.add(conductance.multiply(source.getVoltage()));
+        double g = conductance.doubleValue(), i = intercept.doubleValue();
+        if (!Double.isFinite(g) || !Double.isFinite(i)) return result;
+        // The existing power model treats >= 1e18 ohms as open. A current source into
+        // an open port is NOT an open passive load: never discard its injected current.
+        if (Math.abs(g) <= 1e-18) {
+            if (Math.abs(i) > 1e-12) return result;
+            result.voltage = 0.0;
+            result.resistance = Double.POSITIVE_INFINITY;
+            return result;
+        }
+        if (g < 0.0) return result;
+        result.resistance = conductance.reciprocal().doubleValue();
+        result.voltage = intercept.divide(conductance).doubleValue();
+        return result;
+    }
+
     /** Read a candidate solution before the single physical commit. */
     public double pendingValue(State pin) {
         if (pin == null) return 0.0;
@@ -364,13 +422,13 @@ public class SubSystem {
         return copy;
     }
 
-    private static DD[][] invertMatrix(double[][] matrix) {
+    private static DD[][] invertMatrix(DD[][] matrix) {
         int size = matrix.length;
         DD[][] augmented = new DD[size][size * 2];
 
         for (int row = 0; row < size; row++) {
             for (int col = 0; col < size; col++) {
-                augmented[row][col] = DD.of(matrix[row][col]);
+                augmented[row][col] = matrix[row][col];
                 augmented[row][size + col] = row == col ? DD.ONE : DD.ZERO;
             }
         }

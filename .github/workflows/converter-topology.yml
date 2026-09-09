@@ -1,0 +1,67 @@
+name: Converter topology regression
+
+on:
+  pull_request:
+    paths:
+      - 'src/main/java/mods/eln/sim/**'
+      - 'src/main/kotlin/mods/eln/sim/**'
+      - 'src/main/kotlin/mods/eln/transparentnode/**'
+      - 'src/test/**'
+      - 'build.gradle.kts'
+      - '.github/workflows/converter-topology.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: converter-topology-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  topology:
+    name: Production MNA topology regressions
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Run regression tests through the real Gradle test launcher
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/converter-topology-evidence
+          git rev-parse HEAD > build/converter-topology-evidence/revision.txt
+          ./gradlew --no-daemon test --tests 'mods.eln.sim.power.ConverterTopologyRegressionTest' 2>&1 | tee build/converter-topology-evidence/gradle.log
+      - name: Require executed tests, not an empty or skipped suite
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          import xml.etree.ElementTree as ET
+          path = pathlib.Path('build/test-results/test/TEST-mods.eln.sim.power.ConverterTopologyRegressionTest.xml')
+          if not path.is_file():
+              raise SystemExit('Missing topology regression JUnit report')
+          suite = ET.parse(path).getroot()
+          tests = int(suite.attrib.get('tests', '0'))
+          if tests < 9:
+              raise SystemExit(f'Expected at least 9 topology tests, found {tests}')
+          for field in ('failures', 'errors', 'skipped'):
+              if int(suite.attrib.get(field, '0')) != 0:
+                  raise SystemExit(f'Topology suite has {field}')
+          print(f'Executed {tests} topology tests with no failures, errors or skips')
+          PY
+      - name: Upload revision, logs and test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: converter-topology-evidence
+          if-no-files-found: error
+          path: |
+            build/converter-topology-evidence/**
+            build/test-results/test/**
+            build/reports/tests/test/**

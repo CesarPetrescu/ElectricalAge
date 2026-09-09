@@ -615,6 +615,25 @@ class OneWayDcDcProcess(private val element: OneWayDcDcElement) : ConservativePo
         status = reason
     }
 
+    override fun prepareStep() {
+        if (tripped || !element.settings.enabled || !element.populated ||
+            element.settings.version < 2 || !element.oneWayDescriptor.variable) return
+        val input = probePort(element.primaryInternal, if (element.isolated) element.primaryReferenceLoad else null, element.inputSink)
+        val maximumInput = dcDcWindingVoltage(element.inventory.getItem(0))
+        val maximumOutput = dcDcWindingVoltage(element.inventory.getItem(1))
+        if (!input.volts.isFinite() || input.volts <= 0 || input.volts > maximumInput ||
+            input.ohms.isNaN() || input.ohms >= RegulatedConverter.OPEN_OHMS) return
+        val ratio = try { element.computeRatio() } catch (_: IllegalArgumentException) { return }
+        val target = if (element.settings.mode == "VOLTAGE") element.settings.value else input.volts * ratio
+        if (!target.isFinite() || target <= 0) return
+        // This is a trial initialization, not an accepted operating point. Full current,
+        // gain, reverse-flow and energy constraints are still applied below before flush.
+        element.inputSink.voltage = input.volts
+        element.outputSource.voltage = target.coerceAtMost(maximumOutput)
+        element.inputSink.enabled = true
+        element.outputSource.enabled = true
+    }
+
     override fun rootSystemPreStepProcess() {
         if (tripped) { open("NON_CONVERGENT"); return }
         if (!element.settings.enabled || !element.populated) { open("DISABLED"); return }
