@@ -108,7 +108,7 @@ object NativeCampaignClient {
     private fun next(value:Int) {stage=value;tick=0;phaseStarted=System.nanoTime();work=null;uiDispatched=false;settledFrames=0}
     private fun node(p:BlockPos)=NodeManager.instance!!.getNodeFromCoordonate(Coordinate(p.x,p.y,p.z,mc.singleplayerServer!!.overworld()))
     private fun identity(p:BlockPos):String = when(val n=node(p)) {
-        is TransparentNode -> BuiltInRegistries.ITEM.getKey(n.element!!.descriptor.parentItem).toString()
+        is TransparentNode -> BuiltInRegistries.ITEM.getKey(n.element!!.descriptor!!.parentItem).toString()
         is SixNode -> BuiltInRegistries.ITEM.getKey(n.getElement(Side.YN)!!.sixNodeElementDescriptor.parentItem).toString()
         else -> BuiltInRegistries.BLOCK.getKey(mc.singleplayerServer!!.overworld().getBlockState(p).block).toString()
     }

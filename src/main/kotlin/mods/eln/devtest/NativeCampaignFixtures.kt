@@ -42,7 +42,7 @@ internal class NativeCampaignFixtures(val world: ServerLevel, val player: Server
     fun node(p: BlockPos) = NodeManager.instance!!.getNodeFromCoordonate(Coordinate(p.x,p.y,p.z,world))
     fun machine(p: BlockPos) = (node(p) as TransparentNode).element!!
     fun six(p: BlockPos) = (node(p) as SixNode).getElement(Side.YN)!!
-    fun id(e: TransparentNodeElement) = BuiltInRegistries.ITEM.getKey(e.descriptor.parentItem).toString()
+    fun id(e: TransparentNodeElement) = BuiltInRegistries.ITEM.getKey(e.descriptor!!.parentItem).toString()
     fun id(e: SixNodeElement) = BuiltInRegistries.ITEM.getKey(e.sixNodeElementDescriptor.parentItem).toString()
     fun cell(): BlockPos {
         val p = BlockPos(1280 + (nextCell % 6)*20,80,1280+(nextCell/6)*24);nextCell++
