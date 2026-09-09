@@ -1,0 +1,36 @@
+name: PR10 guarded source correction
+on:
+  push:
+    branches: [test/m1-native-component-campaigns]
+permissions:
+  contents: write
+jobs:
+  correct:
+    if: github.repository == 'CesarPetrescu/ElectricalAge'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Apply only the two exact compiler-diagnosed nullability corrections
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD^)" = 5b5556fb937b4990818455e6cb60d8d8311c9eae
+          python3 - <<'PY'
+          import pathlib,subprocess
+          root=pathlib.Path('src/main/kotlin/mods/eln/devtest')
+          for name,sha in [('NativeCampaignClient.kt','6ba7ee44ade2b236236f93b2e3ff7b2790fdf26b'),('NativeCampaignFixtures.kt','f7d6853f2d1d1cce860e4e6e83ef1dbc7be183d9')]:
+              p=root/name
+              assert subprocess.check_output(['git','hash-object',str(p)],text=True).strip()==sha
+              s=p.read_text();needle='.descriptor.parentItem'
+              assert s.count(needle)==1
+              p.write_text(s.replace(needle,'.descriptor!!.parentItem'))
+          PY
+          git diff --check
+          test "$(git diff --name-only | wc -l)" -eq 2
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/main/kotlin/mods/eln/devtest/NativeCampaignClient.kt src/main/kotlin/mods/eln/devtest/NativeCampaignFixtures.kt
+          git commit -m 'test: require actual descriptor identity in native campaign fixtures'
+          git push origin HEAD:refs/heads/test/m1-native-component-campaigns
