@@ -1,0 +1,33 @@
+name: HV converters and insulation
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: hv-converters-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  hv-world:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Real converter circuits and separate-JVM restart
+        run: bash script/test-hv-converters.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hv-world-evidence
+          path: |
+            build/smoke-artifacts/**
+            run/server/logs/**
+            run/server/crash-reports/**
+          if-no-files-found: error
