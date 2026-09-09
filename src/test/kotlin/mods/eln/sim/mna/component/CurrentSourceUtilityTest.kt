@@ -2,15 +2,39 @@ package mods.eln.sim.mna.component
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import kotlin.test.assertSame
 import mods.eln.sim.mna.SubSystem
 import mods.eln.disableLog4jJmx
 import mods.eln.sim.mna.state.VoltageState
 
 class CurrentSourceUtilityTest {
-    private class CurrentSourceWithLocal(name: String) : CurrentSource(name) {
-        override fun addToSubsystem(s: SubSystem) {
-            super.addToSubsystem(s)
-            s.addProcess(this)
+    // Use the production component, not a subclass that registers its callback twice.
+    private class Circuit {
+        val a = VoltageState()
+        val b = VoltageState()
+        val source = CurrentSource("i", a, b).setCurrent(2.0)
+        val system = SubSystem(null, 0.1).apply {
+            addState(a)
+            addState(b)
+            addComponent(Resistor(a, null).setResistance(100.0))
+            addComponent(Resistor(b, null).setResistance(100.0))
+            addComponent(source)
+        }
+        fun checkPowered() {
+            system.step()
+            assertSame(system, source.subSystem)
+            assertEquals(200.0, a.voltage, 1e-8)
+            assertEquals(-200.0, b.voltage, 1e-8)
+        }
+        fun checkUnpowered() {
+            system.step()
+            val rhs = system.captureDebugSnapshot().rhsVector
+            assertEquals(0.0, rhs[a.id])
+            assertEquals(0.0, rhs[b.id])
+            assertEquals(0.0, a.voltage, 1e-8)
+            assertEquals(0.0, b.voltage, 1e-8)
+            assertNull(source.subSystem)
         }
     }
 
@@ -23,21 +47,32 @@ class CurrentSourceUtilityTest {
     @Test
     fun quitSubSystemRemovesProcess() {
         disableLog4jJmx()
-        val a = VoltageState()
-        val b = VoltageState()
-        val source = CurrentSourceWithLocal("i").setCurrent(2.0).connectTo(a, b)
+        val circuit = Circuit()
+        circuit.checkPowered()
+        circuit.source.quitSubSystem()
+        circuit.checkUnpowered()
+    }
 
-        val subSystem = SubSystem(null, 0.1)
-        subSystem.addState(a)
-        subSystem.addState(b)
-        subSystem.addComponent(source)
-        subSystem.generateMatrix()
+    @Test
+    fun componentRemovalAndReattachmentDoNotDuplicateCurrent() {
+        disableLog4jJmx()
+        val circuit = Circuit()
+        repeat(4) {
+            circuit.checkPowered()
+            circuit.system.removeComponent(circuit.source)
+            circuit.checkUnpowered()
+            circuit.system.addComponent(circuit.source)
+        }
+        circuit.checkPowered()
+    }
 
-        source.quitSubSystem()
-
-        subSystem.step()
-        val rhs = subSystem.captureDebugSnapshot().rhsVector
-        assertEquals(0.0, rhs[a.id])
-        assertEquals(0.0, rhs[b.id])
+    @Test
+    fun repeatedQuitIsHarmlessAndClearsOwnership() {
+        disableLog4jJmx()
+        val circuit = Circuit()
+        circuit.checkPowered()
+        circuit.source.quitSubSystem()
+        circuit.source.quitSubSystem()
+        circuit.checkUnpowered()
     }
 }
