@@ -17,7 +17,8 @@ class SubSystemMatrixTest {
         subSystem.addState(state)
 
         val snapshot = subSystem.captureDebugSnapshot()
-        assertTrue(!snapshot.isSingular)
+        assertTrue(snapshot.isSingular)
+        assertTrue(snapshot.hasReferenceGauge())
 
         subSystem.step()
         assertEquals(0.0, state.state)

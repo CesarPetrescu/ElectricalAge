@@ -247,7 +247,10 @@ public class RootSystem {
             // Fail the connected converter group, not unrelated machines elsewhere in the world.
             Set<SubSystem> affected = new HashSet<>();
             for (ConservativePowerProcess converter : converters) {
-                if (!converter.acceptsCandidate()) affected.addAll(converter.connectedSystems());
+                if (!converter.acceptsCandidate()) {
+                    blocked.add(converter);
+                    affected.addAll(converter.connectedSystems());
+                }
             }
             boolean changed;
             do {

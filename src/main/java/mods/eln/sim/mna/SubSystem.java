@@ -130,12 +130,14 @@ public class SubSystem {
 
         //	org.apache.commons.math3.linear.
 
-        voltageGauge = new VoltageGauge(A, states);
+        // Keep A as the physical stamp matrix for diagnostics and component contracts.
+        double[][] solveMatrix = copyMatrix(A);
+        voltageGauge = new VoltageGauge(solveMatrix, states);
 
         boolean captureMetrics = MetricsSubsystem.isSimulatorMetricsActive();
         long inversionStartNanoseconds = captureMetrics ? System.nanoTime() : 0L;
         try {
-            AInvdata = invertMatrix(A);
+            AInvdata = invertMatrix(solveMatrix);
             singularMatrix = false;
             if (captureMetrics) {
                 long inversionTimeNanoseconds = System.nanoTime() - inversionStartNanoseconds;
@@ -207,7 +209,8 @@ public class SubSystem {
                 componentDescriptions,
                 componentOwners,
                 componentConnections,
-                singularMatrix
+                singularMatrix || voltageGauge.getActive(),
+                voltageGauge.getActive()
         );
     }
 
@@ -297,13 +300,14 @@ public class SubSystem {
                 calculatingStep = false;
             }
 
-            voltageGauge.applyRhs(Idata);
+            double[] solveRhs = Idata.clone();
+            voltageGauge.applyRhs(solveRhs);
             boolean finite = true;
             for (int idx2 = 0; idx2 < stateCount; idx2++) {
                 DD stack = DD.ZERO;
                 DD[] inverseRow = AInvdata[idx2];
                 for (int idx = 0; idx < stateCount; idx++) {
-                    stack = stack.add(inverseRow[idx].multiply(Idata[idx]));
+                    stack = stack.add(inverseRow[idx].multiply(solveRhs[idx]));
                 }
                 XtempData[idx2] = stack.doubleValue();
                 finite &= Double.isFinite(XtempData[idx2]);
@@ -331,11 +335,12 @@ public class SubSystem {
             double value = sum.doubleValue();
             return Double.isFinite(value) ? value : Double.NaN;
         }
-        voltageGauge.applyRhs(Idata);
+        double[] solveRhs = Idata.clone();
+        voltageGauge.applyRhs(solveRhs);
         double[] trial = new double[stateCount];
         for (int row = 0; row < stateCount; row++) {
             DD sum = DD.ZERO;
-            for (int col = 0; col < stateCount; col++) sum = sum.add(AInvdata[row][col].multiply(Idata[col]));
+            for (int col = 0; col < stateCount; col++) sum = sum.add(AInvdata[row][col].multiply(solveRhs[col]));
             trial[row] = sum.doubleValue();
         }
         return voltageGauge.valid(trial) ? trial[pin.getId()] : Double.NaN;

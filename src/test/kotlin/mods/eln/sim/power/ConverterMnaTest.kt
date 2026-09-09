@@ -37,7 +37,8 @@ class ConverterMnaTest {
         val load = Resistor(plus, minus).apply { resistance = 100.0 }
         system.addState(plus); system.addState(minus); system.addComponent(source); system.addComponent(load)
         system.step(); close(plus.voltage - minus.voltage, 50.0); close(source.current, .5)
-        assertFalse(system.captureDebugSnapshot().isSingular)
+        assertTrue(system.captureDebugSnapshot().isSingular)
+        assertTrue(system.captureDebugSnapshot().hasReferenceGauge())
         source.enabled = false; system.step(); close(load.current, 0.0)
     }
 

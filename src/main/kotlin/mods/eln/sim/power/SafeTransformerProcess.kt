@@ -34,6 +34,7 @@ class SafeTransformerProcess(
         if (!ratio.isFinite() || ratio <= 0) { status = "INVALID_CONTROL"; open(); return }
         val point = when {
             !a.volts.isFinite() || !b.volts.isFinite() -> null
+            abs(a.volts) < 1e-12 && abs(b.volts) < 1e-12 -> null
             a.ohms >= RegulatedConverter.OPEN_OHMS && b.ohms >= RegulatedConverter.OPEN_OHMS -> null
             b.ohms >= RegulatedConverter.OPEN_OHMS -> OperatingPoint(a.volts, a.volts * ratio, 0.0, 0.0, 0.0, 0.0, 0.0)
             a.ohms >= RegulatedConverter.OPEN_OHMS -> OperatingPoint(b.volts / ratio, b.volts, 0.0, 0.0, 0.0, 0.0, 0.0)

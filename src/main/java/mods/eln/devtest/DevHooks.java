@@ -24,7 +24,8 @@ public final class DevHooks {
         OreWorldgenProbe.registerIfRequested();
         if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) ClientDevHooks.registerIfRequested();
         String smoke = System.getProperty("eln.smokeTest", "");
-        if (smoke.startsWith("wire-thermal-")) WireThermalSmokeTest.register(smoke);
+        if (smoke.startsWith("hv-converters-")) HighVoltageSmokeTest.register(smoke);
+        else if (smoke.startsWith("wire-thermal-")) WireThermalSmokeTest.register(smoke);
         else if (smoke.startsWith("evaporative-")) EvaporativeSmokeTest.register(smoke);
         else SmokeTest.registerIfRequested();
         String stop = System.getProperty("eln.stopAfterStart");

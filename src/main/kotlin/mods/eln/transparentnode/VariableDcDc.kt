@@ -464,7 +464,7 @@ class VariableDcDcElement(transparentNode: TransparentNode, descriptor: Transpar
     override fun getWaila(): Map<String, String> {
         val info = HashMap<String, String>()
         info[tr("Construction")] = dcDcConstructionWaila(
-            dcDcConstructionStatus(
+            (if (settings.version >= 2) ::dcDcFlexibleConstructionStatus else ::dcDcConstructionStatus)(
                 inventory.getItem(VariableDcDcContainer.ferromagneticSlotId),
                 inventory.getItem(VariableDcDcContainer.primaryCableSlotId),
                 inventory.getItem(VariableDcDcContainer.secondaryCableSlotId)
