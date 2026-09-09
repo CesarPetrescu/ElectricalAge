@@ -36,6 +36,9 @@ public class SubSystem {
     // Preserve Kirchhoff cancellation while accumulating component stamps. Inverting a
     // rounded double matrix with DD cannot recover conductance already lost here.
     private DD[][] preciseA;
+    private DD[][] lastSolveMatrix;
+    private int incrementalInversions;
+    private long fullFactorizations, updatedFactorizations;
     boolean singularMatrix;
     private boolean calculatingStep;
     private boolean validStepSolution;
@@ -145,7 +148,17 @@ public class SubSystem {
         boolean captureMetrics = MetricsSubsystem.isSimulatorMetricsActive();
         long inversionStartNanoseconds = captureMetrics ? System.nanoTime() : 0L;
         try {
-            AInvdata = invertMatrix(preciseSolveMatrix);
+            boolean sameStates = statesTab != null && statesTab.length == stateCount;
+            if (sameStates) for (int i=0;i<stateCount;i++) if (statesTab[i] != states.get(i)) { sameStates=false; break; }
+            DD[][] updated = sameStates && incrementalInversions < 32
+                    ? MatrixInverseUpdate.update(lastSolveMatrix, preciseSolveMatrix, AInvdata, SubSystem::invertMatrix) : null;
+            if (updated == null) {
+                AInvdata = invertMatrix(preciseSolveMatrix);
+                incrementalInversions=0;fullFactorizations++;
+            } else {
+                AInvdata=updated;incrementalInversions++;updatedFactorizations++;
+            }
+            lastSolveMatrix=preciseSolveMatrix;
             singularMatrix = false;
             if (captureMetrics) {
                 long inversionTimeNanoseconds = System.nanoTime() - inversionStartNanoseconds;
@@ -157,7 +170,7 @@ public class SubSystem {
             }
         } catch (Exception e) {
             singularMatrix = true;
-            AInvdata = null;
+            AInvdata = null;lastSolveMatrix=null;incrementalInversions=0;
             if (stateCount > 1) {
                 singularMatrixCountSinceLastDrain++;
                 Utils.println("//////////SingularMatrix////////////");
@@ -172,6 +185,10 @@ public class SubSystem {
         p.stop();
         Utils.println(p);
     }
+
+    /** Diagnostic counters include speculative probes; they never advance circuit time. */
+    public long getFullFactorizations() { return fullFactorizations; }
+    public long getUpdatedFactorizations() { return updatedFactorizations; }
 
     public synchronized SubSystemDebugSnapshot captureDebugSnapshot() {
         if (!matrixValid || A == null) {

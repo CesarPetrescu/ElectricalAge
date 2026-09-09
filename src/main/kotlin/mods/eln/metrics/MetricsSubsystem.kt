@@ -117,6 +117,8 @@ object MetricsSubsystem {
     @Synchronized
     fun refreshFromConfig() {
         simulatorMetricsActive.set(false)
+        stopWorker()
+        queue.clear()
         sinks.clear()
         dummyPublishCount.set(0)
         dummyInversionCount.set(0)
@@ -152,7 +154,7 @@ object MetricsSubsystem {
         }
         sinks.add(MqttSimMetricsSink(serverName, streamId))
         simulatorMetricsActive.set(true)
-        startWorkerIfNeeded()
+        if (!running.get()) startWorkerIfNeeded()
     }
 
     @JvmStatic
@@ -182,7 +184,7 @@ object MetricsSubsystem {
                 )
             )
         )
-        startWorkerIfNeeded()
+        if (!running.get()) startWorkerIfNeeded()
     }
 
     @JvmStatic
@@ -225,7 +227,7 @@ object MetricsSubsystem {
                 )
             )
         )
-        startWorkerIfNeeded()
+        if (!running.get()) startWorkerIfNeeded()
     }
 
     @JvmStatic
@@ -261,13 +263,15 @@ object MetricsSubsystem {
 
     @Synchronized
     private fun startWorkerIfNeeded() {
-        if (running.get()) {
+        if (running.get() || !simulatorMetricsActive.get() || sinks.isEmpty()) {
             return
         }
         running.set(true)
-        worker = Thread(
+        val activeSinks = sinks.toList()
+        val nextWorker = Thread(
             {
-                while (running.get()) {
+                val current = Thread.currentThread()
+                while (running.get() && worker === current && !current.isInterrupted) {
                     val payload = queue.poll()
                     if (payload == null) {
                         try {
@@ -278,7 +282,7 @@ object MetricsSubsystem {
                         }
                         continue
                     }
-                    sinks.forEach { sink ->
+                    activeSinks.forEach { sink ->
                         try {
                             when (payload) {
                                 is MnaPayload -> sink.publishMna(payload.payload)
@@ -291,9 +295,10 @@ object MetricsSubsystem {
                 }
             },
             "eln-sim-metrics"
-        ).apply {
-            isDaemon = true
-            start()
-        }
+        ).apply { isDaemon = true }
+        // Publish the worker identity before starting it; a stopped worker cannot
+        // adopt a later generation's running flag or sink collection.
+        worker = nextWorker
+        nextWorker.start()
     }
 }
