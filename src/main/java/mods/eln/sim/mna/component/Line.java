@@ -95,8 +95,10 @@ public class Line extends Resistor implements ISubSystemProcessFlush, IAbstracto
 
     @Override
     public void simProcessFlush() {
-        double current = (aPin.state - bPin.state) * getResistanceInverse();
-        double voltage = aPin.state;
+        // A null MNA pin is the zero-volt reference, including after line simplification.
+        double voltage = aPin == null ? 0.0 : aPin.state;
+        double endVoltage = bPin == null ? 0.0 : bPin.state;
+        double current = (voltage - endVoltage) * getResistanceInverse();
         Iterator<Resistor> ir = resistors.iterator();
 
         for (State s : states) {
