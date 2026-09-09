@@ -7,6 +7,7 @@ import mods.eln.misc.Utils;
 import mods.eln.sim.ElectricalLoad;
 import mods.eln.sim.mna.component.*;
 import mods.eln.sim.mna.misc.IRootSystemPreStepProcess;
+import mods.eln.sim.mna.misc.IPowerTransferProcess;
 import mods.eln.sim.mna.misc.ISubSystemProcessFlush;
 import mods.eln.sim.mna.state.State;
 import mods.eln.sim.mna.state.VoltageState;
@@ -224,6 +225,9 @@ public class RootSystem {
         Profiler profiler = new Profiler();
         profiler.add("Generate");
         generate();
+        for (IRootSystemPreStepProcess p : processPre) {
+            if (p instanceof IPowerTransferProcess transfer) transfer.beginTransferStep(dt);
+        }
         profiler.add("interSystem");
         for (int idx = 0; idx < interSystemOverSampling; idx++) {
             for (IRootSystemPreStepProcess p : processPre) {
@@ -231,6 +235,7 @@ public class RootSystem {
             }
         }
 
+        convergePowerTransfers();
         profiler.add("stepCalc");
         for (SubSystem s : systems) {
             s.stepCalc();
@@ -249,6 +254,98 @@ public class RootSystem {
         if (MetricsSubsystem.isSimulatorMetricsActive()) {
             collectAndPublishSimMetrics();
         }
+    }
+
+    /** Re-evaluate source pairs against the final network, not against stale neighboring commands.
+     * These are speculative RHS solves; capacitors, inductors and thermal processes do not advance.
+     */
+    private void convergePowerTransfers() {
+        List<IPowerTransferProcess> transfers = new ArrayList<>();
+        for (IRootSystemPreStepProcess p : processPre) {
+            if (p instanceof IPowerTransferProcess transfer) transfers.add(transfer);
+        }
+        if (transfers.isEmpty()) return;
+        if (transfers.stream().allMatch(IPowerTransferProcess::isTransferBalanced)) return;
+        List<VoltageSource> ports = new ArrayList<>();
+        for (IPowerTransferProcess transfer : transfers) Collections.addAll(ports, transfer.transferSources());
+        double[] previousResidual = null, previousMapped = null;
+        boolean[] previousEnabled = null;
+        for (int attempt = 0; attempt < 32; attempt++) {
+            double[] before = portCommands(ports);
+            boolean[] enabledBefore = portEnabled(ports);
+            for (IRootSystemPreStepProcess p : processPre) p.rootSystemPreStepProcess();
+            // Only fresh, topology-valid converter commands can be accepted, never an extrapolate.
+            if (transfers.stream().allMatch(IPowerTransferProcess::isTransferBalanced)) return;
+            double[] mapped = portCommands(ports);
+            boolean[] enabled = portEnabled(ports);
+            double[] residual = new double[ports.size()];
+            for (int i = 0; i < residual.length; i++) residual[i] = mapped[i] - before[i];
+            boolean sameActiveSet = Arrays.equals(enabledBefore, enabled) && Arrays.equals(previousEnabled, enabled);
+            if (attempt < 31 && sameActiveSet && previousResidual != null) {
+                // Depth-one Anderson acceleration: a slow high-ratio chain need not wait hundreds
+                // of ordinary Gauss-Seidel passes. Scale each port so HV does not drown out LV.
+                double numerator = 0.0, denominator = 0.0;
+                for (int i = 0; i < residual.length; i++) {
+                    double scale = Math.max(1.0, Math.max(Math.abs(before[i]), Math.abs(mapped[i])));
+                    double delta = (residual[i] - previousResidual[i]) / scale;
+                    numerator += delta * (residual[i] / scale);
+                    denominator += delta * delta;
+                }
+                if (Double.isFinite(numerator) && Double.isFinite(denominator) && denominator > 1.0e-28) {
+                    double gamma = Math.max(-64.0, Math.min(64.0, numerator / denominator));
+                    double[] trial = new double[mapped.length];
+                    boolean finite = true;
+                    for (int i = 0; i < trial.length; i++) {
+                        trial[i] = mapped[i] - gamma * (mapped[i] - previousMapped[i]);
+                        finite &= Double.isFinite(trial[i]);
+                    }
+                    if (finite) for (int i = 0; i < trial.length; i++) ports.get(i).setVoltage(trial[i]);
+                }
+            }
+            previousResidual = residual;
+            previousMapped = mapped;
+            previousEnabled = enabled;
+        }
+        // Expand the failing group through both passive inter-system links and converter ports.
+        // Electrically unrelated networks must keep running.
+        Set<SubSystem> failed = Collections.newSetFromMap(new IdentityHashMap<>());
+        for (IPowerTransferProcess transfer : transfers) {
+            if (!transfer.isTransferBalanced()) {
+                for (SubSystem s : transfer.transferSystems()) if (s != null) failed.add(s);
+            }
+        }
+        boolean grew;
+        do {
+            int before = failed.size();
+            for (SubSystem s : new ArrayList<>(failed)) failed.addAll(s.interSystemConnectivity);
+            for (IPowerTransferProcess transfer : transfers) {
+                SubSystem[] group = transfer.transferSystems();
+                boolean touched = Arrays.stream(group).anyMatch(failed::contains);
+                if (touched) for (SubSystem s : group) if (s != null) failed.add(s);
+            }
+            grew = failed.size() != before;
+        } while (grew);
+        for (IPowerTransferProcess transfer : transfers) {
+            if (!transfer.isTransferBalanced() || Arrays.stream(transfer.transferSystems()).anyMatch(failed::contains)) {
+                transfer.suspendTransfer();
+            }
+        }
+        // Update passive subsystem bridges once after opening the failed converter group.
+        for (IRootSystemPreStepProcess p : processPre) {
+            if (!(p instanceof IPowerTransferProcess)) p.rootSystemPreStepProcess();
+        }
+    }
+
+    private static double[] portCommands(List<VoltageSource> ports) {
+        double[] values = new double[ports.size()];
+        for (int i = 0; i < values.length; i++) values[i] = ports.get(i).getVoltage();
+        return values;
+    }
+
+    private static boolean[] portEnabled(List<VoltageSource> ports) {
+        boolean[] values = new boolean[ports.size()];
+        for (int i = 0; i < values.length; i++) values[i] = ports.get(i).isEnabled();
+        return values;
     }
 
     private void collectAndPublishSimMetrics() {

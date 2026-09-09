@@ -13,6 +13,18 @@ public class VoltageSource extends Bipole implements ISubSystemProcessI, INBTTRe
     String name;
 
     double voltage = 0;
+    private boolean enabled = true;
+
+    /** Disabled is an open branch, not a zero-volt source. Only changes the MNA stamp. */
+    public void setEnabled(boolean enabled) {
+        if (this.enabled != enabled) {
+            this.enabled = enabled;
+            dirty();
+        }
+    }
+
+    public boolean isEnabled() { return enabled; }
+
     private final CurrentState currentState = new CurrentState();
 
     public VoltageSource(String name) {
@@ -52,6 +64,10 @@ public class VoltageSource extends Bipole implements ISubSystemProcessI, INBTTRe
 
     @Override
     public void applyToSubsystem(SubSystem s) {
+        if (!enabled) {
+            s.addToA(getCurrentState(), getCurrentState(), 1.0);
+            return;
+        }
         s.addToA(aPin, getCurrentState(), 1.0);
         s.addToA(bPin, getCurrentState(), -1.0);
         s.addToA(getCurrentState(), aPin, 1.0);
@@ -60,12 +76,12 @@ public class VoltageSource extends Bipole implements ISubSystemProcessI, INBTTRe
 
     @Override
     public void simProcessI(SubSystem s) {
-        s.addToI(getCurrentState(), voltage);
+        if (enabled) s.addToI(getCurrentState(), voltage);
     }
 
     @Override
     public double getCurrent() {
-        return -getCurrentState().state;
+        return enabled ? -getCurrentState().state : 0.0;
     }
 
     public CurrentState getCurrentState() {

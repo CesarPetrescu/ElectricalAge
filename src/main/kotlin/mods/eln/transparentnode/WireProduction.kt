@@ -31,6 +31,32 @@ object WireProduction {
             abs(it.conductorAreaMm2 - target.conductorAreaMm2) < 0.001
     }
 
+    /** One ordering shared by server selection and client buttons. Legacy output stays first. */
+    fun insulatorOptions(input: ItemStack): List<UtilityCableDescriptor> {
+        if (input.isEmpty) return emptyList()
+        val bare = cable(input)
+        if (bare != null) {
+            if (bare.insulated || bare.melted || bare.conductorCount != 1) return emptyList()
+            return UtilityCableDescriptor.allDescriptors().filter {
+                it.insulated && !it.melted && it.conductorCount == 1 &&
+                    it.material == bare.material && abs(it.conductorAreaMm2 - bare.conductorAreaMm2) < 0.001
+            }
+        }
+        val bundle = Eln.instance.woundWireBundleDescriptor ?: return emptyList()
+        if (!bundle.checkSameItemStack(input)) return emptyList()
+        val material = bundle.getMaterial(input) ?: return emptyList()
+        val label = bundle.getTargetLabel(input) ?: return emptyList()
+        return UtilityCableDescriptor.allDescriptors().filter {
+            it.insulated && !it.melted && it.material == material &&
+                it.conductorCount == bundle.getConductorCount(input) && it.sizeLabel == label
+        }
+    }
+
+    fun insulationCostMeters(descriptor: UtilityCableDescriptor, lengthMeters: Double): Double {
+        require(lengthMeters.isFinite() && lengthMeters >= 0.0)
+        return descriptor.insulationMaterialMultiplier * lengthMeters
+    }
+
     fun combinerOptions(inputs: List<ItemStack>): List<UtilityCableDescriptor> {
         if (inputs.size !in 2..8) return emptyList()
         val wires = inputs.map { cable(it) ?: return emptyList() }

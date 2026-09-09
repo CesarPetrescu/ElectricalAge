@@ -33,13 +33,13 @@ object WireProductionRecipes {
                     List(2) { Eln.findItemStack("Iron Roller Wheel", 1) }, kg))
             } else if (d.conductorCount == 1) {
                 val bare = WireProduction.singleFor(d, false) ?: continue
-                add(Step(WireMachineKind.INSULATOR, listOf(spool(bare), Eln.findItemStack("Rubber", 1)), spool(d)))
+                add(Step(WireMachineKind.INSULATOR, listOf(spool(bare), Eln.findItemStack("Rubber", ceil(WireProduction.insulationCostMeters(d, EXAMPLE_METERS) / WireProduction.RUBBER_METERS).toInt())), spool(d)))
             } else {
                 val single = WireProduction.singleFor(d, true) ?: continue
                 val bundle = Eln.instance.woundWireBundleDescriptor!!.createBundleStack(
                     d.sizeLabel, d.metricSizeLabel, d.material, d.conductorCount, d.conductorAreaMm2, EXAMPLE_METERS)
                 add(Step(WireMachineKind.COMBINER, List(d.conductorCount) { spool(single) }, bundle))
-                add(Step(WireMachineKind.INSULATOR, listOf(bundle.copy(), Eln.findItemStack("Rubber", 1)), spool(d)))
+                add(Step(WireMachineKind.INSULATOR, listOf(bundle.copy(), Eln.findItemStack("Rubber", ceil(WireProduction.insulationCostMeters(d, EXAMPLE_METERS) / WireProduction.RUBBER_METERS).toInt())), spool(d)))
             }
         }
     }

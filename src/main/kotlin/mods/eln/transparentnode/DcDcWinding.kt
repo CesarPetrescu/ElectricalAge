@@ -9,6 +9,10 @@ import mods.eln.node.transparent.TransparentNodeElement
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor
 import mods.eln.sixnode.electricalcable.UtilityCableDescriptor
 import mods.eln.sim.IProcess
+import mods.eln.sim.mna.component.Resistor
+import mods.eln.sim.mna.misc.MnaConst
+import mods.eln.sim.process.heater.ElectricalHeatAccumulator
+import mods.eln.sixnode.electricalcable.WirePhysics
 import mods.eln.sim.nbt.NbtThermalLoad
 import net.minecraft.world.Container
 import net.minecraft.world.item.ItemStack
@@ -184,61 +188,64 @@ internal fun dcDcWindingMeltCurrent(stack: ItemStack?): Double {
     return descriptor.electricalMaximalCurrent.takeIf { it.isFinite() && it > 0.0 } ?: 5.0
 }
 
+/** Existing bare winding support retains the legacy 120 kV assembly assumption.
+ * Insulated coils may not bypass the inserted cable's own rating. */
+internal fun dcDcWindingVoltageRating(stack: ItemStack?): Double {
+    val descriptor = dcDcWinding(stack)?.descriptor as? UtilityCableDescriptor ?: return 120_000.0
+    return if (descriptor.insulated) minOf(120_000.0, descriptor.insulationVoltageRating) else 120_000.0
+}
+
 internal class DcDcWindingThermalProcess(
     private val owner: TransparentNodeElement,
     private val inventory: Container,
-    private val thermalLoad: NbtThermalLoad,
+    private val thermalLoad: WindingThermalLoad,
     private val slot: Int,
-    private val current: () -> Double,
+    private val windingResistor: Resistor,
     private val label: String,
     private val onMelted: () -> Unit
 ) : IProcess {
-    private var descriptor: UtilityCableDescriptor? = null
+    private var winding: DcDcWinding? = null
     private var lastPublishedTemperatureCelsius = Double.NaN
+    private val heating = ElectricalHeatAccumulator({
+        val amps = windingResistor.current
+        amps * amps * windingResistor.resistance
+    }, thermalLoad)
+    val sample: IProcess = heating.sample
+    val deliver = IProcess { dt ->
+        thermalLoad.updateAmbient(owner.getAmbientTemperatureCelsius())
+        heating.deliver.process(dt)
+    }
+    fun flush() = heating.flushIntoLoad()
 
     fun configure(stack: ItemStack?) {
-        val utilityStackDescriptor = if (stack.isNothing()) {
-            null
-        } else {
-            ElectricalCableDescriptor.getDescriptor(
-                stack,
-                ElectricalCableDescriptor::class.java
-            ) as? UtilityCableDescriptor
-        }
-        val nextDescriptor = utilityStackDescriptor?.takeUnless { it.melted }
-        if (descriptor != nextDescriptor) {
-            if (utilityStackDescriptor?.melted != true) {
-                thermalLoad.temperatureCelsius = 0.0
-            }
-            lastPublishedTemperatureCelsius = Double.NaN
-        }
-        descriptor = nextDescriptor
-        val utility = descriptor
-        if (utility == null) {
-            thermalLoad.set(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY)
-        } else {
-            utility.applyTo(thermalLoad)
-        }
+        flush()
+        winding = dcDcWinding(stack)
+        val utility = winding?.descriptor as? UtilityCableDescriptor
+        thermalLoad.configure(utility?.material, utility?.conductorAreaMm2 ?: 0.0,
+            winding?.amount ?: 0.0, utility?.insulated == true, owner.getAmbientTemperatureCelsius())
+        updateResistance()
+        lastPublishedTemperatureCelsius = Double.NaN
+    }
+
+    private fun updateResistance() {
+        val installed = winding
+        val utility = installed?.descriptor as? UtilityCableDescriptor
+        val resistance = when {
+            installed == null -> MnaConst.highImpedance
+            utility != null -> WirePhysics.resistance(utility.material, utility.conductorAreaMm2,
+                installed.amount, thermalLoad.absoluteCelsius)
+            else -> installed.descriptor.electricalRs * 2.0 * installed.amount
+        }.coerceAtLeast(MnaConst.noImpedance)
+        if (abs(resistance - windingResistor.resistance) > resistance * 0.001)
+            windingResistor.resistance = resistance
     }
 
     override fun process(time: Double) {
-        val utility = descriptor ?: return
-        if (utility.melted) return
-
-        val amps = current()
-        var power = amps * amps * utility.electricalRs * 2.0
-        val limit = utility.thermalSelfHeatingRateLimit
-        if (limit.isFinite() && limit > 0.0 && thermalLoad.heatCapacity > 0.0) {
-            power = power.coerceIn(-limit * thermalLoad.heatCapacity, limit * thermalLoad.heatCapacity)
-        }
-        thermalLoad.movePowerTo(power)
-
-        val absoluteTemperatureCelsius = thermalLoad.temperatureCelsius + owner.getAmbientTemperatureCelsius()
+        updateResistance()
+        val utility = winding?.descriptor as? UtilityCableDescriptor ?: return
+        val absoluteTemperatureCelsius = thermalLoad.absoluteCelsius
         maybePublishTemperature(absoluteTemperatureCelsius, utility)
-
-        if (absoluteTemperatureCelsius >= utility.material.meltingPointCelsius ||
-            utility.insulated && absoluteTemperatureCelsius >= utility.meltTemperatureCelsius
-        ) {
+        if (thermalLoad.failed || utility.insulated && absoluteTemperatureCelsius >= utility.meltTemperatureCelsius) {
             meltInsertedWire(utility)
         }
     }
@@ -261,7 +268,9 @@ internal class DcDcWindingThermalProcess(
 
     private fun meltInsertedWire(utility: UtilityCableDescriptor) {
         val stack = inventory.getItem(slot).takeUnless { it.isEmpty } ?: return
-        val melted = utility.meltedDescriptor ?: return
+        val melted = utility.meltedDescriptor ?: UtilityCableDescriptor.allDescriptors().firstOrNull {
+            it.melted && it.material == utility.material && it.conductorCount == 1 && it.sizeLabel == utility.sizeLabel
+        } ?: return
         val replacement = melted.newItemStack(1)
         melted.setRemainingLengthMeters(replacement, utility.getRemainingLengthMeters(stack))
         inventory.setItem(slot, replacement)

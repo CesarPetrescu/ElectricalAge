@@ -309,27 +309,25 @@ public class SubSystem {
     }
 
     public double solve(State pin) {
-        if (!matrixValid) {
-            generateMatrix();
-        }
+        double value = solveChecked(pin);
+        return Double.isFinite(value) ? value : 0.0;
+    }
 
-        if (!singularMatrix) {
-            for (int y = 0; y < stateCount; y++) {
-                Idata[y] = 0;
-            }
-            for (ISubSystemProcessI p : processI) {
-                p.simProcessI(this);
-            }
-
-            int idx2 = pin.getId();
-            DD stack = DD.ZERO;
-            DD[] inverseRow = AInvdata[idx2];
-            for (int idx = 0; idx < stateCount; idx++) {
-                stack = stack.add(inverseRow[idx].multiply(Idata[idx]));
-            }
-            return stack.doubleValue();
+    /** Speculative solve; NaN explicitly denotes a singular/invalid network. Does not flush. */
+    public double solveChecked(State pin) {
+        if (pin == null || pin.getSubSystem() != this) return Double.NaN;
+        if (!matrixValid) generateMatrix();
+        if (singularMatrix) return Double.NaN;
+        java.util.Arrays.fill(Idata, 0.0);
+        for (ISubSystemProcessI p : processI) p.simProcessI(this);
+        DD value = DD.ZERO;
+        DD[] inverseRow = AInvdata[pin.getId()];
+        for (int idx = 0; idx < stateCount; idx++) {
+            if (!Double.isFinite(Idata[idx])) return Double.NaN;
+            value = value.add(inverseRow[idx].multiply(Idata[idx]));
         }
-        return 0;
+        double result = value.doubleValue();
+        return Double.isFinite(result) ? result : Double.NaN;
     }
 
     private static double[][] copyMatrix(double[][] source) {
@@ -528,6 +526,8 @@ public class SubSystem {
 
     static public class Thevenin {
         public double resistance, voltage;
+        /** False means the probe failed, not that a valid source has zero volts. */
+        public boolean valid = true;
 
         public boolean isHighImpedance() {
             return resistance > 1e8;
@@ -535,39 +535,51 @@ public class SubSystem {
     }
 
     public Thevenin getTh(State d, VoltageSource voltageSource) {
-        Thevenin thevenin = new Thevenin();
-        double originalVoltage = d.state;
+        return getTh(d, null, voltageSource);
+    }
 
-        double testVoltage = originalVoltage + 5;
-        voltageSource.setVoltage(testVoltage);
-        double testCurrent = solve(voltageSource.getCurrentState());
-
-        voltageSource.setVoltage(originalVoltage);
-        double originalCurrent = solve(voltageSource.getCurrentState());
-
-        double theveninResistance = (testVoltage - originalVoltage) / (originalCurrent - testCurrent);
-        double theveninVoltage;
-        if (theveninResistance > 10000000000000000000.0 || theveninResistance < 0) {
-            theveninVoltage = 0;
-            theveninResistance = 10000000000000000000.0;
-        } else {
-            theveninVoltage = testVoltage + theveninResistance * testCurrent;
+    /** Probe a differential port without changing commands, committed states or physical time.
+     * A disabled source is temporarily enabled only for these speculative solves.
+     */
+    public Thevenin getTh(State positive, State negative, VoltageSource source) {
+        Thevenin result = new Thevenin();
+        result.resistance = MnaConst.highImpedance;
+        result.voltage = 0.0;
+        result.valid = false;
+        if (source.getSubSystem() != this) return result;
+        double command = source.getVoltage();
+        boolean wasEnabled = source.isEnabled();
+        double original = (positive == null ? 0.0 : positive.state)
+                - (negative == null ? 0.0 : negative.state);
+        if (!Double.isFinite(original) || !Double.isFinite(command)) return result;
+        try {
+            source.setEnabled(true);
+            // This subsystem is linear for the trial step. Read the exact current response
+            // to this voltage-source RHS from the already computed inverse, instead of
+            // subtracting nearly equal currents from two finite-difference probes.
+            // At HV, a stale 0 V node used to select a tiny probe and lose useful digits.
+            double i0 = solveChecked(source.getCurrentState());
+            if (!Double.isFinite(i0)) return result;
+            int index = source.getCurrentState().getId();
+            double conductance = -AInvdata[index][index].doubleValue();
+            if (conductance == 0.0 && Math.abs(i0) <= 1.0e-12) {
+                result.resistance = 1.0e20;
+                result.voltage = 0.0;
+                result.valid = true;
+                return result;
+            }
+            if (!(conductance > 0.0) || !Double.isFinite(conductance)) return result;
+            double resistance = 1.0 / conductance;
+            double voltage = command + resistance * i0;
+            if (!Double.isFinite(resistance) || !Double.isFinite(voltage)) return result;
+            result.resistance = resistance;
+            result.voltage = voltage;
+            result.valid = true;
+            return result;
+        } finally {
+            source.setVoltage(command);
+            source.setEnabled(wasEnabled);
         }
-        voltageSource.setVoltage(originalVoltage);
-
-        thevenin.resistance = theveninResistance;
-        thevenin.voltage = theveninVoltage;
-
-        if(Double.isNaN(thevenin.voltage)) {
-            thevenin.voltage = originalVoltage;
-            thevenin.resistance = MnaConst.highImpedance;
-        }
-        if (Double.isNaN(thevenin.resistance)) {
-            thevenin.voltage = originalVoltage;
-            thevenin.resistance = MnaConst.highImpedance;
-        }
-
-        return thevenin;
     }
 
     public String toString() {

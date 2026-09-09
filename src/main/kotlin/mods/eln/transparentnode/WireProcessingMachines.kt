@@ -279,15 +279,13 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
         return when (machineDescriptor.kind) {
             WireMachineKind.ROLLER -> WireProduction.rollerOptions(loadedMaterial ?: pendingInputMaterial())
                 .map { WireMachineOption(tr("%1$ (%2$ mm2)", it.sizeLabel, it.metricSizeLabel), it) }
-            WireMachineKind.INSULATOR -> insulatorSelectedDescriptor()?.let { listOf(WireMachineOption(it.name, it)) } ?: emptyList()
+            WireMachineKind.INSULATOR -> WireProduction.insulatorOptions(inventory.getItem(0))
+                .map { WireMachineOption(it.name, it) }
             WireMachineKind.COMBINER -> combinerOptions()
         }
     }
 
     private fun selectedDescriptor(): UtilityCableDescriptor? {
-        if (machineDescriptor.kind == WireMachineKind.INSULATOR) {
-            return insulatorSelectedDescriptor()
-        }
         val options = currentOptions()
         if (options.isEmpty()) return null
         selectedOption = selectedOption.coerceIn(0, options.lastIndex)
@@ -295,30 +293,6 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
             return options[selectedOption].descriptor
         }
         return options[selectedOption].descriptor
-    }
-
-    private fun insulatorSelectedDescriptor(): UtilityCableDescriptor? {
-        val input = inventory.getItem(0).takeUnless { it.isEmpty } ?: return null
-        val inputWire = input.asUtilityCableDescriptor()
-        if (inputWire != null) {
-            if (inputWire.insulated || inputWire.melted || inputWire.conductorCount != 1) return null
-            return UtilityCableDescriptor.allDescriptors()
-                .filter { it.insulated && !it.melted && it.conductorCount == 1 }
-                .firstOrNull {
-                    it.material == inputWire.material &&
-                        abs(it.totalConductorAreaMm2 - inputWire.totalConductorAreaMm2) <= 0.001
-                }
-        }
-        val bundle = Eln.instance.woundWireBundleDescriptor
-        if (bundle != null && bundle.checkSameItemStack(input)) {
-            val material = bundle.getMaterial(input) ?: return null
-            val targetLabel = bundle.getTargetLabel(input) ?: return null
-            val conductorCount = bundle.getConductorCount(input)
-            return UtilityCableDescriptor.allDescriptors()
-                .filter { it.insulated && !it.melted && it.conductorCount == conductorCount }
-                .firstOrNull { it.material == material && it.sizeLabel == targetLabel }
-        }
-        return null
     }
 
     private fun insulatorTargetLengthMeters(): Double {
@@ -427,7 +401,7 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
         val descriptor = option ?: return false
         if (targetLength <= 0.0) return false
         absorbInsulationInput()
-        if (insulationMetersBuffer + 1.0e-6 < targetLength) return false
+        if (insulationMetersBuffer + 1.0e-6 < WireProduction.insulationCostMeters(descriptor, targetLength)) return false
 
         val inputWire = input.asUtilityCableDescriptor()
         if (inputWire != null) {
@@ -451,7 +425,7 @@ class WireMachineElement(node: TransparentNode, descriptor: TransparentNodeDescr
         val output = descriptor.newItemStack(1)
         descriptor.setRemainingLengthMeters(output, targetLength)
         inventory.setItem(2, output)
-        insulationMetersBuffer = (insulationMetersBuffer - targetLength).coerceAtLeast(0.0)
+        insulationMetersBuffer = (insulationMetersBuffer - WireProduction.insulationCostMeters(descriptor, targetLength)).coerceAtLeast(0.0)
 
         val inputWire = input.asUtilityCableDescriptor()
         if (inputWire != null) {
@@ -624,30 +598,8 @@ class WireMachineRender(entity: TransparentNodeEntity, descriptor: TransparentNo
                 WireProduction.rollerOptions(material)
                     .map { WireMachineOption(tr("%1$ (%2$ mm2)", it.sizeLabel, it.metricSizeLabel), it) }
             }
-            WireMachineKind.INSULATOR -> inventory.getItem(0)?.let { input ->
-                val inputWire = Eln.sixNodeItem.getDescriptor(input) as? UtilityCableDescriptor
-                val descriptor = when {
-                    inputWire != null -> UtilityCableDescriptor.allDescriptors()
-                        .filter { it.insulated && !it.melted && it.conductorCount == 1 }
-                        .firstOrNull {
-                            !inputWire.insulated &&
-                                inputWire.conductorCount == 1 &&
-                                it.material == inputWire.material &&
-                                abs(it.totalConductorAreaMm2 - inputWire.totalConductorAreaMm2) <= 0.001
-                        }
-                    Eln.instance.woundWireBundleDescriptor?.checkSameItemStack(input) == true -> {
-                        val bundle = Eln.instance.woundWireBundleDescriptor
-                        val material = bundle?.getMaterial(input)
-                        val targetLabel = bundle?.getTargetLabel(input)
-                        val conductorCount = bundle?.getConductorCount(input) ?: 0
-                        UtilityCableDescriptor.allDescriptors()
-                            .filter { it.insulated && !it.melted && it.conductorCount == conductorCount }
-                            .firstOrNull { material != null && targetLabel != null && it.material == material && it.sizeLabel == targetLabel }
-                    }
-                    else -> null
-                }
-                descriptor?.let { listOf(WireMachineOption(it.name, it)) } ?: emptyList()
-            } ?: emptyList()
+            WireMachineKind.INSULATOR -> WireProduction.insulatorOptions(inventory.getItem(0))
+                .map { WireMachineOption(it.name, it) }
             WireMachineKind.COMBINER -> WireProduction.combinerOptions(
                 WireProduction.combinerInputs.map { inventory.getItem(it) }.filterNot { it.isEmpty }
             ).map { WireMachineOption(it.name, it) }
@@ -731,7 +683,7 @@ class WireMachineGui(player: Player, inventory: Container, private val render: W
             enabled = descriptor.kind == WireMachineKind.ROLLER
             visible = descriptor.kind == WireMachineKind.ROLLER
         }
-        val allowPicker = descriptor.kind != WireMachineKind.INSULATOR
+        val allowPicker = true
         previous.enabled = allowPicker
         previous.visible = allowPicker
         next.enabled = allowPicker
@@ -758,7 +710,10 @@ class WireMachineGui(player: Player, inventory: Container, private val render: W
         super.postDraw(f, x, y)
         drawString(8, 6, tr(descriptor.kind.displayName))
         if (descriptor.kind == WireMachineKind.INSULATOR) {
-            drawString(8, 54, tr("Output: %1$", render.optionName()))
+            drawString(32, 54, tr("Insulation class"))
+            drawString(8, 74, render.optionName())
+            val output = render.renderOptions().getOrNull(render.selectedOption)?.descriptor
+            if (output != null) drawString(8, 88, tr("Rubber cost: %1$x", Utils.plotValue(output.insulationMaterialMultiplier)))
         } else if (descriptor.kind == WireMachineKind.COMBINER) {
             drawString(8, 92, render.optionName())
         } else {

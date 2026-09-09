@@ -65,10 +65,6 @@ import mods.eln.misc.writeToNBT
 import mods.eln.misc.tagCompound
 import mods.eln.misc.editTag
 
-enum class UtilityCableMaterial(val label: String, val meltingPointCelsius: Double) {
-    COPPER("Copper", 1085.0),
-    ALUMINUM("Aluminum", 660.0)
-}
 
 data class UtilityCablePalette(
     val id: String,
@@ -215,6 +211,13 @@ class UtilityCableDescriptor(
             }
         }
     }
+
+    /** Rubber/material budget per metre. Legacy products retain their historical cost. */
+    var insulationMaterialMultiplier: Double = 1.0
+        set(value) {
+            require(value.isFinite() && value >= 1.0)
+            field = value
+        }
 
     @JvmField
     var meltedDescriptor: UtilityCableDescriptor? = null
@@ -377,6 +380,7 @@ class UtilityCableElement(
     private val conductorLoads: Array<NbtElectricalLoad>
     val heating: ElectricalHeatAccumulator
     private val breakdownConnections = mutableListOf<ElectricalConnection>()
+    private val insulationState = CableInsulationState()
 
     init {
         conductorsBound = this.descriptor.actsAsSingleConductor
@@ -386,7 +390,7 @@ class UtilityCableElement(
                 electricalLoadList.add(it)
             }
         }
-        heating = ElectricalHeatAccumulator({ conductorLoads.sumOf { it.serialPower } }, thermalLoad)
+        heating = ElectricalHeatAccumulator({ conductorLoads.sumOf { it.serialPower } + insulationState.faultPower }, thermalLoad)
         electricalProcessList.add(heating.sample)
         thermalSlowProcessList.add(IProcess { updateThermalProperties() })
         thermalSlowProcessList.add(heating.deliver)
@@ -401,6 +405,12 @@ class UtilityCableElement(
         if (conductorsBound && conductorLoads.size > 1) {
             bindConductors(force = true)
         }
+        installInsulationFault()
+    }
+
+    private fun installInsulationFault() {
+        val branch = insulationState.connection(conductorLoads) ?: return
+        if (!electricalComponentList.contains(branch)) electricalComponentList.add(branch)
     }
 
     private fun updateThermalProperties() {
@@ -429,7 +439,7 @@ class UtilityCableElement(
     override fun disconnectJob() {
         heating.flushIntoLoad()
         super.disconnectJob()
-        breakdownConnections.clear()
+        // Internal legacy bonds stay owned by this element and are re-added exactly once on reconnect.
     }
 
     override fun readFromNBT(nbt: CompoundTag) {
@@ -440,6 +450,7 @@ class UtilityCableElement(
         paletteIndex = nbt.getByte("palette").toInt().coerceAtLeast(0)
         conductorsBound = nbt.getBoolean("bound") || descriptor.actsAsSingleConductor
         shockCooldown = nbt.getDouble("shockCooldown")
+        insulationState.readNbt(nbt, conductorLoads.size, descriptor.insulationVoltageRating)
     }
 
     override fun writeToNBT(nbt: CompoundTag) {
@@ -448,6 +459,7 @@ class UtilityCableElement(
         nbt.putByte("palette", paletteIndex.toByte())
         nbt.putBoolean("bound", conductorsBound)
         nbt.putDouble("shockCooldown", shockCooldown)
+        insulationState.writeNbt(nbt)
     }
 
     override fun getElectricalLoad(lrdu: LRDU, mask: Int): ElectricalLoad {
@@ -580,8 +592,16 @@ class UtilityCableElement(
             }
         }
         info[tr("Segment heating")] = Utils.plotPower("", heating.lastWatts)
+        insulationState.fault?.let { fault ->
+            info[tr("Fault connection")] = if (fault.toCore == null) tr("Core %1$ to ground", fault.fromCore + 1)
+                else tr("Core %1$ to core %2$", fault.fromCore + 1, fault.toCore + 1)
+            info[tr("Fault heating")] = Utils.plotPower("", insulationState.faultPower)
+        }
         info[tr("Insulation condition")] = when {
             descriptor.melted -> tr("Damaged - exposed conductor")
+            insulationState.fault != null -> tr("Insulation failed")
+            conductorsBound && conductorLoads.size > 1 -> tr("Legacy shorted cores")
+            insulationState.exposure > 0.0 -> tr("Insulation overstressed")
             descriptor.insulated -> tr("Intact")
             else -> tr("Bare conductor")
         }
@@ -600,6 +620,7 @@ class UtilityCableElement(
             stream.writeByte(singleColor shl 4)
             stream.writeByte(paletteIndex)
             stream.writeFloat((thermalLoad.temperatureCelsius + getAmbientTemperatureCelsius()).toFloat())
+            stream.writeBoolean(insulationState.fault != null || conductorsBound && conductorLoads.size > 1)
         } catch (e: IOException) {
             e.printStackTrace()
         }
@@ -785,7 +806,7 @@ class UtilityCableElement(
     }
 
     private fun bindConductors(force: Boolean = false) {
-        if ((!force && conductorsBound) || conductorLoads.size <= 1) return
+        if ((!force && conductorsBound) || conductorLoads.size <= 1 || breakdownConnections.isNotEmpty()) return
         conductorsBound = true
         for (idx in 1 until conductorLoads.size) {
             val connection = ElectricalConnection(conductorLoads[0], conductorLoads[idx])
@@ -895,14 +916,19 @@ class UtilityCableElement(
                     return
                 }
                 val stress = insulationStressVoltage()
-                if (stress > descriptor.insulationVoltageRating) {
-                    if (conductorLoads.size > 1) {
-                        bindConductors()
+                if (!conductorsBound || conductorLoads.size == 1) {
+                    if (insulationState.commit(conductorLoads.map { it.voltage }.toDoubleArray(), descriptor.insulationVoltageRating, time)) {
+                        // Structural changes occur after the accepted electrical step, never in a probe.
+                        val owner = sixNode ?: return
+                        owner.disconnect()
+                        installInsulationFault()
+                        owner.connect()
+                        needPublish()
                     }
-                    if (shockCooldown <= 0.0) {
-                        shockNearbyPlayers(stress)
-                        shockCooldown = 1.0
-                    }
+                }
+                if ((stress > descriptor.insulationVoltageRating || insulationState.fault != null) && shockCooldown <= 0.0) {
+                    shockNearbyPlayers(stress)
+                    shockCooldown = 1.0
                 }
             }
         }
@@ -919,12 +945,15 @@ class UtilityCableRender(
     private var color = 0
     private var paletteIndex = 0
     private var temperatureCelsius = 20f
+    private var insulationFailed = false
 
     override fun drawCableAuto() = false
 
     override fun draw() {
         Minecraft.getInstance().profiler.push("UtilityCable")
-        if (descriptor.insulated && descriptor.flatStyle && !descriptor.actsAsSingleConductor) {
+        if (insulationFailed && descriptor.insulated) {
+            GL11.glColor3f(0.28f, 0.18f, 0.12f)
+        } else if (descriptor.insulated && descriptor.flatStyle && !descriptor.actsAsSingleConductor) {
             val jacket = jacketColor()
             GL11.glColor3f(jacket[0], jacket[1], jacket[2])
         } else if (descriptor.insulated) {
@@ -966,6 +995,7 @@ class UtilityCableRender(
             color = (stream.readByte().toInt() shr 4) and 0xF
             paletteIndex = stream.readByte().toInt().coerceAtLeast(0)
             temperatureCelsius = stream.readFloat()
+            insulationFailed = stream.readBoolean()
         } catch (e: IOException) {
             e.printStackTrace()
         }

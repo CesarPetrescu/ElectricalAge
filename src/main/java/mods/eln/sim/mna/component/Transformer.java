@@ -19,7 +19,13 @@ public class Transformer extends Bipole {
     double ratio = 1;
 
     public void setRatio(double ratio) {
-        this.ratio = ratio;
+        if (!Double.isFinite(ratio) || ratio <= 0.0) {
+            throw new IllegalArgumentException("Transformer ratio must be finite and positive");
+        }
+        if (this.ratio != ratio) {
+            this.ratio = ratio;
+            dirty();
+        }
     }
 
     public double getRatio() {

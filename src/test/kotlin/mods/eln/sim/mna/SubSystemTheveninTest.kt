@@ -27,7 +27,7 @@ class SubSystemTheveninTest {
         subSystem.addComponent(source)
 
         val th = subSystem.getTh(node, source)
-        assertEquals(1e19, th.resistance)
+        assertEquals(1e20, th.resistance)
         assertEquals(0.0, th.voltage)
     }
 
@@ -42,7 +42,8 @@ class SubSystemTheveninTest {
         subSystem.addComponent(source)
 
         val th = subSystem.getTh(node, source)
-        assertTrue(th.voltage.isNaN())
+        assertTrue(!th.valid)
+        assertEquals(0.0, th.voltage)
         assertEquals(mods.eln.sim.mna.misc.MnaConst.highImpedance, th.resistance)
     }
 }

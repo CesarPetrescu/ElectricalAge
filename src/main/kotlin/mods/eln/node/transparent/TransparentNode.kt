@@ -107,6 +107,7 @@ class TransparentNode : Node() {
     }
 
     override fun readConfigTool(side: Direction?, tag: CompoundTag?, invoker: Player?): Boolean {
+        if (!canConfigureConverter(invoker)) return false
         if (element is IConfigurable) {
             (element as IConfigurable).readConfigTool(tag, invoker)
             return true
@@ -193,7 +194,20 @@ class TransparentNode : Node() {
             return element!!.transparentNodeDescriptor.tileEntityMetaTag.meta
         }
 
+    // The outer packet dispatcher checks node UUID and this method checks element id.
+    // Converter configuration additionally requires a live, nearby player in this world.
+    private fun canConfigureConverter(player: Player?): Boolean {
+        if (element !is mods.eln.transparentnode.OneWayDcDcElement &&
+            element !is mods.eln.transparentnode.VariableDcDcElement) return true
+        if (player == null || player.isSpectator || isDestructing) return false
+        val c = coordinate
+        return c.worldExist && c.world() === player.level() &&
+            mods.eln.node.NodeManager.instance?.getNodeFromCoordonate(c) === this &&
+            player.distanceToSqr(c.x + 0.5, c.y + 0.5, c.z + 0.5) <= 64.0
+    }
+
     override fun networkUnserialize(stream: DataInputStream, player: ServerPlayer?) {
+        if (!canConfigureConverter(player)) return
         super.networkUnserialize(stream, player)
         try {
             if (elementId == stream.readShort().toInt()) {

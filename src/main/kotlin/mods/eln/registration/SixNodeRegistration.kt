@@ -33,6 +33,7 @@ import mods.eln.sixnode.electricalcable.UtilityCableElement
 import mods.eln.sixnode.electricalcable.UtilityCableMaterial
 import mods.eln.sixnode.electricalcable.UtilityCablePalette
 import mods.eln.sixnode.electricalcable.UtilityCableRender
+import mods.eln.sixnode.electricalcable.HvCableSpecifications
 import mods.eln.sixnode.electricalcable.WirePhysics
 import mods.eln.sixnode.electricaldatalogger.ElectricalDataLoggerDescriptor
 import mods.eln.sixnode.electricaldigitaldisplay.ElectricalDigitalDisplayDescriptor
@@ -748,6 +749,27 @@ object SixNodeRegistration {
                 Eln.sixNodeItem.addDescriptor(allocator.nextId(), categoriseUtilityCable(melted, spec.metricArea, melted.poleEligible))
             }
         }
+        // New identities live in the already-reserved, previously unused tail of group 37.
+        // Keep all legacy loops above byte-for-byte ordered. Melted copper has no insulation
+        // class: reuse the old same-gauge scrap descriptor rather than register duplicate names.
+        for (hv in HvCableSpecifications.entries) {
+            val damaged = UtilityCableDescriptor.allDescriptors().first {
+                it.material == UtilityCableMaterial.COPPER && it.melted &&
+                    it.conductorCount == 1 && it.sizeLabel == hv.gauge
+            }
+            val spec = UtilitySingleSpec(hv.gauge, hv.areaMm2, hv.amps, hv.volts, 105.0,
+                poleEligible = hv.gauge == "2 AWG")
+            val insulated = newSingleDescriptor(spec, UtilityCableMaterial.COPPER, insulated = true)
+            insulated.meltedDescriptor = damaged
+            insulated.moltenPileDescriptor = moltenPileByMaterial[UtilityCableMaterial.COPPER]
+            insulated.insulationMaterialMultiplier = hv.rubberMultiplier
+            Eln.sixNodeItem.addDescriptor(hv.descriptorId,
+                categoriseUtilityCable(insulated, hv.areaMm2, insulated.poleEligible))
+        }
+        I18N.TR_EXPAND(I18N.Type.NONE, "%s %s Cable %s",
+            arrayOf("Copper"), arrayOf("12 AWG", "8 AWG", "2 AWG"),
+            arrayOf("1000V", "5000V", "20000V", "40000V", "150000V"))
+
     }
 
     private fun registerCurrentRelays(id: Int) {

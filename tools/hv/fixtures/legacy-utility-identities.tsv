@@ -1,0 +1,155 @@
+# Source-derived baseline manifest, upstream 4ff68e073b588e4711cd1575620994efc5acd33d
+# Not a runtime capture. The FML test compares these identities against the live registered items.
+# descriptor_id	display_name	registry_key
+2176	Copper Molten Metal Pile	eln:copper_molten_metal_pile
+2177	Aluminum Molten Metal Pile	eln:aluminum_molten_metal_pile
+2178	Copper 26 AWG Cable Bare	eln:copper_26_awg_cable_bare
+2179	Copper 26 AWG Cable 300V	eln:copper_26_awg_cable_300v
+2180	Copper 26 AWG Cable Melted	eln:copper_26_awg_cable_melted
+2181	Copper 24 AWG Cable Bare	eln:copper_24_awg_cable_bare
+2182	Copper 24 AWG Cable 300V	eln:copper_24_awg_cable_300v
+2183	Copper 24 AWG Cable Melted	eln:copper_24_awg_cable_melted
+2184	Copper 22 AWG Cable Bare	eln:copper_22_awg_cable_bare
+2185	Copper 22 AWG Cable 300V	eln:copper_22_awg_cable_300v
+2186	Copper 22 AWG Cable Melted	eln:copper_22_awg_cable_melted
+2187	Copper 20 AWG Cable Bare	eln:copper_20_awg_cable_bare
+2188	Copper 20 AWG Cable 300V	eln:copper_20_awg_cable_300v
+2189	Copper 20 AWG Cable Melted	eln:copper_20_awg_cable_melted
+2190	Copper 18 AWG Cable Bare	eln:copper_18_awg_cable_bare
+2191	Copper 18 AWG Cable 300V	eln:copper_18_awg_cable_300v
+2192	Copper 18 AWG Cable Melted	eln:copper_18_awg_cable_melted
+2193	Copper 16 AWG Cable Bare	eln:copper_16_awg_cable_bare
+2194	Copper 16 AWG Cable 300V	eln:copper_16_awg_cable_300v
+2195	Copper 16 AWG Cable Melted	eln:copper_16_awg_cable_melted
+2196	Copper 14 AWG Cable Bare	eln:copper_14_awg_cable_bare
+2197	Copper 14 AWG Cable 600V	eln:copper_14_awg_cable_600v
+2198	Copper 14 AWG Cable Melted	eln:copper_14_awg_cable_melted
+2199	Copper 12 AWG Cable Bare	eln:copper_12_awg_cable_bare
+2200	Copper 12 AWG Cable 600V	eln:copper_12_awg_cable_600v
+2201	Copper 12 AWG Cable Melted	eln:copper_12_awg_cable_melted
+2202	Copper 10 AWG Cable Bare	eln:copper_10_awg_cable_bare
+2203	Copper 10 AWG Cable 600V	eln:copper_10_awg_cable_600v
+2204	Copper 10 AWG Cable Melted	eln:copper_10_awg_cable_melted
+2205	Copper 8 AWG Cable Bare	eln:copper_8_awg_cable_bare
+2206	Copper 8 AWG Cable 600V	eln:copper_8_awg_cable_600v
+2207	Copper 8 AWG Cable Melted	eln:copper_8_awg_cable_melted
+2208	Copper 6 AWG Cable Bare	eln:copper_6_awg_cable_bare
+2209	Copper 6 AWG Cable 600V	eln:copper_6_awg_cable_600v
+2210	Copper 6 AWG Cable Melted	eln:copper_6_awg_cable_melted
+2211	Copper 4 AWG Cable Bare	eln:copper_4_awg_cable_bare
+2212	Copper 4 AWG Cable 600V	eln:copper_4_awg_cable_600v
+2213	Copper 4 AWG Cable Melted	eln:copper_4_awg_cable_melted
+2214	Copper 2 AWG Cable Bare	eln:copper_2_awg_cable_bare
+2215	Copper 2 AWG Cable 600V	eln:copper_2_awg_cable_600v
+2216	Copper 2 AWG Cable Melted	eln:copper_2_awg_cable_melted
+2217	Copper 1/0 AWG Cable Bare	eln:copper_1_0_awg_cable_bare
+2218	Copper 1/0 AWG Cable 1000V	eln:copper_1_0_awg_cable_1000v
+2219	Copper 1/0 AWG Cable Melted	eln:copper_1_0_awg_cable_melted
+2220	Copper 2/0 AWG Cable Bare	eln:copper_2_0_awg_cable_bare
+2221	Copper 2/0 AWG Cable 1000V	eln:copper_2_0_awg_cable_1000v
+2222	Copper 2/0 AWG Cable Melted	eln:copper_2_0_awg_cable_melted
+2223	Copper 4/0 AWG Cable Bare	eln:copper_4_0_awg_cable_bare
+2224	Copper 4/0 AWG Cable 1000V	eln:copper_4_0_awg_cable_1000v
+2225	Copper 4/0 AWG Cable Melted	eln:copper_4_0_awg_cable_melted
+2226	Copper 250 kcmil Cable Bare	eln:copper_250_kcmil_cable_bare
+2227	Copper 250 kcmil Cable 1000V	eln:copper_250_kcmil_cable_1000v
+2228	Copper 250 kcmil Cable Melted	eln:copper_250_kcmil_cable_melted
+2229	Copper 350 kcmil Cable Bare	eln:copper_350_kcmil_cable_bare
+2230	Copper 350 kcmil Cable 1000V	eln:copper_350_kcmil_cable_1000v
+2231	Copper 350 kcmil Cable Melted	eln:copper_350_kcmil_cable_melted
+2232	Copper 500 kcmil Cable Bare	eln:copper_500_kcmil_cable_bare
+2233	Copper 500 kcmil Cable 1000V	eln:copper_500_kcmil_cable_1000v
+2234	Copper 500 kcmil Cable Melted	eln:copper_500_kcmil_cable_melted
+2235	Copper 750 kcmil Cable Bare	eln:copper_750_kcmil_cable_bare
+2236	Copper 750 kcmil Cable 1000V	eln:copper_750_kcmil_cable_1000v
+2237	Copper 750 kcmil Cable Melted	eln:copper_750_kcmil_cable_melted
+2238	Copper 1000 kcmil Cable Bare	eln:copper_1000_kcmil_cable_bare
+2239	Copper 1000 kcmil Cable 1000V	eln:copper_1000_kcmil_cable_1000v
+2240	Copper 1000 kcmil Cable Melted	eln:copper_1000_kcmil_cable_melted
+2241	Aluminum 2 AWG Cable Bare	eln:aluminum_2_awg_cable_bare
+2242	Aluminum 2 AWG Cable 600V	eln:aluminum_2_awg_cable_600v
+2243	Aluminum 2 AWG Cable Melted	eln:aluminum_2_awg_cable_melted
+2244	Aluminum 1/0 AWG Cable Bare	eln:aluminum_1_0_awg_cable_bare
+2245	Aluminum 1/0 AWG Cable 1000V	eln:aluminum_1_0_awg_cable_1000v
+2246	Aluminum 1/0 AWG Cable Melted	eln:aluminum_1_0_awg_cable_melted
+2247	Aluminum 2/0 AWG Cable Bare	eln:aluminum_2_0_awg_cable_bare
+2248	Aluminum 2/0 AWG Cable 1000V	eln:aluminum_2_0_awg_cable_1000v
+2249	Aluminum 2/0 AWG Cable Melted	eln:aluminum_2_0_awg_cable_melted
+2250	Aluminum 4/0 AWG Cable Bare	eln:aluminum_4_0_awg_cable_bare
+2251	Aluminum 4/0 AWG Cable 1000V	eln:aluminum_4_0_awg_cable_1000v
+2252	Aluminum 4/0 AWG Cable Melted	eln:aluminum_4_0_awg_cable_melted
+2253	Aluminum 250 kcmil Cable Bare	eln:aluminum_250_kcmil_cable_bare
+2254	Aluminum 250 kcmil Cable 1000V	eln:aluminum_250_kcmil_cable_1000v
+2255	Aluminum 250 kcmil Cable Melted	eln:aluminum_250_kcmil_cable_melted
+2256	Aluminum 350 kcmil Cable Bare	eln:aluminum_350_kcmil_cable_bare
+2257	Aluminum 350 kcmil Cable 1000V	eln:aluminum_350_kcmil_cable_1000v
+2258	Aluminum 350 kcmil Cable Melted	eln:aluminum_350_kcmil_cable_melted
+2259	Aluminum 500 kcmil Cable Bare	eln:aluminum_500_kcmil_cable_bare
+2260	Aluminum 500 kcmil Cable 1000V	eln:aluminum_500_kcmil_cable_1000v
+2261	Aluminum 500 kcmil Cable Melted	eln:aluminum_500_kcmil_cable_melted
+2262	Aluminum 750 kcmil Cable Bare	eln:aluminum_750_kcmil_cable_bare
+2263	Aluminum 750 kcmil Cable 1000V	eln:aluminum_750_kcmil_cable_1000v
+2264	Aluminum 750 kcmil Cable Melted	eln:aluminum_750_kcmil_cable_melted
+2265	Aluminum 1000 kcmil Cable Bare	eln:aluminum_1000_kcmil_cable_bare
+2266	Aluminum 1000 kcmil Cable 1000V	eln:aluminum_1000_kcmil_cable_1000v
+2267	Aluminum 1000 kcmil Cable Melted	eln:aluminum_1000_kcmil_cable_melted
+2268	Copper 2C 18 AWG Cable 300V	eln:copper_2c_18_awg_cable_300v
+2269	Copper 2C 18 AWG Cable Melted	eln:copper_2c_18_awg_cable_melted
+2270	Copper 3C 18 AWG Cable 300V	eln:copper_3c_18_awg_cable_300v
+2271	Copper 3C 18 AWG Cable Melted	eln:copper_3c_18_awg_cable_melted
+2272	Copper 4C 18 AWG Cable 300V	eln:copper_4c_18_awg_cable_300v
+2273	Copper 4C 18 AWG Cable Melted	eln:copper_4c_18_awg_cable_melted
+2274	Copper 5C 18 AWG Cable 300V	eln:copper_5c_18_awg_cable_300v
+2275	Copper 5C 18 AWG Cable Melted	eln:copper_5c_18_awg_cable_melted
+2276	Copper 8C 18 AWG Cable 300V	eln:copper_8c_18_awg_cable_300v
+2277	Copper 8C 18 AWG Cable Melted	eln:copper_8c_18_awg_cable_melted
+2278	Copper 2C 20 AWG Cable 300V	eln:copper_2c_20_awg_cable_300v
+2279	Copper 2C 20 AWG Cable Melted	eln:copper_2c_20_awg_cable_melted
+2280	Copper 3C 20 AWG Cable 300V	eln:copper_3c_20_awg_cable_300v
+2281	Copper 3C 20 AWG Cable Melted	eln:copper_3c_20_awg_cable_melted
+2282	Copper 4C 20 AWG Cable 300V	eln:copper_4c_20_awg_cable_300v
+2283	Copper 4C 20 AWG Cable Melted	eln:copper_4c_20_awg_cable_melted
+2284	Copper 5C 20 AWG Cable 300V	eln:copper_5c_20_awg_cable_300v
+2285	Copper 5C 20 AWG Cable Melted	eln:copper_5c_20_awg_cable_melted
+2286	Copper 8C 20 AWG Cable 300V	eln:copper_8c_20_awg_cable_300v
+2287	Copper 8C 20 AWG Cable Melted	eln:copper_8c_20_awg_cable_melted
+2288	Copper 14/2 Cable 600V	eln:copper_14_2_cable_600v
+2289	Copper 14/2 Cable Melted	eln:copper_14_2_cable_melted
+2290	Copper 14/3 Cable 600V	eln:copper_14_3_cable_600v
+2291	Copper 14/3 Cable Melted	eln:copper_14_3_cable_melted
+2292	Copper 12/2 Cable 600V	eln:copper_12_2_cable_600v
+2293	Copper 12/2 Cable Melted	eln:copper_12_2_cable_melted
+2294	Copper 12/3 Cable 600V	eln:copper_12_3_cable_600v
+2295	Copper 12/3 Cable Melted	eln:copper_12_3_cable_melted
+2296	Copper 10/2 Cable 600V	eln:copper_10_2_cable_600v
+2297	Copper 10/2 Cable Melted	eln:copper_10_2_cable_melted
+2298	Copper 10/3 Cable 600V	eln:copper_10_3_cable_600v
+2299	Copper 10/3 Cable Melted	eln:copper_10_3_cable_melted
+2300	Copper 8/2 Cable 600V	eln:copper_8_2_cable_600v
+2301	Copper 8/2 Cable Melted	eln:copper_8_2_cable_melted
+2302	Copper 8/3 Cable 600V	eln:copper_8_3_cable_600v
+2303	Copper 8/3 Cable Melted	eln:copper_8_3_cable_melted
+2304	Copper 6/2 Cable 600V	eln:copper_6_2_cable_600v
+2305	Copper 6/2 Cable Melted	eln:copper_6_2_cable_melted
+2306	Copper 6/3 Cable 600V	eln:copper_6_3_cable_600v
+2307	Copper 6/3 Cable Melted	eln:copper_6_3_cable_melted
+2308	Copper 4/2 Cable 600V	eln:copper_4_2_cable_600v
+2309	Copper 4/2 Cable Melted	eln:copper_4_2_cable_melted
+2310	Copper 4/3 Cable 600V	eln:copper_4_3_cable_600v
+2311	Copper 4/3 Cable Melted	eln:copper_4_3_cable_melted
+2312	Copper Triplex 1/0 Cable 600V	eln:copper_triplex_1_0_cable_600v
+2313	Copper Triplex 1/0 Cable Melted	eln:copper_triplex_1_0_cable_melted
+2314	Copper Triplex 4/0 Cable 600V	eln:copper_triplex_4_0_cable_600v
+2315	Copper Triplex 4/0 Cable Melted	eln:copper_triplex_4_0_cable_melted
+2316	Copper Quadruplex 1/0 Cable 600V	eln:copper_quadruplex_1_0_cable_600v
+2317	Copper Quadruplex 1/0 Cable Melted	eln:copper_quadruplex_1_0_cable_melted
+2318	Copper Quadruplex 4/0 Cable 600V	eln:copper_quadruplex_4_0_cable_600v
+2319	Copper Quadruplex 4/0 Cable Melted	eln:copper_quadruplex_4_0_cable_melted
+2320	Aluminum Triplex 1/0 Cable 600V	eln:aluminum_triplex_1_0_cable_600v
+2321	Aluminum Triplex 1/0 Cable Melted	eln:aluminum_triplex_1_0_cable_melted
+2322	Aluminum Triplex 4/0 Cable 600V	eln:aluminum_triplex_4_0_cable_600v
+2323	Aluminum Triplex 4/0 Cable Melted	eln:aluminum_triplex_4_0_cable_melted
+2324	Aluminum Quadruplex 1/0 Cable 600V	eln:aluminum_quadruplex_1_0_cable_600v
+2325	Aluminum Quadruplex 1/0 Cable Melted	eln:aluminum_quadruplex_1_0_cable_melted
+2326	Aluminum Quadruplex 4/0 Cable 600V	eln:aluminum_quadruplex_4_0_cable_600v
+2327	Aluminum Quadruplex 4/0 Cable Melted	eln:aluminum_quadruplex_4_0_cable_melted
