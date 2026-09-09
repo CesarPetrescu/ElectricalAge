@@ -221,6 +221,20 @@ tasks.processResources {
 
 // --------------------------------------------------------------- dependencies
 repositories {
+    // The one curse.maven artifact below is a compileOnly dependency of the MAIN source set, so
+    // it is required to build at all. Resolving it only through cursemaven.com made that proxy a
+    // single point of failure: when it rate-limits (HTTP 429) and the CI cache is cold, every job
+    // fails at :compileKotlin on ":compileClasspath", not just the companion-mod jobs.
+    // This mirror holds that exact artifact (SHA-1 0b6641cb52f2472921c41e0956d61c40f2cd9a39,
+    // byte-identical to what CurseMaven serves) and is tried first. CurseMaven stays below as the
+    // fallback and for any other curse.maven coordinate.
+    ivy {
+        name = "ElnBuildDepMirror"
+        url = uri("https://github.com/CesarPetrescu/ElectricalAge/releases/download/build-deps-mirror/")
+        patternLayout { artifact("[module]-[revision].[ext]") }
+        metadataSources { artifact() }
+        content { includeModule("curse.maven", "opencomputers-rebooted-1634364") }
+    }
     maven {
         name = "CurseMaven"
         url = uri("https://cursemaven.com")
