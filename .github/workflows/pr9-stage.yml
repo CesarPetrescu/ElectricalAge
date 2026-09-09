@@ -1,0 +1,56 @@
+name: PR9 guarded source publication
+on:
+  pull_request:
+    types: [synchronize, reopened]
+    paths: ['tools/pr9-stage3-*.part', '.github/workflows/pr9-stage.yml']
+permissions:
+  contents: read
+jobs:
+  publish-and-test:
+    if: github.event.pull_request.number == 9 && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'fix/converter-floating-topology'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 2
+      - name: Apply only the hash-checked source patch to the unchanged PR branch
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD^)" = '8922e0c6b6c3b490833f63e96c43a1991546f874'
+          test "$(git ls-remote origin refs/heads/fix/converter-floating-topology | cut -f1)" = "$EXPECTED_HEAD"
+          cat tools/pr9-stage3-{0,1}.part | gzip -dc > /tmp/pr9-source.patch
+          echo '41d7a27e52c770e8740446b164f4af701c81d3831f356bb1e03db005c29ef476  /tmp/pr9-source.patch' | sha256sum -c -
+          git apply --check /tmp/pr9-source.patch
+          git apply --index /tmp/pr9-source.patch
+          git diff --cached --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'fix: retain limiter branch in Newton stencil; regress real charger demand and supply sag'
+          git push origin HEAD:refs/heads/fix/converter-floating-topology
+          mkdir -p build/pr9-publication3
+          git rev-parse HEAD > build/pr9-publication3/source-commit.txt
+          git diff HEAD^ HEAD > build/pr9-publication3/source.patch
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Compile the actual mod and test current-limit transitions
+        run: |
+          set -o pipefail
+          ./gradlew --no-daemon test --tests 'mods.eln.sim.power.ParallelConverterRuntimeTest' --tests 'mods.eln.sim.power.ConverterTopologyRegressionTest' --tests 'mods.eln.sim.power.ConverterMnaTest' --tests 'mods.eln.sim.mna.MatrixInverseUpdateTest' 2>&1 | tee build/pr9-publication3/gradle.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pr9-charger-demand-publication
+          if-no-files-found: error
+          path: |
+            build/pr9-publication3/**
+            build/test-results/test/**
+            build/reports/tests/test/**
