@@ -141,7 +141,7 @@ class OneWayDcDcDescriptor(
         super.addInformation(itemStack, entityPlayer, list, par4)
         Collections.addAll(list, *tr("Moves power from the input side\nto the output side only.").split("\n").toTypedArray())
         if (variable) {
-            Collections.addAll(list, *tr("The output voltage ratio is controlled\nfrom a signal input.").split("\n").toTypedArray())
+            Collections.addAll(list, *tr("Select signal, manual ratio or voltage\ntarget in the control panel.").split("\n").toTypedArray())
         }
         if (isolated) {
             Collections.addAll(list, *tr("Front and back connections are isolated\nground references for each side.").split("\n").toTypedArray())
@@ -536,12 +536,21 @@ class OneWayDcDcElement(
                 inventory.getItem(OneWayDcDcContainer.secondaryCableSlotId)
             )
         }
+        val primaryVoltage = primaryLoad.voltage - if (oneWayDescriptor.isolated) primaryReferenceLoad.voltage else 0.0
+        val secondaryVoltage = secondaryLoad.voltage - if (oneWayDescriptor.isolated) secondaryReferenceLoad.voltage else 0.0
         info[tr("Converter state")] = converterStateText(transferProcess.status)
-        info[tr("Control mode")] = tr("%1$ (version %2$)", settings.mode, settings.version)
-        if (settings.mode == "VOLTAGE") info[tr("Internal output target")] = Utils.plotVolt("", settings.value)
+        if (oneWayDescriptor.variable) {
+            info[tr("Control mode")] = tr("%1$ (version %2$)", settings.mode, settings.version)
+            if (settings.mode == "VOLTAGE") info[tr("Internal output target")] = Utils.plotVolt("", settings.value)
+            else info[tr("Requested ratio")] = Utils.plotValue(activeRatio)
+        } else {
+            info[tr("Winding ratio")] = Utils.plotValue(activeRatio)
+        }
+        info[tr("Measured terminal ratio")] = if (inputSink.enabled && outputSource.enabled &&
+            primaryVoltage.isFinite() && secondaryVoltage.isFinite() && abs(primaryVoltage) > 1e-9
+        ) Utils.plotValue(secondaryVoltage / primaryVoltage) else tr("Unavailable")
         info[tr("Winding resistance")] = tr("Primary %1$ ohm; secondary %2$ ohm", Utils.plotValue(primaryWindingResistance.resistance), Utils.plotValue(secondaryWindingResistance.resistance))
         info[tr("Construction")] = dcDcConstructionWaila(constructionStatus)
-        info[tr("Ratio")] = Utils.plotValue(activeRatio)
         info[tr("Transferred power")] = Utils.plotPower("", movedPower)
         info[tr("Primary winding")] = windingStatus(
             inventory.getItem(OneWayDcDcContainer.primaryCableSlotId),
@@ -553,10 +562,9 @@ class OneWayDcDcElement(
             outputSource.current,
             secondaryThermalLoad
         )
-        if (oneWayDescriptor.variable) info[tr("Control Voltage")] = Utils.plotVolt(control.voltage)
+        if (oneWayDescriptor.variable) info[tr("Control Voltage")] = if (settings.mode == "SIGNAL")
+            Utils.plotVolt(control.voltage) else tr("Ignored in manual mode")
         if (Eln.config.getBooleanOrElse("ui.waila.easyMode", false) || oneWayDescriptor.variable) {
-            val primaryVoltage = primaryLoad.voltage - if (oneWayDescriptor.isolated) primaryReferenceLoad.voltage else 0.0
-            val secondaryVoltage = secondaryLoad.voltage - if (oneWayDescriptor.isolated) secondaryReferenceLoad.voltage else 0.0
             info[tr("Voltages")] = "\u00A7a" + Utils.plotVolt("", primaryVoltage) + " " +
                 "\u00A7e" + Utils.plotVolt("", secondaryVoltage)
         }
@@ -625,7 +633,10 @@ class OneWayDcDcProcess(private val element: OneWayDcDcElement) : ConservativePo
                 dcDcWindingVoltage(element.inventory.getItem(1)), element.primaryMeltCurrent,
                 element.secondaryMeltCurrent, 1_000_000.0, .97, gain.first, gain.second)
         },
-        { voltage -> if (element.settings.mode == "VOLTAGE") element.settings.value else voltage * element.computeRatio() }
+        { voltage ->
+            if (element.settings.mode == "VOLTAGE") element.settings.value
+            else voltage * element.computeRatio().also { element.activeRatio = it }
+        }
     )
 
     fun resetFault() { tripped = false; regulated.resetFault() }
@@ -642,7 +653,7 @@ class OneWayDcDcProcess(private val element: OneWayDcDcElement) : ConservativePo
 
     override fun rootSystemPreStepProcess() {
         if (modernRegulated) {
-            element.activeRatio = element.computeRatio()
+            // Evaluate controls only inside the regulator's validated target callback.
             regulated.rootSystemPreStepProcess()
             status = regulated.status
             return
@@ -736,6 +747,8 @@ internal object OneWayDcDcMath {
     ): OneWayDcDcTransfer? {
         if (!inputTh.voltage.isFinite() || !outputTh.voltage.isFinite()) return null
         if (!inputTh.resistance.isFinite() || !outputTh.resistance.isFinite()) return null
+        if (!ratio.isFinite() || !maxOutputVoltage.isFinite() || maxOutputVoltage <= 0.0) return null
+        if (inputTh.resistance < 0.0 || outputTh.resistance <= 0.0) return null
         if (inputTh.voltage <= 0.0 || ratio <= 0.0) return null
 
         val targetOutputVoltage = Utils.limit(inputTh.voltage * ratio, 0.0, maxOutputVoltage)
@@ -771,6 +784,7 @@ internal object OneWayDcDcMath {
             resistance = inputResistance,
             power = actualOutputPower
         )
+        if (!inputSourceVoltage.isFinite() || !outputSourceVoltage.isFinite() || !actualOutputPower.isFinite()) return null
 
         return OneWayDcDcTransfer(inputSourceVoltage, outputSourceVoltage, actualOutputPower)
     }
