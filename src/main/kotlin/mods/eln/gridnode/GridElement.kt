@@ -62,14 +62,26 @@ abstract class GridElement(transparentNode: TransparentNode, descriptor: Transpa
         if (p != null) {
             other = GridLink.getElementFromCoordinate(p.left)
         }
-        // Check if it's the *correct* cable descriptor.
-        if (!desc.acceptsGridCable(cable)) {
-            Utils.sendMessage(entityPlayer, tr("Wrong cable for this pole"))
+        // Check both ends using the cable actually held on the second click as well.
+        if (!desc.acceptsGridCable(cable) || (other != null && !other.desc.acceptsGridCable(cable))) {
+            Utils.sendMessage(entityPlayer, tr("Grid links require an intact power cable rated at least %1$ V", GridCablePolicy.MINIMUM_VOLTAGE))
             return true
+        }
+        if (cable is UtilityCableDescriptor) {
+            val meters = cable.getRemainingLengthMeters(stack)
+            if (!meters.isFinite() || meters <= UtilityCableDescriptor.LENGTH_METERS_EPSILON) {
+                Utils.sendMessage(entityPlayer, tr("This cable spool has no usable length"))
+                return true
+            }
         }
         if(other == this) {
             Utils.sendMessage(entityPlayer, tr("Cancelled connection"))
             pending.remove(uuid)
+            return true
+        }
+        // Reject a transformer/switch body face before recording an unusable starting point.
+        if (getGridElectricalLoad(side) == null) {
+            Utils.sendMessage(entityPlayer, tr("Select a grid terminal, not the device body"))
             return true
         }
         if (other == null) {
@@ -81,9 +93,13 @@ abstract class GridElement(transparentNode: TransparentNode, descriptor: Transpa
             val range = Math.min(connectRange, other.connectRange)
             val stackSize = entityPlayer.totalItemsCarried(stack)
             val consumeLength = shouldConsumeUtilityCableLength(entityPlayer)
-            val availableLength = if (cable is UtilityCableDescriptor && consumeLength) cable.getRemainingLengthMeters(stack).toInt() else stackSize
+            val enoughCable = if (cable is UtilityCableDescriptor) {
+                !consumeLength || cable.getRemainingLengthMeters(stack) + UtilityCableDescriptor.LENGTH_METERS_EPSILON >= cableLength
+            } else {
+                stackSize >= cableLength || (entityPlayer is ServerPlayer && Utils.isCreative(entityPlayer))
+            }
 
-            if (availableLength < cableLength && !Utils.isCreative(entityPlayer as ServerPlayer)) {
+            if (!enoughCable) {
                 Utils.sendMessage(entityPlayer, tr("You need %1$ m of cable", cableLength))
             } else if (distance > range) {
                 Utils.sendMessage(entityPlayer, tr("Cannot connect, range %1$ and limit %2$ blocks", Math.ceil(distance).toInt(), range))
@@ -94,7 +110,7 @@ abstract class GridElement(transparentNode: TransparentNode, descriptor: Transpa
             } else {
                 try {
                     val linkStack = if (cable is UtilityCableDescriptor) {
-                        cable.newItemStack(1).also { cable.setRemainingLengthMeters(it, cableLength.toDouble()) }
+                        stack.copyWithCount(1).also { cable.setRemainingLengthMeters(it, cableLength.toDouble()) }
                     } else {
                         null
                     }

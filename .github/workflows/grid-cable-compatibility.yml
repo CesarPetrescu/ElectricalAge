@@ -1,0 +1,67 @@
+name: Grid cable compatibility
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: grid-cables-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  registered-cables:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Record exact tested source
+        run: |
+          mkdir -p build/grid-cable-evidence
+          git rev-parse HEAD | tee build/grid-cable-evidence/checkout-sha.txt
+      - name: Compile production and regenerate translations
+        run: |
+          set -o pipefail
+          bash ./gradlew --no-daemon generateLangFiles --stacktrace 2>&1 | tee build/grid-cable-evidence/language-build.log
+      - name: Registered compatibility matrix and loaded MNA regressions
+        run: |
+          set -o pipefail
+          bash ./gradlew --no-daemon test --tests 'mods.eln.gridnode.GridCableCompatibilityTest' --stacktrace 2>&1 | tee build/grid-cable-evidence/tests.log
+      - name: Require every named regression
+        run: |
+          python3 - <<'PY'
+          import pathlib, xml.etree.ElementTree as ET
+          p = pathlib.Path('build/test-results/test/TEST-mods.eln.gridnode.GridCableCompatibilityTest.xml')
+          suite = ET.parse(p).getroot()
+          expected = {
+              'thresholdIsInclusiveAndInvalidRatingsNeverQualify',
+              'everyRegisteredGridDeviceUsesTheSameRatingRuleForEveryCable',
+              'newHvSpoolsWorkWithoutOldPoleFlagsAnd600VoltFlagsDoNotBypassThreshold',
+              'terminalValidationIsSymmetricForAllDevicesAndHorizontalRotations',
+              'directApiCannotBypassCableSpanAndDamageValidation',
+              'paidLengthAndCableIdentityAreValidatedAndCopiedWithoutAliasing',
+              'existingSaved600VoltLinksRetainTheirCableAndPaidLength',
+              'longerAcceptedSpansKeepRealResistanceDropAndPowerBalance',
+          }
+          cases = suite.findall('testcase')
+          assert {c.attrib['name'].removesuffix('()') for c in cases} == expected
+          assert all(c.find('failure') is None and c.find('error') is None and c.find('skipped') is None for c in cases)
+          print('All eight named production FML/MNA regressions passed.')
+          PY
+      - name: Publish evidence without claiming skipped tests passed
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: grid-cable-compatibility-evidence
+          retention-days: 14
+          if-no-files-found: error
+          path: |
+            build/grid-cable-evidence/
+            build/test-results/test/
+            build/reports/tests/test/
+            src/main/resources/assets/eln/lang/*.lang

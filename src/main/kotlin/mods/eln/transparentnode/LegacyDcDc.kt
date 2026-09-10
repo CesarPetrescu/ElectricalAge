@@ -103,7 +103,7 @@ class LegacyDcDcDescriptor(name: String, objM: Obj3D, coreM: Obj3D, casingM: Obj
         return type != IItemRenderer.ItemRenderType.INVENTORY
     }
 
-    override fun handleRenderType(type: IItemRenderer.ItemRenderType, item: ItemStack): Boolean {
+    override fun handleRenderType(item: ItemStack, type: IItemRenderer.ItemRenderType): Boolean {
         return true
     }
 
@@ -136,7 +136,7 @@ class LegacyDcDcDescriptor(name: String, objM: Obj3D, coreM: Obj3D, casingM: Obj
             if (secCableNbr != 0) {
                 var scale = COIL_SCALE
                 if (secCableNbr < COIL_SCALE_LIMIT) {
-                    scale *= secCableNbr.toFloat() / COIL_SCALE_LIMIT
+                    scale *= priCableNbr.toFloat() / COIL_SCALE_LIMIT
                 }
                 GL11.glPushMatrix()
                 GL11.glRotatef(180f, 0f, 1f, 0f)
