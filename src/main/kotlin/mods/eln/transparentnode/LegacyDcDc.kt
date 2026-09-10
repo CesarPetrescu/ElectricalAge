@@ -103,7 +103,7 @@ class LegacyDcDcDescriptor(name: String, objM: Obj3D, coreM: Obj3D, casingM: Obj
         return type != IItemRenderer.ItemRenderType.INVENTORY
     }
 
-    override fun handleRenderType(item: IItemRenderer.ItemRenderType, stack: ItemStack): Boolean {
+    override fun handleRenderType(type: IItemRenderer.ItemRenderType, item: ItemStack): Boolean {
         return true
     }
 
@@ -429,7 +429,7 @@ class LegacyDcDcRender(tileEntity: TransparentNodeEntity, val descriptor: Transp
         (descriptor as LegacyDcDcDescriptor).draw(feroPart, primaryStackSize.toInt(), secondaryStackSize.toInt(), hasCasing, doorOpen.get())
         GL11.glPopMatrix()
         cableRenderType = drawCable(front!!.down(), priRender, priConn, cableRenderType)
-        cableRenderType = drawCable(front!!.down(), secRender, secConn, cableType = cableRenderType)
+        cableRenderType = drawCable(front!!.down(), secRender, secConn, cableRenderType)
     }
 
     override fun networkUnserialize(stream: DataInputStream) {
