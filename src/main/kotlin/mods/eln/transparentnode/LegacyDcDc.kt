@@ -9,6 +9,8 @@ import mods.eln.generic.GenericItemUsingDamageSlot
 import mods.eln.gui.GuiContainerEln
 import mods.eln.gui.GuiHelperContainer
 import mods.eln.gui.ISlotSkin.SlotSkin
+import mods.eln.gui.ISlotWithComment
+import mods.eln.gui.SlotWithSkin
 import mods.eln.i18n.I18N.tr
 import mods.eln.item.CaseItemDescriptor
 import mods.eln.item.ConfigCopyToolDescriptor
@@ -26,7 +28,6 @@ import mods.eln.misc.Utils
 import mods.eln.misc.VoltageLevelColor
 import mods.eln.node.NodeBase
 import mods.eln.node.NodePeriodicPublishProcess
-import mods.eln.node.six.SixNodeItemSlot
 import mods.eln.node.transparent.TransparentNode
 import mods.eln.node.transparent.TransparentNodeDescriptor
 import mods.eln.node.transparent.TransparentNodeElement
@@ -36,12 +37,13 @@ import mods.eln.node.transparent.TransparentNodeEntity
 import mods.eln.sim.ElectricalLoad
 import mods.eln.sim.IProcess
 import mods.eln.sim.ThermalLoad
-import mods.eln.sim.mna.component.VoltageSource
-import mods.eln.sim.mna.process.TransformerInterSystemProcess
+import mods.eln.sim.mna.component.SwitchableVoltageSource
+import mods.eln.sim.power.SafeTransformerProcess
 import mods.eln.sim.nbt.NbtElectricalLoad
 import mods.eln.sim.process.destruct.VoltageStateWatchDog
 import mods.eln.sim.process.destruct.WorldExplosion
 import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor
+import mods.eln.sixnode.electricalcable.UtilityCableDescriptor
 import mods.eln.sound.LoopedSound
 import mods.eln.wiki.Data
 import net.minecraft.client.resources.sounds.SoundInstance
@@ -94,13 +96,14 @@ class LegacyDcDcDescriptor(name: String, objM: Obj3D, coreM: Obj3D, casingM: Obj
     override fun addInformation(itemStack: ItemStack, entityPlayer: Player?, list: MutableList<String>, par4: Boolean) {
         super.addInformation(itemStack, entityPlayer, list, par4)
         Collections.addAll(list, *tr("Transforms an input voltage to\nan output voltage.")!!.split("\n".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray())
+        list.add(tr("Legacy item-count windings only; use modern DC/DC for length-based spools."))
     }
 
     override fun shouldUseRenderHelper(type: IItemRenderer.ItemRenderType, item: ItemStack, helper: IItemRenderer.ItemRendererHelper): Boolean {
         return type != IItemRenderer.ItemRenderType.INVENTORY
     }
 
-    override fun handleRenderType(item: ItemStack, type: IItemRenderer.ItemRenderType): Boolean {
+    override fun handleRenderType(item: IItemRenderer.ItemRenderType, stack: ItemStack): Boolean {
         return true
     }
 
@@ -159,10 +162,10 @@ class LegacyDcDcElement(transparentNode: TransparentNode, descriptor: Transparen
     val primaryLoad = NbtElectricalLoad("primaryLoad")
     val secondaryLoad = NbtElectricalLoad("secondaryLoad")
 
-    val primaryVoltageSource = VoltageSource("primaryVoltageSource")
-    val secondaryVoltageSource = VoltageSource("secondaryVoltageSource")
+    val primaryVoltageSource = SwitchableVoltageSource("primaryVoltageSource")
+    val secondaryVoltageSource = SwitchableVoltageSource("secondaryVoltageSource")
 
-    val interSystemProcess = TransformerInterSystemProcess(primaryLoad, secondaryLoad, primaryVoltageSource, secondaryVoltageSource)
+    val interSystemProcess = SafeTransformerProcess(primaryLoad, secondaryLoad, primaryVoltageSource, secondaryVoltageSource) { populated }
 
     override val inventory = TransparentNodeElementInventory(4, 64, this)
 
@@ -237,8 +240,6 @@ class LegacyDcDcElement(transparentNode: TransparentNode, descriptor: Transparen
     override fun initialize() {
         primaryVoltageSource.connectTo(primaryLoad, null)
         secondaryVoltageSource.connectTo(secondaryLoad, null)
-        electricalComponentList.add(primaryVoltageSource)
-        electricalComponentList.add(secondaryVoltageSource)
         interSystemProcess.ratio = 1.0
         computeInventory()
         connect()
@@ -248,9 +249,12 @@ class LegacyDcDcElement(transparentNode: TransparentNode, descriptor: Transparen
         val primaryCable = inventory.getItem(LegacyDcDcContainer.primaryCableSlotId)
         val secondaryCable = inventory.getItem(LegacyDcDcContainer.secondaryCableSlotId)
         val core = inventory.getItem(LegacyDcDcContainer.ferromagneticSlotId)
+        val primaryCount = legacyDcDcWindingCount(primaryCable)
+        val secondaryCount = legacyDcDcWindingCount(secondaryCable)
 
         primaryVoltageWatchdog.setNominalVoltage(3200.0)
         secondaryVoltageWatchdog.setNominalVoltage(3200.0)
+        interSystemProcess.resetFault()
 
         primaryMaxCurrent = 5.0
         secondaryMaxCurrent = 5.0
@@ -260,27 +264,20 @@ class LegacyDcDcElement(transparentNode: TransparentNode, descriptor: Transparen
         val coreFactor = coreDescriptor?.cableMultiplicator ?: 1.0
         val hasValidCore = coreDescriptor != null
 
-        if (primaryCable == null || !hasValidCore || primaryCable.count < 1) {
+        if (primaryCount < 1 || !hasValidCore) {
             primaryLoad.highImpedance()
-            populated = false
         } else {
             primaryLoad.serialResistance = coreFactor * 0.01
         }
 
-        if (secondaryCable == null || !hasValidCore || secondaryCable.count < 1) {
+        if (secondaryCount < 1 || !hasValidCore) {
             secondaryLoad.highImpedance()
-            populated = false
         } else {
             secondaryLoad.serialResistance = coreFactor * 0.01
         }
 
-        populated = primaryCable != null && secondaryCable != null && primaryCable.count >= 1 && secondaryCable.count >= 1 && hasValidCore
-
-        ratioControl = if (populated) {
-            secondaryCable!!.count.toDouble() / primaryCable!!.count.toDouble()
-        } else {
-            1.0
-        }
+        populated = primaryCount >= 1 && secondaryCount >= 1 && hasValidCore
+        ratioControl = if (populated) secondaryCount.toDouble() / primaryCount.toDouble() else 1.0
     }
 
     override fun inventoryChange(inventory: Container?) {
@@ -315,14 +312,8 @@ class LegacyDcDcElement(transparentNode: TransparentNode, descriptor: Transparen
     override fun networkSerialize(stream: DataOutputStream) {
         super.networkSerialize(stream)
         try {
-            if (inventory.getItem(0).isNothing())
-                stream.writeByte(0)
-            else
-                stream.writeByte(inventory.getItem(0)!!.count)
-            if (inventory.getItem(1).isNothing())
-                stream.writeByte(0)
-            else
-                stream.writeByte(inventory.getItem(1)!!.count)
+            stream.writeByte(legacyDcDcWindingCount(inventory.getItem(0)))
+            stream.writeByte(legacyDcDcWindingCount(inventory.getItem(1)))
             Utils.serialiseItemStack(stream, inventory.getItem(LegacyDcDcContainer.ferromagneticSlotId))
             Utils.serialiseItemStack(stream, inventory.getItem(LegacyDcDcContainer.primaryCableSlotId))
             Utils.serialiseItemStack(stream, inventory.getItem(LegacyDcDcContainer.secondaryCableSlotId))
@@ -341,7 +332,10 @@ class LegacyDcDcElement(transparentNode: TransparentNode, descriptor: Transparen
 
     override fun getWaila(): Map<String, String> {
         val info = HashMap<String, String>()
-        info[tr("Ratio")] = Utils.plotValue(interSystemProcess.ratio)
+        info[tr("Converter state")] = converterStateText(interSystemProcess.status)
+        info[tr("Winding policy")] = tr("Legacy item-count windings only; use modern DC/DC for length-based spools.")
+        info[tr("Construction")] = if (populated) tr("Operational") else tr("Needs a core and two legacy power-cable windings")
+        info[tr("Winding ratio")] = if (populated) Utils.plotValue(interSystemProcess.ratio) else tr("Unavailable")
         if (Eln.config.getBooleanOrElse("ui.waila.easyMode", false)) {
             info[tr("Voltages")] = "\u00A7a" + Utils.plotVolt("", primaryLoad.voltage) + " " +
                 "\u00A7e" + Utils.plotVolt("", secondaryLoad.voltage)
@@ -435,7 +429,7 @@ class LegacyDcDcRender(tileEntity: TransparentNodeEntity, val descriptor: Transp
         (descriptor as LegacyDcDcDescriptor).draw(feroPart, primaryStackSize.toInt(), secondaryStackSize.toInt(), hasCasing, doorOpen.get())
         GL11.glPopMatrix()
         cableRenderType = drawCable(front!!.down(), priRender, priConn, cableRenderType)
-        cableRenderType = drawCable(front!!.down(), secRender, secConn, cableRenderType)
+        cableRenderType = drawCable(front!!.down(), secRender, secConn, cableType = cableRenderType)
     }
 
     override fun networkUnserialize(stream: DataInputStream) {
@@ -531,12 +525,8 @@ class LegacyDcDcGui(player: Player, inventory: Container, val render: LegacyDcDc
 
 class LegacyDcDcContainer(player: Player, inventory: Container) : BasicContainer(player, inventory,
     arrayOf(
-        SixNodeItemSlot(inventory, primaryCableSlotId, 58, 30, 16,
-            arrayOf<Class<*>>(ElectricalCableDescriptor::class.java),
-            SlotSkin.medium, arrayOf(tr("Electrical cable slot"))),
-        SixNodeItemSlot(inventory, secondaryCableSlotId, 100, 30, 16,
-            arrayOf<Class<*>>(ElectricalCableDescriptor::class.java),
-            SlotSkin.medium, arrayOf(tr("Electrical cable slot"))),
+        LegacyDcDcWindingSlot(inventory, primaryCableSlotId, 58, 30),
+        LegacyDcDcWindingSlot(inventory, secondaryCableSlotId, 100, 30),
         GenericItemUsingDamageSlot(inventory, ferromagneticSlotId, 58 + (100 - 58) / 2, 30, 1,
             arrayOf<Class<*>>(FerromagneticCoreDescriptor::class.java),
             SlotSkin.medium, arrayOf(tr("Ferromagnetic core slot"))),
@@ -549,5 +539,21 @@ class LegacyDcDcContainer(player: Player, inventory: Container) : BasicContainer
         const val secondaryCableSlotId = 1
         const val ferromagneticSlotId = 2
         const val CasingSlotId = 3
+    }
+}
+
+/** Do not silently count a 1 m spool and a 100 m spool as one turn each in the old model. */
+internal fun legacyDcDcWindingCount(stack: ItemStack?): Int {
+    val winding = dcDcWinding(stack) ?: return 0
+    if (winding.descriptor is UtilityCableDescriptor) return 0
+    return winding.amount.toInt()
+}
+
+internal class LegacyDcDcWindingSlot(inventory: Container, slot: Int, x: Int, y: Int) :
+    SlotWithSkin(inventory, slot, x, y, SlotSkin.medium), ISlotWithComment {
+    override fun mayPlace(itemStack: ItemStack): Boolean = legacyDcDcWindingCount(itemStack) > 0
+    override fun getMaxStackSize(): Int = 16
+    override fun getComment(list: MutableList<String>) {
+        list.add(tr("Legacy item-count windings only; use modern DC/DC for length-based spools."))
     }
 }
