@@ -32,6 +32,7 @@ public class FerromagneticCoreDescriptor extends GenericItemUsingDamageDescripto
     @Override
     public void addInformation(ItemStack itemStack, Player entityPlayer, List<String> list, boolean par4) {
         super.addInformation(itemStack, entityPlayer, list, par4);
-        list.add(tr("Cable loss factor: %1$", cableMultiplicator));
+        list.add(tr("Legacy cable loss factor: %1$", cableMultiplicator));
+        list.add(tr("Modern DC/DC winding resistance comes from the wire, not this legacy factor."));
     }
 }
