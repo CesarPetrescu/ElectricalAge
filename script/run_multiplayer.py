@@ -21,6 +21,28 @@ MODS = {
     "create": ("https://cdn.modrinth.com/data/LNytGWDc/versions/UjX6dr61/create-1.21.1-6.0.10.jar", "0e97e49837bed766e6f28a4c95b04885d6acc353"),
 }
 
+NORMAL_SHUTDOWN_SECONDS = 60
+ACTIVE_SERVER_SHUTDOWN_SECONDS = 240
+SERVER_SHUTDOWN_WORK = (
+    "ChunkMap.processUnloads",
+    "ChunkMap.saveAllChunks",
+    "ServerChunkCache.close",
+    "ServerLevel.close",
+)
+
+
+def server_shutdown_in_progress(thread_dump):
+    """Return true only when the real Minecraft server thread is in clean shutdown work."""
+    if not isinstance(thread_dump, str):
+        return False
+    marker = '"Server thread"'
+    start = thread_dump.find(marker)
+    if start < 0:
+        return False
+    end = thread_dump.find('\n"', start + len(marker))
+    stack = thread_dump[start:] if end < 0 else thread_dump[start:end]
+    return "MinecraftServer.stopServer" in stack and any(method in stack for method in SERVER_SHUTDOWN_WORK)
+
 
 def download(url, path, sha1):
     if path.exists() and hashlib.sha1(path.read_bytes()).hexdigest() == sha1:
@@ -161,7 +183,7 @@ class Runner:
     def thread_dump(self, role, reason):
         process = self.processes[role]
         if process.poll() is not None:
-            return
+            return ""
         path = self.output / f"{role}-{process.pid}-{reason}-threads.txt"
         with path.open("w") as log:
             try:
@@ -169,14 +191,35 @@ class Runner:
                     stdout=log, stderr=subprocess.STDOUT, timeout=15, check=False)
             except Exception as e:
                 print(f"Thread dump unavailable: {e}", file=log)
+        try:
+            return path.read_text(errors="replace")
+        except OSError:
+            return ""
 
     def wait_for_exit(self, role):
-        deadline = time.monotonic() + 60
+        started = time.monotonic()
+        normal_deadline = started + NORMAL_SHUTDOWN_SECONDS
+        hard_deadline = started + ACTIVE_SERVER_SHUTDOWN_SECONDS
         try:
             return self.processes[role].wait(timeout=20)
         except subprocess.TimeoutExpired:
-            self.thread_dump(role, "slow-shutdown")
-            return self.processes[role].wait(timeout=max(.1, deadline - time.monotonic()))
+            dump = self.thread_dump(role, "slow-shutdown")
+
+        if role == "server" and server_shutdown_in_progress(dump):
+            remaining = max(.1, hard_deadline - time.monotonic())
+            print(
+                "Server thread is actively inside Minecraft clean shutdown; "
+                f"extending the hard watchdog to {ACTIVE_SERVER_SHUTDOWN_SECONDS}s total "
+                "before declaring a hang.",
+                flush=True,
+            )
+            try:
+                return self.processes[role].wait(timeout=remaining)
+            except subprocess.TimeoutExpired:
+                self.thread_dump(role, "shutdown-timeout")
+                raise
+
+        return self.processes[role].wait(timeout=max(.1, normal_deadline - time.monotonic()))
 
     def run_group(self, group):
         for command in group:
