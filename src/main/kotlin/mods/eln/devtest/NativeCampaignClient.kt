@@ -161,9 +161,18 @@ object NativeCampaignClient {
         screen.mouseClicked(widget.x+widget.width/2.0,widget.y+widget.height/2.0,0)
         screen.mouseReleased(widget.x+widget.width/2.0,widget.y+widget.height/2.0,0)
         check(widget.isFocused)
-        screen.keyPressed(GLFW.GLFW_KEY_END,0,0)
-        repeat(150){screen.keyPressed(GLFW.GLFW_KEY_BACKSPACE,0,0)}
-        value.forEach { screen.charTyped(it,0) };check(widget.text==value)
+        // Legacy ELN screens forward Backspace/Delete, but not End/Home. Clear
+        // both sides of the cursor using real screen input, without setText().
+        val oldText = widget.text
+        repeat(oldText.length + 1) { screen.keyPressed(GLFW.GLFW_KEY_BACKSPACE,0,0) }
+        repeat(oldText.length + 1) { screen.keyPressed(GLFW.GLFW_KEY_DELETE,0,0) }
+        check(widget.text.isEmpty()) {
+            "Native clear failed in ${screen.javaClass.simpleName}: before='$oldText', after='${widget.text}', focused=${widget.isFocused}"
+        }
+        value.forEach { screen.charTyped(it,0) }
+        check(widget.text==value) {
+            "Native entry failed in ${screen.javaClass.simpleName}: requested='$value', observed='${widget.text}'"
+        }
         screen.keyPressed(GLFW.GLFW_KEY_ENTER,0,0)
     }
     private fun galleryId(e:BlockContracts.Entry)="gallery-${e.id.replace(':','-')}-${e.descriptor}-${e.side}"
