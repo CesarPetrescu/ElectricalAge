@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 from PIL import Image, ImageStat
 from native_campaign_plan import expected, gallery_id, SUITES
+from native_campaign_oracles import validate_observation
 
 
 def read(path):
@@ -27,6 +28,8 @@ def validate_phase(directory: Path, suite: str, nonce: str, sha: str, restart: b
         gallery = []
     else:
         coverage = read(directory / 'coverage.json')
+        if coverage.get('seedProduction') is not True or coverage.get('seedJarSha256') != sha:
+            raise ValueError('Missing production seed identity')
         if coverage['jarSha256'] != sha or coverage['runId'] != nonce:
             raise ValueError('Stale registry coverage')
         all_entries = sorted(coverage['galleryAll'], key=gallery_id)
@@ -53,19 +56,24 @@ def validate_phase(directory: Path, suite: str, nonce: str, sha: str, restart: b
             raise ValueError(f'Failed/empty assertion {row}')
         if row['kind'] != ('gallery' if row['id'] in gallery else 'functional'):
             raise ValueError(f'Mislabelled coverage type {row["id"]}')
-        relative=Path(row['screenshot']); path=(directory/relative).resolve()
-        if relative.is_absolute() or not path.is_relative_to(directory.resolve()) or path.suffix.lower()!='.png':
-            raise ValueError('Unsafe screenshot path')
-        if path in files: raise ValueError('One screenshot reused for different cases')
-        files.add(path)
-        if path.stat().st_size<=1024:
-            raise ValueError(f'Empty screenshot: {path}')
-        with Image.open(path) as im:
-            im.load()
-            if im.width<640 or im.height<400 or max(ImageStat.Stat(im.convert('RGB')).stddev)<1:
-                raise ValueError(f'Blank or undersized framebuffer {path}')
-            size=list(im.size)
-        captures.append({'id':row['id'],'file':str(relative),'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'size':size})
+        if not restart and row['kind']=='functional':
+            validate_observation(suite,row['id'],row['observation'])
+        checkpoints=[('result',row['screenshot'])]
+        if row['kind']=='functional': checkpoints.insert(0,('before',row['beforeScreenshot']))
+        for checkpoint,relative_name in checkpoints:
+            relative=Path(relative_name); path=(directory/relative).resolve()
+            if relative.is_absolute() or not path.is_relative_to(directory.resolve()) or path.suffix.lower()!='.png':
+                raise ValueError('Unsafe screenshot path')
+            if path in files: raise ValueError('One screenshot reused for different cases')
+            files.add(path)
+            if path.stat().st_size<=1024:
+                raise ValueError(f'Empty screenshot: {path}')
+            with Image.open(path) as im:
+                im.load()
+                if im.width<640 or im.height<400 or max(ImageStat.Stat(im.convert('RGB')).stddev)<1:
+                    raise ValueError(f'Blank or undersized framebuffer {path}')
+                size=list(im.size)
+            captures.append({'id':row['id'],'checkpoint':checkpoint,'file':str(relative),'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'size':size})
     return {'functional':len(wanted),'gallery':len(gallery),'pid':runtime['pid'],'captures':captures,'runtime':runtime}
 
 
@@ -81,9 +89,11 @@ def build_index(root: Path):
             image=f'{phase}/{row["screenshot"]}' if row.get('screenshot') else ''
             title=html.escape(row.get('title',row['id']))
             detail=html.escape(json.dumps(row.get('observation',row.get('detail',{})),indent=2))
+            before=f'{phase}/{row["beforeScreenshot"]}' if row.get('beforeScreenshot') else ''
+            before_html=f'<p>Before action</p><a href="{html.escape(before)}"><img loading="lazy" src="{html.escape(before)}" alt="Actual framebuffer before the action"></a>' if before else ''
             text=html.escape(' '.join(row.get('components',[])))
             kind=row.get('kind','runtime');status=row.get('status','unknown')
-            cards.append(f'<article data-kind="{html.escape(kind)}" data-search="{html.escape(row["id"]+" "+title+" "+text).lower()}"><header><span>{phase} · {kind} · {status}</span><h2>{title}</h2><code>{html.escape(row["id"])}</code></header><a href="{html.escape(image)}"><img loading="lazy" src="{html.escape(image)}" alt="Actual Minecraft framebuffer: {title}"></a><p>{text}</p><details><summary>Measured assertions</summary><pre>{detail}</pre></details></article>')
+            cards.append(f'<article data-kind="{html.escape(kind)}" data-search="{html.escape(row["id"]+" "+title+" "+text).lower()}"><header><span>{phase} · {kind} · {status}</span><h2>{title}</h2><code>{html.escape(row["id"])}</code></header>{before_html}<p>Observed result</p><a href="{html.escape(image)}"><img loading="lazy" src="{html.escape(image)}" alt="Actual Minecraft framebuffer: {title}"></a><p>{text}</p><details><summary>Measured assertions</summary><pre>{detail}</pre></details></article>')
     metadata=read(root/'runtime.json') if (root/'runtime.json').exists() else {'status':'Incomplete run'}
     note=html.escape(json.dumps(metadata,indent=2))
     content='''<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>ELN native client evidence</title><style>

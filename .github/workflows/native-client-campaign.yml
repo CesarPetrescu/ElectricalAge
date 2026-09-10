@@ -29,38 +29,19 @@ jobs:
           python3 -m pip install Pillow==11.3.0
           python3 script/test_native_campaign_report.py
           python3 script/test_native_campaign_startup.py
+          python3 script/test_native_campaign_correctness.py
       - name: Load real client-side subscribers before expensive client fan-out
         run: ./gradlew --no-daemon runData
       - name: Compile the actual production artifact
         run: ./gradlew --no-daemon assemble
-      - name: Build the registry gallery and existing physical installations in Minecraft
+      - name: Build the registry gallery with the actual production server and identical JAR
         run: |
-          mkdir -p run/server build/native-input
-          echo eula=true > run/server/eula.txt
-          cat > run/server/server.properties <<'EOF'
-          server-ip=127.0.0.1
-          online-mode=false
-          enforce-secure-profile=false
-          max-tick-time=120000
-          level-type=minecraft\:flat
-          generator-settings={"layers":[{"block":"minecraft:bedrock","height":1},{"block":"minecraft:stone","height":63}],"biome":"minecraft:plains"}
-          EOF
-          ./gradlew --no-daemon runServer -PsmokeTest=all
-          python3 - <<'PY'
-          import hashlib,json,pathlib,shutil,subprocess
-          root=pathlib.Path('build/native-input')
+          python3 - <<'PYSEED'
+          import pathlib,subprocess
           jars=[p for p in pathlib.Path('build/libs').glob('*.jar') if not p.name.endswith('-sources.jar')]
           assert len(jars)==1,jars
-          shutil.copy2(jars[0],root/jars[0].name)
-          world=pathlib.Path('run/server/world')
-          assert (world/'level.dat').is_file() and (world/'eln-contracts.json').is_file()
-          assert len(json.loads((world/'eln-contracts.json').read_text()))>0
-          shutil.make_archive(str(root/'seed-world'),'zip',world)
-          sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
-          source=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
-          (root/'input-manifest.json').write_text(json.dumps({'source':source,'jar':jars[0].name,'jarSha256':sha(jars[0]),'worldSha256':sha(root/'seed-world.zip')},indent=2))
-          subprocess.run(['git','archive','--format=zip',f'--output={root}/source.zip','HEAD'],check=True)
-          PY
+          subprocess.run(['python3','script/build_native_campaign_seed.py','--jar',str(jars[0])],check=True)
+          PYSEED
       - uses: actions/upload-artifact@v4
         with:
           name: native-campaign-input
@@ -75,8 +56,7 @@ jobs:
           retention-days: 14
           path: |
             build/smoke-artifacts/**
-            run/server/logs/**
-            run/server/crash-reports/**
+            build/native-seed/**
             run/data/logs/**
             run/data/crash-reports/**
   m1:
