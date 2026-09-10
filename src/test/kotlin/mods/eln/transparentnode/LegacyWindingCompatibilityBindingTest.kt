@@ -7,7 +7,8 @@ import kotlin.test.assertTrue
 
 /** Wiring/compatibility guards; electrical open-circuit behavior is covered by the real MNA tests. */
 class LegacyWindingCompatibilityBindingTest {
-    private fun source() = File("src/main/kotlin/mods/eln/transparentnode/LegacyDcDc.kt").readText()
+    private fun source() = File(System.getProperty("eln.projectDir", "."),
+        "src/main/kotlin/mods/eln/transparentnode/LegacyDcDc.kt").readText()
 
     @Test fun serverAndBothInventorySlotsUseTheSameLegacyWindingValidation() {
         val source = source()

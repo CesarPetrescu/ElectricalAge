@@ -12,7 +12,8 @@ import kotlin.test.assertTrue
 /** Source-binding guard plus production thermal-math checks, not a native block-placement test. */
 class WindingThermalBindingRegressionTest {
     @Test fun productionWindingUsesTheSameActiveConductorAsItsElectricalResistance() {
-        val source = File("src/main/kotlin/mods/eln/transparentnode/DcDcWinding.kt").readText()
+        val source = File(System.getProperty("eln.projectDir", "."),
+            "src/main/kotlin/mods/eln/transparentnode/DcDcWinding.kt").readText()
         assertTrue(Regex("WireThermalPhysics\\(\\s*utility\\.material,\\s*utility\\.conductorAreaMm2,\\s*w\\.amount\\s*\\)").containsMatchIn(source))
         assertFalse(Regex("WireThermalPhysics\\(\\s*utility\\.material,\\s*utility\\.totalConductorAreaMm2").containsMatchIn(source))
         assertTrue(source.contains("utility.resistanceOhms(w.amount, temperature)"))
