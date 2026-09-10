@@ -88,8 +88,8 @@ internal class NativeCampaignFixtures(val world: ServerLevel, val player: Server
     fun ground(p: BlockPos) { placeSix(Eln.findItemStack("Ground Cable",1),p) }
     fun near(a: Double,b: Double,t: Double) { check(a.isFinite() && abs(a-b)<=t) { "$a != $b (tolerance $t)" } }
     fun setupConverter(p: BlockPos,name: String,vin: Double,vout: Double,primary: Double=1.0,secondary: Double=1.0): TransparentNodeElement {
-        val descriptor = Eln.transparentNodeItem.subItemList.values.singleOrNull { it.name == name }
-            ?: error("Missing production converter '$name'; registry=${Eln.transparentNodeItem.subItemList.values.map { it.name }}")
+        val descriptor = Eln.transparentNodeItem.subItemList.values.filterNotNull().singleOrNull { it.name == name }
+            ?: error("Missing production converter '$name'; registry=${Eln.transparentNodeItem.subItemList.values.filterNotNull().map { it.name }}")
         val e=placeMachine(descriptor.newItemStack(1),p);e.front=Side.ZP
         e.inventory!!.setItem(2,Eln.findItemStack("Optimal Ferromagnetic Core",1))
         e.inventory!!.setItem(0,spool(primary));e.inventory!!.setItem(1,spool(secondary))
@@ -123,7 +123,7 @@ internal class NativeCampaignFixtures(val world: ServerLevel, val player: Server
             Triple("DC-DC Converter",50.0,800.0), Triple("One-way DC-DC Converter",50.0,800.0),
             Triple("Variable DC-DC Converter",50.0,12800.0), Triple("One-way Boost vDC/DC Converter",50.0,3200.0),
             Triple("One-way Buck vDC/DC Converter",800.0,50.0), Triple("One-way Boost/Buck vDC/DC Converter",300.0,3200.0))
-        val registered = Eln.transparentNodeItem.subItemList.values.filter {
+        val registered = Eln.transparentNodeItem.subItemList.values.filterNotNull().filter {
             it is DcDcDescriptor || it is VariableDcDcDescriptor || it is OneWayDcDcDescriptor
         }.map { it.name }
         check(registered.size == cases.size && registered.toSet() == cases.map { it.first }.toSet()) {
