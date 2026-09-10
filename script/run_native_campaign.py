@@ -21,6 +21,7 @@ from native_campaign_plan import SUITES
 from native_campaign_report import build_index, validate_phase
 from check_client_assets import inspect as inspect_assets
 from native_campaign_process import crash_snapshot, wait_for_client
+from build_native_campaign_seed import validate_receipt
 
 
 def main():
@@ -57,6 +58,10 @@ def main():
                     if not (dest/info.filename).resolve().is_relative_to(dest): raise ValueError('Unsafe world archive')
                 z.extractall(dest)
             if not (dest/'level.dat').is_file() or not (dest/'eln-contracts.json').is_file(): raise ValueError('Missing authoritative world/registry fixture')
+            seed_receipt=json.loads((dest/'native-production-seed.json').read_text())
+            validate_receipt(seed_receipt,sha)
+            metadata['seedProduction']=True
+            metadata['seedJarSha256']=seed_receipt['jarSha256']
             metadata['initialWorldSha256']=hashlib.sha256(args.world.read_bytes()).hexdigest()
         (game/'options.txt').write_text('onboardAccessibility:false\nnarrator:0\nrenderDistance:4\nsimulationDistance:4\nmaxFps:60\nenableVsync:false\npauseOnLostFocus:false\nguiScale:2\nsoundCategory_master:0.0\n')
         with (out/'java.txt').open('w') as log: subprocess.run([java,'-XshowSettings:properties','-version'],stdout=log,stderr=subprocess.STDOUT,check=True)

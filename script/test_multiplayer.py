@@ -4,7 +4,26 @@ from unittest.mock import Mock, patch
 from pathlib import Path
 
 from multiplayer_plan import plan, validate
-from run_multiplayer import offline_uuid, install_client, run_installer, Runner
+from run_multiplayer import (
+    ACTIVE_SERVER_SHUTDOWN_SECONDS,
+    Runner,
+    install_client,
+    offline_uuid,
+    run_installer,
+    server_shutdown_in_progress,
+)
+
+
+ACTIVE_SERVER_SHUTDOWN_DUMP = '''
+"Server thread" #42 prio=5 os_prio=0 cpu=66532ms elapsed=240s tid=0x1 RUNNABLE
+   java.lang.Thread.State: RUNNABLE
+        at net.minecraft.server.level.ChunkMap.processUnloads(ChunkMap.java:999)
+        at net.minecraft.server.level.ChunkMap.saveAllChunks(ChunkMap.java:888)
+        at net.minecraft.server.level.ServerChunkCache.close(ServerChunkCache.java:555)
+        at net.minecraft.server.level.ServerLevel.close(ServerLevel.java:123)
+        at net.minecraft.server.MinecraftServer.stopServer(MinecraftServer.java:777)
+"Reference Handler" #9 daemon prio=10 os_prio=0 tid=0x2 RUNNABLE
+'''
 
 
 class MultiplayerGateTest(unittest.TestCase):
@@ -20,6 +39,48 @@ class MultiplayerGateTest(unittest.TestCase):
         runner.thread_dump.assert_called_once_with("server", "slow-shutdown")
         self.assertEqual(process.wait.call_count, 2)
         self.assertLessEqual(process.wait.call_args.kwargs["timeout"], 60)
+
+    def test_shutdown_classifier_requires_the_actual_server_thread(self):
+        self.assertTrue(server_shutdown_in_progress(ACTIVE_SERVER_SHUTDOWN_DUMP))
+        worker_only = ACTIVE_SERVER_SHUTDOWN_DUMP.replace('"Server thread"', '"Worker-Main-1"', 1)
+        self.assertFalse(server_shutdown_in_progress(worker_only))
+        no_stop = ACTIVE_SERVER_SHUTDOWN_DUMP.replace("MinecraftServer.stopServer", "MinecraftServer.tickServer")
+        self.assertFalse(server_shutdown_in_progress(no_stop))
+        no_save_or_unload = ACTIVE_SERVER_SHUTDOWN_DUMP
+        for method in ("ChunkMap.processUnloads", "ChunkMap.saveAllChunks", "ServerChunkCache.close", "ServerLevel.close"):
+            no_save_or_unload = no_save_or_unload.replace(method, "SomeOtherWork.run")
+        self.assertFalse(server_shutdown_in_progress(no_save_or_unload))
+
+    def test_active_clean_server_shutdown_gets_bounded_extra_time(self):
+        import subprocess
+        runner = Runner.__new__(Runner)
+        process = Mock()
+        runner.processes = {"server": process}
+        runner.thread_dump = Mock(return_value=ACTIVE_SERVER_SHUTDOWN_DUMP)
+        process.wait.side_effect = [subprocess.TimeoutExpired("server", 20), 0]
+        self.assertEqual(runner.wait_for_exit("server"), 0)
+        self.assertEqual(process.wait.call_count, 2)
+        extended = process.wait.call_args_list[1].kwargs["timeout"]
+        self.assertGreater(extended, 180)
+        self.assertLessEqual(extended, ACTIVE_SERVER_SHUTDOWN_SECONDS)
+        runner.thread_dump.assert_called_once_with("server", "slow-shutdown")
+
+    def test_active_clean_shutdown_still_fails_at_the_hard_deadline(self):
+        import subprocess
+        runner = Runner.__new__(Runner)
+        process = Mock()
+        runner.processes = {"server": process}
+        runner.thread_dump = Mock(return_value=ACTIVE_SERVER_SHUTDOWN_DUMP)
+        process.wait.side_effect = subprocess.TimeoutExpired("server", 20)
+        with self.assertRaises(subprocess.TimeoutExpired):
+            runner.wait_for_exit("server")
+        self.assertEqual(process.wait.call_count, 2)
+        extended = process.wait.call_args_list[1].kwargs["timeout"]
+        self.assertGreater(extended, 180)
+        self.assertLessEqual(extended, ACTIVE_SERVER_SHUTDOWN_SECONDS)
+        self.assertEqual(runner.thread_dump.call_count, 2)
+        runner.thread_dump.assert_any_call("server", "slow-shutdown")
+        runner.thread_dump.assert_any_call("server", "shutdown-timeout")
 
     def test_normal_shutdown_preserves_the_process_exit_code(self):
         runner = Runner.__new__(Runner)

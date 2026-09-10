@@ -17,6 +17,8 @@ def aggregate(incoming: Path, output: Path, manifest: dict) -> dict:
     expected=[('m1',s) for s in SUITES]+[('linux','power')]
     summary={'schema':1,'source':manifest['source'],'jarSha256':manifest['jarSha256'],'initialWorldSha256':manifest['worldSha256'],
              'status':'failed','shards':{},'errors':[],'scope':'All registry entries receive presence/render captures; functional coverage is explicitly listed, not inferred from gallery screenshots.'}
+    if (manifest.get('seedSmokePassed') is not True or manifest.get('seedProduction') is not True) or manifest.get('seedJarSha256') != manifest['jarSha256']:
+        summary['errors'].append('Input world lacks an identical production-JAR seed receipt')
     cards=[];registry=None;all_gallery=None;covered=[];functional={};thumbs=[]
     for platform,suite in expected:
         key=f'{platform}-{suite}';source=incoming/f'native-evidence-{key}';dest=output/key
@@ -25,7 +27,7 @@ def aggregate(incoming: Path, output: Path, manifest: dict) -> dict:
             shutil.copytree(source,dest)
             meta=read(dest/'runtime.json')
             if meta.get('status')!='passed': raise ValueError(f'{key} did not complete: {meta.get("error",meta.get("status"))}')
-            for k,v in [('source',manifest['source']),('jarSha256',manifest['jarSha256']),('initialWorldSha256',manifest['worldSha256'])]:
+            for k,v in [('source',manifest['source']),('jarSha256',manifest['jarSha256']),('initialWorldSha256',manifest['worldSha256']),('seedProduction',True),('seedJarSha256',manifest['jarSha256'])]:
                 if meta.get(k)!=v: raise ValueError(f'{key}: mismatched {k}')
             if meta['suite']!=suite or (platform=='m1' and (meta['system']!='Darwin' or meta['arch']!='arm64')) or (platform=='linux' and meta['system']!='Linux'):
                 raise ValueError('Wrong suite/platform/architecture')
@@ -60,11 +62,14 @@ def aggregate(incoming: Path, output: Path, manifest: dict) -> dict:
                 for row in data.get('results',[]):
                     rel=row.get('screenshot','');image=dest/phase/rel
                     if not rel or not image.is_file() or not image.resolve().is_relative_to(dest.resolve()):continue
+                    before=dest/phase/row.get('beforeScreenshot','')
+                    before_ref=str(before.relative_to(output)) if row.get('beforeScreenshot') and before.is_file() else ''
+                    before_html=f'<p>Before action</p><a href="{html.escape(before_ref)}"><img loading="lazy" src="{html.escape(before_ref)}" alt="Actual framebuffer before action"></a>' if before_ref else ''
                     ref=str(image.relative_to(output));identifier=f'{key}/{phase}/{row["id"]}'
                     title=row.get('title',row['id']);kind=row.get('kind','runtime');status=row.get('status','unknown')
                     details=json.dumps(row.get('observation',row.get('detail',{})),indent=2)
                     search=identifier+' '+title+' '+' '.join(row.get('components',[]))
-                    cards.append(f'<article data-kind="{html.escape(kind)}" data-suite="{key}" data-search="{html.escape(search).lower()}"><header><span>{key} · {phase} · {kind} · {status}</span><h2>{html.escape(title)}</h2><code>{html.escape(row["id"])}</code></header><a href="{html.escape(ref)}"><img loading="lazy" src="{html.escape(ref)}" alt="Actual Minecraft framebuffer"></a><details><summary>Measured observations</summary><pre>{html.escape(details)}</pre></details></article>')
+                    cards.append(f'<article data-kind="{html.escape(kind)}" data-suite="{key}" data-search="{html.escape(search).lower()}"><header><span>{key} · {phase} · {kind} · {status}</span><h2>{html.escape(title)}</h2><code>{html.escape(row["id"])}</code></header>{before_html}<p>Observed result</p><a href="{html.escape(ref)}"><img loading="lazy" src="{html.escape(ref)}" alt="Actual Minecraft framebuffer"></a><details><summary>Measured observations</summary><pre>{html.escape(details)}</pre></details></article>')
                     if platform=='m1' and phase=='first' and kind=='functional' and len([x for x in thumbs if x[2]==key])<6:thumbs.append((image,title,key))
     if not registry or not all_gallery:
         summary['errors'].append('No complete registry inventory')

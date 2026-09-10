@@ -3,7 +3,7 @@ SUITES = ('power', 'logic', 'mechanical', 'storage-thermal')
 
 def expected(suite):
     if suite == 'power':
-        return ([f'converter-{i}-{state}' for i in range(7) for state in ('loaded', 'open')]
+        return ([f'converter-{i}-{state}' for i in range(6) for state in ('loaded', 'open')]
             + ['converter-native-voltage-entry', 'source-native-voltage-entry']
             + [f'parallel-four-{s}' for s in ('rated','overload','recovery','missing-input','unequal-input')]
             + [f'parallel-seed-20260909-{i}' for i in range(8)])
@@ -14,7 +14,10 @@ def expected(suite):
             + [f'logic-jkflipflop-{s}' for s in ('idle','set','fall','toggle')]
             + ['logic-oscillator-pulses'] + [f'logic-chain-{i}' for i in range(3)])
     if suite == 'mechanical':
-        return ['shaft-loaded','shaft-coasting','shaft-split','shaft-reconnect','large-shaft-loaded','large-shaft-remove']
+        return ['shaft-loaded','shaft-coasting','shaft-split','shaft-unsafe-reinsert',
+                'shaft-brake-to-safe-speed','shaft-safe-reinsert','shaft-reconnect','shaft-stationary-join',
+                'large-shaft-loaded','large-shaft-remove','clutch-mismatch','clutch-slipping',
+                'clutch-synchronised','clutch-coal-mismatch','clutch-coal-destroyed']
     if suite == 'storage-thermal':
         batteries=('cost_oriented_battery','capacity_oriented_battery','voltage_oriented_battery','current_oriented_battery','life_oriented_battery','single-use_battery','experimental_battery')
         return [f'battery-{name}-{s}' for name in batteries for s in ('discharge','open')] + ['fuel-thermal-electric','thermal-break','thermal-reconnect']

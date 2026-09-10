@@ -12,6 +12,10 @@ import mods.eln.node.six.SixNodeEntity
 import mods.eln.node.transparent.TransparentNode
 import mods.eln.node.transparent.TransparentNodeEntity
 import mods.eln.mechanical.ShaftRender
+import mods.eln.mechanical.SimpleShaftElement
+import mods.eln.mechanical.ClutchElement
+import mods.eln.mechanical.GeneratorElement
+import mods.eln.mechanical.MotorElement
 import mods.eln.sixnode.logicgate.LogicGateElement
 import mods.eln.sixnode.logicgate.LogicGateDescriptor
 import mods.eln.sixnode.logicgate.Oscillator
@@ -76,6 +80,7 @@ object NativeCampaignClient {
     private var runtime=emptyMap<String,Any>()
     private var sourceSha=""
     private var currentId="boot"
+    private var beforeScreenshot=""
     private var uiDispatched=false
     private var lastWorldTick=-1L
     private var angleBefore:Double?=null
@@ -117,7 +122,8 @@ object NativeCampaignClient {
         val player=mc.singleplayerServer!!.playerList.players.first();val world=player.serverLevel()
         player.setGameMode(GameType.CREATIVE);player.abilities.flying=true;player.onUpdateAbilities();player.setNoGravity(true)
         player.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY)
-        val target=Vec3(p.x+.5,p.y+.5,p.z+.5)
+        val floorElement = node(p) is SixNode
+        val target=Vec3(p.x+.5,p.y+(if(floorElement).1 else .5),p.z+.5)
         val eye=target.add(if(wide)6.5 else 1.7,if(wide)5.5 else 1.8,if(wide)6.5 else 1.7)
         player.teleportTo(world,eye.x,eye.y-player.eyeHeight,eye.z,0f,0f);player.lookAt(EntityAnchorArgument.Anchor.EYES,target)
     }
@@ -144,7 +150,7 @@ object NativeCampaignClient {
     }
     private fun record(id:String,title:String,components:List<String>,observed:Map<String,Any>,kind:String="functional") {
         currentId=id
-        results+=mapOf("id" to id,"title" to title,"components" to components,"kind" to kind,"status" to "passed","screenshot" to capture(id),"observation" to observed,"clientGameTime" to mc.level!!.gameTime,"camera" to listOf(mc.player!!.x,mc.player!!.y,mc.player!!.z))
+        results+=mapOf("id" to id,"title" to title,"components" to components,"kind" to kind,"status" to "passed","screenshot" to capture(id),"beforeScreenshot" to if(kind=="functional")beforeScreenshot else "", "observation" to observed,"clientGameTime" to mc.level!!.gameTime,"camera" to listOf(mc.player!!.x,mc.player!!.y,mc.player!!.z))
         report(false)
     }
     private fun field(o:Any,name:String):Any {val f=o.javaClass.getDeclaredField(name);f.isAccessible=true;return f.get(o)}
@@ -155,9 +161,18 @@ object NativeCampaignClient {
         screen.mouseClicked(widget.x+widget.width/2.0,widget.y+widget.height/2.0,0)
         screen.mouseReleased(widget.x+widget.width/2.0,widget.y+widget.height/2.0,0)
         check(widget.isFocused)
-        screen.keyPressed(GLFW.GLFW_KEY_END,0,0)
-        repeat(150){screen.keyPressed(GLFW.GLFW_KEY_BACKSPACE,0,0)}
-        value.forEach { screen.charTyped(it,0) };check(widget.text==value)
+        // Legacy ELN screens forward Backspace/Delete, but not End/Home. Clear
+        // both sides of the cursor using real screen input, without setText().
+        val oldText = widget.text
+        repeat(oldText.length + 1) { screen.keyPressed(GLFW.GLFW_KEY_BACKSPACE,0,0) }
+        repeat(oldText.length + 1) { screen.keyPressed(GLFW.GLFW_KEY_DELETE,0,0) }
+        check(widget.text.isEmpty()) {
+            "Native clear failed in ${screen.javaClass.simpleName}: before='$oldText', after='${widget.text}', focused=${widget.isFocused}"
+        }
+        value.forEach { screen.charTyped(it,0) }
+        check(widget.text==value) {
+            "Native entry failed in ${screen.javaClass.simpleName}: requested='$value', observed='${widget.text}'"
+        }
         screen.keyPressed(GLFW.GLFW_KEY_ENTER,0,0)
     }
     private fun galleryId(e:BlockContracts.Entry)="gallery-${e.id.replace(':','-')}-${e.descriptor}-${e.side}"
@@ -170,7 +185,10 @@ object NativeCampaignClient {
         val descriptors=(Eln.sixNodeItem.subItemList.values+Eln.transparentNodeItem.subItemList.values).filterNotNull()
         write("coverage.json",mapOf("runId" to runId,"jarSha256" to sourceSha,"registry" to descriptors.map {
             mapOf("id" to BuiltInRegistries.ITEM.getKey(it.parentItem).toString(),"descriptor" to it.parentItemDamage,"name" to it.name,"implementation" to it.javaClass.name)
-        },"galleryAll" to all,"assignedGallery" to gallery.map(::galleryId),"functionalCases" to steps.map { mapOf("id" to it.id,"components" to it.components) },"scope" to "Gallery is placement/client-presence/render capture, not proof of every component's functional behavior."))
+        },"galleryAll" to all,"assignedGallery" to gallery.map(::galleryId),
+            "seedProduction" to true, "seedJarSha256" to sourceSha,
+            "developmentOnly" to listOf("Isolation Transformer: not available in the production profile, not a passed test"),
+            "functionalCases" to steps.map { mapOf("id" to it.id,"components" to it.components) },"scope" to "Gallery is placement/client-presence/render capture, not proof of every component's functional behavior."))
     }
     private fun logicState(e:LogicGateElement):Map<String,String> {
         val tag=CompoundTag();e.writeToNBT(tag)
@@ -186,6 +204,23 @@ object NativeCampaignClient {
                 settings?.let { put("mode",it.mode);put("value",it.value);put("version",it.version);put("enabled",it.enabled) }
                 val logic=(node(p) as? SixNode)?.getElement(Side.YN) as? LogicGateElement
                 if(logic!=null && (logic.sixNodeElementDescriptor as LogicGateDescriptor).function !is Oscillator)put("logicState",logicState(logic))
+                if(e is ClutchElement) {
+                    put("clutchWear",e.clutchPlateDescriptor!!.getWear(e.clutchPlateStack!!))
+                    put("clutchPlate",BuiltInRegistries.ITEM.getKey(e.clutchPlateStack!!.item).toString())
+                    put("clutchLocked",!e.slipping)
+                    put("clutchInputV",e.inputGate.voltage)
+                } else if(e is SimpleShaftElement) {
+                    val group=fixtures.retained.filter { other ->
+                        val part=(node(other) as? TransparentNode)?.element
+                        part is SimpleShaftElement && part !is ClutchElement && part.shaft === e.shaft
+                    }.map { listOf(it.x,it.y,it.z) }
+                    put("shaftMembers",group)
+                    put("shaftRadS",e.shaft.rads)
+                    if(e is GeneratorElement)put("rigidDrivenGenerator",fixtures.retained.any { other ->
+                        val part=(node(other) as? TransparentNode)?.element
+                        part is MotorElement && part.shaft === e.shaft
+                    })
+                }
                 if(e is BatteryElement) {
                     put("batteryJ",e.batteryProcess.energy);put("savedTick",w.gameTime)
                     put("passiveResistance",e.dischargeResistor.resistance);put("maximumBatteryV",e.descriptor.electricalU*3)
@@ -208,6 +243,27 @@ object NativeCampaignClient {
                     val l=(node(pos) as SixNode).getElement(Side.YN) as LogicGateElement
                     check(logicState(l)==row["logicState"].asJsonObject.entrySet().associate{it.key to it.value.asString})
                 }
+                if(row.has("shaftMembers")) {
+                    check(e is SimpleShaftElement && e.shaft.rads.isFinite() && e.shaft.energy.isFinite())
+                    for(member in row["shaftMembers"].asJsonArray) {
+                        val xyz=member.asJsonArray
+                        val part=(node(BlockPos(xyz[0].asInt,xyz[1].asInt,xyz[2].asInt)) as TransparentNode).element as SimpleShaftElement
+                        check(part.shaft === e.shaft) { "Saved rigid shaft membership was not restored: $pos -> $xyz" }
+                    }
+                    if(row.has("rigidDrivenGenerator") && row["rigidDrivenGenerator"].asBoolean)
+                        check((e as GeneratorElement).electricalPowerSource.power>1.0) { "Restored rigid generator no longer supplies its load" }
+                }
+                if(row.has("clutchWear")) {
+                    check(e is ClutchElement && e.leftShaft !== e.rightShaft)
+                    check(BuiltInRegistries.ITEM.getKey(e.clutchPlateStack!!.item).toString()==row["clutchPlate"].asString)
+                    val wear=e.clutchPlateDescriptor!!.getWear(e.clutchPlateStack!!)
+                    check(wear+1e-8>=row["clutchWear"].asDouble && wear<1.0) { "Clutch wear reset or plate failed across restart" }
+                    NativeCampaignOracles.near(e.inputGate.voltage,row["clutchInputV"].asDouble,.1,"Restored clutch input")
+                    if(row["clutchLocked"].asBoolean) {
+                        check(!e.slipping)
+                        NativeCampaignOracles.near(e.leftShaft.rads,e.rightShaft.rads,.1,"Restored locked clutch")
+                    }
+                }
                 if(e is BatteryElement) {
                     val elapsed=(s.overworld().gameTime-row["savedTick"].asLong).coerceAtLeast(0)*.05+2
                     val maxV=row["maximumBatteryV"].asDouble
@@ -215,7 +271,8 @@ object NativeCampaignClient {
                     val before=row["batteryJ"].asDouble;val now=e.batteryProcess.energy
                     check(now.isFinite() && now<=before+.1 && now>=before-passiveJ-1.0) { "Battery state not conserved across restart: $before -> $now" }
                 }
-                mapOf("savedId" to row["id"].asString,"loadedId" to identity(pos),"settingsRestored" to row.has("mode"),"logicStateRestored" to row.has("logicState"),"batteryJ" to if(e is BatteryElement)e.batteryProcess.energy else "not a battery")
+                mapOf("savedId" to row["id"].asString,"loadedId" to identity(pos),"settingsRestored" to row.has("mode"),"logicStateRestored" to row.has("logicState"),"batteryJ" to if(e is BatteryElement)e.batteryProcess.energy else "not a battery",
+                    "shaftMembershipRestored" to row.has("shaftMembers"),"clutchRestored" to row.has("clutchWear"))
             })
         }
     }
@@ -252,6 +309,7 @@ object NativeCampaignClient {
                         val s=mc.singleplayerServer!!;val w=s.overworld();val p=s.playerList.players.first()
                         w.setDayTime(6000);w.setWeatherParameters(100000,0,false,false);w.gameRules.getRule(GameRules.RULE_DAYLIGHT).set(false,s)
                         p.setGameMode(GameType.CREATIVE)
+                        NativeCampaignSeed.verify(w, sourceSha)
                         fixtures=NativeCampaignFixtures(w,p);steps=if(restart)restartPlan()else fixtures.prepare(suite)
                         if(!restart)prepareGallery()
                     });return}
@@ -264,6 +322,7 @@ object NativeCampaignClient {
                         work=mc.singleplayerServer!!.submit(Runnable {camera(step.target,step.view=="world")});return}
                     if(!work!!.isDone || tick<20)return;work!!.join()
                     if(!mc.level!!.getChunkSource().hasChunk(step.target.x shr 4,step.target.z shr 4))return
+                    beforeScreenshot=capture("before-${step.id}")
                     next(3)
                 }
                 3 -> {
@@ -271,7 +330,14 @@ object NativeCampaignClient {
                     if(step.view!="world" && !uiDispatched) {
                         if(tick==1) {
                             mc.player!!.inventory.selected=(0..8).firstOrNull {mc.player!!.inventory.getItem(it).isEmpty}?:0
-                            mc.gameMode!!.useItemOn(mc.player!!,InteractionHand.MAIN_HAND,BlockHitResult(Vec3.atCenterOf(step.target),net.minecraft.core.Direction.UP,step.target,false))
+                            // Use the actual client outline hit. A fabricated hit at y=0.5
+                            // selects the wrong face for a floor-mounted six-node source.
+                            val hit=mc.player!!.pick(4.5,1.0f,false) as? BlockHitResult
+                                ?: error("Native interaction did not hit a block: ${step.id}")
+                            check(hit.type==net.minecraft.world.phys.HitResult.Type.BLOCK && hit.blockPos==step.target) {
+                                "Native interaction missed ${step.target}: ${hit.type} ${hit.blockPos} ${hit.location}"
+                            }
+                            mc.gameMode!!.useItemOn(mc.player!!,InteractionHand.MAIN_HAND,hit)
                             return
                         }
                         if(mc.screen==null || tick<15)return
@@ -285,7 +351,11 @@ object NativeCampaignClient {
                     if(work==null){work=mc.singleplayerServer!!.submit<Boolean> {
                         val time=mc.singleplayerServer!!.overworld().gameTime
                         if(time!=lastWorldTick) {lastWorldTick=time;val values=step.sample();if(values.isNotEmpty())traces+=mapOf("case" to step.id,"serverTick" to time,"values" to values)}
-                        if(time-stepStartedTick<step.waitTicks)false else {observation=step.verify()+mapOf("serverTick" to time,"elapsedServerTicks" to (time-stepStartedTick));true}
+                        val elapsed=time-stepStartedTick
+                        check(elapsed <= step.maxWaitTicks) { "Timed out waiting for ${step.id}; last observation=${traces.lastOrNull()}" }
+                        if(elapsed<step.waitTicks || !step.ready())false else {
+                            observation=step.verify()+mapOf("serverTick" to time,"elapsedServerTicks" to elapsed);true
+                        }
                     };return}
                     if(!work!!.isDone)return
                     val ready=work!!.join() as Boolean;work=null

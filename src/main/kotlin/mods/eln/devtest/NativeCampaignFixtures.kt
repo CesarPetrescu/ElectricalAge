@@ -35,7 +35,8 @@ internal class NativeCampaignFixtures(val world: ServerLevel, val player: Server
     data class Step(val id: String, val title: String, val target: BlockPos,
         val components: List<String>, val waitTicks: Long = 20,
         val begin: () -> Unit = {}, val sample: () -> Map<String, Any> = { emptyMap() },
-        val verify: () -> Map<String, Any>, val view: String = "world", val end: () -> Unit = {})
+        val verify: () -> Map<String, Any>, val view: String = "world", val end: () -> Unit = {},
+        val ready: () -> Boolean = { true }, val maxWaitTicks: Long = 2400)
     val steps = mutableListOf<Step>()
     val retained = linkedSetOf<BlockPos>()
     private var nextCell = 0
@@ -57,6 +58,9 @@ internal class NativeCampaignFixtures(val world: ServerLevel, val player: Server
         check(!stack.isEmpty);player.setItemInHand(InteractionHand.MAIN_HAND,stack)
         Eln.sixNodeItem.onItemUse(stack,player,world,p,InteractionHand.MAIN_HAND,Direction.UP,.5f,1f,.5f)
         return six(p)
+    }
+    fun requiredItem(name: String): ItemStack = requireNotNull(Eln.findItemStack(name, 1)) {
+        "Missing production item '$name'; production=${!Eln.instance.isDevelopmentRun}"
     }
     fun placeMachine(stack: ItemStack,p: BlockPos): TransparentNodeElement {
         player.yRot=0f;player.xRot=0f
@@ -84,7 +88,9 @@ internal class NativeCampaignFixtures(val world: ServerLevel, val player: Server
     fun ground(p: BlockPos) { placeSix(Eln.findItemStack("Ground Cable",1),p) }
     fun near(a: Double,b: Double,t: Double) { check(a.isFinite() && abs(a-b)<=t) { "$a != $b (tolerance $t)" } }
     fun setupConverter(p: BlockPos,name: String,vin: Double,vout: Double,primary: Double=1.0,secondary: Double=1.0): TransparentNodeElement {
-        val e=placeMachine(Eln.findItemStack(name,1),p);e.front=Side.ZP
+        val descriptor = Eln.transparentNodeItem.subItemList.values.filterNotNull().singleOrNull { it.name == name }
+            ?: error("Missing production converter '$name'; registry=${Eln.transparentNodeItem.subItemList.values.filterNotNull().map { it.name }}")
+        val e=placeMachine(descriptor.newItemStack(1),p);e.front=Side.ZP
         e.inventory!!.setItem(2,Eln.findItemStack("Optimal Ferromagnetic Core",1))
         e.inventory!!.setItem(0,spool(primary));e.inventory!!.setItem(1,spool(secondary))
         when(e) {
@@ -116,8 +122,13 @@ internal class NativeCampaignFixtures(val world: ServerLevel, val player: Server
         val cases=listOf(
             Triple("DC-DC Converter",50.0,800.0), Triple("One-way DC-DC Converter",50.0,800.0),
             Triple("Variable DC-DC Converter",50.0,12800.0), Triple("One-way Boost vDC/DC Converter",50.0,3200.0),
-            Triple("One-way Buck vDC/DC Converter",800.0,50.0), Triple("One-way Boost/Buck vDC/DC Converter",300.0,3200.0),
-            Triple("Isolation Transformer",50.0,50.0))
+            Triple("One-way Buck vDC/DC Converter",800.0,50.0), Triple("One-way Boost/Buck vDC/DC Converter",300.0,3200.0))
+        val registered = Eln.transparentNodeItem.subItemList.values.filterNotNull().filter {
+            it is DcDcDescriptor || it is VariableDcDcDescriptor || it is OneWayDcDcDescriptor
+        }.map { it.name }
+        check(registered.size == cases.size && registered.toSet() == cases.map { it.first }.toSet()) {
+            "Unreviewed production converter coverage: registered=$registered planned=${cases.map { it.first }}"
+        }
         cases.forEachIndexed { n,(name,vin,vout) ->
             val p=cell();val fixed=name in setOf("DC-DC Converter","One-way DC-DC Converter")
             val e=setupConverter(p,name,vin,vout,1.0,if(fixed)vout/vin else 1.0)
@@ -163,26 +174,11 @@ internal class NativeCampaignFixtures(val world: ServerLevel, val player: Server
                 begin={load(p.east(4),resistance)},sample=::measurements,verify={measurements().also { near(it["busV"] as Double,3200.0,10.0) }+mapOf("loadOhms" to resistance,"seed" to 20260909)})
         }
     }
-    private fun batteries() {
-        val descriptors=Eln.transparentNodeItem.subItemList.values.filterIsInstance<BatteryDescriptor>().sortedBy { it.name }
-        check(descriptors.size>=7)
-        descriptors.forEach { d ->
-            val p=cell();val e=placeMachine(d.newItemStack(1),p) as BatteryElement;e.front=Side.ZP;e.reconnect()
-            wire(p.west());wire(p.east());ground(p.east(2));val resistance=d.electricalU*d.electricalU/(d.electricalStdP*.1)
-            ground(p.west(3));var before=0.0
-            fun measure()=mapOf<String,Any>("charge" to e.batteryProcess.charge,"energyJ" to e.batteryProcess.energy,"voltageV" to (e.positiveLoad.voltage-e.negativeLoad.voltage),"currentA" to e.batteryProcess.dischargeCurrent,"temperatureC" to e.thermalLoad.temperatureCelsius)
-            val key=BuiltInRegistries.ITEM.getKey(d.parentItem).path
-            steps+=Step("battery-$key-discharge","${d.name}: finite stored energy into a real resistor",p,listOf(id(e)),40,
-                begin={before=e.batteryProcess.energy;load(p.west(2),resistance)},sample=::measure,verify={
-                    check(e.batteryProcess.energy in 0.0..<before);check(e.batteryProcess.dischargeCurrent>0);measure()+mapOf("beforeJ" to before)
-                })
-            steps+=Step("battery-$key-open","${d.name}: disconnect load; no phantom discharge current",p,listOf(id(e)),10,
-                begin={world.removeBlock(p.west(2),false)},sample=::measure,verify={check(abs(e.batteryProcess.dischargeCurrent)<.1);measure()})
-        }
-    }
+    private fun batteries() = NativeBatteryCampaign(this).prepare()
     private fun logic() {
         val descriptors=Eln.sixNodeItem.subItemList.values.filterIsInstance<LogicGateDescriptor>().sortedBy { it.name }
-        check(descriptors.size>=12)
+        check(descriptors.size == 12) { "New logic descriptor needs a reviewed native oracle" }
+        val high = Eln.SVU
         for(d in descriptors) {
             val p=cell();val gate=placeSix(d.newItemStack(1),p) as LogicGateElement;retained.add(p)
             gate.front=Side.YN.getLRDUGoingTo(Side.XP)!!;gate.reconnect();wire(p.east(),true)
@@ -190,28 +186,37 @@ internal class NativeCampaignFixtures(val world: ServerLevel, val player: Server
             fun offset(side: Side,n: Int): BlockPos { val v=intArrayOf(p.x,p.y,p.z);side.applyTo(v,n);return BlockPos(v[0],v[1],v[2]) }
             inputDirs.forEach { dir -> val side=Side.YN.applyLRDU(dir);wire(offset(side,1),true);source(offset(side,2),0.0,true) }
             val component=listOf(id(gate));val kind=d.function.javaClass.simpleName
-            fun values()=mapOf<String,Any>("inputsV" to inputDirs.map { gate.getElectricalLoad(it,0)!!.voltage },"outputV" to gate.getElectricalLoad(gate.front,0)!!.voltage,"function" to kind)
+            fun values()=mapOf<String,Any>("observedInputsV" to inputDirs.map { gate.getElectricalLoad(it,0)!!.voltage },"outputV" to gate.getElectricalLoad(gate.front,0)!!.voltage,"function" to kind)
             fun add(suffix:String,input:List<Double>,expected:Boolean) {
                 steps+=Step("logic-${kind.lowercase()}-$suffix","${d.name}: $input -> ${if(expected)1 else 0}",p,component,8,
                     begin={input.forEachIndexed { i,v -> voltage(offset(Side.YN.applyLRDU(inputDirs[i]),2),v) }},sample=::values,verify={
-                        val output=gate.getElectricalLoad(gate.front,0)!!.voltage;check(if(expected)output>40 else abs(output)<10) { "Expected $expected, observed $output V; ${values()}" };values()+mapOf("expectedHigh" to expected)
+                        val observed = inputDirs.map { gate.getElectricalLoad(it, 0)!!.voltage }
+                        NativeCampaignOracles.inputs(input, observed, high)
+                        val output = gate.getElectricalLoad(gate.front, 0)!!.voltage
+                        NativeCampaignOracles.digitalOutput(output, expected, high)
+                        values() + mapOf("requestedInputsV" to input, "signalSupplyV" to high, "expectedHigh" to expected)
                     })
             }
             when(kind) {
                 "Not","And","Nand","Or","Nor","Xor","XNor","Pal" -> repeat(1 shl d.function.inputCount) { bits ->
                     val input=(0 until d.function.inputCount).map { bits and (1 shl it)!=0 }
                     val expected=when(kind) { "Not" -> !input[0];"And"->input.all { it };"Nand"->!input.all { it };"Or"->input.any { it };"Nor"->!input.any { it };"Xor"->input.count { it }%2==1;"XNor"->input.count { it }%2==0;else->false }
-                    add("truth-$bits",input.map { if(it)50.0 else 0.0 },expected)
+                    add("truth-$bits",input.map { if(it)high else 0.0 },expected)
                 }
-                "SchmittTrigger" -> { add("low",listOf(0.0),false);add("high",listOf(40.0),true);add("hold",listOf(20.0),true);add("reset",listOf(0.0),false) }
-                "DFlipFlop" -> { add("clear",listOf(0.0,0.0),false);add("data",listOf(50.0,0.0),false);add("edge",listOf(50.0,50.0),true);add("hold",listOf(0.0,50.0),true);add("fall",listOf(0.0,0.0),true);add("clear-edge",listOf(0.0,50.0),false) }
-                "JKFlipFlop" -> { add("idle",listOf(0.0,50.0,0.0),false);add("set",listOf(50.0,50.0,0.0),true);add("fall",listOf(0.0,50.0,50.0),true);add("toggle",listOf(50.0,50.0,50.0),false) }
+                "SchmittTrigger" -> { add("low",listOf(0.0),false);add("high",listOf((high * .8)),true);add("hold",listOf((high * .4)),true);add("reset",listOf(0.0),false) }
+                "DFlipFlop" -> { add("clear",listOf(0.0,0.0),false);add("data",listOf(high,0.0),false);add("edge",listOf(high,high),true);add("hold",listOf(0.0,high),true);add("fall",listOf(0.0,0.0),true);add("clear-edge",listOf(0.0,high),false) }
+                "JKFlipFlop" -> { add("idle",listOf(0.0,high,0.0),false);add("set",listOf(high,high,0.0),true);add("fall",listOf(0.0,high,high),true);add("toggle",listOf(high,high,high),false) }
                 "Oscillator" -> {
                     var transitions=0;var previous=false
                     steps+=Step("logic-oscillator-pulses","${d.name}: observe real transitions over four seconds",p,component,80,
-                        begin={voltage(offset(Side.YN.applyLRDU(inputDirs[0]),2),50.0);previous=gate.getElectricalLoad(gate.front,0)!!.voltage>25},
-                        sample={val high=gate.getElectricalLoad(gate.front,0)!!.voltage>25;if(high!=previous)transitions++;previous=high;values()},
-                        verify={check(transitions>=1) { "No native oscillator transition" };values()+mapOf("transitions" to transitions)})
+                        begin={voltage(offset(Side.YN.applyLRDU(inputDirs[0]),2),high);previous=gate.getElectricalLoad(gate.front,0)!!.voltage>high*.5},
+                        sample={val outputHigh=gate.getElectricalLoad(gate.front,0)!!.voltage>high*.5;if(outputHigh!=previous)transitions++;previous=outputHigh;values()},
+                        verify={
+                            val observed = inputDirs.map { gate.getElectricalLoad(it, 0)!!.voltage }
+                            NativeCampaignOracles.inputs(listOf(high), observed, high)
+                            check(transitions >= 1) { "No native oscillator transition" }
+                            values()+mapOf("transitions" to transitions, "requestedInputsV" to listOf(high), "signalSupplyV" to high)
+                        })
                 }
                 else -> error("New logic function requires an independent native oracle: $kind")
             }
@@ -224,40 +229,24 @@ internal class NativeCampaignFixtures(val world: ServerLevel, val player: Server
             if(i<7){wire(p.east(),true);wire(p.east(2),true)};e
         }
         wire(base.west(),true);source(base.west(2),0.0,true)
-        for(high in listOf(false,true,false)) {
+        for(inputHigh in listOf(false,true,false)) {
             val suffix=steps.count { it.id.startsWith("logic-chain") }
-            steps+=Step("logic-chain-$suffix","Eight physical NOT gates: propagate ${if(high)50 else 0} V",base.east(10),listOf("eln:not_chip","eln:signal_cable"),20,
-                begin={voltage(base.west(2),if(high)50.0 else 0.0)},verify={
+            steps+=Step("logic-chain-$suffix","Eight physical NOT gates: propagate ${if(inputHigh)high else 0.0} V",base.east(10),listOf("eln:not_chip","eln:signal_cable"),20,
+                begin={voltage(base.west(2),if(inputHigh)high else 0.0)},verify={
                     val outputs=chain.map { it.getElectricalLoad(it.front,0)!!.voltage }
-                    outputs.forEachIndexed { i,v -> val expected=if(i%2==0)!high else high;check(if(expected)v>40 else abs(v)<10) { "Gate $i did not propagate: $outputs" } }
-                    mapOf("inputHigh" to high,"outputVolts" to outputs)
+                    val requested = listOf(if(inputHigh)high else 0.0)
+                    val actual = listOf(chain.first().getElectricalLoad(chain.first().front.inverse(),0)!!.voltage)
+                    NativeCampaignOracles.inputs(requested, actual, high)
+                    outputs.forEachIndexed { i,v ->
+                        val expected=if(i%2==0)!inputHigh else inputHigh
+                        NativeCampaignOracles.digitalOutput(v, expected, high)
+                    }
+                    mapOf("inputHigh" to inputHigh,"outputVolts" to outputs,
+                        "requestedInputsV" to requested,"observedInputsV" to actual,"signalSupplyV" to high)
                 })
         }
     }
-    private fun mechanical() {
-        val p=BlockPos(512,65,526)
-        fun motor()=machine(p) as MotorElement
-        fun gen()=machine(p.east(4)) as GeneratorElement
-        fun measurements()=mapOf<String,Any>("speedRadS" to motor().shaft.rads,"shaftJ" to motor().shaft.energy,"generatorW" to gen().electricalPowerSource.power,"generatorV" to gen().inputLoad.voltage,"sharedNetwork" to (motor().shaft===gen().shaft))
-        val component=(0..4).map { retained.add(p.east(it));id(machine(p.east(it))) }
-        steps+=Step("shaft-loaded","Motor, joint, tachometer, flywheel and generator under load",p.east(2),component,80,sample=::measurements,verify={
-            check(motor().shaft===gen().shaft);check(motor().shaft.rads>motor().desc.nominalRads*.7);check(gen().electricalPowerSource.power>1);measurements()
-        })
-        var energy=0.0
-        steps+=Step("shaft-coasting","Remove electrical supply: flywheel pays for remaining output",p.east(2),component,30,
-            begin={energy=motor().shaft.energy;world.removeBlock(p.north().west(),false)},sample=::measurements,verify={check(motor().shaft.energy in 0.0..<energy);measurements()+mapOf("initialShaftJ" to energy)})
-        steps+=Step("shaft-split","Break the flywheel; no invisible mechanical connection",p.east(2),component,20,
-            begin={world.destroyBlock(p.east(3),false)},sample=::measurements,verify={check(node(p.east(3))==null);check(motor().shaft!==gen().shaft);measurements()})
-        steps+=Step("shaft-reconnect","Replace flywheel and supply; recover loaded generation",p.east(2),component,160,
-            begin={placeMachine(Eln.findItemStack("Flywheel",1),p.east(3));source(p.north().west(),480.0)},sample=::measurements,verify={check(motor().shaft===gen().shaft);check(gen().electricalPowerSource.power>1);measurements()})
-        val large=BlockPos(512,65,533)
-        steps+=Step("large-shaft-loaded","Large motor and generator with elevated shaft connector",large.east(2),listOf(id(machine(large)),id(machine(large.east(4)))),40,verify={
-            val m=machine(large) as MotorElement;val g=machine(large.east(4)) as GeneratorElement
-            check(m.shaft===g.shaft && g.electricalPowerSource.power>1);mapOf("speedRadS" to m.shaft.rads,"outputW" to g.electricalPowerSource.power)
-        })
-        steps+=Step("large-shaft-remove","Remove multiblock motor and require ghost teardown",large.east(2),listOf("eln:large_shaft_motor"),15,
-            begin={world.destroyBlock(large,false)},verify={check(node(large)==null);check(BlockPos.betweenClosed(large.offset(-1,0,-1),large.offset(1,2,1)).none { world.getBlockState(it).block==Eln.ghostBlock });mapOf("ghostsRemaining" to 0)})
-    }
+    private fun mechanical() = NativeMechanicalCampaign(this).prepare()
     private fun thermal() {
         val p=BlockPos(512,65,547)
         fun furnace()=machine(p) as mods.eln.transparentnode.heatfurnace.HeatFurnaceElement
