@@ -122,7 +122,8 @@ object NativeCampaignClient {
         val player=mc.singleplayerServer!!.playerList.players.first();val world=player.serverLevel()
         player.setGameMode(GameType.CREATIVE);player.abilities.flying=true;player.onUpdateAbilities();player.setNoGravity(true)
         player.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY)
-        val target=Vec3(p.x+.5,p.y+.5,p.z+.5)
+        val floorElement = node(p) is SixNode
+        val target=Vec3(p.x+.5,p.y+(if(floorElement).1 else .5),p.z+.5)
         val eye=target.add(if(wide)6.5 else 1.7,if(wide)5.5 else 1.8,if(wide)6.5 else 1.7)
         player.teleportTo(world,eye.x,eye.y-player.eyeHeight,eye.z,0f,0f);player.lookAt(EntityAnchorArgument.Anchor.EYES,target)
     }
@@ -320,7 +321,14 @@ object NativeCampaignClient {
                     if(step.view!="world" && !uiDispatched) {
                         if(tick==1) {
                             mc.player!!.inventory.selected=(0..8).firstOrNull {mc.player!!.inventory.getItem(it).isEmpty}?:0
-                            mc.gameMode!!.useItemOn(mc.player!!,InteractionHand.MAIN_HAND,BlockHitResult(Vec3.atCenterOf(step.target),net.minecraft.core.Direction.UP,step.target,false))
+                            // Use the actual client outline hit. A fabricated hit at y=0.5
+                            // selects the wrong face for a floor-mounted six-node source.
+                            val hit=mc.player!!.pick(4.5,1.0f,false) as? BlockHitResult
+                                ?: error("Native interaction did not hit a block: ${step.id}")
+                            check(hit.type==net.minecraft.world.phys.HitResult.Type.BLOCK && hit.blockPos==step.target) {
+                                "Native interaction missed ${step.target}: ${hit.type} ${hit.blockPos} ${hit.location}"
+                            }
+                            mc.gameMode!!.useItemOn(mc.player!!,InteractionHand.MAIN_HAND,hit)
                             return
                         }
                         if(mc.screen==null || tick<15)return

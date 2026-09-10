@@ -254,7 +254,7 @@ open class ShaftNetwork() : INBTTReady {
         // This may have split the network.
         // At the moment there's no better way to figure this out than by exhaustively walking it to check for
         // partitions. Basically fine, as they don't get very large, but a possible target for optimization later on.
-        rebuildNetwork()
+        rebuildNetwork(from)
 
     }
 
@@ -262,7 +262,7 @@ open class ShaftNetwork() : INBTTReady {
      * Walk the entire network, splitting as necessary.
      * Yes, this makes breaking a shaft block O(n). Not a problem right now.
      */
-    internal fun rebuildNetwork() {
+    internal fun rebuildNetwork(excluded: ShaftElement? = null) {
         pruneInvalidParts()
         // Utils.println(
         //     "SN.rN: rebuild start net=%d rads=%f parts=%d",
@@ -288,7 +288,9 @@ open class ShaftNetwork() : INBTTReady {
                 unseen.remove(next)
                 if (!seen.add(next)) continue
                 if (!isResolvableShaftElement(next.element)) continue
-                if(next.element.isShaftElementDestructing()) continue
+                // A node can remain resolvable while its onBreakElement callback is running.
+                // Never rediscover the element explicitly detached by disconnectShaft.
+                if(next.element === excluded || next.element.isShaftElementDestructing()) continue
                 shaft.parts.add(next)
                 next.element.setShaft(next.side, shaft)
                 // Utils.println("SN.rN visit next = " + next + ", queue.size = " + queue.size)
@@ -307,6 +309,9 @@ open class ShaftNetwork() : INBTTReady {
                 }
                 val neighbours = getNeighbours(next.element)
                 for (neighbour in neighbours) {
+                    // This queue walks ports, not whole elements. Crossing another external
+                    // port here would bypass isInternallyConnected (e.g. an open clutch).
+                    if (neighbour.thisPart != next) continue
                     unseen.remove(neighbour.otherPart)
                     if(!(neighbour.otherPart in seen)) {
                         queue.add(neighbour.otherPart)
@@ -473,7 +478,7 @@ fun createShaftWatchdog(shaftElement: ShaftElement): ShaftSpeedWatchdog {
     return ShaftSpeedWatchdog(shaftElement, absoluteMaximumShaftSpeed)
 }
 
-data class ShaftPart(
+ data class ShaftPart(
     val element: ShaftElement,
     val side: Direction
 )

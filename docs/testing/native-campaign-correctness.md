@@ -66,3 +66,29 @@ Full verification uses the reusable `native-client-campaign.yml` workflow:
 packaged seed -> hosted M1 shards and same-JAR Linux control -> separate-JVM
 restart -> strict aggregate result and screenshot validation. Existing tests
 and release prerequisites remain enabled. Do not merge a failed or partial run.
+
+## Additional defect exposed by the actual M1 run
+
+Run 34453471681 on head 8074390a passed the rigid unsafe/safe replacement cases
+and iron clutch synchronization. The coal clutch was correctly destroyed, but
+its two surviving sides became one network and transmitted power through air.
+The retained trace first has `clutchPresent=false, distinctNetworks=false` at
+server tick 1665. This is not an intended mismatch hazard or an assertion waiver.
+
+`ShaftNetwork.disconnectShaft` now explicitly excludes the owner being detached
+from rebuild traversal, even while its world/node entry remains resolvable in
+its destruction callback. Traversal also follows the current port only, rather
+than crossing every neighbour of a two-port element and bypassing its internal
+connectivity rule. Four graph regression tests exercise the real node lookup
+and real rebuild code with inert owners; the real coal-clutch world case remains
+required. No speed-mismatch threshold, clutch friction, or hazard is changed.
+
+The same run's power suite passed all twelve converter load/open tests and the
+converter GUI edit, then exposed a fixture hit-position error for the flat
+source GUI. Camera aim and interaction now use the actual client block-outline
+ray hit rather than a fabricated full-cube centre hit.
+
+On that intermediate revision the complete M1 logic shard passed 76 functional,
+107 gallery and 20 restart checks; storage/thermal passed 17 functional, 107
+gallery and 9 restart checks. Those are historical results, not validation of
+a later head. Final review must use the final head's own artifacts.
