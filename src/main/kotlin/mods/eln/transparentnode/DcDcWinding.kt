@@ -245,8 +245,8 @@ internal class DcDcWindingThermalProcess(
         val next = resistance.coerceAtLeast(1e-9)
         if (abs(windingResistance.resistance - next) > next * 0.001) windingResistance.resistance = next
         if (utility != null) {
-            // Legacy multicore winding uses one selected core, not all cores in parallel.
-            val physics = WireThermalPhysics(utility.material, utility.totalConductorAreaMm2, w.amount)
+            // Match resistanceOhms: one selected conductor, not free mass/cooling from unused cores.
+            val physics = WireThermalPhysics(utility.material, utility.conductorAreaMm2, w.amount)
             // A packed coil exposes less area than the equivalent straight wire (gameplay geometry).
             val cooling = physics.coolingConductance(temperature, ambient, utility.insulated) /
                 sqrt(w.amount.coerceAtLeast(1.0))
