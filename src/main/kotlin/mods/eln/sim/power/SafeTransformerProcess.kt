@@ -25,31 +25,42 @@ class SafeTransformerProcess(
     fun resetFault() { tripped = false }
 
     override fun rootSystemPreStepProcess() {
-        if (tripped || !enabled || !populated()) { open(); return }
+        if (tripped) { open("NON_CONVERGENT"); return }
+        if (!enabled || !populated()) { open("DISABLED"); return }
+        val target = voltageTarget
+        if (target != null) {
+            // Zero is an off request, not a tiny positive gain or a zero-volt short.
+            if (!target.isFinite() || target < 0.0) { open("INVALID_CONTROL"); return }
+            if (target == 0.0) { open("DISABLED"); return }
+        }
         val a = probePort(primary, null, input)
         val b = probePort(secondary, null, output)
-        voltageTarget?.let { target ->
-            if (a.volts > 0 && a.volts.isFinite()) ratio = (target / a.volts).coerceIn(1.0 / 256, 256.0)
-        }
-        if (!ratio.isFinite() || ratio <= 0) { status = "INVALID_CONTROL"; open(); return }
+        if (!a.volts.isFinite() || !b.volts.isFinite() || a.ohms.isNaN() || b.ohms.isNaN() ||
+            a.ohms < 0.0 || b.ohms < 0.0) { open("INVALID_NETWORK"); return }
+        if (target != null && a.volts > 0.0) ratio = (target / a.volts).coerceIn(1.0 / 256, 256.0)
+        if (!ratio.isFinite() || ratio <= 0) { open("INVALID_CONTROL"); return }
         val point = when {
-            !a.volts.isFinite() || !b.volts.isFinite() -> null
             abs(a.volts) < 1e-12 && abs(b.volts) < 1e-12 -> null
             a.ohms >= RegulatedConverter.OPEN_OHMS && b.ohms >= RegulatedConverter.OPEN_OHMS -> null
             b.ohms >= RegulatedConverter.OPEN_OHMS -> OperatingPoint(a.volts, a.volts * ratio, 0.0, 0.0, 0.0, 0.0, 0.0)
             a.ohms >= RegulatedConverter.OPEN_OHMS -> OperatingPoint(b.volts / ratio, b.volts, 0.0, 0.0, 0.0, 0.0, 0.0)
             else -> RatioTransformer.solve(a, b, ratio)
         }
-        if (point == null) { status = "NO_INPUT"; open(); return }
+        if (point == null) { open("NO_INPUT"); return }
+        if (!point.inputVolts.isFinite() || !point.outputVolts.isFinite()) { open("INVALID_NETWORK"); return }
         if (abs(point.inputVolts) > maximumPrimaryVoltage || abs(point.outputVolts) > maximumSecondaryVoltage) {
-            status = "VOLTAGE_LIMIT"; open(); return
+            open("VOLTAGE_LIMIT"); return
         }
         input.voltage = point.inputVolts; output.voltage = point.outputVolts
         input.enabled = true; output.enabled = true
         status = "TRANSFERRING"
     }
 
-    private fun open() { input.enabled = false; output.enabled = false }
+    private fun open(reason: String) {
+        input.enabled = false
+        output.enabled = false
+        status = reason
+    }
 
     override fun acceptsCandidate(): Boolean {
         if (!input.enabled && !output.enabled) return true
@@ -58,6 +69,6 @@ class SafeTransformerProcess(
 
     override fun trialSources(): List<SwitchableVoltageSource> = listOf(input, output)
 
-    override fun failClosed() { open(); tripped = true; status = "NON_CONVERGENT" }
+    override fun failClosed() { tripped = true; open("NON_CONVERGENT") }
     override fun connectedSystems(): Set<SubSystem> = setOfNotNull(primary.subSystem, secondary.subSystem)
 }
