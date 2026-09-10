@@ -1,7 +1,7 @@
 """Fast checks of production-profile and independent observed-value evidence contracts."""
 import copy
 import unittest
-from build_native_campaign_seed import validate_receipt, validate_smoke_log
+from build_native_campaign_seed import validate_receipt, validate_smoke_log, version_properties
 from native_campaign_oracles import validate_observation
 from native_campaign_plan import expected
 
@@ -18,6 +18,17 @@ class NativeCorrectnessTest(unittest.TestCase):
         self.hazard = dict(motorBeforeRadS=187.6, generatorBeforeRadS=30., placementObserved=True,
                            replacementDestroyed=True, ghostConnection=False, sharedNetwork=False)
 
+    def test_gradle_version_spacing(self):
+        props = version_properties('  # ignored = comment\n neoVersion = 21.1.200 \n minecraftVersion=1.21.1\n')
+        self.assertEqual(props['neoVersion'], '21.1.200')
+        self.assertEqual(props['minecraftVersion'], '1.21.1')
+    def test_actual_repository_version_properties(self):
+        from pathlib import Path
+        props = version_properties((Path(__file__).resolve().parents[1] / 'gradle.properties').read_text())
+        self.assertTrue(props['neoVersion'].startswith('21.1.'))
+    def test_missing_or_duplicate_version_is_rejected(self):
+        for text in ('minecraftVersion=1.21.1', 'neoVersion=21.1.1\nneoVersion=21.1.2'):
+            with self.assertRaises(ValueError): version_properties(text)
     def test_production_seed_with_exact_artifact(self): validate_receipt(self.receipt, 'a'*64)
     def test_development_seed_rejected(self):
         self.receipt['production'] = False

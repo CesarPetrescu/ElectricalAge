@@ -30,6 +30,22 @@ def validate_smoke_log(text):
         raise ValueError('Packaged seed smoke suite did not report success')
 
 
+def version_properties(text: str) -> dict[str, str]:
+    """Read the repository's simple key=value version entries with Java-properties spacing."""
+    props = {}
+    for line in text.splitlines():
+        line = line.strip()
+        if not line or line.startswith(('#', '!')) or '=' not in line:
+            continue
+        key, value = (part.strip() for part in line.split('=', 1))
+        if key in props:
+            raise ValueError(f'Duplicate property: {key}')
+        props[key] = value
+    if not props.get('neoVersion'):
+        raise ValueError('Missing neoVersion in gradle.properties')
+    return props
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--jar', type=Path, required=True)
@@ -44,9 +60,8 @@ def main():
     runtime = Path(os.environ.get('RUNNER_TEMP', tempfile.gettempdir())) / 'eln-native-production-server'
     runtime.mkdir(parents=True, exist_ok=True)
     java = str(Path(os.environ['JAVA_HOME']) / 'bin/java')
-    props = dict(line.strip().split('=', 1) for line in Path('gradle.properties').read_text().splitlines()
-                 if '=' in line and not line.startswith('#'))
-    neo = props['neoVersion'].strip()
+    props = version_properties(Path('gradle.properties').read_text())
+    neo = props['neoVersion']
     url = f'https://maven.neoforged.net/releases/net/neoforged/neoforge/{neo}/neoforge-{neo}-installer.jar'
     with urllib.request.urlopen(url + '.sha1', timeout=60) as response:
         checksum = response.read().decode().split()[0]
