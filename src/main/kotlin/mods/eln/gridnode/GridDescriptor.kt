@@ -59,9 +59,8 @@ open class GridDescriptor(name: String, protected val obj: Obj3D, ElementClass: 
 
     open fun hasCustomIcon() = false
 
-    open fun acceptsGridCable(cable: ElectricalCableDescriptor): Boolean {
-        return cable == cableDescriptor
-    }
+    // One rule for transformers, all pole kinds, towers and grid switches.
+    fun acceptsGridCable(cable: ElectricalCableDescriptor): Boolean = GridCablePolicy.accepts(cable)
 
     override fun renderItem(type: IItemRenderer.ItemRenderType, item: ItemStack, vararg data: Any) {
         if(type == IItemRenderer.ItemRenderType.INVENTORY &&

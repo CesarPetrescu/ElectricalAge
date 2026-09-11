@@ -3,6 +3,7 @@ package mods.eln.gridnode
 import mods.eln.misc.stackFromNbt
 
 import mods.eln.Eln
+import mods.eln.i18n.I18N.tr
 import mods.eln.misc.Coordinate
 import mods.eln.misc.Direction
 import mods.eln.misc.INBTTReady
@@ -218,22 +219,53 @@ class GridLink : INBTTReady {
             }
         }
 
+        /** Shared by click-to-link and direct callers. Validate before changing either endpoint. */
+        internal fun validateNewLink(a: GridElement, b: GridElement, fromSide: Direction, toSide: Direction,
+                                     cable: ElectricalCableDescriptor, cableLength: Int) {
+            if (!(a.transparentNodeDescriptor as GridDescriptor).acceptsGridCable(cable) ||
+                !(b.transparentNodeDescriptor as GridDescriptor).acceptsGridCable(cable)) {
+                throw UserError(tr("Grid links require an intact power cable; signal and melted cables are not supported"))
+            }
+            if (a === b || cableLength <= 0) throw UserError(tr("Invalid grid cable span"))
+            if (a.getGridElectricalLoad(fromSide) == null || b.getGridElectricalLoad(toSide) == null) {
+                throw UserError(tr("Select a grid terminal, not the device body"))
+            }
+        }
+
+        internal fun linkStack(cable: ElectricalCableDescriptor, cableLength: Int, supplied: ItemStack?): ItemStack {
+            if (cableLength <= 0) throw UserError(tr("Invalid grid cable span"))
+            val stack = supplied?.copy() ?: when (cable) {
+                is UtilityCableDescriptor -> cable.newItemStack(1).also { cable.setRemainingLengthMeters(it, cableLength.toDouble()) }
+                else -> cable.newItemStack(cableLength)
+            }
+            if (stack.isEmpty || ElectricalCableDescriptor.getDescriptor(stack) !== cable) {
+                throw UserError(tr("Grid cable item does not match the selected cable"))
+            }
+            if (cable is UtilityCableDescriptor) {
+                val meters = cable.getRemainingLengthMeters(stack)
+                if (stack.count != 1 || !meters.isFinite() || kotlin.math.abs(meters - cableLength) > UtilityCableDescriptor.LENGTH_METERS_EPSILON) {
+                    throw UserError(tr("Grid cable item does not match the paid length"))
+                }
+            } else if (stack.count != cableLength) {
+                throw UserError(tr("Grid cable item does not match the paid length"))
+            }
+            return stack
+        }
+
         fun addLink(a: GridElement, b: GridElement, `as`: Direction, bs: Direction, cable: ElectricalCableDescriptor, cableLength: Int, cableStack: ItemStack? = null) {
+            validateNewLink(a, b, `as`, bs, cable, cableLength)
             // Check if these two nodes are already linked.
             (a.gridLinkList + b.gridLinkList)
                 .filter { it.links(a, b) }
                 .forEach { throw UserError("Already Connected") }
 
-            val linkStack = cableStack ?: when (cable) {
-                is UtilityCableDescriptor -> cable.newItemStack(1).also { cable.setRemainingLengthMeters(it, cableLength.toDouble()) }
-                else -> cable.newItemStack(cableLength)
-            }
+            val linkStack = linkStack(cable, cableLength, cableStack)
 
             // Makin' a Link. Where'd Zelda go?
             val link = GridLink(
                     a.coordinate(), b.coordinate(), `as`, bs, linkStack,
                     resistanceForCable(cable, cableLength))
-            link.connect()
+            if (!link.connect()) throw UserError(tr("Grid endpoint is no longer available"))
         }
     }
 }

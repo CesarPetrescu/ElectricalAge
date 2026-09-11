@@ -29,17 +29,44 @@ class RegulatedPowerProcess(
     private fun open(reason: String) {
         input.enabled = false
         output.enabled = false
+        previousTarget = Double.NaN
         status = reason
     }
 
+    private fun readLimits(): ConverterLimits? = try {
+        limits()
+    } catch (_: IllegalArgumentException) {
+        open("INVALID_CONTROL")
+        null
+    }
+
+    private fun readTarget(inputVolts: Double): Double? {
+        val requested = try {
+            target(inputVolts)
+        } catch (_: IllegalArgumentException) {
+            // Invalid active signals/settings must not escape into the simulator's tick loop.
+            open("INVALID_CONTROL")
+            return null
+        }
+        if (!requested.isFinite() || requested < 0) {
+            open("INVALID_CONTROL")
+            return null
+        }
+        if (requested == 0.0) {
+            open("DISABLED")
+            return null
+        }
+        return requested
+    }
+
     override fun prepareStep() {
-        if (tripped || !enabled()) return
+        if (tripped) { open("NON_CONVERGENT"); return }
+        if (!enabled()) { open("DISABLED"); return }
         val a = probePort(primary, primaryReference, input)
-        val rating = limits()
+        val rating = readLimits() ?: return
         if (!a.volts.isFinite() || a.volts < rating.minInputVolts || a.volts > rating.maxInputVolts ||
             a.ohms.isNaN() || a.ohms >= RegulatedConverter.OPEN_OHMS) return
-        val requested = target(a.volts)
-        if (!requested.isFinite() || requested <= 0) return
+        val requested = readTarget(a.volts) ?: return
         // Retain the last operating point, especially in current limit. Re-seeding a
         // limited bus at its unloaded target each tick needlessly repeats startup.
         if (input.enabled && output.enabled && requested == previousTarget) return
@@ -55,9 +82,10 @@ class RegulatedPowerProcess(
         if (!enabled()) { open("DISABLED"); return }
         val a = probePort(primary, primaryReference, input)
         val b = probePort(secondary, secondaryReference, output)
-        val rating = limits()
+        val rating = readLimits() ?: return
         activeLimits = rating
-        when (val result = RegulatedConverter.solve(a, b, target(a.volts), rating)) {
+        val requested = readTarget(a.volts) ?: return
+        when (val result = RegulatedConverter.solve(a, b, requested, rating)) {
             is TransferResult.Off -> open(result.reason.name)
             is TransferResult.Running -> {
                 input.voltage = result.point.inputVolts

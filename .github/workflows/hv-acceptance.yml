@@ -69,7 +69,7 @@ jobs:
           assert len(results) >= 29, 'HV test coverage unexpectedly shrank'
           assert all(r['status'] == 'passed' for r in results), data
           text = json.dumps(results)
-          for required in ['loaded-conversion-and-orientation-9', 'step-up-line-step-down-power-network', 'input-block-removal-disconnects-converter', 'supply-reconnection-recovers', 'overload-respects-actual-input-current', 'one-way-fixed-blocks-precharged-output', 'final-state-ready-to-save-9', 'cable-identities-unique-and-new-ids-explicit']:
+          for required in ['grid-cables-all-power-cables-all-devices-both-click-orders', 'loaded-conversion-and-orientation-9', 'step-up-line-step-down-power-network', 'input-block-removal-disconnects-converter', 'supply-reconnection-recovers', 'overload-respects-actual-input-current', 'one-way-fixed-blocks-precharged-output', 'final-state-ready-to-save-9', 'cable-identities-unique-and-new-ids-explicit']:
               assert required in text, f'Missing assertion: {required}'
           assert pathlib.Path('run/server/world/level.dat').is_file(), 'No saved world'
           print('Live HV world:', len(results), 'passed')
