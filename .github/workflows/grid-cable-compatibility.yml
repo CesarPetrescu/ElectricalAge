@@ -39,19 +39,21 @@ jobs:
           p = pathlib.Path('build/test-results/test/TEST-mods.eln.gridnode.GridCableCompatibilityTest.xml')
           suite = ET.parse(p).getroot()
           expected = {
-              'thresholdIsInclusiveAndInvalidRatingsNeverQualify',
-              'everyRegisteredGridDeviceUsesTheSameRatingRuleForEveryCable',
-              'newHvSpoolsWorkWithoutOldPoleFlagsAnd600VoltFlagsDoNotBypassThreshold',
+              'intactLowVoltageAndBarePowerCablesQualify',
+              'everyRegisteredGridDeviceAcceptsEveryIntactPowerCable',
+              'poleFlagsDoNotRestrictLowOrHighVoltageSpools',
+              'compatibilityDoesNotChangeVoltageRatingsOrInsulation',
               'terminalValidationIsSymmetricForAllDevicesAndHorizontalRotations',
-              'directApiCannotBypassCableSpanAndDamageValidation',
+              'directApiCannotBypassSignalDamageAndSpanValidation',
               'paidLengthAndCableIdentityAreValidatedAndCopiedWithoutAliasing',
               'existingSaved600VoltLinksRetainTheirCableAndPaidLength',
               'longerAcceptedSpansKeepRealResistanceDropAndPowerBalance',
           }
           cases = suite.findall('testcase')
+          assert len(cases) == len(expected), 'Missing or duplicate test results'
           assert {c.attrib['name'].removesuffix('()') for c in cases} == expected
           assert all(c.find('failure') is None and c.find('error') is None and c.find('skipped') is None for c in cases)
-          print('All eight named production FML/MNA regressions passed.')
+          print('All nine named production FML/MNA regressions passed.')
           PY
       - name: Publish evidence without claiming skipped tests passed
         if: always()

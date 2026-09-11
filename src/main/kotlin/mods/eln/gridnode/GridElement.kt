@@ -64,7 +64,7 @@ abstract class GridElement(transparentNode: TransparentNode, descriptor: Transpa
         }
         // Check both ends using the cable actually held on the second click as well.
         if (!desc.acceptsGridCable(cable) || (other != null && !other.desc.acceptsGridCable(cable))) {
-            Utils.sendMessage(entityPlayer, tr("Grid links require an intact power cable rated at least %1$ V", GridCablePolicy.MINIMUM_VOLTAGE))
+            Utils.sendMessage(entityPlayer, tr("Grid links require an intact power cable; signal and melted cables are not supported"))
             return true
         }
         if (cable is UtilityCableDescriptor) {

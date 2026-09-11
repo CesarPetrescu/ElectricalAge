@@ -1,61 +1,59 @@
-# Grid cables: one compatibility rule
+# Grid cables: all intact power cables
 
-New overhead links on the Grid DC-DC Converter, Utility Pole, Utility Pole w/DC-DC Converter,
-Transmission Tower, Direct Utility Pole and Grid Switch accept intact power cables rated **at
-least 1,000 V**. The threshold includes exactly 1,000 V. It is not a minimum operating voltage.
+All six grid devices (Grid DC-DC Converter, Utility Pole, Utility Pole w/DC-DC Converter,
+Transmission Tower, Direct Utility Pole and Grid Switch) accept **every intact power cable**.
+There is no minimum voltage: low-voltage legacy cables, 300/600 V spools, all HV spools and
+bare conductors qualify. Copper/aluminum, gauge, conductor count and the historical
+`poleEligible` flag do not restrict compatibility.
 
-Insulated utility cables use their insulation-voltage rating. Bare utility conductors and legacy
-power cables use their nominal gameplay voltage; bare conductors do not acquire insulation.
-Signal cables, melted cables and invalid/nonfinite ratings are rejected. A 600 V cable does not
-qualify because of its old `poleEligible` flag, and an 800 V cable does not qualify because its
-failure threshold is above 1,000 V. Gauge, material and number of conductors are not compatibility
-filters. The existing single-active-conductor span model is unchanged.
+The `signalWire` flag, not the creative-tab category, distinguishes actual signal circuits.
+Thin utility wires listed in a signal category still qualify when they are power conductors.
+Actual signal cables/buses and melted cables are rejected. This rule concerns overhead grid
+links; it does not turn thermal cables or unrelated circuit types into power cables.
 
-The old checks compared the held cable with one hard-coded descriptor, or required a
-`poleEligible` flag absent from the ten newer 1/5/20/40/150 kV spool variants. Both now use
-`GridCablePolicy`. The historical flag remains in acquisition/tab categorization; registration
-order, item IDs and existing cable specifications are untouched.
+## Ratings and bare wire
 
-## Connecting
+Eligibility is separate from electrical safety and capacity. Insulated utility cable retains
+its jacket voltage rating; bare and legacy power cable retain their nominal gameplay rating.
+Bare wire stays uninsulated, including its zero insulation-voltage field. Connecting a 300 V
+cable does not upgrade it to a 120 kV cable. The policy never rewrites either rating.
 
-Hold an eligible cable and click a grid terminal on the first device, then a grid terminal on the
-second. Both endpoints use the same rule, independent of click order. The transformer and switch
-body faces are not terminals. Overhead-only poles still use overhead links; this does not add
-surface-mounted terminals or connect the switch's motor/control inputs to its grid circuit.
+Existing device watchdogs, transformer ratios, utility-span resistance, temperature-dependent
+loss, thermal integration and conductor failure are unchanged. This patch does not add new
+dielectric-breakdown simulation to overhead spans. Their thermal model is not comprehensive
+insulation-voltage protection, and mere connection compatibility is not proof of safe operation.
 
-Survival spools pay the rounded-up endpoint distance in meters. The actual held cable type and
-its metadata are retained in the link. Invalid faces, insufficient/invalid spool length,
-incompatible cables, duplicate links and unavailable endpoints must not consume cable. Both
-the click handler and the direct new-link API validate compatibility. Existing range limits
-remain; this is not an unlimited-distance connection feature.
+## Connecting and saved worlds
 
-Saved links are restored without applying a new installation filter: an already-saved 600 V
-span is not silently deleted. Its saved identity, paid length and thermal state remain readable.
-The new rule applies when creating a link, including replacements after removal.
+Hold an intact power cable and click a grid terminal on each device. Both endpoints use the
+same rule in either click order. Transformer/switch body faces remain invalid terminals.
+Overhead-only poles remain overhead devices; motor/control inputs are not grid terminals.
 
-## Ratings and simulation
+Survival spools pay the rounded-up endpoint distance in meters; legacy cable items pay their
+item count. Cable identity, metadata and paid length stay on the link. Invalid faces, unusable
+or insufficient spool lengths, duplicate links and unavailable endpoints must not consume
+cable. Existing distance limits remain in place.
 
-Connection compatibility does not upgrade a 1 kV cable to a 120 kV cable or upgrade a pole's
-voltage rating. Existing device watchdogs, transformer ratios, utility-span resistance,
-temperature-dependent loss, thermal integration and conductor failure behavior are not relaxed.
-This patch does not add a new dielectric-breakdown simulation to overhead spans. Their existing
-thermal damage model must not be mistaken for comprehensive insulation-voltage protection.
+Previously saved links are not deleted or upgraded. Their cable identity, paid length and
+thermal state remain readable; lower-rated cables also qualify for new/replacement links now.
+Item registrations and save IDs are unchanged.
 
 ## Verification
 
-`GridCableCompatibilityTest` runs through the normal FML JUnit launcher. It checks all registered
-cable/grid-descriptor combinations, the inclusive threshold, both link directions and all
-horizontal orientations, invalid terminals, paid-length identity/copying, saved 600 V links,
-and loaded MNA voltage drop/power balance at multiple span lengths.
+`GridCableCompatibilityTest` runs through the normal FML JUnit launcher. Nine named tests cover
+all registered cable/device combinations, explicit low-voltage/bare acceptance, old pole flags,
+unchanged voltage/insulation ratings, both endpoint orders and horizontal rotations, rejection
+of signal/damaged cables and invalid spans, paid-length identity/copying, saved 600 V links,
+and loaded MNA voltage drop/power balance. The focused CI gate requires every named result and
+rejects failed, missing, duplicate or skipped tests.
 
-`GridCableSmokeChecks`, called by the existing HV placement acceptance suite, places all six
-registered device types and uses the real server click handler with survival spools for each
-of the ten new HV cable variants in both click orders (120 combinations). It checks exact
-consumption, both endpoint link lists, the recorded cable/length, NBT round-trip and disconnect
-refunds. It also rejects old 600 V flagged cables and damaged spools. This is a dedicated-server
-integration test, not native client mouse targeting or visual evidence.
+`GridCableSmokeChecks` places each of the six registered grid devices and exercises the real
+server click handler in survival mode for **every registered intact power-cable descriptor**
+in both click orders. It checks exact consumption, both endpoint lists, identity, paid length,
+NBT round-trip and refunds, and separately rejects all signal/damaged descriptors. It logs
+the actual matrix size. The existing HV acceptance workflow requires its named result before
+checking the saved-world restart. This is server integration, not native mouse/visual proof.
 
-Local checks used the production policy with descriptor stand-ins (218 cases), plus Kotlin
-syntax parsing. Those do not establish a full build or FML/native success. Consult the exact
-PR-head workflows. `grid-cable-compatibility.yml` runs the focused FML tests and the existing
-translation generator, and publishes their reports/generated translations even on failure.
+The focused workflow invokes the existing translation generator and publishes generated
+translations and test reports. Full build/runtime success must be established on the exact
+PR head; policy-only local checks are not FML or native-client verification.

@@ -9,11 +9,13 @@ import mods.eln.misc.Coordinate
 import mods.eln.misc.Direction
 import mods.eln.node.NodeManager
 import mods.eln.node.transparent.TransparentNode
+import mods.eln.sixnode.electricalcable.ElectricalCableDescriptor
 import mods.eln.sixnode.electricalcable.UtilityCableDescriptor
 import net.minecraft.core.BlockPos
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.InteractionHand
+import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.GameType
 import net.minecraft.world.level.block.Blocks
 import net.neoforged.neoforge.common.util.FakePlayerFactory
@@ -26,13 +28,27 @@ object GridCableSmokeChecks {
         val devices = Eln.transparentNodeItem.subItemList.values.filterIsInstance<GridDescriptor>().distinct()
         check(devices.map { it.name }.toSet() == setOf("Grid DC-DC Converter", "Utility Pole",
             "Utility Pole w/DC-DC Converter", "Transmission Tower", "Direct Utility Pole", "Grid Switch"))
-        val cables = UtilityCableDescriptor.allDescriptors().filter {
-            !it.melted && it.parentItemDamage in (38 shl 6)..((38 shl 6) + 19)
-        }
-        check(cables.size == 10 && cables.all(GridCablePolicy::accepts))
+        val registered = Eln.sixNodeItem.subItemList.values.filterIsInstance<ElectricalCableDescriptor>().distinct()
+        // Select by circuit type/damage, independently of the policy under test.
+        val cables = registered.filter { !it.signalWire && !(it is UtilityCableDescriptor && it.melted) }
+        check(cables.isNotEmpty() && cables.all(GridCablePolicy::accepts))
+        check(cables.any { it !is UtilityCableDescriptor && it.electricalNominalVoltage < 1000.0 })
+        check(cables.filterIsInstance<UtilityCableDescriptor>().any { !it.insulated })
+        check(cables.filterIsInstance<UtilityCableDescriptor>().any { it.insulated && it.insulationVoltageRating < 1000.0 })
+        check(cables.filterIsInstance<UtilityCableDescriptor>().count {
+            it.parentItemDamage in (38 shl 6)..((38 shl 6) + 19)
+        } == 10)
         val player = FakePlayerFactory.getMinecraft(world)
         val oldMode = player.gameMode.gameModeForPlayer
-        val oldHand = player.mainHandItem.copy()
+        val oldItems = player.inventory.items.map { it.copy() }
+        // Legacy cable consumption can search the whole inventory. Isolate and restore it.
+        player.inventory.items.indices.forEach { player.inventory.items[it] = ItemStack.EMPTY }
+        var connections = 0
+        fun stack(cable: ElectricalCableDescriptor, meters: Int): ItemStack =
+            if (cable is UtilityCableDescriptor) cable.newItemStack().also { cable.setRemainingLengthMeters(it, meters.toDouble()) }
+            else cable.newItemStack(meters)
+        fun meters(cable: ElectricalCableDescriptor, item: ItemStack): Double =
+            if (cable is UtilityCableDescriptor) cable.getRemainingLengthMeters(item) else item.count.toDouble()
         val origin = BlockPos(264, 80, 264)
         val partner = origin.east(6)
         world.setChunkForced(origin.x shr 4, origin.z shr 4, true)
@@ -56,41 +72,41 @@ object GridCableSmokeChecks {
                     val sideA = Direction.values().first { first.getGridElectricalLoad(it) != null }
                     val sideB = Direction.values().first { second.getGridElectricalLoad(it) != null }
                     for (cable in cables) for (reverse in listOf(false, true)) {
-                        val spool = cable.newItemStack().also { cable.setRemainingLengthMeters(it, 32.0) }
-                        player.setItemInHand(InteractionHand.MAIN_HAND, spool)
+                        player.setItemInHand(InteractionHand.MAIN_HAND, stack(cable, 32))
                         val start = if (reverse) second else first
                         val end = if (reverse) first else second
                         val startSide = if (reverse) sideB else sideA
                         val endSide = if (reverse) sideA else sideB
                         check(start.onBlockActivated(player, startSide, .5f, .5f, .5f))
                         check(first.gridLinkList.isEmpty() && second.gridLinkList.isEmpty())
-                        check(cable.getRemainingLengthMeters(player.mainHandItem) == 32.0)
+                        check(meters(cable, player.mainHandItem) == 32.0)
                         check(end.onBlockActivated(player, endSide, .5f, .5f, .5f))
+                        check(first.gridLinkList.size == 1) { "${descriptor.name}: ${cable.name}, reversed=$reverse" }
                         val link = first.gridLinkList.single()
                         check(second.gridLinkList.single() === link && link.connected)
-                        check(cable.getRemainingLengthMeters(player.mainHandItem) == 26.0)
+                        check(meters(cable, player.mainHandItem) == 26.0)
                         check(Eln.sixNodeItem.getDescriptor(link.cable) === cable)
-                        check(cable.getRemainingLengthMeters(link.cable) == 6.0)
-                        check(checkNotNull(link.spanThermal).meters == 6.0)
+                        check(meters(cable, link.cable) == 6.0)
+                        if (cable is UtilityCableDescriptor) check(checkNotNull(link.spanThermal).meters == 6.0)
                         val tag = CompoundTag(); link.writeToNBT(tag, "")
                         val restored = GridLink(tag, "")
                         check(Eln.sixNodeItem.getDescriptor(restored.cable) === cable)
-                        check(cable.getRemainingLengthMeters(restored.cable) == 6.0)
+                        check(meters(cable, restored.cable) == 6.0)
                         val refund = link.onBreakElement()
-                        check(cable.getRemainingLengthMeters(refund) == 6.0)
+                        check(meters(cable, refund) == 6.0)
                         check(!link.connected && first.gridLinkList.isEmpty() && second.gridLinkList.isEmpty())
+                        connections++
                     }
-                    // A former poleEligible flag cannot bypass the new minimum voltage or damage rule.
-                    val low = UtilityCableDescriptor.allDescriptors().first {
-                        it.poleEligible && !it.melted && it.insulated && it.insulationVoltageRating == 600.0
-                    }
-                    for (rejected in listOf(low, checkNotNull(cables.first().meltedDescriptor))) {
-                        val spool = rejected.newItemStack().also { rejected.setRemainingLengthMeters(it, 32.0) }
-                        player.setItemInHand(InteractionHand.MAIN_HAND, spool)
+                    // Actual signal buses and damaged conductors remain incompatible, at any rating.
+                    val rejectedCables = registered.filter { it.signalWire || (it is UtilityCableDescriptor && it.melted) }
+                    check(rejectedCables.any { it.signalWire })
+                    check(rejectedCables.any { it is UtilityCableDescriptor && it.melted })
+                    for (rejected in rejectedCables) {
+                        player.setItemInHand(InteractionHand.MAIN_HAND, stack(rejected, 32))
                         first.onBlockActivated(player, sideA, .5f, .5f, .5f)
                         second.onBlockActivated(player, sideB, .5f, .5f, .5f)
                         check(first.gridLinkList.isEmpty() && second.gridLinkList.isEmpty())
-                        check(rejected.getRemainingLengthMeters(player.mainHandItem) == 32.0)
+                        check(meters(rejected, player.mainHandItem) == 32.0)
                     }
                 } finally {
                     a?.gridLinkList?.toList()?.forEach { it.onBreakElement() }
@@ -99,8 +115,12 @@ object GridCableSmokeChecks {
                     world.removeBlock(partner, false)
                 }
             }
+            check(connections == devices.size * cables.size * 2)
+            Eln.logger.info("GRID CABLE PASS: {} devices x {} intact power cables x 2 click orders = {} connections",
+                devices.size, cables.size, connections)
         } finally {
-            player.setItemInHand(InteractionHand.MAIN_HAND, oldHand)
+            oldItems.forEachIndexed { index, item -> player.inventory.items[index] = item }
+            player.inventory.setChanged()
             player.setGameMode(oldMode)
             world.setChunkForced(origin.x shr 4, origin.z shr 4, false)
         }

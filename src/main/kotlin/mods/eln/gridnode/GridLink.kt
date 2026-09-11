@@ -224,7 +224,7 @@ class GridLink : INBTTReady {
                                      cable: ElectricalCableDescriptor, cableLength: Int) {
             if (!(a.transparentNodeDescriptor as GridDescriptor).acceptsGridCable(cable) ||
                 !(b.transparentNodeDescriptor as GridDescriptor).acceptsGridCable(cable)) {
-                throw UserError(tr("Grid links require an intact power cable rated at least %1$ V", GridCablePolicy.MINIMUM_VOLTAGE))
+                throw UserError(tr("Grid links require an intact power cable; signal and melted cables are not supported"))
             }
             if (a === b || cableLength <= 0) throw UserError(tr("Invalid grid cable span"))
             if (a.getGridElectricalLoad(fromSide) == null || b.getGridElectricalLoad(toSide) == null) {

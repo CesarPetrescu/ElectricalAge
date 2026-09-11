@@ -209,7 +209,7 @@ class HighVoltageSmokeTest(private val restart: Boolean) {
             }
             when(ticks) {
                 100 -> {
-                    checkCase("grid-cables-at-least-1kv-all-devices-both-click-orders") { GridCableSmokeChecks.run(world) }
+                    checkCase("grid-cables-all-power-cables-all-devices-both-click-orders") { GridCableSmokeChecks.run(world) }
                     benches.indices.forEach { i -> checkCase("loaded-conversion-and-orientation-$i") { verifyBench(i) } }
                     checkCase("step-up-line-step-down-power-network") { near(volts(machine(CHAIN.east(8))).second,200.0,5.0) }
                     checkCase("overvoltage-latches-fault-without-inventing-all-core-short") { check(faultStopped && (six(FAULT) as UtilityCableElement).insulationFailed) }

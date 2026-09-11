@@ -2,6 +2,7 @@ package mods.eln.transparentnode
 
 import net.minecraft.nbt.CompoundTag
 import org.junit.Test
+import org.junit.Assert.assertThrows
 import kotlin.test.*
 import java.io.*
 import mods.eln.sim.power.ConverterKind
@@ -63,7 +64,7 @@ class DcDcControlTest {
         val c = DcDcControl()
         for (kind in ConverterKind.values()) {
             for (signal in listOf(Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY)) {
-                assertFailsWith<IllegalArgumentException> { c.ratio(kind, signal) }
+                assertThrows(IllegalArgumentException::class.java) { c.ratio(kind, signal) }
             }
         }
     }
@@ -169,7 +170,7 @@ class DcDcControlTest {
 
     @Test fun truncatedSnapshotDoesNotPartiallyMutateSettings() {
         val c = DcDcControl().apply { mode = "RATIO"; value = 2.0 }
-        assertFailsWith<EOFException> { c.read(packet { writeInt(1); writeUTF("SIGNAL") }) }
+        assertThrows(EOFException::class.java) { c.read(packet { writeInt(1); writeUTF("SIGNAL") }) }
         assertEquals(2, c.version); assertEquals("RATIO", c.mode)
         assertEquals(2.0, c.value); assertTrue(c.enabled)
     }
