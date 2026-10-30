@@ -19,9 +19,6 @@ on:
         description: Full per-block gallery and repeated restart checks
         type: boolean
         default: false
-  schedule:
-    - cron: '23 2 * * *'
-
 permissions:
   contents: read
 
