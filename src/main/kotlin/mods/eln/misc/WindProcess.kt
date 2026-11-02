@@ -37,7 +37,7 @@ class WindProcess : IProcess, INBTTReady {
         get() = windTargetNoose + windTargetFiltered.target
 
     fun getWind(y: Int): Double {
-        return y.toDouble().coerceIn(windHit * y / 100.0, 100.0)
+        return (windHit * y / 100.0).coerceIn(0.0, 100.0)
     }
 
     override fun readFromNBT(nbt: CompoundTag, str: String) {
