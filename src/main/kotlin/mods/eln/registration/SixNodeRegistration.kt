@@ -873,6 +873,9 @@ object SixNodeRegistration {
         streetlightGhostGroup.addElement(1, 0, 0)
         streetlightGhostGroup.addElement(2, 0, 0)
 
+        val streetlightwallGhostGroup = GhostGroup()
+        streetlightwallGhostGroup.addElement(0, 1, 0)
+
         run {
             subId = 0
             completeId = subId + (id shl 6)
@@ -1076,12 +1079,36 @@ object SixNodeRegistration {
                     LampLists.getLampData("incandescent")!!,
                     LampLists.getLampData("carbon")!!,
                     LampLists.getLampData("farming")!!,
+                    LampLists.getLampData("fluorescent")!!,
                     LampLists.getLampData("led")!!
                 )
             )
             descriptor.extendedRenderBounds = true
             descriptor.ghostGroup = streetlightGhostGroup
             descriptor.setPlaceDirection(Direction.YN)
+            Eln.sixNodeItem.addDescriptor(completeId, descriptor)
+        }
+
+        run {
+            subId = 2
+            completeId = subId + (id shl 6)
+            descriptor = LampSocketDescriptor(
+                I18N.TR_NAME(I18N.Type.NONE, "Streetlight Wall"),
+                LampSocketStandardObjRender(Eln.obj.getObj("StreetLightWall"), true),
+                0,
+                arrayOf(
+                    LampLists.getLampData("incandescent")!!,
+                    LampLists.getLampData("carbon")!!,
+                    LampLists.getLampData("farming")!!,
+                    LampLists.getLampData("fluorescent")!!,
+                    LampLists.getLampData("led")!!
+                )
+            )
+            descriptor.extendedRenderBounds = true
+            descriptor.ghostGroup = streetlightwallGhostGroup
+            descriptor.setDefaultIcon("streetlightwall")
+            //descriptor.initialRenderAngleOffset = -90.0
+            //descriptor.setPlaceDirection(arrayOf(Direction.XN, Direction.XP, Direction.ZN, Direction.ZP))
             Eln.sixNodeItem.addDescriptor(completeId, descriptor)
         }
 
