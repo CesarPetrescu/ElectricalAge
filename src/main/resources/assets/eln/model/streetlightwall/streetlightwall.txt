@@ -1,0 +1,4 @@
+s tOn streetlight_on.png
+s tOff streetlight_off.png
+s type noLampDraw
+s cable enable

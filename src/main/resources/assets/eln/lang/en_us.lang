@@ -1681,6 +1681,7 @@ Simple_Lamp_Socket.name=Simple Lamp Socket
 Spot_Lamp_Socket.name=Spot Lamp Socket
 Standard_Alarm.name=Standard Alarm
 Streetlight.name=Streetlight
+Streetlight_Wall.name=Streetlight Wall
 Suspended_Lamp_Socket.name=Suspended Lamp Socket
 Suspended_Lamp_Socket_(No_Swing).name=Suspended Lamp Socket (No Swing)
 Temperature_Probe.name=Temperature Probe

@@ -1681,6 +1681,7 @@ Simple_Lamp_Socket.name=灯座(普通)
 Spot_Lamp_Socket.name=灯座(聚光)
 Standard_Alarm.name=警报器(声音:标准)
 Streetlight.name=路灯
+Streetlight_Wall.name=Streetlight Wall
 Suspended_Lamp_Socket.name=灯座(吊挂)
 Suspended_Lamp_Socket_(No_Swing).name=灯座(吊挂,无摆动)
 Temperature_Probe.name=探测器(温度)
