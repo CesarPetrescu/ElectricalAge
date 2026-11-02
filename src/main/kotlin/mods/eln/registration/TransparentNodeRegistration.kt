@@ -174,19 +174,6 @@ object TransparentNodeRegistration {
         }
     }
 
-    private fun registerStreetLamps(id: Int) {
-        var subId: Int
-        var name: String
-        run {
-            println("Street Light?")
-            println(Eln.obj.objectList)
-            subId = 0
-            name = TR_NAME(I18N.Type.NONE, "StreetLightWall")
-            val desc = StreetLightWallDescriptor(name, Eln.obj.getObj("StreetLightWall"))
-            transparentNodeItem.addDescriptor(subId + (id shl 6), desc)
-        }
-    }
-
     private fun registerRailroad(id: Int) {
         var subId: Int
         run {
